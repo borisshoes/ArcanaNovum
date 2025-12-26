@@ -3,42 +3,42 @@ package net.borisshoes.arcananovum.recipes;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.AquaticEversource;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.Potions;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.Level;
 
 import java.util.Map;
 
 import static java.util.Map.entry;
 
-public class AquaticEversourceFillRecipe extends SpecialCraftingRecipe {
+public class AquaticEversourceFillRecipe extends CustomRecipe {
    
    private static final Map<Item, ItemStack> FILLABLE = Map.ofEntries(
-         entry(Items.DIRT, Items.MUD.getDefaultStack()),
-         entry(Items.GLASS_BOTTLE, PotionContentsComponent.createStack(Items.POTION, Potions.WATER)),
-         entry(Items.BUCKET, Items.WATER_BUCKET.getDefaultStack())
+         entry(Items.DIRT, Items.MUD.getDefaultInstance()),
+         entry(Items.GLASS_BOTTLE, PotionContents.createItemStack(Items.POTION, Potions.WATER)),
+         entry(Items.BUCKET, Items.WATER_BUCKET.getDefaultInstance())
    );
    
-   public AquaticEversourceFillRecipe(CraftingRecipeCategory craftingRecipeCategory){
-      super(CraftingRecipeCategory.MISC);
+   public AquaticEversourceFillRecipe(CraftingBookCategory craftingRecipeCategory){
+      super(CraftingBookCategory.MISC);
    }
    
    @Override
-   public boolean matches(CraftingRecipeInput input, World world){
+   public boolean matches(CraftingInput input, Level world){
       boolean hasEversource = false;
       boolean hasFillable = false;
       
       for (int i = 0; i < input.size(); ++i){
-         ItemStack rStack = input.getStackInSlot(i);
+         ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
          if(!hasEversource && rStack.getItem() instanceof AquaticEversource.AquaticEversourceItem){
@@ -55,9 +55,9 @@ public class AquaticEversourceFillRecipe extends SpecialCraftingRecipe {
    }
    
    @Override
-   public ItemStack craft(CraftingRecipeInput input, RegistryWrapper.WrapperLookup registries){
+   public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries){
       for (int i = 0; i < input.size(); ++i){
-         ItemStack rStack = input.getStackInSlot(i);
+         ItemStack rStack = input.getItem(i);
          if(FILLABLE.containsKey(rStack.getItem())){
             return FILLABLE.get(rStack.getItem()).copyWithCount(1);
          }
@@ -67,10 +67,10 @@ public class AquaticEversourceFillRecipe extends SpecialCraftingRecipe {
    
    
    @Override
-   public DefaultedList<ItemStack> getRecipeRemainders(CraftingRecipeInput input){
-      DefaultedList<ItemStack> stacks = DefaultedList.ofSize(input.size(),ItemStack.EMPTY);
+   public NonNullList<ItemStack> getRemainingItems(CraftingInput input){
+      NonNullList<ItemStack> stacks = NonNullList.withSize(input.size(), ItemStack.EMPTY);
       for (int i = 0; i < input.size(); ++i){
-         ItemStack rStack = input.getStackInSlot(i);
+         ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
          if(rStack.getItem() instanceof AquaticEversource.AquaticEversourceItem){
@@ -81,11 +81,11 @@ public class AquaticEversourceFillRecipe extends SpecialCraftingRecipe {
    }
    
    @Override
-   public RecipeSerializer<? extends SpecialCraftingRecipe> getSerializer(){
+   public RecipeSerializer<? extends CustomRecipe> getSerializer(){
       return ArcanaRegistry.AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
    }
    
-   public static class AquaticEversourceRecipeSerializer extends SpecialRecipeSerializer implements PolymerObject {
+   public static class AquaticEversourceRecipeSerializer extends Serializer implements PolymerObject {
       public AquaticEversourceRecipeSerializer(Factory factory){
          super(factory);
       }

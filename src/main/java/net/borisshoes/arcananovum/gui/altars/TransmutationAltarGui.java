@@ -9,45 +9,44 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 import java.util.Optional;
 
 public class TransmutationAltarGui extends SimpleGui {
    private final TransmutationAltarBlockEntity blockEntity;
    
-   public TransmutationAltarGui(ScreenHandlerType<?> type, ServerPlayerEntity player, TransmutationAltarBlockEntity blockEntity){
+   public TransmutationAltarGui(MenuType<?> type, ServerPlayer player, TransmutationAltarBlockEntity blockEntity){
       super(type, player, false);
       this.blockEntity = blockEntity;
-      setTitle(Text.literal("Transmutation Altar"));
+      setTitle(Component.literal("Transmutation Altar"));
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       if(index == 2){
          TransmutationAltarRecipeGui recipeGui = new TransmutationAltarRecipeGui(player, this, Optional.of(blockEntity));
          recipeGui.buildRecipeListGui();
          recipeGui.open();
-      }else if(index == 4  && blockEntity.getWorld() instanceof ServerWorld serverWorld){
+      }else if(index == 4  && blockEntity.getLevel() instanceof ServerLevel serverWorld){
          if(blockEntity.getCooldown() <= 0){
             if(blockEntity.checkTransmute() != null){
                blockEntity.startTransmute(player);
             }else{
-               player.sendMessage(Text.literal("No Transmutation Items Found").formatted(Formatting.RED,Formatting.ITALIC));
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+               player.sendSystemMessage(Component.literal("No Transmutation Items Found").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
             }
             close();
          }else{
-            player.sendMessage(Text.literal("The Altar is on Cooldown").formatted(Formatting.RED,Formatting.ITALIC),false);
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+            player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
             close();
          }
       }
@@ -56,8 +55,8 @@ public class TransmutationAltarGui extends SimpleGui {
    
    @Override
    public void onTick(){
-      World world = blockEntity.getWorld();
-      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
+      Level world = blockEntity.getLevel();
+      if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
          this.close();
       }
       
@@ -67,37 +66,37 @@ public class TransmutationAltarGui extends SimpleGui {
    public void buildMenuGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("Transmutation Altar").formatted(Formatting.BLUE)));
+         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.EQUAYUS_COLOR)).setName(Component.literal("Transmutation Altar").withStyle(ChatFormatting.BLUE)));
       }
       
       GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideDefaultTooltip();
       if(blockEntity.getCooldown() <= 0){
-         cooldownItem.setName((Text.literal("")
-               .append(Text.literal("Altar Ready").formatted(Formatting.AQUA))));
+         cooldownItem.setName((Component.literal("")
+               .append(Component.literal("Altar Ready").withStyle(ChatFormatting.AQUA))));
       }else{
-         cooldownItem.setName((Text.literal("")
-               .append(Text.literal("Altar Recharging").formatted(Formatting.BLUE))));
-         cooldownItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal((blockEntity.getCooldown()/20)+" Seconds").formatted(Formatting.DARK_PURPLE)))));
+         cooldownItem.setName((Component.literal("")
+               .append(Component.literal("Altar Recharging").withStyle(ChatFormatting.BLUE))));
+         cooldownItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal((blockEntity.getCooldown()/20)+" Seconds").withStyle(ChatFormatting.DARK_PURPLE)))));
       }
       setSlot(0,cooldownItem);
       
       GuiElementBuilder recipeItem = GuiElementBuilder.from(GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK)).hideDefaultTooltip();
-      recipeItem.setName((Text.literal("")
-            .append(Text.literal("Transmutation Recipes").formatted(Formatting.DARK_AQUA))));
-      recipeItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" to view all Transmutation Recipes").formatted(Formatting.BLUE)))));
+      recipeItem.setName((Component.literal("")
+            .append(Component.literal("Transmutation Recipes").withStyle(ChatFormatting.DARK_AQUA))));
+      recipeItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" to view all Transmutation Recipes").withStyle(ChatFormatting.BLUE)))));
       
       setSlot(2,recipeItem);
       
 
       GuiElementBuilder activateItem = new GuiElementBuilder(Items.DIAMOND);
-      activateItem.setName((Text.literal("")
-            .append(Text.literal("Activate Altar").formatted(Formatting.LIGHT_PURPLE))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Click").formatted(Formatting.BLUE))
-            .append(Text.literal(" to begin a Transmutation").formatted(Formatting.DARK_PURPLE)))));
+      activateItem.setName((Component.literal("")
+            .append(Component.literal("Activate Altar").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Click").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" to begin a Transmutation").withStyle(ChatFormatting.DARK_PURPLE)))));
       setSlot(4,activateItem);
    }
    

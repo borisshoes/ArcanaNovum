@@ -5,9 +5,9 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.research.ResearchTask;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.ItemStack;
 import org.ladysnake.cca.api.v3.component.ComponentV3;
 
 import java.util.HashMap;
@@ -19,7 +19,7 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    boolean hasResearched(ArcanaItem arcanaItem);
    boolean completedResearchTask(String id);
    List<String> getResearchedItems();
-   NbtElement getMiscData(String id);
+   Tag getMiscData(String id);
    HashMap<String,List<ArcanaAchievement>> getAchievements();
    HashMap<ArcanaAugment,Integer> getAugments();
    int getLevel();
@@ -40,9 +40,9 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    boolean removeCrafted(String item);
    boolean removeAchievement(String item, String achievementId);
    boolean removeResearchedItem(String item);
-   void addMiscData(String id, NbtElement data);
+   void addMiscData(String id, Tag data);
    void removeMiscData(String id);
-   void setResearchTask(RegistryKey<ResearchTask> key, boolean acquired);
+   void setResearchTask(ResourceKey<ResearchTask> key, boolean acquired);
    boolean hasAcheivement(String item, String achievementId);
    ArcanaAchievement getAchievement(String item, String achievementId);
    int totalAcquiredAchievements();

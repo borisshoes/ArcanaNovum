@@ -4,20 +4,20 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
    public void onTick(MinecraftServer server){
       if(sources.isEmpty()) return;
       
-      for(ServerWorld world : server.getWorlds()){
+      for(ServerLevel world : server.getAllLevels()){
          ArrayList<BlockPos> affectedBlocks = new ArrayList<>();
          for(SmokeArrowSource source : sources){
             affectedBlocks.addAll(source.getAffectedBlocks(world).stream().filter(blockPos -> affectedBlocks.stream().noneMatch(block -> block.equals(blockPos))).toList());
@@ -44,7 +44,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          }
          
          for(BlockPos block : affectedBlocks){
-            ArcanaEffectUtils.smokeArrowEmit(world,block.toCenterPos());
+            ArcanaEffectUtils.smokeArrowEmit(world,block.getCenter());
          }
       }
       
@@ -56,14 +56,14 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
       if(source instanceof SmokeArrowSource smokeSource) sources.add(smokeSource);
    }
    
-   public static SmokeArrowSource source(@Nullable Entity contributor, @Nullable Entity sourceEntity, @Nullable BlockPos sourceBlock, @Nullable ServerWorld blockWorld, double range, int gasLvl){
+   public static SmokeArrowSource source(@Nullable Entity contributor, @Nullable Entity sourceEntity, @Nullable BlockPos sourceBlock, @Nullable ServerLevel blockWorld, double range, int gasLvl){
       return new SmokeArrowSource(sourceEntity,sourceBlock,blockWorld,range,gasLvl,contributor);
    }
    
    public static class SmokeArrowSource extends AreaEffectSource{
       private final Entity sourceEntity;
       private final BlockPos sourceBlock;
-      private final ServerWorld blockWorld;
+      private final ServerLevel blockWorld;
       private final double range;
       private final int gasLvl;
       private final boolean fromEntity;
@@ -71,7 +71,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
       private final int duration;
       private final Entity contributor;
       
-      private SmokeArrowSource(@Nullable Entity sourceEntity, @Nullable BlockPos sourceBlock, @Nullable ServerWorld blockWorld, double range, int gasLvl, @Nullable Entity contributor){
+      private SmokeArrowSource(@Nullable Entity sourceEntity, @Nullable BlockPos sourceBlock, @Nullable ServerLevel blockWorld, double range, int gasLvl, @Nullable Entity contributor){
          this.sourceEntity = sourceEntity;
          this.sourceBlock = sourceBlock;
          this.blockWorld = blockWorld;
@@ -83,9 +83,9 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          this.duration = 100;
       }
       
-      public World getSourceWorld(){
+      public Level getSourceWorld(){
          if(fromEntity){
-            return sourceEntity.getEntityWorld();
+            return sourceEntity.level();
          }else{
             return blockWorld;
          }
@@ -93,7 +93,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
       
       public BlockPos getBlockPos(){
          if(fromEntity){
-            return sourceEntity.getBlockPos();
+            return sourceEntity.blockPosition();
          }else{
             return sourceBlock;
          }
@@ -112,43 +112,43 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          return contributor;
       }
       
-      public void affectEntities(ServerWorld world){
+      public void affectEntities(ServerLevel world){
          if(age % 5 != 0) return;
          
          int mobCount = 0;
          boolean withOwner = false;
          for(Entity affectedEntity : getAffectedEntities(world)){
             if(affectedEntity instanceof LivingEntity e){
-               int amp = e instanceof MobEntity ? 5 : 0;
-               StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 60*(gasLvl+1), 7, false, false, true);
-               StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, 60*(gasLvl+1), amp+gasLvl, false, false, true);
-               StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, 60*(gasLvl+1), 0, false, false, true);
-               e.addStatusEffect(blind);
-               e.addStatusEffect(weakness);
-               if(e instanceof ServerPlayerEntity){
-                  e.addStatusEffect(invis);
+               int amp = e instanceof Mob ? 5 : 0;
+               MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 60*(gasLvl+1), 7, false, false, true);
+               MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, 60*(gasLvl+1), amp+gasLvl, false, false, true);
+               MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, 60*(gasLvl+1), 0, false, false, true);
+               e.addEffect(blind);
+               e.addEffect(weakness);
+               if(e instanceof ServerPlayer){
+                  e.addEffect(invis);
                }
                
-               if(e instanceof HostileEntity mob){
-                  mob.setAttacking(false);
-                  mob.setAttacker(null);
+               if(e instanceof Monster mob){
+                  mob.setAggressive(false);
+                  mob.setLastHurtByMob(null);
                   mobCount++;
                }
-               if(contributor instanceof ServerPlayerEntity player && player.getUuid().equals(e.getUuid())) withOwner = true;
+               if(contributor instanceof ServerPlayer player && player.getUUID().equals(e.getUUID())) withOwner = true;
             }
          }
-         if(contributor instanceof ServerPlayerEntity player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,ArcanaAchievements.SMOKE_SCREEN.id);
+         if(contributor instanceof ServerPlayer player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,ArcanaAchievements.SMOKE_SCREEN.id);
          
-         SoundUtils.playSound(world,getBlockPos(), SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.PLAYERS,.5f,1);
+         SoundUtils.playSound(world,getBlockPos(), SoundEvents.CAMPFIRE_CRACKLE, SoundSource.PLAYERS,.5f,1);
       }
       
       @Override
-      public List<BlockPos> getAffectedBlocks(ServerWorld world){
-         if(getSourceWorld() instanceof ServerWorld thisWorld && thisWorld.getRegistryKey().getValue().toString().equals(world.getRegistryKey().getValue().toString())){
+      public List<BlockPos> getAffectedBlocks(ServerLevel world){
+         if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             ArrayList<BlockPos> blocks = new ArrayList<>();
-            for(BlockPos block : BlockPos.iterateOutwards(getBlockPos(), (int) range+4, (int) range+4, (int) range+4)){
-               if(block.toCenterPos().distanceTo(getBlockPos().toCenterPos()) <= range+2){
-                  blocks.add(block.mutableCopy());
+            for(BlockPos block : BlockPos.withinManhattan(getBlockPos(), (int) range+4, (int) range+4, (int) range+4)){
+               if(block.getCenter().distanceTo(getBlockPos().getCenter()) <= range+2){
+                  blocks.add(block.mutable());
                }
             }
             return blocks;
@@ -158,11 +158,11 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
       }
       
       @Override
-      public List<Entity> getAffectedEntities(ServerWorld world){
-         if(getSourceWorld() instanceof ServerWorld thisWorld && thisWorld.getRegistryKey().getValue().toString().equals(world.getRegistryKey().getValue().toString())){
+      public List<Entity> getAffectedEntities(ServerLevel world){
+         if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             BlockPos blockPos = getBlockPos();
-            Box rangeBox = Box.from(blockPos.toCenterPos()).expand(range+4);
-            return world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(blockPos.toCenterPos()) < 4*range*range && e instanceof LivingEntity);
+            AABB rangeBox = AABB.unitCubeFromLowerCorner(blockPos.getCenter()).inflate(range+4);
+            return world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(blockPos.getCenter()) < 4*range*range && e instanceof LivingEntity);
          }else{
             return new ArrayList<>();
          }

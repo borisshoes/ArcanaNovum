@@ -4,13 +4,13 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 
 import java.text.DecimalFormat;
 
@@ -32,7 +32,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    protected boolean setProgress(int progress){
       boolean had = isAcquired();
-      this.progress = MathHelper.clamp(progress,0,goal);
+      this.progress = Mth.clamp(progress,0,goal);
       setAcquired(this.progress >= goal);
       return isAcquired() && !had;
    }
@@ -46,8 +46,8 @@ public class ProgressAchievement extends ArcanaAchievement{
    }
    
    @Override
-   public NbtCompound toNbt(){
-      NbtCompound nbt = new NbtCompound();
+   public CompoundTag toNbt(){
+      CompoundTag nbt = new CompoundTag();
       nbt.putBoolean("acquired",isAcquired());
       nbt.putString("name",name);
       nbt.putInt("type",type);
@@ -57,31 +57,31 @@ public class ProgressAchievement extends ArcanaAchievement{
    }
    
    @Override
-   public ProgressAchievement fromNbt(String id, NbtCompound nbt){
+   public ProgressAchievement fromNbt(String id, CompoundTag nbt){
       ProgressAchievement ach = (ProgressAchievement) ArcanaAchievements.registry.get(id).makeNew();
-      ach.setProgress(nbt.getInt("progress", 0));
-      ach.setAcquired(nbt.getBoolean("acquired", false));
+      ach.setProgress(nbt.getIntOr("progress", 0));
+      ach.setAcquired(nbt.getBooleanOr("acquired", false));
       return ach;
    }
    
    @Override
-   public MutableText[] getStatusDisplay(ServerPlayerEntity player){
+   public MutableComponent[] getStatusDisplay(ServerPlayer player){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       
-      MutableText[] text = new MutableText[achievement != null && achievement.isAcquired() ? 2 : 1];
+      MutableComponent[] text = new MutableComponent[achievement != null && achievement.isAcquired() ? 2 : 1];
       DecimalFormat df = new DecimalFormat("##0.00");
       double percent = 100.0 * (achievement == null ? 0 : achievement.getProgress()) / (double) goal;
-      text[0] = Text.literal("")
-            .append(Text.literal("Progress: ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("" + (achievement == null ? 0 : LevelUtils.readableInt(achievement.getProgress()))).formatted(Formatting.AQUA))
-            .append(Text.literal(" / ").formatted(Formatting.AQUA))
-            .append(Text.literal(LevelUtils.readableInt(goal)).formatted(Formatting.AQUA))
-            .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(df.format(percent)+"%").formatted(Formatting.BLUE));
+      text[0] = Component.literal("")
+            .append(Component.literal("Progress: ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("" + (achievement == null ? 0 : LevelUtils.readableInt(achievement.getProgress()))).withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" / ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(LevelUtils.readableInt(goal)).withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" | ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(df.format(percent)+"%").withStyle(ChatFormatting.BLUE));
       
       if(achievement != null && achievement.isAcquired()){
-         text[1] = Text.literal("Achieved!").formatted(Formatting.AQUA);
+         text[1] = Component.literal("Achieved!").withStyle(ChatFormatting.AQUA);
       }
       return text;
    }

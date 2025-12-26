@@ -9,13 +9,13 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.potion.Potions;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 
 import java.util.*;
 
@@ -87,7 +87,7 @@ public class ArcanaAugments {
    
    // Siphoning Arrows
    public static final ArcanaAugment OVERHEAL = ArcanaAugments.register(
-         new ArcanaAugment("Overheal", "overheal", PotionContentsComponent.createStack(Items.POTION, Potions.HEALING), ArcanaRegistry.SIPHONING_ARROWS,
+         new ArcanaAugment("Overheal", "overheal", PotionContents.createItemStack(Items.POTION, Potions.HEALING), ArcanaRegistry.SIPHONING_ARROWS,
          new String[]{"Health siphoned above max becomes absorption","Max Overheal per Level: 2.5/5/10 hearts"},
          new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC}
    ));
@@ -781,7 +781,7 @@ public class ArcanaAugments {
          new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC,SOVEREIGN,SOVEREIGN,DIVINE,DIVINE}
    ));
    public static final ArcanaAugment MOONLIT_FORGE = ArcanaAugments.register(
-         new ArcanaAugment("Moonlit Forge", "moonlit_forge", MinecraftUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultStack()), ArcanaRegistry.STARLIGHT_FORGE,
+         new ArcanaAugment("Moonlit Forge", "moonlit_forge", MinecraftUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultInstance()), ArcanaRegistry.STARLIGHT_FORGE,
          new String[]{"Starting layout of Stardust Infusion becomes "," influenced by the lunar cycle"},
          new ArcanaRarity[]{SOVEREIGN}
    ));
@@ -820,7 +820,7 @@ public class ArcanaAugments {
          new ArcanaRarity[]{SOVEREIGN}
    ));
    public static final ArcanaAugment ESSENCE_SUPERNOVA = ArcanaAugments.register(
-         new ArcanaAugment("Essence Supernova", "essence_supernova", MinecraftUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultStack()), ArcanaRegistry.MIDNIGHT_ENCHANTER,
+         new ArcanaAugment("Essence Supernova", "essence_supernova", MinecraftUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance()), ArcanaRegistry.MIDNIGHT_ENCHANTER,
          new String[]{"The Enchanter gives an additional 15% Essence per level"},
          new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC}
    ));
@@ -911,7 +911,7 @@ public class ArcanaAugments {
          new ArcanaRarity[]{DIVINE}
    ));
    public static final ArcanaAugment IMPERMANENT_PERMUTATION = ArcanaAugments.register(
-         new ArcanaAugment("Impermanent Permutation", "impermanent_permutation", MinecraftUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultStack()), ArcanaRegistry.AEQUALIS_SCIENTIA,
+         new ArcanaAugment("Impermanent Permutation", "impermanent_permutation", MinecraftUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance()), ArcanaRegistry.AEQUALIS_SCIENTIA,
          new String[]{"Unlocks a transmutation recipe to reset"," the Aequalis's attuned transmutation"},
          new ArcanaRarity[]{DIVINE}
    ));
@@ -1058,7 +1058,7 @@ public class ArcanaAugments {
          new ArcanaRarity[]{EXOTIC}
    ));
    public static final ArcanaAugment STARLESS_DOMAIN = ArcanaAugments.register(
-         new ArcanaAugment("Starless Domain", "starless_domain", MinecraftUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultStack()), ArcanaRegistry.SPEAR_OF_TENBROUS,
+         new ArcanaAugment("Starless Domain", "starless_domain", MinecraftUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultInstance()), ArcanaRegistry.SPEAR_OF_TENBROUS,
          new String[]{"The Spear become fully infused with Stardust"},
          new ArcanaRarity[]{SOVEREIGN}
    ));
@@ -1136,11 +1136,11 @@ public class ArcanaAugments {
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(arcanaItem == null) return null;
       TreeMap<ArcanaAugment,Integer> map = new TreeMap<>();
-      NbtCompound augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
+      CompoundTag augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
       
-      for(String key : augmentTag.getKeys()){
+      for(String key : augmentTag.keySet()){
          if(registry.containsKey(key)){
-            map.put(registry.get(key), augmentTag.getInt(key, 0));
+            map.put(registry.get(key), augmentTag.getIntOr(key, 0));
          }
       }
       return map;
@@ -1149,7 +1149,7 @@ public class ArcanaAugments {
    public static void setAugmentsOnItem(ItemStack stack, TreeMap<ArcanaAugment,Integer> augments){
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(arcanaItem == null) return;
-      NbtCompound augsTag = new NbtCompound();
+      CompoundTag augsTag = new CompoundTag();
       
       augments.forEach((augKey,augValue) -> {
          if(registry.containsKey(augKey.id)){
@@ -1187,18 +1187,18 @@ public class ArcanaAugments {
    public static int getAugmentOnItem(ItemStack stack, String id){
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(arcanaItem == null || !registry.containsKey(id)) return -1;
-      NbtCompound augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
+      CompoundTag augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
       if(augmentTag.contains(id)){
-         return augmentTag.getInt(id, 0);
+         return augmentTag.getIntOr(id, 0);
       }
       return 0;
    }
    
-   public static int getAugmentFromCompound(NbtCompound compound, String id){
+   public static int getAugmentFromCompound(CompoundTag compound, String id){
       if(!registry.containsKey(id)) return -1;
-      NbtCompound augmentTag = compound.getCompoundOrEmpty("augments");
+      CompoundTag augmentTag = compound.getCompoundOrEmpty("augments");
       if(augmentTag.contains(id)){
-         return augmentTag.getInt(id, 0);
+         return augmentTag.getIntOr(id, 0);
       }
       return 0;
    }
@@ -1223,15 +1223,15 @@ public class ArcanaAugments {
       if(isIncompatible(stack,id)) return false;
       if(curLevel >= level) return false;
       
-      NbtCompound augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
+      CompoundTag augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
       augmentTag.putInt(id,level);
       ArcanaItem.putProperty(stack, ArcanaItem.AUGMENTS_TAG,augmentTag);
       
       if(withCatalyst){
          int clampedCurLevel = Math.max(0,curLevel);
-         NbtList catalystsList = ArcanaItem.getListProperty(stack, ArcanaItem.CATALYSTS_TAG);
+         ListTag catalystsList = ArcanaItem.getListProperty(stack, ArcanaItem.CATALYSTS_TAG);
          for(int lvl = clampedCurLevel+1; lvl <= level; lvl++){
-            NbtCompound cata = new NbtCompound();
+            CompoundTag cata = new CompoundTag();
             ArcanaRarity rarity = augment.getTiers()[lvl-1];
             cata.putString("augment", augment.id);
             cata.putInt("level",lvl);
@@ -1247,16 +1247,16 @@ public class ArcanaAugments {
    }
    
    public static void copyAugment(ItemStack sourceStack, ItemStack destinationStack, String sourceAugment, String destinationAugment){
-      NbtList sourceCatas = ArcanaItem.getListProperty(sourceStack, ArcanaItem.CATALYSTS_TAG);
+      ListTag sourceCatas = ArcanaItem.getListProperty(sourceStack, ArcanaItem.CATALYSTS_TAG);
       
       int sourceLvl = ArcanaAugments.getAugmentOnItem(sourceStack, sourceAugment);
       if(sourceLvl <= 0) return;
       
       for(int lvl = 0; lvl <= sourceLvl; lvl++){
          boolean foundCata = false;
-         for(NbtElement sourceCata : sourceCatas){
-            NbtCompound cata = (NbtCompound) sourceCata;
-            if(cata.getString("augment", "").equals(sourceAugment) && cata.getInt("level", 0) == lvl){
+         for(Tag sourceCata : sourceCatas){
+            CompoundTag cata = (CompoundTag) sourceCata;
+            if(cata.getStringOr("augment", "").equals(sourceAugment) && cata.getIntOr("level", 0) == lvl){
                ArcanaAugments.applyAugment(destinationStack,destinationAugment,lvl,true);
                foundCata = true;
                break;

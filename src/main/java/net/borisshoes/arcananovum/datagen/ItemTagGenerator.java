@@ -4,27 +4,27 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.data.tag.ProvidedTagBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.tags.TagAppender;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
-   public ItemTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture){
+   public ItemTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture){
       super(output, registriesFuture);
    }
    
    @Override
-   protected void configure(RegistryWrapper.WrapperLookup lookup){
-      ProvidedTagBuilder<Item,Item> allItemsBuilder = valueLookupBuilder(ArcanaRegistry.ALL_ARCANA_ITEMS);
-      ProvidedTagBuilder<Item,Item> unstackableItemsBuilder = valueLookupBuilder(ArcanaRegistry.UNSTACKABLE_ARCANA_ITEMS);
-      ProvidedTagBuilder<Item,Item> runicArrowsBuilder = valueLookupBuilder(ArcanaRegistry.RUNIC_ARROWS);
+   protected void addTags(HolderLookup.Provider lookup){
+      TagAppender<Item, Item> allItemsBuilder = valueLookupBuilder(ArcanaRegistry.ALL_ARCANA_ITEMS);
+      TagAppender<Item, Item> unstackableItemsBuilder = valueLookupBuilder(ArcanaRegistry.UNSTACKABLE_ARCANA_ITEMS);
+      TagAppender<Item, Item> runicArrowsBuilder = valueLookupBuilder(ArcanaRegistry.RUNIC_ARROWS);
       ArcanaRegistry.ARCANA_ITEMS.forEach(item -> {
          allItemsBuilder.add(item.getItem());
-         if(item.getItem().getMaxCount() == 1){
+         if(item.getItem().getDefaultMaxStackSize() == 1){
             unstackableItemsBuilder.add(item.getItem());
          }
          if(item instanceof RunicArrow){
@@ -111,7 +111,7 @@ public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
             .add(Items.COPPER_NUGGET)
             .add(Items.COPPER_BULB)
             .add(Items.COPPER_BARS.unaffected())
-            .add(Items.COPPER_CHAINS.unaffected())
+            .add(Items.COPPER_CHAIN.unaffected())
             .add(Items.COPPER_GOLEM_STATUE)
             .add(Items.COPPER_CHEST)
             .add(Items.COPPER_GRATE)

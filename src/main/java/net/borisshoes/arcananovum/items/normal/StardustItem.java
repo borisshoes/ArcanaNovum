@@ -7,13 +7,13 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class StardustItem extends NormalPolymerItem {
    
-   public StardustItem(String id, net.minecraft.item.Item.Settings settings){
+   public StardustItem(String id, net.minecraft.world.item.Item.Properties settings){
       super(id, settings);
    }
    
@@ -34,61 +34,61 @@ public class StardustItem extends NormalPolymerItem {
    }
    
    @Override
-   public ItemStack getDefaultStack(){
-      ItemStack defStack = super.getDefaultStack();
-      defStack.set(DataComponentTypes.ITEM_NAME, getName(null));
+   public ItemStack getDefaultInstance(){
+      ItemStack defStack = super.getDefaultInstance();
+      defStack.set(DataComponents.ITEM_NAME, getName(null));
       return defStack;
    }
    
    @Override
-   public Text getName(ItemStack stack) {
-      return Text.translatable("item."+MOD_ID+".stardust").formatted(Formatting.YELLOW,Formatting.BOLD);
+   public Component getName(ItemStack stack) {
+      return Component.translatable("item."+MOD_ID+".stardust").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD);
    }
    
-   public static LoreComponent getDefaultLore(){
-      List<Text> loreList = new ArrayList<>();
-      loreList.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GOLD))
-            .append(Text.literal("dust ").formatted(Formatting.YELLOW))
-            .append(Text.literal("sparkles ").formatted(Formatting.AQUA))
-            .append(Text.literal("and ").formatted(Formatting.GOLD))
-            .append(Text.literal("twinkles ").formatted(Formatting.AQUA))
-            .append(Text.literal("like the ").formatted(Formatting.GOLD))
-            .append(Text.literal("night sky").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.GOLD)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GOLD))
-            .append(Text.literal("energy").formatted(Formatting.AQUA))
-            .append(Text.literal(" from the ").formatted(Formatting.GOLD))
-            .append(Text.literal("Stellar Core").formatted(Formatting.YELLOW))
-            .append(Text.literal(" seems to ").formatted(Formatting.GOLD))
-            .append(Text.literal("fuse ").formatted(Formatting.AQUA))
-            .append(Text.literal("with ").formatted(Formatting.GOLD))
-            .append(Text.literal("enchantments").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.GOLD)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("This ").formatted(Formatting.GOLD))
-            .append(Text.literal("Arcana ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("contained within should harbor ").formatted(Formatting.GOLD))
-            .append(Text.literal("desirable properties").formatted(Formatting.AQUA))
-            .append(Text.literal("...").formatted(Formatting.GOLD)));
-      return new LoreComponent(loreList.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new)));
+   public static ItemLore getDefaultLore(){
+      List<Component> loreList = new ArrayList<>();
+      loreList.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("dust ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("sparkles ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("twinkles ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("like the ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("night sky").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GOLD)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("energy").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" from the ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("Stellar Core").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(" seems to ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("fuse ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("with ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("enchantments").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GOLD)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("This ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("Arcana ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("contained within should harbor ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("desirable properties").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("...").withStyle(ChatFormatting.GOLD)));
+      return new ItemLore(loreList.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new)));
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
       ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, 0xff8800),1,"",false)
-            .withName(Text.literal("In Stellar Core").formatted(Formatting.GOLD));
+            .withName(Component.literal("In Stellar Core").withStyle(ChatFormatting.GOLD));
       ExplainIngredient b = new ExplainIngredient(Items.BLAZE_POWDER,1,"",false)
-            .withName(Text.literal("Salvage Enchanted Equipment").formatted(Formatting.GOLD))
-            .withLore(List.of(Text.literal("Use a Stellar Core to salvage enchanted equipment").formatted(Formatting.YELLOW)));
+            .withName(Component.literal("Salvage Enchanted Equipment").withStyle(ChatFormatting.GOLD))
+            .withLore(List.of(Component.literal("Use a Stellar Core to salvage enchanted equipment").withStyle(ChatFormatting.YELLOW)));
       ExplainIngredient m = new ExplainIngredient(Items.MAGMA_BLOCK,1,"",false)
-            .withName(Text.literal("Salvage Enchanted Equipment").formatted(Formatting.GOLD))
-            .withLore(List.of(Text.literal("Use a Stellar Core to salvage enchanted equipment").formatted(Formatting.YELLOW)));
+            .withName(Component.literal("Salvage Enchanted Equipment").withStyle(ChatFormatting.GOLD))
+            .withLore(List.of(Component.literal("Use a Stellar Core to salvage enchanted equipment").withStyle(ChatFormatting.YELLOW)));
       ItemStack chestplate = new ItemStack(Items.DIAMOND_CHESTPLATE);
-      chestplate.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,true);
+      chestplate.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE,true);
       ExplainIngredient g = new ExplainIngredient(chestplate,1,"Piece of Enchanted Equipment", true)
-            .withName(Text.literal("Enchanted Equipment").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
-            .withLore(List.of(Text.literal("Better enchantments yield more Stardust").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Enchanted Equipment").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE))
+            .withLore(List.of(Component.literal("Better enchantments yield more Stardust").withStyle(ChatFormatting.DARK_PURPLE)));
       
       ExplainIngredient[][] ingredients = {
             {a,a,a,a,a},
@@ -97,6 +97,6 @@ public class StardustItem extends NormalPolymerItem {
             {a,m,b,m,a},
             {a,a,a,a,a}};
 
-      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.STARDUST.getTranslationKey()), new ItemStack(ArcanaRegistry.STARDUST), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.STARDUST.getDescriptionId()), new ItemStack(ArcanaRegistry.STARDUST), new ExplainRecipe(ingredients));
    }
 }

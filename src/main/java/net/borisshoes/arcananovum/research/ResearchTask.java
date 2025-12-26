@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.research;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +16,12 @@ public abstract class ResearchTask {
    
    public final String id;
    public final Type type;
-   private final Text name;
-   private final Text[] description;
+   private final Component name;
+   private final Component[] description;
    private final ItemStack displayItem;
-   protected final RegistryKey<ResearchTask>[] prerequisites;
+   protected final ResourceKey<ResearchTask>[] prerequisites;
    
-   protected ResearchTask(String id, Type type, Text name, Text[] description, ItemStack displayItem, RegistryKey<ResearchTask>... prerequisites){
+   protected ResearchTask(String id, Type type, Component name, Component[] description, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
       this.id = id;
       this.type = type;
       this.name = name;
@@ -30,13 +30,13 @@ public abstract class ResearchTask {
       this.prerequisites = prerequisites;
    }
    
-   protected ResearchTask(String id, Type type, Text name, Text[] description, ItemStack displayItem){
+   protected ResearchTask(String id, Type type, Component name, Component[] description, ItemStack displayItem){
       this.id = id;
       this.type = type;
       this.name = name;
       this.description = description;
       this.displayItem = displayItem;
-      this.prerequisites = new RegistryKey[0];
+      this.prerequisites = new ResourceKey[0];
    }
    
    public String getTranslationKey(){
@@ -51,9 +51,9 @@ public abstract class ResearchTask {
       CUSTOM_EVENT
    }
    
-   public boolean satisfiedPreReqs(ServerPlayerEntity player){
-      for(RegistryKey<ResearchTask> prerequisite : this.prerequisites){
-         Optional<ResearchTask> opt = ResearchTasks.RESEARCH_TASKS.getOptionalValue(prerequisite);
+   public boolean satisfiedPreReqs(ServerPlayer player){
+      for(ResourceKey<ResearchTask> prerequisite : this.prerequisites){
+         Optional<ResearchTask> opt = ResearchTasks.RESEARCH_TASKS.getOptional(prerequisite);
          if(opt.isPresent() && !opt.get().isAcquired(player)){
             return false;
          }
@@ -61,9 +61,9 @@ public abstract class ResearchTask {
       return true;
    }
    
-   public boolean satisfiedPrePreReqs(ServerPlayerEntity player){
-      for(RegistryKey<ResearchTask> prerequisite : this.prerequisites){
-         Optional<ResearchTask> opt = ResearchTasks.RESEARCH_TASKS.getOptionalValue(prerequisite);
+   public boolean satisfiedPrePreReqs(ServerPlayer player){
+      for(ResourceKey<ResearchTask> prerequisite : this.prerequisites){
+         Optional<ResearchTask> opt = ResearchTasks.RESEARCH_TASKS.getOptional(prerequisite);
          if(opt.isPresent() && !opt.get().satisfiedPreReqs(player)){
             return false;
          }
@@ -73,15 +73,15 @@ public abstract class ResearchTask {
    
    public List<ResearchTask> getPreReqs(){
       List<ResearchTask> prereqs = new ArrayList<>();
-      for(RegistryKey<ResearchTask> prerequisite : this.prerequisites){
-         ResearchTasks.RESEARCH_TASKS.getOptionalValue(prerequisite).ifPresent(prereqs::add);
+      for(ResourceKey<ResearchTask> prerequisite : this.prerequisites){
+         ResearchTasks.RESEARCH_TASKS.getOptional(prerequisite).ifPresent(prereqs::add);
       }
       return prereqs;
    }
    
-   public abstract boolean isAcquired(ServerPlayerEntity player);
+   public abstract boolean isAcquired(ServerPlayer player);
    
-   public Text getName(){
+   public Component getName(){
       return name.copy();
    }
    
@@ -89,8 +89,8 @@ public abstract class ResearchTask {
       return id;
    }
    
-   public Text[] getDescription(){
-      Text[] copy = new Text[description.length];
+   public Component[] getDescription(){
+      Component[] copy = new Component[description.length];
       for(int i = 0; i < description.length; i++){
          copy[i] = description[i].copy();
       }

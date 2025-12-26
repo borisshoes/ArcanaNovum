@@ -51,42 +51,42 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DamageResistantComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
-import net.minecraft.entity.damage.DamageType;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.equipment.ArmorMaterial;
-import net.minecraft.item.equipment.EquipmentAsset;
-import net.minecraft.item.equipment.EquipmentType;
-import net.minecraft.loot.function.LootFunction;
-import net.minecraft.loot.function.LootFunctionType;
-import net.minecraft.recipe.AbstractCookingRecipe;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.registry.*;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.DamageResistant;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
@@ -94,139 +94,139 @@ import java.util.function.UnaryOperator;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ArcanaRegistry {
-   public static final Registry<ArcanaItem> ARCANA_ITEMS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"arcana_item")), Lifecycle.stable());
-   public static final Registry<Block> BLOCKS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"block")), Lifecycle.stable());
-   public static final Registry<Item> ITEMS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"item")), Lifecycle.stable());
+   public static final Registry<ArcanaItem> ARCANA_ITEMS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"arcana_item")), Lifecycle.stable());
+   public static final Registry<Block> BLOCKS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"block")), Lifecycle.stable());
+   public static final Registry<Item> ITEMS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"item")), Lifecycle.stable());
    //public static final Registry<PolymerModelData> MODELS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"model")), Lifecycle.stable());
-   public static final Registry<AreaEffectTracker> AREA_EFFECTS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"area_effect")), Lifecycle.stable());
-   public static final Registry<ArcanaConfig.ConfigSetting<?>> CONFIG_SETTINGS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"config_settings")), Lifecycle.stable());
+   public static final Registry<AreaEffectTracker> AREA_EFFECTS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"area_effect")), Lifecycle.stable());
+   public static final Registry<ArcanaConfig.ConfigSetting<?>> CONFIG_SETTINGS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"config_settings")), Lifecycle.stable());
    public static final ArrayList<CompendiumEntry> RECOMMENDED_LIST = new ArrayList<>();
    
    // Custom Tags
-   public static final TagKey<Item> ALL_ARCANA_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"arcana_items"));
-   public static final TagKey<Item> UNSTACKABLE_ARCANA_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"unstackable_arcana_items"));
-   public static final TagKey<Item> VILLAGE_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"village_research_items"));
-   public static final TagKey<Item> WORKSHOP_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"workshop_research_items"));
-   public static final TagKey<Item> NUL_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"nul_research_items"));
-   public static final TagKey<Item> EQUAYUS_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"equayus_research_items"));
-   public static final TagKey<Item> ENDERIA_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"enderia_research_items"));
-   public static final TagKey<Item> NONPROTECTIVE_ARMOR_REPAIR = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"nonprotective_armor_repair"));
-   public static final TagKey<Item> ARCANISTS_BELT_SPECIAL_ALLOWED = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"arcanists_belt_special_allowed"));
-   public static final TagKey<Item> ARCANISTS_BELT_SPECIAL_DISALLOWED = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"arcanists_belt_special_disallowed"));
-   public static final TagKey<Item> FATE_ANCHOR_ENCHANTABLE = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"fate_anchor_enchantable"));
-   public static final TagKey<Item> FATE_ANCHOR_UNENCHANTABLE = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"fate_anchor_unenchantable"));
-   public static final TagKey<Item> NEODYMIUM_STEALABLE = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"neodymium_stealable"));
-   public static final TagKey<Item> FLETCHERY_POTION_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"fletchery_potion_items"));
-   public static final TagKey<Item> RUNIC_ARROWS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"runic_arrows"));
+   public static final TagKey<Item> ALL_ARCANA_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"arcana_items"));
+   public static final TagKey<Item> UNSTACKABLE_ARCANA_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"unstackable_arcana_items"));
+   public static final TagKey<Item> VILLAGE_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"village_research_items"));
+   public static final TagKey<Item> WORKSHOP_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"workshop_research_items"));
+   public static final TagKey<Item> NUL_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"nul_research_items"));
+   public static final TagKey<Item> EQUAYUS_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"equayus_research_items"));
+   public static final TagKey<Item> ENDERIA_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"enderia_research_items"));
+   public static final TagKey<Item> NONPROTECTIVE_ARMOR_REPAIR = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"nonprotective_armor_repair"));
+   public static final TagKey<Item> ARCANISTS_BELT_SPECIAL_ALLOWED = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"arcanists_belt_special_allowed"));
+   public static final TagKey<Item> ARCANISTS_BELT_SPECIAL_DISALLOWED = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"arcanists_belt_special_disallowed"));
+   public static final TagKey<Item> FATE_ANCHOR_ENCHANTABLE = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"fate_anchor_enchantable"));
+   public static final TagKey<Item> FATE_ANCHOR_UNENCHANTABLE = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"fate_anchor_unenchantable"));
+   public static final TagKey<Item> NEODYMIUM_STEALABLE = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"neodymium_stealable"));
+   public static final TagKey<Item> FLETCHERY_POTION_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"fletchery_potion_items"));
+   public static final TagKey<Item> RUNIC_ARROWS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,"runic_arrows"));
    
-   public static final TagKey<Block> CEPTYUS_VEIN_MINEABLE = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID,"ceptyus_vein_mineable"));
+   public static final TagKey<Block> CEPTYUS_VEIN_MINEABLE = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID,"ceptyus_vein_mineable"));
    
-   public static final TagKey<DamageType> NUL_CONSTRUCT_IMMUNE_TO = TagKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MOD_ID,"nul_construct_immune_to"));
-   public static final TagKey<DamageType> NUL_CONSTRUCT_RESISTANT_TO = TagKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MOD_ID,"nul_construct_resistant_to"));
-   public static final TagKey<DamageType> NUL_CONSTRUCT_VULNERABLE_TO = TagKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MOD_ID,"nul_construct_vulnerable_to"));
-   public static final TagKey<DamageType> ARCANA_ITEM_IMMUNE_TO = TagKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MOD_ID,"arcana_item_immune_to"));
-   public static final TagKey<DamageType> ALLOW_TOTEM_USAGE = TagKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MOD_ID,"allow_totem_usage"));
+   public static final TagKey<DamageType> NUL_CONSTRUCT_IMMUNE_TO = TagKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"nul_construct_immune_to"));
+   public static final TagKey<DamageType> NUL_CONSTRUCT_RESISTANT_TO = TagKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"nul_construct_resistant_to"));
+   public static final TagKey<DamageType> NUL_CONSTRUCT_VULNERABLE_TO = TagKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"nul_construct_vulnerable_to"));
+   public static final TagKey<DamageType> ARCANA_ITEM_IMMUNE_TO = TagKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"arcana_item_immune_to"));
+   public static final TagKey<DamageType> ALLOW_TOTEM_USAGE = TagKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"allow_totem_usage"));
    
-   public static final TagKey<EntityType<?>> NUL_CONSTRUCT_FRIENDS = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"nul_construct_friends"));
-   public static final TagKey<EntityType<?>> ESSENCE_EGG_DISALLOWED = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"essence_egg_disallowed"));
-   public static final TagKey<EntityType<?>> SOULSTONE_DISALLOWED = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"soulstone_disallowed"));
-   public static final TagKey<EntityType<?>> CONTAINMENT_CIRCLET_DISALLOWED = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"containment_circlet_disallowed"));
-   public static final TagKey<EntityType<?>> IGNORES_GREATER_INVISIBILITY = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"ignores_greater_invisibility"));
-   public static final TagKey<EntityType<?>> IGNORES_GREATER_BLINDNESS = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"ignores_greater_blindness"));
-   public static final TagKey<EntityType<?>> TENBROUS_BONUS_DAMAGE = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"tenbrous_bonus_damage"));
-   public static final TagKey<EntityType<?>> STARPATH_ALLOWED = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"starpath_allowed"));
+   public static final TagKey<EntityType<?>> NUL_CONSTRUCT_FRIENDS = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"nul_construct_friends"));
+   public static final TagKey<EntityType<?>> ESSENCE_EGG_DISALLOWED = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"essence_egg_disallowed"));
+   public static final TagKey<EntityType<?>> SOULSTONE_DISALLOWED = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"soulstone_disallowed"));
+   public static final TagKey<EntityType<?>> CONTAINMENT_CIRCLET_DISALLOWED = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"containment_circlet_disallowed"));
+   public static final TagKey<EntityType<?>> IGNORES_GREATER_INVISIBILITY = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"ignores_greater_invisibility"));
+   public static final TagKey<EntityType<?>> IGNORES_GREATER_BLINDNESS = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"ignores_greater_blindness"));
+   public static final TagKey<EntityType<?>> TENBROUS_BONUS_DAMAGE = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"tenbrous_bonus_damage"));
+   public static final TagKey<EntityType<?>> STARPATH_ALLOWED = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,"starpath_allowed"));
    
-   public static final TagKey<Enchantment> FATE_ANCHOR_EXCLUSIVE_SET = TagKey.of(RegistryKeys.ENCHANTMENT, Identifier.of(MOD_ID,"exclusive_set/fate_anchor"));
+   public static final TagKey<Enchantment> FATE_ANCHOR_EXCLUSIVE_SET = TagKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(MOD_ID,"exclusive_set/fate_anchor"));
    
    // Enchantments
-   public static final RegistryKey<Enchantment> FATE_ANCHOR = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of(MOD_ID,"fate_anchor"));
+   public static final ResourceKey<Enchantment> FATE_ANCHOR = ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(MOD_ID,"fate_anchor"));
    
    // Registering Banner Recipe
-   public static final SpecialCraftingRecipe.SpecialRecipeSerializer<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION_SERIALIZER;
+   public static final CustomRecipe.Serializer<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION_SERIALIZER;
    public static final RecipeType<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION;
    static {
-      ARCANA_SHIELD_DECORATION = Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, "arcana_shield_decoration"), new RecipeType<ArcanaShieldDecoratorRecipe>(){
+      ARCANA_SHIELD_DECORATION = Registry.register(BuiltInRegistries.RECIPE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "arcana_shield_decoration"), new RecipeType<ArcanaShieldDecoratorRecipe>(){
          @Override
          public String toString(){return "arcana_shield_decoration_recipe";}
       });
-      ARCANA_SHIELD_DECORATION_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "arcana_shield_decoration"), new ArcanaShieldDecoratorRecipe.ShieldRecipeSerializer(ArcanaShieldDecoratorRecipe::new));
+      ARCANA_SHIELD_DECORATION_SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "arcana_shield_decoration"), new ArcanaShieldDecoratorRecipe.ShieldRecipeSerializer(ArcanaShieldDecoratorRecipe::new));
    }
    
    // Registering Eversource Recipes
-   public static final SpecialCraftingRecipe.SpecialRecipeSerializer<AquaticEversourceFillRecipe> AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
+   public static final CustomRecipe.Serializer<AquaticEversourceFillRecipe> AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
    public static final RecipeType<AquaticEversourceFillRecipe> AQUATIC_EVERSOURCE_FILL_RECIPE;
-   public static final SpecialCraftingRecipe.SpecialRecipeSerializer<MagmaticEversourceFillRecipe> MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
+   public static final CustomRecipe.Serializer<MagmaticEversourceFillRecipe> MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
    public static final RecipeType<MagmaticEversourceFillRecipe> MAGMATIC_EVERSOURCE_FILL_RECIPE;
    static {
-      AQUATIC_EVERSOURCE_FILL_RECIPE = Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, "aquatic_eversource_fill"), new RecipeType<AquaticEversourceFillRecipe>(){
+      AQUATIC_EVERSOURCE_FILL_RECIPE = Registry.register(BuiltInRegistries.RECIPE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "aquatic_eversource_fill"), new RecipeType<AquaticEversourceFillRecipe>(){
          @Override
          public String toString(){return "aquatic_eversource_fill_recipe";}
       });
-      AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "aquatic_eversource_fill"), new AquaticEversourceFillRecipe.AquaticEversourceRecipeSerializer(AquaticEversourceFillRecipe::new));
+      AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "aquatic_eversource_fill"), new AquaticEversourceFillRecipe.AquaticEversourceRecipeSerializer(AquaticEversourceFillRecipe::new));
       
-      MAGMATIC_EVERSOURCE_FILL_RECIPE = Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, "magmatic_eversource_fill"), new RecipeType<MagmaticEversourceFillRecipe>(){
+      MAGMATIC_EVERSOURCE_FILL_RECIPE = Registry.register(BuiltInRegistries.RECIPE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "magmatic_eversource_fill"), new RecipeType<MagmaticEversourceFillRecipe>(){
          @Override
          public String toString(){return "magmatic_eversource_fill_recipe";}
       });
-      MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "magmatic_eversource_fill"), new MagmaticEversourceFillRecipe.MagmaticEversourceRecipeSerializer(MagmaticEversourceFillRecipe::new));
+      MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "magmatic_eversource_fill"), new MagmaticEversourceFillRecipe.MagmaticEversourceRecipeSerializer(MagmaticEversourceFillRecipe::new));
    }
    
    // Registering Waystone Cook Recipe
    public static final AbstractCookingRecipe.Serializer<WaystoneCleanseRecipe> WAYSTONE_CLEANSE_RECIPE_SERIALIZER;
    public static final RecipeType<WaystoneCleanseRecipe> WAYSTONE_CLEANSE_RECIPE;
    static {
-      WAYSTONE_CLEANSE_RECIPE = Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, "waystone_cleanse"), new RecipeType<WaystoneCleanseRecipe>(){
+      WAYSTONE_CLEANSE_RECIPE = Registry.register(BuiltInRegistries.RECIPE_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "waystone_cleanse"), new RecipeType<WaystoneCleanseRecipe>(){
          @Override
          public String toString(){return "waystone_cleanse";}
       });
-      WAYSTONE_CLEANSE_RECIPE_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "waystone_cleanse"), new WaystoneCleanseRecipe.WaystoneCleanseRecipeSerializer(WaystoneCleanseRecipe::new));
+      WAYSTONE_CLEANSE_RECIPE_SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "waystone_cleanse"), new WaystoneCleanseRecipe.WaystoneCleanseRecipeSerializer(WaystoneCleanseRecipe::new));
    }
    
-   public static final RegistryKey<? extends Registry<EquipmentAsset>> EQUIPMENT_ASSET_REGISTRY_KEY = RegistryKey.ofRegistry(Identifier.ofVanilla("equipment_asset"));
+   public static final ResourceKey<? extends Registry<EquipmentAsset>> EQUIPMENT_ASSET_REGISTRY_KEY = ResourceKey.createRegistryKey(Identifier.withDefaultNamespace("equipment_asset"));
    
-   public static final ChunkTicketType ANCHOR_TICKET_TYPE = registerTicketType("arcananovum_anchor", 40L, ChunkTicketType.FOR_LOADING | ChunkTicketType.FOR_SIMULATION | ChunkTicketType.SERIALIZE | ChunkTicketType.RESETS_IDLE_TIMEOUT);
+   public static final TicketType ANCHOR_TICKET_TYPE = registerTicketType("arcananovum_anchor", 40L, TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_PERSIST | TicketType.FLAG_KEEP_DIMENSION_ACTIVE);
    
    // Armor Materials
-   public static final ArmorMaterial NON_PROTECTIVE_ARMOR_MATERIAL = new ArmorMaterial(1024, Util.make(new EnumMap<>(EquipmentType.class), map -> {
-      map.put(EquipmentType.BOOTS, 0);
-      map.put(EquipmentType.LEGGINGS, 0);
-      map.put(EquipmentType.CHESTPLATE, 0);
-      map.put(EquipmentType.HELMET, 0);
-      map.put(EquipmentType.BODY, 0);
-   }), 1, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, 0, 0, NONPROTECTIVE_ARMOR_REPAIR, RegistryKey.of(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.of(MOD_ID,"nonprotective")));
+   public static final ArmorMaterial NON_PROTECTIVE_ARMOR_MATERIAL = new ArmorMaterial(1024, Util.make(new EnumMap<>(ArmorType.class), map -> {
+      map.put(ArmorType.BOOTS, 0);
+      map.put(ArmorType.LEGGINGS, 0);
+      map.put(ArmorType.CHESTPLATE, 0);
+      map.put(ArmorType.HELMET, 0);
+      map.put(ArmorType.BODY, 0);
+   }), 1, SoundEvents.ARMOR_EQUIP_LEATHER, 0, 0, NONPROTECTIVE_ARMOR_REPAIR, ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.fromNamespaceAndPath(MOD_ID,"nonprotective")));
    
    // Entities
    public static final EntityType<RunicArrowEntity> RUNIC_ARROW_ENTITY = registerEntity( "runic_arrow",
-         EntityType.Builder.<RunicArrowEntity>create(RunicArrowEntity::new,SpawnGroup.MISC).dimensions(0.5f,0.5f).maxTrackingRange(4).trackingTickInterval(20)
+         EntityType.Builder.<RunicArrowEntity>of(RunicArrowEntity::new, MobCategory.MISC).sized(0.5f,0.5f).clientTrackingRange(4).updateInterval(20)
    );
    public static final EntityType<ArbalestArrowEntity> ARBALEST_ARROW_ENTITY = registerEntity( "arbalest_arrow",
-         EntityType.Builder.<ArbalestArrowEntity>create(ArbalestArrowEntity::new, SpawnGroup.MISC).dimensions(0.5f,0.5f).maxTrackingRange(4).trackingTickInterval(20)
+         EntityType.Builder.<ArbalestArrowEntity>of(ArbalestArrowEntity::new, MobCategory.MISC).sized(0.5f,0.5f).clientTrackingRange(4).updateInterval(20)
    );
    public static final EntityType<StasisPearlEntity> STASIS_PEARL_ENTITY = registerEntity( "stasis_pearl",
-         EntityType.Builder.<StasisPearlEntity>create(StasisPearlEntity::new, SpawnGroup.MISC).dimensions(0.25f, 0.25f).maxTrackingRange(4).trackingTickInterval(10)
+         EntityType.Builder.<StasisPearlEntity>of(StasisPearlEntity::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(4).updateInterval(10)
    );
    public static final EntityType<DragonWizardEntity> DRAGON_WIZARD_ENTITY = registerEntity( "dragon_wizard",
-         EntityType.Builder.create(DragonWizardEntity::new, SpawnGroup.MISC).dimensions(0.6f, 1.95f).maxTrackingRange(8)
+         EntityType.Builder.of(DragonWizardEntity::new, MobCategory.MISC).sized(0.6f, 1.95f).clientTrackingRange(8)
    );
    public static final EntityType<DragonPhantomEntity> DRAGON_PHANTOM_ENTITY = registerEntity( "dragon_phantom",
-         EntityType.Builder.create(DragonPhantomEntity::new, SpawnGroup.MISC).dimensions(0.9f, 0.5f).maxTrackingRange(8)
+         EntityType.Builder.of(DragonPhantomEntity::new, MobCategory.MISC).sized(0.9f, 0.5f).clientTrackingRange(8)
    );
    public static final EntityType<NulConstructEntity> NUL_CONSTRUCT_ENTITY = registerEntity( "nul_construct",
-         EntityType.Builder.create(NulConstructEntity::new, SpawnGroup.MISC).dimensions(0.9f, 3.5f).maxTrackingRange(10).makeFireImmune()
+         EntityType.Builder.of(NulConstructEntity::new, MobCategory.MISC).sized(0.9f, 3.5f).clientTrackingRange(10).fireImmune()
    );
    public static final EntityType<NulGuardianEntity> NUL_GUARDIAN_ENTITY = registerEntity( "nul_guardian",
-         EntityType.Builder.<NulGuardianEntity>create(NulGuardianEntity::new, SpawnGroup.MISC).dimensions(0.7F, 2.4F).maxTrackingRange(10).makeFireImmune().allowSpawningInside(Blocks.WITHER_ROSE).eyeHeight(2.1F).vehicleAttachment(-0.875F)
+         EntityType.Builder.<NulGuardianEntity>of(NulGuardianEntity::new, MobCategory.MISC).sized(0.7F, 2.4F).clientTrackingRange(10).fireImmune().immuneTo(Blocks.WITHER_ROSE).eyeHeight(2.1F).ridingOffset(-0.875F)
    );
    public static final EntityType<SpearOfTenbrousEntity> SPEAR_OF_TENBROUS_ENTITY = registerEntity( "spear_of_tenbrous",
-         EntityType.Builder.<SpearOfTenbrousEntity>create(SpearOfTenbrousEntity::new, SpawnGroup.MISC).dropsNothing().dimensions(0.5F, 0.5F).eyeHeight(0.13F).maxTrackingRange(4).trackingTickInterval(20)
+         EntityType.Builder.<SpearOfTenbrousEntity>of(SpearOfTenbrousEntity::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.13F).clientTrackingRange(4).updateInterval(20)
    );
    
    // Status Effects
-   public static final RegistryEntry<StatusEffect> DAMAGE_AMP_EFFECT = registerStatusEffect("damage_amp",new DamageAmpEffect());
-   public static final RegistryEntry<StatusEffect> GREATER_INVISIBILITY_EFFECT = registerStatusEffect("greater_invisibility",new GreaterInvisibilityEffect());
-   public static final RegistryEntry<StatusEffect> GREATER_BLINDNESS_EFFECT = registerStatusEffect("greater_blindness",new GreaterBlindnessEffect());
-   public static final RegistryEntry<StatusEffect> DEATH_WARD_EFFECT = registerStatusEffect("death_ward",new DeathWardEffect());
-   public static final RegistryEntry<StatusEffect> ENSNAREMENT_EFFECT = registerStatusEffect("ensnarement",new EnsnarementEffect());
+   public static final Holder<MobEffect> DAMAGE_AMP_EFFECT = registerStatusEffect("damage_amp",new DamageAmpEffect());
+   public static final Holder<MobEffect> GREATER_INVISIBILITY_EFFECT = registerStatusEffect("greater_invisibility",new GreaterInvisibilityEffect());
+   public static final Holder<MobEffect> GREATER_BLINDNESS_EFFECT = registerStatusEffect("greater_blindness",new GreaterBlindnessEffect());
+   public static final Holder<MobEffect> DEATH_WARD_EFFECT = registerStatusEffect("death_ward",new DeathWardEffect());
+   public static final Holder<MobEffect> ENSNAREMENT_EFFECT = registerStatusEffect("ensnarement",new EnsnarementEffect());
    
    // Area Effect Trackers
    public static final AreaEffectTracker SMOKE_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new SmokeArrowAreaEffectTracker());
@@ -234,47 +234,47 @@ public class ArcanaRegistry {
    public static final AreaEffectTracker ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AlchemicalArrowAreaEffectTracker());
    
    // Graphics Items
-   public static final GraphicalItem.GraphicElement TRANSMUTATION_BOOK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "transmutation_book"), Items.KNOWLEDGE_BOOK, false));
-   public static final GraphicalItem.GraphicElement CASINO_CHIP = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "casino_chip"), Items.DIAMOND, true));
-   public static final GraphicalItem.GraphicElement STAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "star"), Items.NETHER_STAR, false));
-   public static final GraphicalItem.GraphicElement GAS = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "gas"), Items.GRAY_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement PLASMA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "plasma"), Items.ORANGE_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement BLACK_HOLE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "black_hole"), Items.ENDER_PEARL, false));
-   public static final GraphicalItem.GraphicElement NOVA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "nova"), Items.BLAZE_POWDER, false));
-   public static final GraphicalItem.GraphicElement SUPERNOVA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "supernova"), Items.MAGMA_CREAM, false));
-   public static final GraphicalItem.GraphicElement QUASAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "quasar"), Items.ENDER_EYE, false));
-   public static final GraphicalItem.GraphicElement PULSAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "pulsar"), Items.END_CRYSTAL, false));
-   public static final GraphicalItem.GraphicElement NEBULA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "nebula"), Items.PURPLE_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement PLANET = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "planet"), Items.HEAVY_CORE, false));
+   public static final GraphicalItem.GraphicElement TRANSMUTATION_BOOK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "transmutation_book"), Items.KNOWLEDGE_BOOK, false));
+   public static final GraphicalItem.GraphicElement CASINO_CHIP = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "casino_chip"), Items.DIAMOND, true));
+   public static final GraphicalItem.GraphicElement STAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "star"), Items.NETHER_STAR, false));
+   public static final GraphicalItem.GraphicElement GAS = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "gas"), Items.GRAY_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement PLASMA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "plasma"), Items.ORANGE_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement BLACK_HOLE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "black_hole"), Items.ENDER_PEARL, false));
+   public static final GraphicalItem.GraphicElement NOVA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "nova"), Items.BLAZE_POWDER, false));
+   public static final GraphicalItem.GraphicElement SUPERNOVA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "supernova"), Items.MAGMA_CREAM, false));
+   public static final GraphicalItem.GraphicElement QUASAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "quasar"), Items.ENDER_EYE, false));
+   public static final GraphicalItem.GraphicElement PULSAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "pulsar"), Items.END_CRYSTAL, false));
+   public static final GraphicalItem.GraphicElement NEBULA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "nebula"), Items.PURPLE_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement PLANET = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.fromNamespaceAndPath(MOD_ID, "planet"), Items.HEAVY_CORE, false));
    
    
    // Normal Items
-   public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence", new NebulousEssenceItem("nebulous_essence", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
-         .component(DataComponentTypes.LORE, NebulousEssenceItem.getDefaultLore())
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence", new NebulousEssenceItem("nebulous_essence", new Item.Properties().stacksTo(64).fireResistant().rarity(Rarity.RARE)
+         .component(DataComponents.LORE, NebulousEssenceItem.getDefaultLore())
+         .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
-   public static final Item STARDUST = registerItem("stardust", new StardustItem("stardust", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
-         .component(DataComponentTypes.LORE, StardustItem.getDefaultLore())
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   public static final Item STARDUST = registerItem("stardust", new StardustItem("stardust", new Item.Properties().stacksTo(64).fireResistant().rarity(Rarity.RARE)
+         .component(DataComponents.LORE, StardustItem.getDefaultLore())
+         .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
-   public static final Item ARCANE_NOTES = registerItem("arcane_notes", new ArcaneNotesItem("arcane_notes", new Item.Settings().maxCount(1).fireproof().rarity(Rarity.EPIC)
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   public static final Item ARCANE_NOTES = registerItem("arcane_notes", new ArcaneNotesItem("arcane_notes", new Item.Properties().stacksTo(1).fireResistant().rarity(Rarity.EPIC)
+         .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
-   public static final Item MUNDANE_ARCANE_PAPER = registerItem("mundane_arcane_paper", new MundaneArcanePaper("mundane_arcane_paper", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.UNCOMMON)
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   public static final Item MUNDANE_ARCANE_PAPER = registerItem("mundane_arcane_paper", new MundaneArcanePaper("mundane_arcane_paper", new Item.Properties().stacksTo(64).fireResistant().rarity(Rarity.UNCOMMON)
+         .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
-   public static final Item EMPOWERED_ARCANE_PAPER = registerItem("empowered_arcane_paper", new EmpoweredArcanePaper("empowered_arcane_paper", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.UNCOMMON)
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   public static final Item EMPOWERED_ARCANE_PAPER = registerItem("empowered_arcane_paper", new EmpoweredArcanePaper("empowered_arcane_paper", new Item.Properties().stacksTo(64).fireResistant().rarity(Rarity.UNCOMMON)
+         .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
-   public static final Item EXOTIC_ARCANE_PAPER = registerItem("exotic_arcane_paper", new ExoticArcanePaper("exotic_arcane_paper", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   public static final Item EXOTIC_ARCANE_PAPER = registerItem("exotic_arcane_paper", new ExoticArcanePaper("exotic_arcane_paper", new Item.Properties().stacksTo(64).fireResistant().rarity(Rarity.RARE)
+         .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
-   public static final Item SOVEREIGN_ARCANE_PAPER = registerItem("sovereign_arcane_paper", new SovereignArcanePaper("sovereign_arcane_paper", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   public static final Item SOVEREIGN_ARCANE_PAPER = registerItem("sovereign_arcane_paper", new SovereignArcanePaper("sovereign_arcane_paper", new Item.Properties().stacksTo(64).fireResistant().rarity(Rarity.RARE)
+         .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
-   public static final Item DIVINE_ARCANE_PAPER = registerItem("divine_arcane_paper", new DivineArcanePaper("divine_arcane_paper", new Item.Settings().maxCount(64).rarity(Rarity.EPIC)
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-         .component(DataComponentTypes.DAMAGE_RESISTANT, new DamageResistantComponent(ARCANA_ITEM_IMMUNE_TO)))
+   public static final Item DIVINE_ARCANE_PAPER = registerItem("divine_arcane_paper", new DivineArcanePaper("divine_arcane_paper", new Item.Properties().stacksTo(64).rarity(Rarity.EPIC)
+         .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+         .component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(ARCANA_ITEM_IMMUNE_TO)))
    );
    
    // 1.0 Items
@@ -390,13 +390,13 @@ public class ArcanaRegistry {
    public static final BlockEntityType<? extends BlockEntity> TRANSMUTATION_ALTAR_BLOCK_ENTITY = registerBlockEntity(TRANSMUTATION_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(TransmutationAltarBlockEntity::new,((ArcanaBlock) TRANSMUTATION_ALTAR).getBlock()).build());
    
    // Loot Functions / Item Modifiers
-   public static final LootFunctionType<? extends LootFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
-   public static final LootFunctionType<? extends LootFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
-   public static final LootFunctionType<? extends LootFunction> FOUND_ARCANA_ITEM_LOOT_FUNCTION = registerLootFunction("found_arcana_item", FoundArcanaItemLootFunction.CODEC);
+   public static final LootItemFunctionType<? extends LootItemFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
+   public static final LootItemFunctionType<? extends LootItemFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
+   public static final LootItemFunctionType<? extends LootItemFunction> FOUND_ARCANA_ITEM_LOOT_FUNCTION = registerLootFunction("found_arcana_item", FoundArcanaItemLootFunction.CODEC);
    
    // PlayerAbilityLib Identifiers
-   public static final AbilitySource LEVITATION_HARNESS_ABILITY = Pal.getAbilitySource(Identifier.of(MOD_ID, LEVITATION_HARNESS.getId()), AbilitySource.CONSUMABLE);
-   public static final AbilitySource DRAGON_TOWER_ABILITY = Pal.getAbilitySource(Identifier.of(MOD_ID, "dragon_tower"), AbilitySource.FREE);
+   public static final AbilitySource LEVITATION_HARNESS_ABILITY = Pal.getAbilitySource(Identifier.fromNamespaceAndPath(MOD_ID, LEVITATION_HARNESS.getId()), AbilitySource.CONSUMABLE);
+   public static final AbilitySource DRAGON_TOWER_ABILITY = Pal.getAbilitySource(Identifier.fromNamespaceAndPath(MOD_ID, "dragon_tower"), AbilitySource.FREE);
    
    // Login Callbacks
    public static final LoginCallback SHIELD_LOGIN = registerCallback(new ShieldLoginCallback());
@@ -506,8 +506,8 @@ public class ArcanaRegistry {
       FabricDefaultAttributeRegistry.register(NUL_CONSTRUCT_ENTITY, NulConstructEntity.createConstructAttributes());
       FabricDefaultAttributeRegistry.register(NUL_GUARDIAN_ENTITY, NulGuardianEntity.createGuardianAttributes());
       
-      for(Map.Entry<RegistryKey<ArcanaItem>, ArcanaItem> entry : ARCANA_ITEMS.getEntrySet()){
-         String id = entry.getKey().getValue().getPath();
+      for(Map.Entry<ResourceKey<ArcanaItem>, ArcanaItem> entry : ARCANA_ITEMS.entrySet()){
+         String id = entry.getKey().identifier().getPath();
          ArcanaItem arcanaItem = entry.getValue();
          arcanaItem.initializePrefItem();
          registerItem(id, arcanaItem.getItem());
@@ -516,7 +516,7 @@ public class ArcanaRegistry {
             registerBlock(id, arcanaBlock.getBlock());
          }
       }
-      for(Map.Entry<RegistryKey<ArcanaItem>, ArcanaItem> entry : ARCANA_ITEMS.getEntrySet()){
+      for(Map.Entry<ResourceKey<ArcanaItem>, ArcanaItem> entry : ARCANA_ITEMS.entrySet()){
          if(entry.getValue() instanceof MultiblockCore mc){
             mc.loadMultiblock(); // Must be done after all blocks are registered
          }
@@ -524,11 +524,11 @@ public class ArcanaRegistry {
       
       ResearchTasks.registerResearchTasks();
       
-      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/plains/houses"),Identifier.of(MOD_ID,"village/plains_arcanists_house"),4);
-      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/desert/houses"),Identifier.of(MOD_ID,"village/desert_arcanists_house"),16);
-      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/savanna/houses"),Identifier.of(MOD_ID,"village/savanna_arcanists_house"),14);
-      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/taiga/houses"),Identifier.of(MOD_ID,"village/taiga_arcanists_house"),5);
-      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/snowy/houses"),Identifier.of(MOD_ID,"village/snowy_arcanists_house"),4);
+      FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/plains/houses"), Identifier.fromNamespaceAndPath(MOD_ID,"village/plains_arcanists_house"),4);
+      FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/desert/houses"), Identifier.fromNamespaceAndPath(MOD_ID,"village/desert_arcanists_house"),16);
+      FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/savanna/houses"), Identifier.fromNamespaceAndPath(MOD_ID,"village/savanna_arcanists_house"),14);
+      FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/taiga/houses"), Identifier.fromNamespaceAndPath(MOD_ID,"village/taiga_arcanists_house"),5);
+      FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/snowy/houses"), Identifier.fromNamespaceAndPath(MOD_ID,"village/snowy_arcanists_house"),4);
       
       RECOMMENDED_LIST.addAll(Arrays.asList(
             getCryingObsidianEntry(),
@@ -622,64 +622,64 @@ public class ArcanaRegistry {
             new ArcanaItemCompendiumEntry(LEADERSHIP_CHARM)
       ));
       
-      final ItemGroup ARCANA_ITEMS_GROUP = PolymerItemGroupUtils.builder().displayName(Text.translatable("itemGroup.arcana_items")).icon(ARCANE_TOME::getPrefItemNoLore).entries((displayContext, entries) -> {
+      final CreativeModeTab ARCANA_ITEMS_GROUP = PolymerItemGroupUtils.builder().title(Component.translatable("itemGroup.arcana_items")).icon(ARCANE_TOME::getPrefItemNoLore).displayItems((displayContext, entries) -> {
          RECOMMENDED_LIST.forEach(entry -> {
             if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
                ItemStack entryStack = arcanaEntry.getArcanaItem().getPrefItem();
                entryStack.setCount(1);
-               entries.add(entryStack);
+               entries.accept(entryStack);
             }
          });
       }).build();
-      final ItemGroup ARCANA_INGREDIENTS_GROUP = PolymerItemGroupUtils.builder().displayName(Text.translatable("itemGroup.arcana_ingredients")).icon(() -> MinecraftUtils.removeLore(new ItemStack(SOVEREIGN_ARCANE_PAPER))).entries((displayContext, entries) -> {
+      final CreativeModeTab ARCANA_INGREDIENTS_GROUP = PolymerItemGroupUtils.builder().title(Component.translatable("itemGroup.arcana_ingredients")).icon(() -> MinecraftUtils.removeLore(new ItemStack(SOVEREIGN_ARCANE_PAPER))).displayItems((displayContext, entries) -> {
          RECOMMENDED_LIST.forEach(entry -> {
             if(entry instanceof IngredientCompendiumEntry ingredientEntry){
-               entries.add(new ItemStack(ingredientEntry.getDisplayStack().getItem()));
+               entries.accept(new ItemStack(ingredientEntry.getDisplayStack().getItem()));
             }
          });
       }).build();
       
-      PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.of(MOD_ID,"arcana_items"), ARCANA_ITEMS_GROUP);
-      PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.of(MOD_ID,"arcana_ingredients"), ARCANA_INGREDIENTS_GROUP);
+      PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.fromNamespaceAndPath(MOD_ID,"arcana_items"), ARCANA_ITEMS_GROUP);
+      PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.fromNamespaceAndPath(MOD_ID,"arcana_ingredients"), ARCANA_INGREDIENTS_GROUP);
    }
    
    public static void onServerStarted(MinecraftServer server){
-      ARCANA_ITEMS.getEntrySet().forEach(entry -> entry.getValue().finalizePrefItem(server));
+      ARCANA_ITEMS.entrySet().forEach(entry -> entry.getValue().finalizePrefItem(server));
       TransmutationRecipes.initializeTransmutationRecipes(server);
    }
    
    private static ArcanaItem register(ArcanaItem arcanaItem){
-      Registry.register(ARCANA_ITEMS,Identifier.of(MOD_ID, arcanaItem.getId()), arcanaItem);
+      Registry.register(ARCANA_ITEMS, Identifier.fromNamespaceAndPath(MOD_ID, arcanaItem.getId()), arcanaItem);
       return arcanaItem;
    }
    
    private static Item registerItem(String id, Item item){
-      Identifier identifier = Identifier.of(MOD_ID,id);
-      Registry.register(ITEMS, identifier, Registry.register(Registries.ITEM, identifier, item));
+      Identifier identifier = Identifier.fromNamespaceAndPath(MOD_ID,id);
+      Registry.register(ITEMS, identifier, Registry.register(BuiltInRegistries.ITEM, identifier, item));
       return item;
    }
    
    private static void registerBlock(String id, Block block){
-      Identifier identifier = Identifier.of(MOD_ID,id);
-      Registry.register(BLOCKS, identifier, Registry.register(Registries.BLOCK, identifier, block));
+      Identifier identifier = Identifier.fromNamespaceAndPath(MOD_ID,id);
+      Registry.register(BLOCKS, identifier, Registry.register(BuiltInRegistries.BLOCK, identifier, block));
    }
    
    public static BlockEntityType<? extends BlockEntity> registerBlockEntity(String id, BlockEntityType<? extends BlockEntity> blockEntityType){
-      Registry.register(Registries.BLOCK_ENTITY_TYPE, Identifier.of(MOD_ID, id), blockEntityType);
+      Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, id), blockEntityType);
       PolymerBlockUtils.registerBlockEntity(blockEntityType);
       return blockEntityType;
    }
    
    public static <T extends Entity> EntityType<T> registerEntity(String id, EntityType.Builder<T> builder){
-      Identifier identifier = Identifier.of(MOD_ID,id);
-      EntityType<T> entityType = builder.build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, identifier));
-      Registry.register(Registries.ENTITY_TYPE, Identifier.of(MOD_ID,id), entityType);
+      Identifier identifier = Identifier.fromNamespaceAndPath(MOD_ID,id);
+      EntityType<T> entityType = builder.build(ResourceKey.create(Registries.ENTITY_TYPE, identifier));
+      Registry.register(BuiltInRegistries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,id), entityType);
       PolymerEntityUtils.registerType(entityType);
       return entityType;
    }
    
-   public static RegistryEntry<StatusEffect> registerStatusEffect(String id, StatusEffect effect){
-      return Registry.registerReference(Registries.STATUS_EFFECT, Identifier.of(MOD_ID,id), effect);
+   public static Holder<MobEffect> registerStatusEffect(String id, MobEffect effect){
+      return Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, Identifier.fromNamespaceAndPath(MOD_ID,id), effect);
    }
    
    private static AreaEffectTracker registerAreaEffectTracker(AreaEffectTracker tracker){
@@ -687,12 +687,12 @@ public class ArcanaRegistry {
       return tracker;
    }
    
-   private static LootFunctionType<? extends LootFunction> registerLootFunction(String id, MapCodec<? extends LootFunction> codec){
-      return Registry.register(Registries.LOOT_FUNCTION_TYPE, Identifier.of(MOD_ID,id), new LootFunctionType<>(codec));
+   private static LootItemFunctionType<? extends LootItemFunction> registerLootFunction(String id, MapCodec<? extends LootItemFunction> codec){
+      return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,id), new LootItemFunctionType<>(codec));
    }
    
    private static ArcanaConfig.ConfigSetting<?> registerConfigSetting(ArcanaConfig.ConfigSetting<?> setting){
-      Registry.register(CONFIG_SETTINGS,Identifier.of(MOD_ID,setting.getId()),setting);
+      Registry.register(CONFIG_SETTINGS, Identifier.fromNamespaceAndPath(MOD_ID,setting.getId()),setting);
       return setting;
    }
    
@@ -700,37 +700,37 @@ public class ArcanaRegistry {
       return Registry.register(BorisLib.LOGIN_CALLBACKS,callback.getId(),callback);
    }
    
-   private static ChunkTicketType registerTicketType(String id, long expiryTicks, int flags) {
-      return Registry.register(Registries.TICKET_TYPE, id, new ChunkTicketType(expiryTicks, flags));
+   private static TicketType registerTicketType(String id, long expiryTicks, int flags) {
+      return Registry.register(BuiltInRegistries.TICKET_TYPE, id, new TicketType(expiryTicks, flags));
    }
    
-   private static <T> ComponentType<T> registerEnchantmentEffectComponent(String id, UnaryOperator<ComponentType.Builder<T>> builderOperator) {
-      return Registry.register(Registries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, Identifier.of(MOD_ID,id), ((ComponentType.Builder)builderOperator.apply(ComponentType.builder())).build());
+   private static <T> DataComponentType<T> registerEnchantmentEffectComponent(String id, UnaryOperator<DataComponentType.Builder<T>> builderOperator) {
+      return Registry.register(BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,id), ((DataComponentType.Builder)builderOperator.apply(DataComponentType.builder())).build());
    }
    
    public static Identifier arcanaIdentifier(String id){
-      return Identifier.of(MOD_ID,id);
+      return Identifier.fromNamespaceAndPath(MOD_ID,id);
    }
    
    public static ArcanaItem getArcanaItem(String id){
-      return ARCANA_ITEMS.get(Identifier.of(MOD_ID,id));
+      return ARCANA_ITEMS.getValue(Identifier.fromNamespaceAndPath(MOD_ID,id));
    }
    
    private static IngredientCompendiumEntry getCryingObsidianEntry(){
       ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
-            .withName(Text.literal("Water").formatted(Formatting.BLUE))
-            .withLore(List.of(Text.literal("Throw the ingredients into water").formatted(Formatting.AQUA)));
+            .withName(Component.literal("Water").withStyle(ChatFormatting.BLUE))
+            .withLore(List.of(Component.literal("Throw the ingredients into water").withStyle(ChatFormatting.AQUA)));
       ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Text.literal("In World Recipe").formatted(Formatting.GRAY,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Do this in the World").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("In World Recipe").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Do this in the World").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient o = new ExplainIngredient(Items.OBSIDIAN,1,"Obsidian")
-            .withName(Text.literal("Obsidian").formatted(Formatting.DARK_PURPLE));
+            .withName(Component.literal("Obsidian").withStyle(ChatFormatting.DARK_PURPLE));
       ExplainIngredient r = new ExplainIngredient(Items.REDSTONE,16,"Redstone Dust")
-            .withName(Text.literal("Redstone Dust").formatted(Formatting.RED))
-            .withLore(List.of(Text.literal("Use Redstone OR Glowstone Dust").formatted(Formatting.GOLD)));
+            .withName(Component.literal("Redstone Dust").withStyle(ChatFormatting.RED))
+            .withLore(List.of(Component.literal("Use Redstone OR Glowstone Dust").withStyle(ChatFormatting.GOLD)));
       ExplainIngredient g = new ExplainIngredient(Items.GLOWSTONE_DUST,4,"Glowstone Dust")
-            .withName(Text.literal("Glowstone Dust").formatted(Formatting.YELLOW))
-            .withLore(List.of(Text.literal("Use Redstone OR Glowstone Dust").formatted(Formatting.GOLD)));
+            .withName(Component.literal("Glowstone Dust").withStyle(ChatFormatting.YELLOW))
+            .withLore(List.of(Component.literal("Use Redstone OR Glowstone Dust").withStyle(ChatFormatting.GOLD)));
       
       ExplainIngredient[][] ingredients = {
             {a,a,a,a,a},
@@ -740,7 +740,7 @@ public class ArcanaRegistry {
             {a,a,a,a,a}};
       
       ItemStack displayStack = new ItemStack(Items.CRYING_OBSIDIAN);
-      displayStack.set(DataComponentTypes.RARITY,Rarity.UNCOMMON);
-      return new IngredientCompendiumEntry(Text.translatable(Items.CRYING_OBSIDIAN.getTranslationKey()), displayStack, new ExplainRecipe(ingredients));
+      displayStack.set(DataComponents.RARITY, Rarity.UNCOMMON);
+      return new IngredientCompendiumEntry(Component.translatable(Items.CRYING_OBSIDIAN.getDescriptionId()), displayStack, new ExplainRecipe(ingredients));
    }
 }

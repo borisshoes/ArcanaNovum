@@ -1,16 +1,16 @@
 package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 
-public record Dialog(ArrayList<MutableText> message, ArrayList<DialogSound> sounds, int[] delay, int weightNoCond, int weightWithCond, int condMask){
+public record Dialog(ArrayList<MutableComponent> message, ArrayList<DialogSound> sounds, int[] delay, int weightNoCond, int weightWithCond, int condMask){
    
    public int getWeight(boolean[] args){
       int bitflag = condMask;
@@ -25,15 +25,15 @@ public record Dialog(ArrayList<MutableText> message, ArrayList<DialogSound> soun
    }
    
    public record DialogSound(SoundEvent soundEvent, float volume, float pitch){
-      public void playSound(ServerPlayerEntity player){
+      public void playSound(ServerPlayer player){
          SoundUtils.playSongToPlayer(player,soundEvent,volume,pitch);
       }
       
-      public void playSound(World world, BlockPos pos){
-         SoundUtils.playSound(world,pos,soundEvent,SoundCategory.MASTER,volume,pitch);
+      public void playSound(Level world, BlockPos pos){
+         SoundUtils.playSound(world,pos,soundEvent, SoundSource.MASTER,volume,pitch);
       }
       
-      public void playSound(World world, BlockPos pos, SoundCategory category){
+      public void playSound(Level world, BlockPos pos, SoundSource category){
          SoundUtils.playSound(world,pos,soundEvent,category,volume,pitch);
       }
    }

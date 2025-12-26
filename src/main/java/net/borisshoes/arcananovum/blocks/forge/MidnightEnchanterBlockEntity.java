@@ -11,16 +11,16 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.midnightenchanter.MidnightEnchanterGui;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
@@ -49,25 +49,25 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       this.customName = customName == null ? "" : customName;
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof MidnightEnchanterBlockEntity enchanter){
          enchanter.tick();
       }
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
-      int ticks = serverWorld.getServer().getTicks();
+      int ticks = serverWorld.getServer().getTickCount();
       
       if(ticks % 10 == 0){
          this.assembled = multiblock.matches(getMultiblockCheck());
-         this.seenForge = StarlightForge.findActiveForge(serverWorld,pos) != null;
+         this.seenForge = StarlightForge.findActiveForge(serverWorld, worldPosition) != null;
          
          int bookshelfCount = 0;
-         for(BlockPos blockPos : BlockPos.iterate(pos.add(-2, -2, -2), pos.add(2, 2, 2))){
-            if(world.getBlockState(blockPos).isOf(Blocks.BOOKSHELF) || world.getBlockState(blockPos).isOf(Blocks.CHISELED_BOOKSHELF)){
+         for(BlockPos blockPos : BlockPos.betweenClosed(worldPosition.offset(-2, -2, -2), worldPosition.offset(2, 2, 2))){
+            if(level.getBlockState(blockPos).is(Blocks.BOOKSHELF) || level.getBlockState(blockPos).is(Blocks.CHISELED_BOOKSHELF)){
                bookshelfCount++;
             }
          }
@@ -75,15 +75,15 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       }
       
       if(assembled && seenForge && hasBooks){
-         ArcanaEffectUtils.midnightEnchanterAnim(serverWorld,pos.toCenterPos(),ticks % 300);
+         ArcanaEffectUtils.midnightEnchanterAnim(serverWorld, worldPosition.getCenter(),ticks % 300);
       }
       
-      if(serverWorld.getServer().getTicks() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
+         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
    }
    
-   public void openGui(ServerPlayerEntity player){
+   public void openGui(ServerPlayer player){
       MidnightEnchanterGui gui = new MidnightEnchanterGui(player,this);
       gui.buildGui();
       gui.open();
@@ -98,10 +98,10 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.MIDNIGHT_ENCHANTER).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.MIDNIGHT_ENCHANTER).getCheckOffset()),null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -129,12 +129,12 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    }
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
@@ -142,9 +142,9 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    }
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);

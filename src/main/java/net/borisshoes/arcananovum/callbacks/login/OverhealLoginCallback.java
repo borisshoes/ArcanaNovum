@@ -4,13 +4,12 @@ import net.borisshoes.arcananovum.items.arrows.SiphoningArrows;
 import net.borisshoes.borislib.callbacks.LoginCallback;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.sounds.SoundEvents;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
@@ -19,25 +18,25 @@ public class OverhealLoginCallback extends LoginCallback {
    private float hearts;
    
    public OverhealLoginCallback(){
-      super(Identifier.of(MOD_ID,"siphoning_overheal_augment"));
+      super(Identifier.fromNamespaceAndPath(MOD_ID,"siphoning_overheal_augment"));
    }
    
-   public OverhealLoginCallback(ServerPlayerEntity player, float hearts){
+   public OverhealLoginCallback(ServerPlayer player, float hearts){
       this();
-      this.playerUUID = player.getUuidAsString();
+      this.playerUUID = player.getStringUUID();
       this.hearts = hearts;
    }
    
    @Override
-   public void onLogin(ServerPlayNetworkHandler netHandler, MinecraftServer server){
+   public void onLogin(ServerGamePacketListenerImpl netHandler, MinecraftServer server){
       // Double check that this is the correct player before running timer
-      ServerPlayerEntity player = netHandler.player;
-      if(player.getUuidAsString().equals(playerUUID)){
+      ServerPlayer player = netHandler.player;
+      if(player.getStringUUID().equals(playerUUID)){
          
          float removed = Math.max(0,player.getAbsorptionAmount()-hearts);
          
          if(player.getAbsorptionAmount() != 0){
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);
+            SoundUtils.playSongToPlayer(player, SoundEvents.AMETHYST_CLUSTER_FALL, .3f, .3f);
          }
          MinecraftUtils.removeMaxAbsorption(player, SiphoningArrows.EFFECT_ID,hearts);
          player.setAbsorptionAmount(removed);
@@ -45,15 +44,15 @@ public class OverhealLoginCallback extends LoginCallback {
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(CompoundTag data){
       //Data tag just has single float for hearts
       this.data = data;
-      hearts = data.getFloat("hearts", 0.0f);
+      hearts = data.getFloatOr("hearts", 0.0f);
    }
    
    @Override
-   public NbtCompound getData(){
-      NbtCompound data = new NbtCompound();
+   public CompoundTag getData(){
+      CompoundTag data = new CompoundTag();
       data.putFloat("hearts",hearts);
       this.data = data;
       return this.data;

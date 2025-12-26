@@ -2,10 +2,10 @@ package net.borisshoes.arcananovum.augments;
 
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -31,8 +31,8 @@ public class ArcanaAugment implements Comparable<ArcanaAugment>{
       return "augment."+MOD_ID+".name."+this.id;
    }
    
-   public MutableText getTranslatedName(){
-      return Text.translatableWithFallback(getTranslationKey(),name);
+   public MutableComponent getTranslatedName(){
+      return Component.translatableWithFallback(getTranslationKey(),name);
    }
    
    public ItemStack getDisplayItem(){
@@ -47,16 +47,16 @@ public class ArcanaAugment implements Comparable<ArcanaAugment>{
       return description;
    }
    
-   public MutableText getTierDisplay(){
-      MutableText text = Text.literal("")
-            .append(Text.literal(tiers.length +"").formatted(Formatting.AQUA))
-            .append(Text.literal(tiers.length != 1 ? " Levels (" : " Level (").formatted(Formatting.DARK_AQUA));
+   public MutableComponent getTierDisplay(){
+      MutableComponent text = Component.literal("")
+            .append(Component.literal(tiers.length +"").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(tiers.length != 1 ? " Levels (" : " Level (").withStyle(ChatFormatting.DARK_AQUA));
    
       for(int i = 0; i < tiers.length; i++){
          ArcanaRarity tierRarity = tiers[i];
-         text.append(Text.literal("❖").formatted(ArcanaRarity.getColor(tierRarity)));
+         text.append(Component.literal("❖").withStyle(ArcanaRarity.getColor(tierRarity)));
       }
-      text.append(Text.literal(")").formatted(Formatting.DARK_AQUA));
+      text.append(Component.literal(")").withStyle(ChatFormatting.DARK_AQUA));
       
       return text;
    }

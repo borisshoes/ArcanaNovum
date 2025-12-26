@@ -30,36 +30,45 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.*;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.*;
-import net.minecraft.text.object.AtlasTextObjectContents;
-import net.minecraft.util.*;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.Filterable;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.WritableBookContent;
+import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -76,40 +85,40 @@ import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
 public class ArcanaCommands {
    
    
-   public static int openGuideBook(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException{
-      ServerCommandSource source = ctx.getSource();
-      if(!source.isExecutedByPlayer() || source.getPlayer() == null){
-         source.sendFeedback(()->Text.literal("Command must be executed by a player"), false);
+   public static int openGuideBook(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException{
+      CommandSourceStack source = ctx.getSource();
+      if(!source.isPlayer() || source.getPlayer() == null){
+         source.sendSuccess(()-> Component.literal("Command must be executed by a player"), false);
          return -1;
       }
-      ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+      ServerPlayer player = ctx.getSource().getPlayerOrException();
       BookElementBuilder bookBuilder = getGuideBook();
       LoreGui loreGui = new LoreGui(player,bookBuilder,null, TomeGui.TomeMode.NONE,null);
       loreGui.open();
       return 1;
    }
    
-   public static int skillpointsCommand(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> targets, int amount, boolean set){
+   public static int skillpointsCommand(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> targets, int amount, boolean set){
       try{
-         ServerCommandSource source = ctx.getSource();
+         CommandSourceStack source = ctx.getSource();
       
-         for (ServerPlayerEntity player : targets){
+         for (ServerPlayer player : targets){
             IArcanaProfileComponent profile = ArcanaNovum.data(player);
             
-            NbtInt pointsEle = (NbtInt) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
+            IntTag pointsEle = (IntTag) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
             int oldPoints = pointsEle == null ? 0 : pointsEle.intValue();
             int newPoints = set ? amount : amount + oldPoints;
-            profile.addMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG, NbtInt.of(newPoints));
+            profile.addMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG, IntTag.valueOf(newPoints));
          }
       
          if(targets.size() == 1 && set){
-            source.sendFeedback(()->Text.literal("Set Bonus Skill Points to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendSuccess(()-> Component.literal("Set Bonus Skill Points to "+amount+" for ").withStyle(ChatFormatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set){
-            source.sendFeedback(()->Text.literal("Gave "+amount+" Bonus Skill Points to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendSuccess(()-> Component.literal("Gave "+amount+" Bonus Skill Points to ").withStyle(ChatFormatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() != 1 && set){
-            source.sendFeedback(()->Text.literal("Set Bonus Skill Points to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendSuccess(()-> Component.literal("Set Bonus Skill Points to "+amount+" for " + targets.size() + " players").withStyle(ChatFormatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set){
-            source.sendFeedback(()->Text.literal("Gave "+amount+" Bonus Skill Points to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendSuccess(()-> Component.literal("Gave "+amount+" Bonus Skill Points to " + targets.size() + " players").withStyle(ChatFormatting.LIGHT_PURPLE), true);
          }
       
          return targets.size();
@@ -119,18 +128,18 @@ public class ArcanaCommands {
       }
    }
    
-   public static int skillpointsCommandQuery(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target){
+   public static int skillpointsCommandQuery(CommandContext<CommandSourceStack> ctx, ServerPlayer target){
       try{
-         ServerCommandSource source = ctx.getSource();
+         CommandSourceStack source = ctx.getSource();
          IArcanaProfileComponent profile = ArcanaNovum.data(target);
-         NbtInt pointsEle = (NbtInt) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
+         IntTag pointsEle = (IntTag) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
          int adminPoints = pointsEle == null ? 0 : pointsEle.intValue();
-         MutableText feedback = Text.literal("")
+         MutableComponent feedback = Component.literal("")
                .append(target.getDisplayName())
-               .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(Integer.toString(adminPoints)).formatted(Formatting.AQUA,Formatting.BOLD))
-               .append(Text.literal(" Bonus Skill Points").formatted(Formatting.LIGHT_PURPLE));
-         source.sendFeedback(()->feedback, false);
+               .append(Component.literal(" has ").withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(Component.literal(Integer.toString(adminPoints)).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
+               .append(Component.literal(" Bonus Skill Points").withStyle(ChatFormatting.LIGHT_PURPLE));
+         source.sendSuccess(()->feedback, false);
          return 1;
       }catch(Exception e){
          log(2,e.toString());
@@ -138,11 +147,11 @@ public class ArcanaCommands {
       }
    }
    
-   public static int xpCommand(CommandContext<ServerCommandSource> ctx, Collection<? extends ServerPlayerEntity> targets, int amount, boolean set, boolean points){
+   public static int xpCommand(CommandContext<CommandSourceStack> ctx, Collection<? extends ServerPlayer> targets, int amount, boolean set, boolean points){
       try{
-         ServerCommandSource source = ctx.getSource();
+         CommandSourceStack source = ctx.getSource();
          
-         for (ServerPlayerEntity player : targets){
+         for (ServerPlayer player : targets){
             IArcanaProfileComponent profile = ArcanaNovum.data(player);
             int oldValue = points ? profile.getXP() : profile.getLevel();
             int newAmount = set ? Math.max(amount, 0) : Math.max(oldValue + amount, 0);
@@ -155,21 +164,21 @@ public class ArcanaCommands {
          }
          
          if(targets.size() == 1 && set && points){
-            source.sendFeedback(()->Text.literal("Set Arcana XP to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendSuccess(()-> Component.literal("Set Arcana XP to "+amount+" for ").withStyle(ChatFormatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && set && !points){
-            source.sendFeedback(()->Text.literal("Set Arcana Level to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendSuccess(()-> Component.literal("Set Arcana Level to "+amount+" for ").withStyle(ChatFormatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set && points){
-            source.sendFeedback(()->Text.literal("Gave "+amount+" Arcana XP to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendSuccess(()-> Component.literal("Gave "+amount+" Arcana XP to ").withStyle(ChatFormatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set && !points){
-            source.sendFeedback(()->Text.literal("Gave "+amount+" Arcana Levels to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendSuccess(()-> Component.literal("Gave "+amount+" Arcana Levels to ").withStyle(ChatFormatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() != 1 && set && points){
-            source.sendFeedback(()->Text.literal("Set Arcana XP to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendSuccess(()-> Component.literal("Set Arcana XP to "+amount+" for " + targets.size() + " players").withStyle(ChatFormatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && set && !points){
-            source.sendFeedback(()->Text.literal("Set Arcana Level to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendSuccess(()-> Component.literal("Set Arcana Level to "+amount+" for " + targets.size() + " players").withStyle(ChatFormatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set && points){
-            source.sendFeedback(()->Text.literal("Gave "+amount+" Arcana XP to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendSuccess(()-> Component.literal("Gave "+amount+" Arcana XP to " + targets.size() + " players").withStyle(ChatFormatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set && !points){
-            source.sendFeedback(()->Text.literal("Gave "+amount+" Arcana Levels to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendSuccess(()-> Component.literal("Gave "+amount+" Arcana Levels to " + targets.size() + " players").withStyle(ChatFormatting.LIGHT_PURPLE), true);
          }
          
          return targets.size();
@@ -179,84 +188,84 @@ public class ArcanaCommands {
       }
    }
    
-   public static int uuidCommand(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player){
-      ServerCommandSource source = ctx.getSource();
-      ArrayList<MutableText> response = new ArrayList<>();
-      ArrayList<MutableText> response2 = new ArrayList<>();
+   public static int uuidCommand(CommandContext<CommandSourceStack> ctx, ServerPlayer player){
+      CommandSourceStack source = ctx.getSource();
+      ArrayList<MutableComponent> response = new ArrayList<>();
+      ArrayList<MutableComponent> response2 = new ArrayList<>();
       Set<String> uuids = new HashSet<>();
       int count = 0;
       
       List<ArcanaItemUtils.ArcanaInvItem> arcanaInv = ArcanaItemUtils.getArcanaInventory(player);
       for(ArcanaItemUtils.ArcanaInvItem invItem : arcanaInv){
          ArcanaItem arcanaItem = invItem.item;
-         for(Pair<String,ItemStack> pair : invItem.getStacks()){
-            String uuid = pair.getLeft();
-            ItemStack stack = pair.getRight();
+         for(Tuple<String, ItemStack> pair : invItem.getStacks()){
+            String uuid = pair.getA();
+            ItemStack stack = pair.getB();
             count++;
    
             String storage = invItem.getShortContainerString();
             
-            MutableText feedback = Text.literal("")
-                  .append(Text.literal("(").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal(storage).formatted(Formatting.BLUE))
-                  .append(Text.literal(") ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal("[").formatted(Formatting.LIGHT_PURPLE))
-                  .append(arcanaItem.getTranslatedName().formatted(Formatting.AQUA))
-                  .append(Text.literal("] ID: ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal(uuid).formatted(Formatting.DARK_PURPLE));
-            response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent.ShowItem(stack)).withClickEvent(new ClickEvent.CopyToClipboard(uuid))));
+            MutableComponent feedback = Component.literal("")
+                  .append(Component.literal("(").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(Component.literal(storage).withStyle(ChatFormatting.BLUE))
+                  .append(Component.literal(") ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(Component.literal("[").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(arcanaItem.getTranslatedName().withStyle(ChatFormatting.AQUA))
+                  .append(Component.literal("] ID: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(Component.literal(uuid).withStyle(ChatFormatting.DARK_PURPLE));
+            response.add(feedback.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowItem(stack)).withClickEvent(new ClickEvent.CopyToClipboard(uuid))));
             
             if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount()/ arcanaItem.getPrefItem().getCount())){
-               MutableText duplicateWarning = Text.literal("")
-                     .append(Text.literal("Duplicate: ").formatted(Formatting.RED))
-                     .append(arcanaItem.getTranslatedName().formatted(Formatting.AQUA))
-                     .append(Text.literal(" ID: ").formatted(Formatting.LIGHT_PURPLE))
-                     .append(Text.literal(uuid).formatted(Formatting.DARK_PURPLE));
+               MutableComponent duplicateWarning = Component.literal("")
+                     .append(Component.literal("Duplicate: ").withStyle(ChatFormatting.RED))
+                     .append(arcanaItem.getTranslatedName().withStyle(ChatFormatting.AQUA))
+                     .append(Component.literal(" ID: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                     .append(Component.literal(uuid).withStyle(ChatFormatting.DARK_PURPLE));
                response2.add(duplicateWarning);
             }
          }
       }
       
-      MutableText feedback = Text.literal("")
+      MutableComponent feedback = Component.literal("")
             .append(player.getDisplayName())
-            .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(Integer.toString(count)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-            .append(Text.literal(" items.").formatted(Formatting.LIGHT_PURPLE));
-      source.sendFeedback(()->Text.literal(""),false);
-      source.sendFeedback(()->feedback,false);
-      source.sendFeedback(()->Text.literal("================================").formatted(Formatting.LIGHT_PURPLE),false);
-      for(MutableText r : response){
-         source.sendFeedback(()->r,false);
+            .append(Component.literal(" has ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(Integer.toString(count)).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
+            .append(Component.literal(" items.").withStyle(ChatFormatting.LIGHT_PURPLE));
+      source.sendSuccess(()-> Component.literal(""),false);
+      source.sendSuccess(()->feedback,false);
+      source.sendSuccess(()-> Component.literal("================================").withStyle(ChatFormatting.LIGHT_PURPLE),false);
+      for(MutableComponent r : response){
+         source.sendSuccess(()->r,false);
       }
-      source.sendFeedback(()->Text.literal("================================").formatted(Formatting.LIGHT_PURPLE),false);
-      for(MutableText r : response2){
-         source.sendFeedback(()->r,false);
+      source.sendSuccess(()-> Component.literal("================================").withStyle(ChatFormatting.LIGHT_PURPLE),false);
+      for(MutableComponent r : response2){
+         source.sendSuccess(()->r,false);
       }
       return count;
    }
    
-   public static int getBookData(CommandContext<ServerCommandSource> objectCommandContext){
+   public static int getBookData(CommandContext<CommandSourceStack> objectCommandContext){
       if(!DEV_MODE)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
-         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
+         ServerPlayer player = objectCommandContext.getSource().getPlayerOrException();
+         ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
          ArrayList<String> lines = new ArrayList<>();
-         if(stack.isOf(Items.WRITTEN_BOOK)){
-            WrittenBookContentComponent comp = stack.getOrDefault(DataComponentTypes.WRITTEN_BOOK_CONTENT,WrittenBookContentComponent.DEFAULT);
-            for(Text page : comp.getPages(false)){
+         if(stack.is(Items.WRITTEN_BOOK)){
+            WrittenBookContent comp = stack.getOrDefault(DataComponents.WRITTEN_BOOK_CONTENT, WrittenBookContent.EMPTY);
+            for(Component page : comp.getPages(false)){
                lines.add(page.getString());
             }
-         }else if(stack.isOf(Items.WRITABLE_BOOK)){
-            WritableBookContentComponent comp = stack.getOrDefault(DataComponentTypes.WRITABLE_BOOK_CONTENT,WritableBookContentComponent.DEFAULT);
-            for(RawFilteredPair<String> page : comp.pages()){
+         }else if(stack.is(Items.WRITABLE_BOOK)){
+            WritableBookContent comp = stack.getOrDefault(DataComponents.WRITABLE_BOOK_CONTENT, WritableBookContent.EMPTY);
+            for(Filterable<String> page : comp.pages()){
                lines.add(page.get(false));
             }
          }
-         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(player.getOffHandStack());
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(player.getOffhandItem());
          
          if(lines.isEmpty()){
-            player.sendMessage(Text.literal("Hold a written book to get data"),true);
+            player.displayClientMessage(Component.literal("Hold a written book to get data"),true);
          }else{
             Optional<Optional<Path>> outPathOpt = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/datagen/"));
             if(outPathOpt.isEmpty() || outPathOpt.get().isEmpty()){
@@ -265,30 +274,30 @@ public class ArcanaCommands {
             
             String path = outPathOpt.get().get() + "\\" + "bookdata.txt";
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
-            List<List<Text>> loreData = new ArrayList<>();
+            List<List<Component>> loreData = new ArrayList<>();
             
             boolean first = true;
             for(String line : lines){
                if(arcanaItem != null){
-                  String displayName = TextUtils.textToCode(Text.literal(arcanaItem.getNameString()).getWithStyle(arcanaItem.getDisplayName().getStyle()).getFirst()).replace(";","");
+                  String displayName = TextUtils.textToCode(Component.literal(arcanaItem.getNameString()).toFlatList(arcanaItem.getDisplayName().getStyle()).getFirst()).replace(";","");
                   if(first){
-                     loreData.add(List.of(arcanaItem.getDisplayName(),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(arcanaItem.getRarity(),false)),Text.literal("\n"+line).formatted(Formatting.BLACK)));
+                     loreData.add(List.of(arcanaItem.getDisplayName(), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(arcanaItem.getRarity(),false)), Component.literal("\n"+line).withStyle(ChatFormatting.BLACK)));
                      out.println("list.add(List.of("+displayName+",Text.literal(\"\\nRarity: \").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal(\"\\n"+line.replace("\n","\\n")+"\").formatted(Formatting.BLACK)));");
                      first = false;
                   }else{
-                     loreData.add(List.of(arcanaItem.getDisplayName(),Text.literal("\n"+line).formatted(Formatting.BLACK)));
+                     loreData.add(List.of(arcanaItem.getDisplayName(), Component.literal("\n"+line).withStyle(ChatFormatting.BLACK)));
                      out.println("list.add(List.of("+displayName+",Text.literal(\"\\n"+line.replace("\n","\\n")+"\").formatted(Formatting.BLACK)));");
                   }
                }else{
-                  loreData.add(List.of(Text.literal(line).formatted(Formatting.BLACK)));
+                  loreData.add(List.of(Component.literal(line).withStyle(ChatFormatting.BLACK)));
                   out.println("list.add(List.of(Text.literal(\""+line.replace("\n","\\n")+"\").formatted(Formatting.BLACK)));");
                }
             }
             BookElementBuilder bookBuilder = new BookElementBuilder();
-            loreData.forEach(list -> bookBuilder.addPage(list.toArray(new Text[0])));
+            loreData.forEach(list -> bookBuilder.addPage(list.toArray(new Component[0])));
             BookGui loreGui = new BookGui(player,bookBuilder);
             loreGui.open();
-            player.sendMessage(Text.literal("Click to get item data location").styled(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
+            player.sendSystemMessage(Component.literal("Click to get item data location").withStyle(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
             
             out.close();
          }
@@ -298,20 +307,20 @@ public class ArcanaCommands {
       return 0;
    }
    
-   public static int xpCommandQuery(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target){
+   public static int xpCommandQuery(CommandContext<CommandSourceStack> ctx, ServerPlayer target){
       try{
-         ServerCommandSource source = ctx.getSource();
+         CommandSourceStack source = ctx.getSource();
          IArcanaProfileComponent profile = ArcanaNovum.data(target);
-         MutableText feedback = Text.literal("")
+         MutableComponent feedback = Component.literal("")
                .append(target.getDisplayName())
-               .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(Integer.toString(profile.getLevel())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(Text.literal(" levels (").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.AQUA))
-               .append(Text.literal("). ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(Integer.toString(profile.getXP())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(Text.literal(" Total XP").formatted(Formatting.LIGHT_PURPLE));
-         source.sendFeedback(()->feedback, false);
+               .append(Component.literal(" has ").withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(Component.literal(Integer.toString(profile.getLevel())).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
+               .append(Component.literal(" levels (").withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(Component.literal(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).withStyle(ChatFormatting.AQUA))
+               .append(Component.literal("). ").withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(Component.literal(Integer.toString(profile.getXP())).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
+               .append(Component.literal(" Total XP").withStyle(ChatFormatting.LIGHT_PURPLE));
+         source.sendSuccess(()->feedback, false);
          return 1;
       }catch(Exception e){
          log(2,e.toString());
@@ -319,12 +328,12 @@ public class ArcanaCommands {
       }
    }
    
-   public static int getItemData(CommandContext<ServerCommandSource> objectCommandContext, String name){
+   public static int getItemData(CommandContext<CommandSourceStack> objectCommandContext, String name){
       if(!DEV_MODE)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
-         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
+         ServerPlayer player = objectCommandContext.getSource().getPlayerOrException();
+         ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
          if(!stack.isEmpty()){
             
             StringBuilder itemName = new StringBuilder();
@@ -368,15 +377,15 @@ public class ArcanaCommands {
             template = template.replace("$CCName",name);
             template = template.replace("$CName",idName.toUpperCase(Locale.ROOT));
             
-            String nameCode = TextUtils.textToCode(stack.getName());
+            String nameCode = TextUtils.textToCode(stack.getHoverName());
             String parameters = Pattern.compile("\\.formatted\\((.*?)\\)") .matcher(nameCode).find() ? nameCode.replaceAll(".*\\.formatted\\((.*?)\\).*", "$1") : "";
             template = template.replace("$NameFormat",parameters);
             
-            LoreComponent loreComp = stack.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
-            List<Text> loreLines = loreComp.styledLines();
+            ItemLore loreComp = stack.getOrDefault(DataComponents.LORE, ItemLore.EMPTY);
+            List<Component> loreLines = loreComp.styledLines();
             
             String lore = "";
-            for(Text loreLine : loreLines){
+            for(Component loreLine : loreLines){
                String loreCode = TextUtils.textToCode(loreLine).replace(";","");
                lore += "lore.add("+loreCode.replace(",Formatting.ITALICS","")+");\n";
             }
@@ -387,11 +396,11 @@ public class ArcanaCommands {
             for(String line : lines){
                out.println(line);
             }
-            player.sendMessage(Text.literal("Click to get item data location").styled(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
+            player.sendSystemMessage(Component.literal("Click to get item data location").withStyle(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
             
             out.close();
          }else{
-            player.sendMessage(Text.literal("Hold an item to get data"),true);
+            player.displayClientMessage(Component.literal("Hold an item to get data"),true);
          }
       } catch (Exception e){
          log(2,e.toString());
@@ -399,17 +408,17 @@ public class ArcanaCommands {
       return 0;
    }
    
-   public static int makeCraftingRecipe(CommandContext<ServerCommandSource> objectCommandContext){
+   public static int makeCraftingRecipe(CommandContext<CommandSourceStack> objectCommandContext){
       if(!DEV_MODE)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
-         ServerWorld world = player.getEntityWorld();
-         Vec3d vec3d = player.getCameraPosVec(0);
-         Vec3d vec3d2 = player.getRotationVec(0);
+         ServerPlayer player = objectCommandContext.getSource().getPlayerOrException();
+         ServerLevel world = player.level();
+         Vec3 vec3d = player.getEyePosition(0);
+         Vec3 vec3d2 = player.getViewVector(0);
          double maxDistance = 5;
-         Vec3d vec3d3 = vec3d.add(vec3d2.x * maxDistance, vec3d2.y * maxDistance, vec3d2.z * maxDistance);
-         BlockHitResult result = world.raycast(new RaycastContext(vec3d, vec3d3, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player));
+         Vec3 vec3d3 = vec3d.add(vec3d2.x * maxDistance, vec3d2.y * maxDistance, vec3d2.z * maxDistance);
+         BlockHitResult result = world.clip(new ClipContext(vec3d, vec3d3, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
          if(result.getType() == BlockHitResult.Type.MISS){
             return 0;
          }
@@ -418,16 +427,16 @@ public class ArcanaCommands {
          BlockState blockState = world.getBlockState(blockPos);
          Block block = blockState.getBlock();
          if(blockEntity instanceof ChestBlockEntity chest && block instanceof ChestBlock chestBlock){
-            Inventory chestInventory = ChestBlock.getInventory(chestBlock, blockState, world, blockPos, true);
-            if(chestInventory == null || chestInventory.size() != 54){
+            Container chestInventory = ChestBlock.getContainer(chestBlock, blockState, world, blockPos, true);
+            if(chestInventory == null || chestInventory.getContainerSize() != 54){
                return 0;
             }
             
-            Pair<ArcanaIngredient,Character>[][] ingredients = new Pair[5][5];
+            Tuple<ArcanaIngredient,Character>[][] ingredients = new Tuple[5][5];
             HashMap<Character,ArrayList<String>> lineSet = new HashMap<>();
             for(int i = 0; i < 5; i++){
                for(int j = 0; j < 5; j++){
-                  ItemStack stack = chestInventory.getStack(i*9+j);
+                  ItemStack stack = chestInventory.getItem(i*9+j);
 
                   ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
                   ArcanaIngredient ingred;
@@ -438,26 +447,26 @@ public class ArcanaCommands {
                      ingred = new GenericArcanaIngredient(arcanaItem,stack.getCount());
                      String idName = arcanaItem.getId().toUpperCase(Locale.ROOT);
                      lines.add("GenericArcanaIngredient "+letter+" = new GenericArcanaIngredient(ArcanaRegistry."+idName+","+stack.getCount()+");");
-                  }else if(stack.contains(DataComponentTypes.POTION_CONTENTS)){
-                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
-                     PotionContentsComponent potionsComp = stack.get(DataComponentTypes.POTION_CONTENTS);
+                  }else if(stack.has(DataComponents.POTION_CONTENTS)){
+                     String idName = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
+                     PotionContents potionsComp = stack.get(DataComponents.POTION_CONTENTS);
                      String ingredStr = "ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+")";
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
                      if(potionsComp.potion().isPresent()){
-                        ingredStr += ".withPotions(Potions."+Registries.POTION.getId(potionsComp.potion().get().value()).getPath().toUpperCase(Locale.ROOT)+");";
+                        ingredStr += ".withPotions(Potions."+ BuiltInRegistries.POTION.getKey(potionsComp.potion().get().value()).getPath().toUpperCase(Locale.ROOT)+");";
                         ingred = ingred.withPotions(potionsComp.potion().get());
                      }
                      lines.add(ingredStr);
-                  }else if(EnchantmentHelper.hasEnchantments(stack)){
-                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
-                     ItemEnchantmentsComponent enchantComp = EnchantmentHelper.getEnchantments(stack);
+                  }else if(EnchantmentHelper.hasAnyEnchantments(stack)){
+                     String idName = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
+                     ItemEnchantments enchantComp = EnchantmentHelper.getEnchantmentsForCrafting(stack);
                      String ingredStr = "ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+")";
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
                      
                      ArrayList<String> enchStrs = new ArrayList<>();
-                     for(RegistryEntry<Enchantment> entry : enchantComp.getEnchantments()){
-                        enchStrs.add("new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments."+entry.getKey().get().getValue().getPath().toUpperCase(Locale.ROOT)+"),"+enchantComp.getLevel(entry)+")");
-                        ingred = ingred.withEnchantments(new EnchantmentLevelEntry(entry, enchantComp.getLevel(entry)));
+                     for(Holder<Enchantment> entry : enchantComp.keySet()){
+                        enchStrs.add("new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments."+entry.unwrapKey().get().identifier().getPath().toUpperCase(Locale.ROOT)+"),"+enchantComp.getLevel(entry)+")");
+                        ingred = ingred.withEnchantments(new EnchantmentInstance(entry, enchantComp.getLevel(entry)));
                      }
                      
                      if(!enchStrs.isEmpty()){
@@ -477,7 +486,7 @@ public class ArcanaCommands {
                      lines.add("ArcanaIngredient "+letter+" = ArcanaIngredient.EMPTY;");
                   }else{
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
-                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
+                     String idName = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
                      lines.add("ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+");");
                   }
 
@@ -485,8 +494,8 @@ public class ArcanaCommands {
                   for(int m = 0; m <= i; m++){
                      if(match) break;
                      for(int n = 0; n < (m == i ? j : 5); n++){
-                        Pair<ArcanaIngredient,Character> prev = ingredients[m][n];
-                        ArcanaIngredient prevIng = prev.getLeft();
+                        Tuple<ArcanaIngredient,Character> prev = ingredients[m][n];
+                        ArcanaIngredient prevIng = prev.getA();
 
                         if(prevIng.equals(ingred)){
                            ingredients[i][j] = prev;
@@ -496,7 +505,7 @@ public class ArcanaCommands {
                      }
                   }
                   if(!match){
-                     ingredients[i][j] = new Pair<>(ingred, letter);
+                     ingredients[i][j] = new Tuple<>(ingred, letter);
                      lineSet.put(letter,lines);
                   }
                }
@@ -505,16 +514,16 @@ public class ArcanaCommands {
             String forgeReqStr = "new ForgeRequirement()";
             int[] forgeSlots = new int[]{6,7,8,15,16,17};
             for(int forgeSlot : forgeSlots){
-               ItemStack stack = chestInventory.getStack(forgeSlot);
-               if(stack.isOf(Items.ANVIL)){
+               ItemStack stack = chestInventory.getItem(forgeSlot);
+               if(stack.is(Items.ANVIL)){
                   forgeReqStr += ".withAnvil()";
-               }else if(stack.isOf(Items.BLAST_FURNACE)){
+               }else if(stack.is(Items.BLAST_FURNACE)){
                   forgeReqStr += ".withCore()";
-               }else if(stack.isOf(Items.ENCHANTING_TABLE)){
+               }else if(stack.is(Items.ENCHANTING_TABLE)){
                   forgeReqStr += ".withEnchanter()";
-               }else if(stack.isOf(Items.FLETCHING_TABLE)){
+               }else if(stack.is(Items.FLETCHING_TABLE)){
                   forgeReqStr += ".withFletchery()";
-               }else if(stack.isOf(Items.LECTERN)){
+               }else if(stack.is(Items.LECTERN)){
                   forgeReqStr += ".withSingularity()";
                }
             }
@@ -536,7 +545,7 @@ public class ArcanaCommands {
             for(int i = 0; i < 5; i++){
                String line = "   {";
                for(int j = 0; j < 5; j++){
-                  line += ingredients[i][j].getRight()+",";
+                  line += ingredients[i][j].getB()+",";
                }
                if(i == 4){
                   line = line.substring(0,line.length()-1) + "}};";
@@ -550,7 +559,7 @@ public class ArcanaCommands {
             for(String line : lines){
                out.println(line);
             }
-            player.sendMessage(Text.literal("Click to get recipe data location").styled(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
+            player.sendSystemMessage(Component.literal("Click to get recipe data location").withStyle(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
             
             out.close();
             return 1;
@@ -562,11 +571,11 @@ public class ArcanaCommands {
       return 0;
    }
    
-   public static int testCommand(CommandContext<ServerCommandSource> ctx){
+   public static int testCommand(CommandContext<CommandSourceStack> ctx){
       if(!DEV_MODE)
          return 0;
       try {
-         ServerPlayerEntity player = ctx.getSource().getPlayer();
+         ServerPlayer player = ctx.getSource().getPlayer();
 
       } catch (Exception e){
          log(2,e.toString());
@@ -574,11 +583,11 @@ public class ArcanaCommands {
       return 0;
    }
    
-   public static int testCommand(CommandContext<ServerCommandSource> objectCommandContext, int num){
+   public static int testCommand(CommandContext<CommandSourceStack> objectCommandContext, int num){
       if(!DEV_MODE)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         ServerPlayer player = objectCommandContext.getSource().getPlayer();
          DEBUG_VALUE = num;
          
          
@@ -589,10 +598,10 @@ public class ArcanaCommands {
       return 0;
    }
    
-   public static int cacheCommand(CommandContext<ServerCommandSource> objectCommandContext){
+   public static int cacheCommand(CommandContext<CommandSourceStack> objectCommandContext){
       try{
-         ServerCommandSource source = objectCommandContext.getSource();
-         ServerPlayerEntity player = source.getPlayerOrThrow();
+         CommandSourceStack source = objectCommandContext.getSource();
+         ServerPlayer player = source.getPlayerOrException();
    
          CacheGui gui = new CacheGui(player);
          gui.buildCompendiumGui();
@@ -604,36 +613,36 @@ public class ArcanaCommands {
       }
    }
    
-   public static CompletableFuture<Suggestions> getItemSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+   public static CompletableFuture<Suggestions> getItemSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
       String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       Set<String> items = new HashSet<>();
-      ArcanaRegistry.ARCANA_ITEMS.getKeys().forEach(key -> items.add(key.getValue().getPath()));
+      ArcanaRegistry.ARCANA_ITEMS.registryKeySet().forEach(key -> items.add(key.identifier().getPath()));
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
    }
    
-   public static CompletableFuture<Suggestions> getResearchSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+   public static CompletableFuture<Suggestions> getResearchSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
       String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       Set<String> items = new HashSet<>();
-      ArcanaRegistry.ARCANA_ITEMS.getKeys().forEach(key -> items.add(key.getValue().getPath()));
+      ArcanaRegistry.ARCANA_ITEMS.registryKeySet().forEach(key -> items.add(key.identifier().getPath()));
       items.add("all");
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
    }
    
-   public static CompletableFuture<Suggestions> getAchievementSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+   public static CompletableFuture<Suggestions> getAchievementSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
       String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       Set<String> items = ArcanaAchievements.registry.keySet();
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
    }
    
-   public static CompletableFuture<Suggestions> getAugmentSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
-      ServerCommandSource src = context.getSource();
+   public static CompletableFuture<Suggestions> getAugmentSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
+      CommandSourceStack src = context.getSource();
       String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       ArcanaItem arcanaItem;
-      if(src.isExecutedByPlayer() && src.getPlayer() != null){
-         ItemStack handItem = src.getPlayer().getMainHandStack();
+      if(src.isPlayer() && src.getPlayer() != null){
+         ItemStack handItem = src.getPlayer().getMainHandItem();
          arcanaItem = ArcanaItemUtils.identifyItem(handItem);
       }else{
          arcanaItem = null;
@@ -646,30 +655,30 @@ public class ArcanaCommands {
       return builder.buildFuture();
    }
    
-   public static int setAugment(CommandContext<ServerCommandSource> ctx, String id, int level, ServerPlayerEntity player){
+   public static int setAugment(CommandContext<CommandSourceStack> ctx, String id, int level, ServerPlayer player){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer() && player == null){
-            src.sendError(Text.literal("Must specify player, or run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer() && player == null){
+            src.sendFailure(Component.literal("Must specify player, or run command as a player"));
             return -1;
          }else if(player == null && src.getPlayer() != null){
             player = src.getPlayer();
          }
          ArcanaAugment augment = ArcanaAugments.registry.get(id);
          if(augment == null){
-            src.sendError(Text.literal("That is not a valid Augment"));
+            src.sendFailure(Component.literal("That is not a valid Augment"));
             return -1;
          }
          if(level < 0 || level > augment.getTiers().length){
-            src.sendError(Text.literal("Level out of bounds (0-"+augment.getTiers().length+")"));
+            src.sendFailure(Component.literal("Level out of bounds (0-"+augment.getTiers().length+")"));
             return -1;
          }
          if(level == 0){
             ArcanaNovum.data(player).removeAugment(id);
-            src.sendMessage(Text.literal("Successfully removed ").append(augment.getTranslatedName()).append(" from ").append(player.getDisplayName()));
+            src.sendSystemMessage(Component.literal("Successfully removed ").append(augment.getTranslatedName()).append(" from ").append(player.getDisplayName()));
          }else{
             ArcanaNovum.data(player).setAugmentLevel(id,level);
-            src.sendMessage(Text.literal("Successfully set ").append(augment.getTranslatedName()).append(" to level "+level+" for ").append(player.getDisplayName()));
+            src.sendSystemMessage(Component.literal("Successfully set ").append(augment.getTranslatedName()).append(" to level "+level+" for ").append(player.getDisplayName()));
          }
          return 1;
       }catch(Exception e){
@@ -678,23 +687,23 @@ public class ArcanaCommands {
       }
    }
    
-   public static int enhanceCommand(CommandContext<ServerCommandSource> ctx, double percentage, ServerPlayerEntity player){
+   public static int enhanceCommand(CommandContext<CommandSourceStack> ctx, double percentage, ServerPlayer player){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer() && player == null){
-            src.sendError(Text.literal("Must specify player, or run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer() && player == null){
+            src.sendFailure(Component.literal("Must specify player, or run command as a player"));
             return -1;
          }else if(player == null && src.getPlayer() != null){
             player = src.getPlayer();
          }
-         ItemStack handItem = player.getMainHandStack();
+         ItemStack handItem = player.getMainHandItem();
          
          if(percentage > 100 || percentage < 0){
-            src.sendError(Text.literal("Percentage out of bounds 0.0 - 100.0"));
+            src.sendFailure(Component.literal("Percentage out of bounds 0.0 - 100.0"));
             return -1;
          }
          if(!EnhancedStatUtils.isItemEnhanceable(handItem)){
-            src.sendError(Text.literal("Player is not holding a valid infusion item"));
+            src.sendFailure(Component.literal("Player is not holding a valid infusion item"));
             return -1;
          }
          
@@ -710,40 +719,40 @@ public class ArcanaCommands {
       }
    }
    
-   public static int applyAugment(CommandContext<ServerCommandSource> ctx, String id, int level, ServerPlayerEntity player){
+   public static int applyAugment(CommandContext<CommandSourceStack> ctx, String id, int level, ServerPlayer player){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer() && player == null){
-            src.sendError(Text.literal("Must specify player, or run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer() && player == null){
+            src.sendFailure(Component.literal("Must specify player, or run command as a player"));
             return -1;
          }else if(player == null && src.getPlayer() != null){
             player = src.getPlayer();
          }
          ArcanaAugment augment = ArcanaAugments.registry.get(id);
-         ItemStack handItem = player.getMainHandStack();
+         ItemStack handItem = player.getMainHandItem();
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(handItem);
          
          if(augment == null){
-            src.sendError(Text.literal("That is not a valid Augment"));
+            src.sendFailure(Component.literal("That is not a valid Augment"));
             return -1;
          }
          if(level < 1 || level > augment.getTiers().length){
-            src.sendError(Text.literal("Level out of bounds (1-"+augment.getTiers().length+")"));
+            src.sendFailure(Component.literal("Level out of bounds (1-"+augment.getTiers().length+")"));
             return -1;
          }
          if(arcanaItem == null || !arcanaItem.getId().equals(augment.getArcanaItem().getId())){
-            src.sendError(Text.literal("Player is not holding a valid Arcana Item"));
+            src.sendFailure(Component.literal("Player is not holding a valid Arcana Item"));
             return -1;
          }
          if(ArcanaAugments.isIncompatible(handItem,id)){
-            src.sendError(Text.literal("This augment is incompatible with existing augments"));
+            src.sendFailure(Component.literal("This augment is incompatible with existing augments"));
             return -1;
          }
          if(ArcanaAugments.applyAugment(handItem,id,level,false)){
-            src.sendMessage(Text.literal("Successfully applied ").append(augment.getTranslatedName()).append(" at level "+level+" for ").append(player.getDisplayName()));
+            src.sendSystemMessage(Component.literal("Successfully applied ").append(augment.getTranslatedName()).append(" at level "+level+" for ").append(player.getDisplayName()));
             return 1;
          }else{
-            src.sendError(Text.literal("Couldn't apply augment (Cannot downgrade existing augments)"));
+            src.sendFailure(Component.literal("Couldn't apply augment (Cannot downgrade existing augments)"));
             return -1;
          }
       }catch(Exception e){
@@ -752,25 +761,25 @@ public class ArcanaCommands {
       }
    }
    
-   public static int setResearch(CommandContext<ServerCommandSource> ctx, String id, boolean grant, Collection<ServerPlayerEntity> targets){
+   public static int setResearch(CommandContext<CommandSourceStack> ctx, String id, boolean grant, Collection<ServerPlayer> targets){
       try{
-         ServerCommandSource source = ctx.getSource();
+         CommandSourceStack source = ctx.getSource();
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
          boolean isAll = id.equals("all");
          
          if(arcanaItem == null && !isAll){
-            source.sendError(Text.literal("That is not a valid item id"));
+            source.sendFailure(Component.literal("That is not a valid item id"));
             return -1;
          }
          
          List<ArcanaItem> items = new ArrayList<>();
          if(isAll){
-            ArcanaRegistry.ARCANA_ITEMS.getEntrySet().forEach(entry -> items.add(entry.getValue()));
+            ArcanaRegistry.ARCANA_ITEMS.entrySet().forEach(entry -> items.add(entry.getValue()));
          }else{
             items.add(arcanaItem);
          }
          
-         for (ServerPlayerEntity player : targets){
+         for (ServerPlayer player : targets){
             if(grant){
                for(ArcanaItem item : items){
                   ArcanaNovum.data(player).addResearchedItem(item.getId());
@@ -782,23 +791,23 @@ public class ArcanaCommands {
             }
          }
          
-         MutableText feedback = Text.literal("");
-         MutableText itemName = isAll ? Text.literal("All Arcana Items") : arcanaItem.getTranslatedName();
+         MutableComponent feedback = Component.literal("");
+         MutableComponent itemName = isAll ? Component.literal("All Arcana Items") : arcanaItem.getTranslatedName();
          if(grant){
-            feedback.append(Text.literal("Added Research for [").formatted(Formatting.LIGHT_PURPLE));
-            feedback.append(itemName.formatted(Formatting.AQUA));
-            feedback.append(Text.literal("] to ").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Component.literal("Added Research for [").withStyle(ChatFormatting.LIGHT_PURPLE));
+            feedback.append(itemName.withStyle(ChatFormatting.AQUA));
+            feedback.append(Component.literal("] to ").withStyle(ChatFormatting.LIGHT_PURPLE));
          }else{
-            feedback.append(Text.literal("Removed Research for [").formatted(Formatting.LIGHT_PURPLE));
-            feedback.append(itemName.formatted(Formatting.AQUA));
-            feedback.append(Text.literal("] from ").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Component.literal("Removed Research for [").withStyle(ChatFormatting.LIGHT_PURPLE));
+            feedback.append(itemName.withStyle(ChatFormatting.AQUA));
+            feedback.append(Component.literal("] from ").withStyle(ChatFormatting.LIGHT_PURPLE));
          }
          if(targets.size() == 1){
             feedback.append(targets.iterator().next().getDisplayName());
          }else{
-            feedback.append(Text.literal(targets.size() + " players").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Component.literal(targets.size() + " players").withStyle(ChatFormatting.LIGHT_PURPLE));
          }
-         source.sendFeedback(()->feedback,true);
+         source.sendSuccess(()->feedback,true);
          
          return targets.size();
       }catch(Exception e){
@@ -807,26 +816,26 @@ public class ArcanaCommands {
       }
    }
    
-   public static int getResearch(CommandContext<ServerCommandSource> ctx, String id, ServerPlayerEntity target){
+   public static int getResearch(CommandContext<CommandSourceStack> ctx, String id, ServerPlayer target){
       try{
-         ServerCommandSource source = ctx.getSource();
+         CommandSourceStack source = ctx.getSource();
          IArcanaProfileComponent profile = ArcanaNovum.data(target);
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
          
          if(arcanaItem == null){
-            source.sendError(Text.literal("That is not a valid item id"));
+            source.sendFailure(Component.literal("That is not a valid item id"));
             return -1;
          }
          
          boolean researched = profile.hasResearched(arcanaItem);
          
-         MutableText feedback = Text.literal("")
+         MutableComponent feedback = Component.literal("")
                .append(target.getDisplayName().copy())
-               .append(Text.literal(researched ? " has researched [" : " has NOT researched [").formatted(Formatting.LIGHT_PURPLE))
-               .append(arcanaItem.getTranslatedName().formatted(Formatting.AQUA))
-               .append(Text.literal("]").formatted(Formatting.LIGHT_PURPLE));
+               .append(Component.literal(researched ? " has researched [" : " has NOT researched [").withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(arcanaItem.getTranslatedName().withStyle(ChatFormatting.AQUA))
+               .append(Component.literal("]").withStyle(ChatFormatting.LIGHT_PURPLE));
          
-         source.sendFeedback(()->feedback,false);
+         source.sendSuccess(()->feedback,false);
          return 1;
       }catch(Exception e){
          log(2,e.toString());
@@ -835,16 +844,16 @@ public class ArcanaCommands {
    }
    
    
-   public static int setAchievement(CommandContext<ServerCommandSource> ctx, String id, boolean grant, Collection<ServerPlayerEntity> targets){
+   public static int setAchievement(CommandContext<CommandSourceStack> ctx, String id, boolean grant, Collection<ServerPlayer> targets){
       try{
-         ServerCommandSource source = ctx.getSource();
+         CommandSourceStack source = ctx.getSource();
          ArcanaAchievement achievement = ArcanaAchievements.registry.get(id);
          if(achievement == null){
-            source.sendError(Text.literal("That is not a valid Achievement"));
+            source.sendFailure(Component.literal("That is not a valid Achievement"));
             return -1;
          }
       
-         for (ServerPlayerEntity player : targets){
+         for (ServerPlayer player : targets){
             if(grant){
                ArcanaAchievements.grant(player,id);
             }else{
@@ -852,22 +861,22 @@ public class ArcanaCommands {
             }
          }
       
-         MutableText feedback = Text.literal("");
+         MutableComponent feedback = Component.literal("");
          if(grant){
-            feedback.append(Text.literal("Granted Achievement [").formatted(Formatting.LIGHT_PURPLE));
-            feedback.append(achievement.getTranslatedName().formatted(Formatting.AQUA));
-            feedback.append(Text.literal("] to ").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Component.literal("Granted Achievement [").withStyle(ChatFormatting.LIGHT_PURPLE));
+            feedback.append(achievement.getTranslatedName().withStyle(ChatFormatting.AQUA));
+            feedback.append(Component.literal("] to ").withStyle(ChatFormatting.LIGHT_PURPLE));
          }else{
-            feedback.append(Text.literal("Revoked Achievement [").formatted(Formatting.LIGHT_PURPLE));
-            feedback.append(achievement.getTranslatedName().formatted(Formatting.AQUA));
-            feedback.append(Text.literal("] from ").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Component.literal("Revoked Achievement [").withStyle(ChatFormatting.LIGHT_PURPLE));
+            feedback.append(achievement.getTranslatedName().withStyle(ChatFormatting.AQUA));
+            feedback.append(Component.literal("] from ").withStyle(ChatFormatting.LIGHT_PURPLE));
          }
          if(targets.size() == 1){
             feedback.append(targets.iterator().next().getDisplayName());
          }else{
-            feedback.append(Text.literal(targets.size() + " players").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Component.literal(targets.size() + " players").withStyle(ChatFormatting.LIGHT_PURPLE));
          }
-         source.sendFeedback(()->feedback,true);
+         source.sendSuccess(()->feedback,true);
       
          return targets.size();
       }catch(Exception e){
@@ -876,30 +885,30 @@ public class ArcanaCommands {
       }
    }
    
-   public static int getAchievement(CommandContext<ServerCommandSource> ctx, String id, ServerPlayerEntity target){
+   public static int getAchievement(CommandContext<CommandSourceStack> ctx, String id, ServerPlayer target){
       try{
-         ServerCommandSource source = ctx.getSource();
+         CommandSourceStack source = ctx.getSource();
          IArcanaProfileComponent profile = ArcanaNovum.data(target);
          ArcanaAchievement baseAch = ArcanaAchievements.registry.get(id);
          if(baseAch == null){
-            source.sendError(Text.literal("That is not a valid Achievement"));
+            source.sendFailure(Component.literal("That is not a valid Achievement"));
             return -1;
          }
          ArcanaAchievement profAchieve = profile.getAchievement(baseAch.getArcanaItem().getId(),id);
          ArcanaAchievement achieve = profAchieve == null ? baseAch : profAchieve;
-         MutableText[] response = achieve.getStatusDisplay(target);
+         MutableComponent[] response = achieve.getStatusDisplay(target);
          
    
-         MutableText header = Text.literal("")
+         MutableComponent header = Component.literal("")
                .append(target.getDisplayName().copy().append("'s"))
-               .append(Text.literal(" progress towards [").formatted(Formatting.LIGHT_PURPLE))
-               .append(achieve.getTranslatedName().formatted(Formatting.AQUA))
-               .append(Text.literal("]: ").formatted(Formatting.LIGHT_PURPLE));
+               .append(Component.literal(" progress towards [").withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(achieve.getTranslatedName().withStyle(ChatFormatting.AQUA))
+               .append(Component.literal("]: ").withStyle(ChatFormatting.LIGHT_PURPLE));
          
-         source.sendFeedback(()->header,false);
+         source.sendSuccess(()->header,false);
          if(response == null) return 0;
-         for(MutableText mutableText : response){
-            source.sendFeedback(()->mutableText, false);
+         for(MutableComponent mutableText : response){
+            source.sendSuccess(()->mutableText, false);
          }
          return 1;
       }catch(Exception e){
@@ -908,23 +917,23 @@ public class ArcanaCommands {
       }
    }
    
-   public static int createItems(ServerCommandSource source, String id, Collection<ServerPlayerEntity> targets){
+   public static int createItems(CommandSourceStack source, String id, Collection<ServerPlayer> targets){
       try{
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
          if(arcanaItem == null){
-            source.sendMessage(Text.literal("Invalid Arcana Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
+            source.sendSystemMessage(Component.literal("Invalid Arcana Item ID: "+id).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
             return 0;
          }
    
-         for(ServerPlayerEntity target : targets){
-            ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),target.getUuidAsString(),1,source.getServer());
+         for(ServerPlayer target : targets){
+            ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),target.getStringUUID(),1,source.getServer());
             
             if(item == null){
-               source.sendMessage((Text.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).formatted(Formatting.RED, Formatting.ITALIC));
+               source.sendSystemMessage((Component.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
                return 0;
             }else{
                String uuid = ArcanaItem.getUUID(item);
-               source.sendMessage((Text.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Text.literal(" with UUID "+uuid))).formatted(Formatting.GREEN));
+               source.sendSystemMessage((Component.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Component.literal(" with UUID "+uuid))).withStyle(ChatFormatting.GREEN));
                BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(item,target,0));
             }
          }
@@ -935,22 +944,22 @@ public class ArcanaCommands {
       }
    }
    
-   public static int createItem(ServerCommandSource source, String id) throws CommandSyntaxException{
+   public static int createItem(CommandSourceStack source, String id) throws CommandSyntaxException{
       try{
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
          if(arcanaItem == null){
-            source.sendMessage(Text.literal("Invalid Arcana Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
+            source.sendSystemMessage(Component.literal("Invalid Arcana Item ID: "+id).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
             return 0;
          }
-         ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),1,source.getServer());
+         ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),source.getPlayerOrException().getStringUUID(),1,source.getServer());
          
          if(item == null){
-            source.sendMessage((Text.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).formatted(Formatting.RED, Formatting.ITALIC));
+            source.sendSystemMessage((Component.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
             return 0;
          }else{
             String uuid = ArcanaItem.getUUID(item);
-            source.sendMessage((Text.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Text.literal(" with UUID "+uuid))).formatted(Formatting.GREEN));
-            BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(item,source.getPlayerOrThrow(),0));
+            source.sendSystemMessage((Component.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Component.literal(" with UUID "+uuid))).withStyle(ChatFormatting.GREEN));
+            BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(item,source.getPlayerOrException(),0));
             return 1;
          }
       }catch(Exception e){
@@ -959,181 +968,181 @@ public class ArcanaCommands {
       }
    }
    
-   public static int showItem(CommandContext<ServerCommandSource> context){
-      ServerCommandSource source = context.getSource();
-      if(!source.isExecutedByPlayer() || source.getPlayer() == null){
-         source.sendFeedback(()->Text.literal("Command must be executed by a player"), false);
+   public static int showItem(CommandContext<CommandSourceStack> context){
+      CommandSourceStack source = context.getSource();
+      if(!source.isPlayer() || source.getPlayer() == null){
+         source.sendSuccess(()-> Component.literal("Command must be executed by a player"), false);
          return -1;
       }
-      ServerPlayerEntity player = source.getPlayer();
-      if(!ArcanaItemUtils.isArcane(player.getMainHandStack())){
-         source.sendFeedback(()->Text.literal("You can only show off Arcana Items"), false);
+      ServerPlayer player = source.getPlayer();
+      if(!ArcanaItemUtils.isArcane(player.getMainHandItem())){
+         source.sendSuccess(()-> Component.literal("You can only show off Arcana Items"), false);
          return -1;
       }
       
-      MutableText message = Text.literal("")
-            .append(player.getStyledDisplayName())
-            .append(Text.literal(" is showing off their ").formatted(Formatting.LIGHT_PURPLE))
-            .append(player.getMainHandStack().toHoverableText());
+      MutableComponent message = Component.literal("")
+            .append(player.getFeedbackDisplayName())
+            .append(Component.literal(" is showing off their ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(player.getMainHandItem().getDisplayName());
       
-      for(ServerPlayerEntity other : context.getSource().getServer().getPlayerManager().getPlayerList()){
-         other.sendMessage(message);
+      for(ServerPlayer other : context.getSource().getServer().getPlayerList().getPlayers()){
+         other.sendSystemMessage(message);
       }
       
       return 0;
    }
    
-   public static int startDragonBoss(CommandContext<ServerCommandSource> context){
-      ServerCommandSource source = context.getSource();
-      if(!source.isExecutedByPlayer()){
-         source.sendFeedback(()->Text.literal("Command must be executed by a player"), false);
+   public static int startDragonBoss(CommandContext<CommandSourceStack> context){
+      CommandSourceStack source = context.getSource();
+      if(!source.isPlayer()){
+         source.sendSuccess(()-> Component.literal("Command must be executed by a player"), false);
          return -1;
       }
-      for(ServerWorld world : source.getServer().getWorlds()){
+      for(ServerLevel world : source.getServer().getAllLevels()){
          if(BOSS_FIGHT.get(world).getBossFight() != null){
-            source.sendFeedback(()->Text.literal("A Boss Fight is Currently Active"), false);
+            source.sendSuccess(()-> Component.literal("A Boss Fight is Currently Active"), false);
             return -1;
          }
       }
-      ServerPlayerEntity player = source.getPlayer();
+      ServerPlayer player = source.getPlayer();
       return DragonBossFight.prepBoss(player);
    }
    
-   public static int abortBoss(CommandContext<ServerCommandSource> context){
+   public static int abortBoss(CommandContext<CommandSourceStack> context){
       MinecraftServer server = context.getSource().getServer();
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
-      context.getSource().sendFeedback(()->Text.literal("Aborting Boss Fight"),true);
+      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(server.getLevel(Level.END)).getBossFight();
+      context.getSource().sendSuccess(()-> Component.literal("Aborting Boss Fight"),true);
       if(bossFight == null){
          return BossFight.cleanBoss(server);
       }
-      if(bossFight.getLeft() == BossFights.DRAGON){
+      if(bossFight.getA() == BossFights.DRAGON){
          return DragonBossFight.abortBoss(server);
       }
       return 0;
    }
    
-   public static int cleanBoss(CommandContext<ServerCommandSource> context){
-      ServerCommandSource source = context.getSource();
-      source.sendFeedback(()->Text.literal("Cleaned Boss Data"),true);
+   public static int cleanBoss(CommandContext<CommandSourceStack> context){
+      CommandSourceStack source = context.getSource();
+      source.sendSuccess(()-> Component.literal("Cleaned Boss Data"),true);
       return BossFight.cleanBoss(source.getServer());
    }
    
-   public static int bossStatus(CommandContext<ServerCommandSource> context){
-      ServerCommandSource source = context.getSource();
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+   public static int bossStatus(CommandContext<CommandSourceStack> context){
+      CommandSourceStack source = context.getSource();
+      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
+         source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
       }
-      if(bossFight.getLeft() == BossFights.DRAGON){
+      if(bossFight.getA() == BossFights.DRAGON){
          return DragonBossFight.bossStatus(source.getServer(),context.getSource());
       }
       return -1;
    }
    
-   public static int bossResetAbilities(CommandContext<ServerCommandSource> context, boolean doAbility){
-      ServerCommandSource source = context.getSource();
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+   public static int bossResetAbilities(CommandContext<CommandSourceStack> context, boolean doAbility){
+      CommandSourceStack source = context.getSource();
+      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
+         source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
       }
-      if(bossFight.getLeft() == BossFights.DRAGON){
+      if(bossFight.getA() == BossFights.DRAGON){
          return DragonBossFight.resetDragonAbilities(source.getServer(),context.getSource(),doAbility);
       }
       return -1;
    }
    
-   public static int bossForceLairAction(CommandContext<ServerCommandSource> context){
-      ServerCommandSource source = context.getSource();
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+   public static int bossForceLairAction(CommandContext<CommandSourceStack> context){
+      CommandSourceStack source = context.getSource();
+      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
+         source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
       }
-      if(bossFight.getLeft() == BossFights.DRAGON){
+      if(bossFight.getA() == BossFights.DRAGON){
          return DragonBossFight.forceLairAction(source.getServer(),context.getSource());
       }
       return -1;
    }
    
-   public static int bossForcePlayerCount(CommandContext<ServerCommandSource> context, int playerCount){
-      ServerCommandSource source = context.getSource();
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+   public static int bossForcePlayerCount(CommandContext<CommandSourceStack> context, int playerCount){
+      CommandSourceStack source = context.getSource();
+      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
+         source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
       }
-      if(bossFight.getLeft() == BossFights.DRAGON){
+      if(bossFight.getA() == BossFights.DRAGON){
          DragonBossFight.setForcedPlayerCount(context.getSource().getServer(),playerCount);
          return 1;
       }
       return -1;
    }
    
-   public static int testBoss(CommandContext<ServerCommandSource> context){
-      ServerCommandSource source = context.getSource();
+   public static int testBoss(CommandContext<CommandSourceStack> context){
+      CommandSourceStack source = context.getSource();
       
       return 0;
    }
    
-   public static int bossTeleport(CommandContext<ServerCommandSource> context, ServerPlayerEntity player, boolean all){
-      ServerCommandSource source = context.getSource();
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+   public static int bossTeleport(CommandContext<CommandSourceStack> context, ServerPlayer player, boolean all){
+      CommandSourceStack source = context.getSource();
+      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
+         source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
       }
-      if(bossFight.getLeft() == BossFights.DRAGON){
+      if(bossFight.getA() == BossFights.DRAGON){
          if(all){
-            List<ServerPlayerEntity> players = source.getServer().getPlayerManager().getPlayerList();
-            for(ServerPlayerEntity p : players){
+            List<ServerPlayer> players = source.getServer().getPlayerList().getPlayers();
+            for(ServerPlayer p : players){
                DragonBossFight.teleportPlayer(p,true);
             }
          }else{
 
-            DragonBossFight.teleportPlayer(player, CommandManager.GAMEMASTERS_CHECK.allows(player.getPermissions()));
+            DragonBossFight.teleportPlayer(player, Commands.LEVEL_GAMEMASTERS.check(player.permissions()));
          }
          return 0;
       }
       return -1;
    }
    
-   public static int announceBoss(ServerCommandSource source, String time){
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+   public static int announceBoss(CommandSourceStack source, String time){
+      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
+         source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
       }
-      if(bossFight.getLeft() == BossFights.DRAGON){
-         return DragonBossFight.announceBoss(source.getServer(),bossFight.getRight(),time);
+      if(bossFight.getA() == BossFights.DRAGON){
+         return DragonBossFight.announceBoss(source.getServer(),bossFight.getB(),time);
       }
       return -1;
    }
    
-   public static int beginBoss(CommandContext<ServerCommandSource> context){
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(context.getSource().getServer().getWorld(World.END)).getBossFight();
+   public static int beginBoss(CommandContext<CommandSourceStack> context){
+      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(context.getSource().getServer().getLevel(Level.END)).getBossFight();
       if(bossFight == null){
-         context.getSource().sendFeedback(()->Text.literal("No Boss Fight Active"),false);
+         context.getSource().sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
       }
-      if(bossFight.getLeft() == BossFights.DRAGON){
-         return DragonBossFight.beginBoss(context.getSource().getServer(),bossFight.getRight());
+      if(bossFight.getA() == BossFights.DRAGON){
+         return DragonBossFight.beginBoss(context.getSource().getServer(),bossFight.getB());
       }
       return -1;
    }
    
    
-   public static int setItemName(CommandContext<ServerCommandSource> ctx, String name){
+   public static int setItemName(CommandContext<CommandSourceStack> ctx, String name){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer()){
-            src.sendError(Text.literal("Must run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
             return -1;
          }
-         ServerPlayerEntity player = src.getPlayer();
-         ItemStack handItem = player.getMainHandStack();
-         handItem.set(DataComponentTypes.ITEM_NAME, TextUtils.parseString(name));
+         ServerPlayer player = src.getPlayer();
+         ItemStack handItem = player.getMainHandItem();
+         handItem.set(DataComponents.ITEM_NAME, TextUtils.parseString(name));
          
          return 1;
       }catch(Exception e){
@@ -1142,19 +1151,19 @@ public class ArcanaCommands {
       }
    }
    
-   public static int getItemName(CommandContext<ServerCommandSource> ctx){
+   public static int getItemName(CommandContext<CommandSourceStack> ctx){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer()){
-            src.sendError(Text.literal("Must run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
             return -1;
          }
-         ServerPlayerEntity player = src.getPlayer();
-         ItemStack handItem = player.getMainHandStack();
+         ServerPlayer player = src.getPlayer();
+         ItemStack handItem = player.getMainHandItem();
          
-         String feedback = TextUtils.textToString(handItem.getName());
+         String feedback = TextUtils.textToString(handItem.getHoverName());
          String copyText = feedback;
-         src.sendFeedback(() -> Text.literal(feedback).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to Copy Data"))).withClickEvent(new ClickEvent.CopyToClipboard(copyText))), false);
+         src.sendSuccess(() -> Component.literal(feedback).withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to Copy Data"))).withClickEvent(new ClickEvent.CopyToClipboard(copyText))), false);
          
          return 1;
       }catch(Exception e){
@@ -1163,34 +1172,34 @@ public class ArcanaCommands {
       }
    }
    
-   public static int setItemLore(CommandContext<ServerCommandSource> ctx, int index, String lore){
+   public static int setItemLore(CommandContext<CommandSourceStack> ctx, int index, String lore){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer()){
-            src.sendError(Text.literal("Must run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
             return -1;
          }
-         ServerPlayerEntity player = src.getPlayer();
-         ItemStack handItem = player.getMainHandStack();
-         LoreComponent loreComp = handItem.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
-         LoreComponent newLore;
-         List<Text> lines = loreComp.styledLines();
+         ServerPlayer player = src.getPlayer();
+         ItemStack handItem = player.getMainHandItem();
+         ItemLore loreComp = handItem.getOrDefault(DataComponents.LORE, ItemLore.EMPTY);
+         ItemLore newLore;
+         List<Component> lines = loreComp.styledLines();
          
          if(index < 0){
-            newLore = loreComp.with(TextUtils.removeItalics(TextUtils.parseString(lore)));
+            newLore = loreComp.withLineAdded(TextUtils.removeItalics(TextUtils.parseString(lore)));
          }else if(index < lines.size()){
             lines.set(index, TextUtils.removeItalics(TextUtils.parseString(lore)));
-            newLore = new LoreComponent(lines);
+            newLore = new ItemLore(lines);
          }else{
             int blankLines = index - lines.size();
             for(int i = 0; i < blankLines; i++){
-               lines.add(Text.literal(""));
+               lines.add(Component.literal(""));
             }
             lines.add(TextUtils.removeItalics(TextUtils.parseString(lore)));
-            newLore = new LoreComponent(lines);
+            newLore = new ItemLore(lines);
          }
          
-         handItem.set(DataComponentTypes.LORE,newLore);
+         handItem.set(DataComponents.LORE,newLore);
          return 1;
       }catch(Exception e){
          log(2,e.toString());
@@ -1198,22 +1207,22 @@ public class ArcanaCommands {
       }
    }
    
-   public static int getItemLore(CommandContext<ServerCommandSource> ctx, int index){
+   public static int getItemLore(CommandContext<CommandSourceStack> ctx, int index){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer()){
-            src.sendError(Text.literal("Must run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
             return -1;
          }
-         ServerPlayerEntity player = src.getPlayer();
-         ItemStack handItem = player.getMainHandStack();
-         LoreComponent loreComp = handItem.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
-         List<Text> lines = loreComp.styledLines();
+         ServerPlayer player = src.getPlayer();
+         ItemStack handItem = player.getMainHandItem();
+         ItemLore loreComp = handItem.getOrDefault(DataComponents.LORE, ItemLore.EMPTY);
+         List<Component> lines = loreComp.styledLines();
          
          if(index >= 0 && index < lines.size()){
             String feedback = TextUtils.textToString(lines.get(index));
             String copyText = feedback;
-            src.sendFeedback(() -> Text.literal(feedback).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to Copy Data"))).withClickEvent(new ClickEvent.CopyToClipboard(copyText))), false);
+            src.sendSuccess(() -> Component.literal(feedback).withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to Copy Data"))).withClickEvent(new ClickEvent.CopyToClipboard(copyText))), false);
          }else{
             return 0;
          }
@@ -1225,17 +1234,17 @@ public class ArcanaCommands {
       }
    }
    
-   public static int removeItemLore(CommandContext<ServerCommandSource> ctx, int index){
+   public static int removeItemLore(CommandContext<CommandSourceStack> ctx, int index){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer()){
-            src.sendError(Text.literal("Must run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
             return -1;
          }
-         ServerPlayerEntity player = src.getPlayer();
-         ItemStack handItem = player.getMainHandStack();
-         LoreComponent loreComp = handItem.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
-         List<Text> lines = loreComp.styledLines();
+         ServerPlayer player = src.getPlayer();
+         ItemStack handItem = player.getMainHandItem();
+         ItemLore loreComp = handItem.getOrDefault(DataComponents.LORE, ItemLore.EMPTY);
+         List<Component> lines = loreComp.styledLines();
          
          if(index >= 0 && index < lines.size()){
             lines.remove(index);
@@ -1243,7 +1252,7 @@ public class ArcanaCommands {
             return 0;
          }
          
-         handItem.set(DataComponentTypes.LORE,new LoreComponent(lines));
+         handItem.set(DataComponents.LORE,new ItemLore(lines));
          return 1;
       }catch(Exception e){
          log(2,e.toString());
@@ -1251,47 +1260,47 @@ public class ArcanaCommands {
       }
    }
    
-   public static int placedBlocks(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player){
+   public static int placedBlocks(CommandContext<CommandSourceStack> ctx, ServerPlayer player){
       try{
-         ServerCommandSource src = ctx.getSource();
+         CommandSourceStack src = ctx.getSource();
          
-         ArrayList<MutableText> blocks = new ArrayList<>();
-         for(Pair<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getUuidAsString().equals(pair.getRight().getCrafterId()) && pair.getLeft().hasWorld() && pair.getLeft().getWorld().getBlockEntity(pair.getLeft().getPos()) == pair.getLeft()).toList()){
-            BlockEntity blockEntity = pair.getLeft();
-            ArcanaBlockEntity arcanaBlockEntity = pair.getRight();
+         ArrayList<MutableComponent> blocks = new ArrayList<>();
+         for(Tuple<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getStringUUID().equals(pair.getB().getCrafterId()) && pair.getA().hasLevel() && pair.getA().getLevel().getBlockEntity(pair.getA().getBlockPos()) == pair.getA()).toList()){
+            BlockEntity blockEntity = pair.getA();
+            ArcanaBlockEntity arcanaBlockEntity = pair.getB();
             
-            String dim = blockEntity.getWorld().getRegistryKey().getValue().toString();
-            MutableText dimensionName = Text.literal("Unknown").formatted(Formatting.GRAY);
-            if(dim.equals(ServerWorld.OVERWORLD.getValue().toString())){
-               dimensionName = Text.literal("The Overworld").formatted(Formatting.GREEN);
-            }else if(dim.equals(ServerWorld.NETHER.getValue().toString())){
-               dimensionName = Text.literal("The Nether").formatted(Formatting.RED);
-            }else if(dim.equals(ServerWorld.END.getValue().toString())){
-               dimensionName = Text.literal("The End").formatted(Formatting.DARK_PURPLE);
+            String dim = blockEntity.getLevel().dimension().identifier().toString();
+            MutableComponent dimensionName = Component.literal("Unknown").withStyle(ChatFormatting.GRAY);
+            if(dim.equals(ServerLevel.OVERWORLD.identifier().toString())){
+               dimensionName = Component.literal("The Overworld").withStyle(ChatFormatting.GREEN);
+            }else if(dim.equals(ServerLevel.NETHER.identifier().toString())){
+               dimensionName = Component.literal("The Nether").withStyle(ChatFormatting.RED);
+            }else if(dim.equals(ServerLevel.END.identifier().toString())){
+               dimensionName = Component.literal("The End").withStyle(ChatFormatting.DARK_PURPLE);
             }
-            BlockPos pos = blockEntity.getPos();
+            BlockPos pos = blockEntity.getBlockPos();
             String posStr = pos.getX()+","+pos.getY()+","+pos.getZ();
             
-            MutableText blockText = Text.literal("")
+            MutableComponent blockText = Component.literal("")
                   .append(arcanaBlockEntity.getArcanaItem().getDisplayName())
-                  .append(Text.literal(" in ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Component.literal(" in ").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(dimensionName)
-                  .append(Text.literal(" at (").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal(posStr).formatted(Formatting.AQUA,Formatting.BOLD))
-                  .append(Text.literal(")").formatted(Formatting.LIGHT_PURPLE));
+                  .append(Component.literal(" at (").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(Component.literal(posStr).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
+                  .append(Component.literal(")").withStyle(ChatFormatting.LIGHT_PURPLE));
             blocks.add(blockText);
          }
          
-         MutableText feedback = Text.literal("")
+         MutableComponent feedback = Component.literal("")
                .append(player.getDisplayName())
-               .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(Integer.toString(blocks.size())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(Text.literal(" placed Arcana Blocks.").formatted(Formatting.LIGHT_PURPLE));
-         src.sendFeedback(()->Text.literal(""),false);
-         src.sendFeedback(()->feedback,false);
-         src.sendFeedback(()->Text.literal("================================").formatted(Formatting.LIGHT_PURPLE),false);
-         for(MutableText r : blocks){
-            src.sendFeedback(()->r,false);
+               .append(Component.literal(" has ").withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(Component.literal(Integer.toString(blocks.size())).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
+               .append(Component.literal(" placed Arcana Blocks.").withStyle(ChatFormatting.LIGHT_PURPLE));
+         src.sendSuccess(()-> Component.literal(""),false);
+         src.sendSuccess(()->feedback,false);
+         src.sendSuccess(()-> Component.literal("================================").withStyle(ChatFormatting.LIGHT_PURPLE),false);
+         for(MutableComponent r : blocks){
+            src.sendSuccess(()->r,false);
          }
          return blocks.size();
       }catch(Exception e){
@@ -1300,11 +1309,11 @@ public class ArcanaCommands {
       }
    }
    
-   public static int placedBlocks(CommandContext<ServerCommandSource> ctx){
+   public static int placedBlocks(CommandContext<CommandSourceStack> ctx){
       try{
-         ServerCommandSource src = ctx.getSource();
-         if(!src.isExecutedByPlayer()){
-            src.sendError(Text.literal("Must run command as a player"));
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
             return -1;
          }
          return placedBlocks(ctx, src.getPlayer());

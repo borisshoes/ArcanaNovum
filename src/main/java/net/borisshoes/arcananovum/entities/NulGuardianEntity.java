@@ -7,35 +7,39 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.*;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.WitherSkullEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -44,26 +48,26 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEntity {
+public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    
    private boolean mage;
    private NulConstructEntity construct;
    
-   public NulGuardianEntity(World world, NulConstructEntity construct, boolean mage){
+   public NulGuardianEntity(Level world, NulConstructEntity construct, boolean mage){
       super(ArcanaRegistry.NUL_GUARDIAN_ENTITY, world);
       this.mage = mage;
       this.construct = construct;
    }
    
-   public NulGuardianEntity(EntityType<? extends WitherSkeletonEntity> entityType, World world){
+   public NulGuardianEntity(EntityType<? extends WitherSkeleton> entityType, Level world){
       super(entityType, world);
       this.mage = false;
       this.construct = null;
    }
    
    @Override
-   public boolean canTarget(EntityType<?> type){
-      boolean base = super.canTarget(type);
+   public boolean canAttackType(EntityType<?> type){
+      boolean base = super.canAttackType(type);
       if(type == ArcanaRegistry.NUL_GUARDIAN_ENTITY || type == ArcanaRegistry.NUL_CONSTRUCT_ENTITY){
          
          return false;
@@ -73,45 +77,45 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
    
    @Nullable
    @Override
-   public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData){
-      EntityData entityData2 = super.initialize(world, difficulty, spawnReason, entityData);
-      this.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(10.0);
-      this.updateAttackType();
-      this.setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
-      StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE,-1,1,false,false,false);
-      this.addStatusEffect(res);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData){
+      SpawnGroupData entityData2 = super.finalizeSpawn(world, difficulty, spawnReason, entityData);
+      this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(10.0);
+      this.reassessWeaponGoal();
+      this.setDropChance(EquipmentSlot.MAINHAND, 0);
+      MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE,-1,1,false,false,false);
+      this.addEffect(res);
       return entityData2;
    }
    
    @Override
-   protected void initEquipment(Random random, LocalDifficulty localDifficulty){
+   protected void populateDefaultEquipmentSlots(RandomSource random, DifficultyInstance localDifficulty){
       if(mage){
          ItemStack bowStack = new ItemStack(Items.BOW);
-         bowStack.set(DataComponentTypes.ITEM_MODEL, Identifier.of(MOD_ID,"nul_guardian_staff"));
-         this.equipStack(EquipmentSlot.MAINHAND, bowStack);
+         bowStack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(MOD_ID,"nul_guardian_staff"));
+         this.setItemSlot(EquipmentSlot.MAINHAND, bowStack);
       }else{
          ItemStack meleeStack = new ItemStack(Items.NETHERITE_AXE);
          float rand = this.random.nextFloat();
          if(rand < 0.1){
-            meleeStack.set(DataComponentTypes.ITEM_MODEL, Identifier.of(MOD_ID,"nul_guardian_glaive"));
+            meleeStack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(MOD_ID,"nul_guardian_glaive"));
          }else if(rand < 0.5){
-            meleeStack.set(DataComponentTypes.ITEM_MODEL, Identifier.of(MOD_ID,"nul_guardian_sword"));
+            meleeStack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(MOD_ID,"nul_guardian_sword"));
          }else{
-            meleeStack.set(DataComponentTypes.ITEM_MODEL, Identifier.of(MOD_ID,"nul_guardian_axe"));
+            meleeStack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(MOD_ID,"nul_guardian_axe"));
          }
-         this.equipStack(EquipmentSlot.MAINHAND, meleeStack);
+         this.setItemSlot(EquipmentSlot.MAINHAND, meleeStack);
       }
    }
    
    @Override
-   public void onDeath(DamageSource damageSource){
-      super.onDeath(damageSource);
+   public void die(DamageSource damageSource){
+      super.die(damageSource);
       
-      if(this.construct != null && this.mage && this.getEntityWorld() instanceof ServerWorld serverWorld){
-         ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, this.construct::getEyePos,20,1.0, ParticleTypes.RAID_OMEN,4,1,0,0,false,0,50);
+      if(this.construct != null && this.mage && this.level() instanceof ServerLevel serverWorld){
+         ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePosition, this.construct::getEyePosition,20,1.0, ParticleTypes.RAID_OMEN,4,1,0,0,false,0,50);
          BorisLib.addTickTimerCallback(new GenericTimer(50, () -> {
             if(this.construct != null && this.construct.isAlive()){
-               this.construct.damage(serverWorld, ArcanaDamageTypes.of(this.getEntityWorld(),ArcanaDamageTypes.CONCENTRATION,damageSource.getSource(),damageSource.getAttacker()), 35);
+               this.construct.hurtServer(serverWorld, ArcanaDamageTypes.of(this.level(),ArcanaDamageTypes.CONCENTRATION,damageSource.getDirectEntity(),damageSource.getEntity()), 35);
             }
          }));
       }
@@ -121,26 +125,26 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
    public void tick(){
       super.tick();
       
-      if(this.construct != null && this.getEntityWorld() instanceof ServerWorld serverWorld){
-         if(!this.construct.isAlive() || !this.construct.getEntityWorld().getRegistryKey().equals(this.getEntityWorld().getRegistryKey())){
+      if(this.construct != null && this.level() instanceof ServerLevel serverWorld){
+         if(!this.construct.isAlive() || !this.construct.level().dimension().equals(this.level().dimension())){
             this.kill(serverWorld);
          }else if(this.mage){
-            if(this.age % 20 == 0 && this.construct.distanceTo(this) < NulConstructEntity.FIGHT_RANGE){
+            if(this.tickCount % 20 == 0 && this.construct.distanceTo(this) < NulConstructEntity.FIGHT_RANGE){
                this.construct.heal(this.construct.isExalted() ? 2.0f : 5.0f);
                
-               List<Entity> entities = serverWorld.getOtherEntities(this,getBoundingBox().expand(NulConstructEntity.FIGHT_RANGE), e -> !e.isSpectator() && e.distanceTo(this) < 16.0 && (e instanceof NulGuardianEntity));
+               List<Entity> entities = serverWorld.getEntities(this,getBoundingBox().inflate(NulConstructEntity.FIGHT_RANGE), e -> !e.isSpectator() && e.distanceTo(this) < 16.0 && (e instanceof NulGuardianEntity));
                Collections.shuffle(entities);
                for(Entity entity : entities){
                   NulGuardianEntity otherGuardian = (NulGuardianEntity) entity;
                   otherGuardian.heal(otherGuardian.mage ? 1f : 2f);
                }
                
-               if(this.age % 80 == 0){
-                  ParticleEffect dust = new DustParticleEffect(0x9e0945,0.8f);
-                  ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, this.construct::getEyePos,12,0.5, dust,8,1,0,0,false,0,60);
+               if(this.tickCount % 80 == 0){
+                  ParticleOptions dust = new DustParticleOptions(0x9e0945,0.8f);
+                  ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePosition, this.construct::getEyePosition,12,0.5, dust,8,1,0,0,false,0,60);
                   
                   if(!entities.isEmpty()){
-                     ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, entities.getFirst()::getEyePos,12,0.5, dust,8,1,0,0,false,0,60);
+                     ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePosition, entities.getFirst()::getEyePosition,12,0.5, dust,8,1,0,0,false,0,60);
                   }
                }
             }
@@ -149,66 +153,66 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
    }
    
    @Override
-   protected float modifyAppliedDamage(DamageSource source, float amount){
-      float modified = super.modifyAppliedDamage(source, amount);
-      if(source.isSourceCreativePlayer() || source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY)) return modified;
+   protected float getDamageAfterMagicAbsorb(DamageSource source, float amount){
+      float modified = super.getDamageAfterMagicAbsorb(source, amount);
+      if(source.isCreativePlayer() || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return modified;
       
       if(this.construct != null && this.construct.isExalted()) modified *= 0.75f;
-      if(source.isIn(ArcanaRegistry.NUL_CONSTRUCT_VULNERABLE_TO)) modified *= 2.0f;
-      if(source.isOf(DamageTypes.WITHER) || source.isOf(DamageTypes.WITHER_SKULL) || source.isOf(ArcanaDamageTypes.NUL)) modified *= 0.0f;
-      if(source.isIn(DamageTypeTags.IS_EXPLOSION)) modified *= 0.5f;
-      if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)) modified *= 0.85f;
+      if(source.is(ArcanaRegistry.NUL_CONSTRUCT_VULNERABLE_TO)) modified *= 2.0f;
+      if(source.is(DamageTypes.WITHER) || source.is(DamageTypes.WITHER_SKULL) || source.is(ArcanaDamageTypes.NUL)) modified *= 0.0f;
+      if(source.is(DamageTypeTags.IS_EXPLOSION)) modified *= 0.5f;
+      if(source.is(DamageTypeTags.BYPASSES_ARMOR)) modified *= 0.85f;
       
       return modified;
    }
    
    @Override
-   protected void initGoals(){
-      this.goalSelector.clear(g -> true);
-      this.targetSelector.clear(g -> true);
-      this.goalSelector.add(5, new WanderAroundFarGoal(this, 1.0));
-      this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-      this.goalSelector.add(6, new LookAroundGoal(this));
-      this.targetSelector.add(1, new RevengeGoal(this));
-      this.targetSelector.add(2, new ActiveTargetGoal(this, PlayerEntity.class, true));
+   protected void registerGoals(){
+      this.goalSelector.removeAllGoals(g -> true);
+      this.targetSelector.removeAllGoals(g -> true);
+      this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
+      this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
+      this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
+      this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
    }
    
    @Override
-   public void shootAt(LivingEntity target, float pullProgress) {
+   public void performRangedAttack(LivingEntity target, float pullProgress) {
       if(!this.isSilent()){
-         this.playSound(SoundEvents.ENTITY_WITHER_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+         this.playSound(SoundEvents.WITHER_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
       }
       
-      double eyeX = this.getEyePos().x;
-      double eyeY = this.getEyePos().y;
-      double eyeZ = this.getEyePos().z;
+      double eyeX = this.getEyePosition().x;
+      double eyeY = this.getEyePosition().y;
+      double eyeZ = this.getEyePosition().z;
       double g = target.getX() - eyeX;
-      double h = target.getBodyY(0.34) - eyeY;
+      double h = target.getY(0.34) - eyeY;
       double i = target.getZ() - eyeZ;
-      Vec3d vec3d = new Vec3d(g, h, i);
-      WitherSkullEntity witherSkullEntity = new WitherSkullEntity(this.getEntityWorld(), this, vec3d.normalize());
+      Vec3 vec3d = new Vec3(g, h, i);
+      WitherSkull witherSkullEntity = new WitherSkull(this.level(), this, vec3d.normalize());
       witherSkullEntity.setOwner(this);
       
       if(this.construct != null && construct.isExalted()){
-         witherSkullEntity.setCharged(true);
+         witherSkullEntity.setDangerous(true);
       }else{
-         witherSkullEntity.setCharged(this.random.nextFloat() < 0.34f);
+         witherSkullEntity.setDangerous(this.random.nextFloat() < 0.34f);
       }
       
       
-      witherSkullEntity.setPos(eyeX, eyeY, eyeZ);
-      this.getEntityWorld().spawnEntity(witherSkullEntity);
+      witherSkullEntity.setPosRaw(eyeX, eyeY, eyeZ);
+      this.level().addFreshEntity(witherSkullEntity);
    }
    
-   public static DefaultAttributeContainer.Builder createGuardianAttributes(){
-      return HostileEntity.createHostileAttributes()
-            .add(EntityAttributes.MOVEMENT_SPEED, 0.35)
-            .add(EntityAttributes.FOLLOW_RANGE, 64.0)
-            .add(EntityAttributes.MAX_HEALTH, 50.0)
-            .add(EntityAttributes.ARMOR, 10)
-            .add(EntityAttributes.ARMOR_TOUGHNESS, 4)
-            .add(EntityAttributes.ATTACK_DAMAGE, 10)
-            .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0);
+   public static AttributeSupplier.Builder createGuardianAttributes(){
+      return Monster.createMonsterAttributes()
+            .add(Attributes.MOVEMENT_SPEED, 0.35)
+            .add(Attributes.FOLLOW_RANGE, 64.0)
+            .add(Attributes.MAX_HEALTH, 50.0)
+            .add(Attributes.ARMOR, 10)
+            .add(Attributes.ARMOR_TOUGHNESS, 4)
+            .add(Attributes.ATTACK_DAMAGE, 10)
+            .add(Attributes.KNOCKBACK_RESISTANCE, 1.0);
    }
    
    @Override
@@ -217,19 +221,19 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
    }
    
    @Override
-   protected void writeCustomData(WriteView view){
-      super.writeCustomData(view);
+   protected void addAdditionalSaveData(ValueOutput view){
+      super.addAdditionalSaveData(view);
       view.putBoolean("mage",mage);
-      if(this.construct != null) view.putString("construct",this.construct.getUuidAsString());
+      if(this.construct != null) view.putString("construct",this.construct.getStringUUID());
    }
    
    @Override
-   protected void readCustomData(ReadView view){
-      super.readCustomData(view);
-      mage = view.getBoolean("mage", false);
+   protected void readAdditionalSaveData(ValueInput view){
+      super.readAdditionalSaveData(view);
+      mage = view.getBooleanOr("mage", false);
       
-      if(getEntityWorld() instanceof ServerWorld serverWorld){
-         if(serverWorld.getEntity(AlgoUtils.getUUID(view.getString("construct", ""))) instanceof NulConstructEntity con){
+      if(level() instanceof ServerLevel serverWorld){
+         if(serverWorld.getEntity(AlgoUtils.getUUID(view.getStringOr("construct", ""))) instanceof NulConstructEntity con){
             this.construct = con;
          }
       }

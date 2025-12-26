@@ -15,30 +15,34 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.*;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DropExperienceBlock;
+import net.minecraft.world.level.block.RedStoneOreBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -61,12 +65,12 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_PICKAXE;
       item = new PickaxeOfCeptyusItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_PICKAXE_OF_CEPTYUS};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_PICKAXE_OF_CEPTYUS};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
@@ -74,62 +78,62 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.FORTUNE),5),
-            new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.EFFICIENCY),5)
+      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
+            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.FORTUNE),5),
+            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.EFFICIENCY),5)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("A long-lost ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("Pickaxe ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("that could ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("shatter ").formatted(Formatting.GOLD))
-            .append(Text.literal("the ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("World").formatted(Formatting.GREEN))
-            .append(Text.literal(".").formatted(Formatting.DARK_GREEN)));
-      lore.add(Text.literal("")
-            .append(Text.literal("An ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("unbreakable ").formatted(Formatting.BLUE))
-            .append(Text.literal("Netherite Pickaxe").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" with ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("Fortune V").formatted(Formatting.GREEN))
-            .append(Text.literal(" and ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("Efficiency V").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_GREEN)));
-      lore.add(Text.literal("")
-            .append(Text.literal("It gives ramping ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("haste ").formatted(Formatting.GOLD))
-            .append(Text.literal("and ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("mines ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("whole ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("ore veins").formatted(Formatting.GREEN))
-            .append(Text.literal(". ").formatted(Formatting.DARK_GREEN)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("A long-lost ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("Pickaxe ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("that could ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("shatter ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("the ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("World").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)));
+      lore.add(Component.literal("")
+            .append(Component.literal("An ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("unbreakable ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("Netherite Pickaxe").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" with ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("Fortune V").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(" and ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("Efficiency V").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)));
+      lore.add(Component.literal("")
+            .append(Component.literal("It gives ramping ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("haste ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("and ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("mines ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("whole ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("ore veins").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(". ").withStyle(ChatFormatting.DARK_GREEN)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   public void veinMine(World world, PlayerEntity player, ItemStack item, BlockPos pos){
-      if(!(world instanceof ServerWorld serverWorld)) return;
+   public void veinMine(Level world, Player player, ItemStack item, BlockPos pos){
+      if(!(world instanceof ServerLevel serverWorld)) return;
       Block type = world.getBlockState(pos).getBlock();
-      if(!world.getBlockState(pos).isIn(ArcanaRegistry.CEPTYUS_VEIN_MINEABLE)) return;
+      if(!world.getBlockState(pos).is(ArcanaRegistry.CEPTYUS_VEIN_MINEABLE)) return;
       
       int veinLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.WITH_THE_DEPTHS.id));
       int maxDepth = 8 + 2*veinLevel;
       int maxBlocks = 64 + 32*veinLevel;
       
-      Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
+      Queue<Tuple<BlockPos, Integer>> queue = Lists.newLinkedList();
       Queue<BlockPos> visited = Lists.newLinkedList();
-      queue.add(new Pair<>(pos, 0));
+      queue.add(new Tuple<>(pos, 0));
       ArrayList<BlockPos> toMine = new ArrayList<>();
       
       while(!queue.isEmpty()){
-         Pair<BlockPos, Integer> pair = queue.poll();
-         BlockPos blockPos = pair.getLeft();
-         int depth = pair.getRight();
+         Tuple<BlockPos, Integer> pair = queue.poll();
+         BlockPos blockPos = pair.getA();
+         int depth = pair.getB();
          visited.add(blockPos);
          Block curType = world.getBlockState(blockPos).getBlock();
          
@@ -142,9 +146,9 @@ public class PickaxeOfCeptyus extends ArcanaItem {
                for(int j = -1; j <= 1; j++){
                   for(int k = -1; k <= 1; k++){
                      if(!(i==0 && j==0 && k==0) && depth < maxDepth){
-                        BlockPos pos2 = blockPos.add(i,j,k);
-                        if(queue.stream().noneMatch(p -> p.getLeft().equals(pos2)) && !visited.contains(pos2)){
-                           queue.add(new Pair<>(pos2,depth+1));
+                        BlockPos pos2 = blockPos.offset(i,j,k);
+                        if(queue.stream().noneMatch(p -> p.getA().equals(pos2)) && !visited.contains(pos2)){
+                           queue.add(new Tuple<>(pos2,depth+1));
                         }
                      }
                   }}}
@@ -156,48 +160,48 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       
       List<ItemStack> drops = new ArrayList<>();
       ItemStack veinPick = new ItemStack(Items.NETHERITE_PICKAXE);
-      veinPick.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.FORTUNE),5 + greed[greedLvl]);
-      veinPick.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),5);
+      veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.FORTUNE),5 + greed[greedLvl]);
+      veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),5);
       
       for(BlockPos blockPos : toMine){
-         drops.addAll(Block.getDroppedStacks(world.getBlockState(blockPos), serverWorld, blockPos, null, player, veinPick));
-         world.breakBlock(blockPos,false,player);
-         if(type instanceof ExperienceDroppingBlock ore){
-            ore.onStacksDropped(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
+         drops.addAll(Block.getDrops(world.getBlockState(blockPos), serverWorld, blockPos, null, player, veinPick));
+         world.destroyBlock(blockPos,false,player);
+         if(type instanceof DropExperienceBlock ore){
+            ore.spawnAfterBreak(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
          }
-         if(type instanceof RedstoneOreBlock ore){
-            ore.onStacksDropped(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
+         if(type instanceof RedStoneOreBlock ore){
+            ore.spawnAfterBreak(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
          }
          ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
       }
       for(ItemStack stack : drops){
-         Block.dropStack(world, pos, stack);
+         Block.popResource(world, pos, stack);
       }
-      if(toMine.size() >= 12 && (type == Blocks.DIAMOND_ORE || type == Blocks.DEEPSLATE_DIAMOND_ORE) && player instanceof ServerPlayerEntity serverPlayer) ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.MINE_DIAMONDS.id);
+      if(toMine.size() >= 12 && (type == Blocks.DIAMOND_ORE || type == Blocks.DEEPSLATE_DIAMOND_ORE) && player instanceof ServerPlayer serverPlayer) ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.MINE_DIAMONDS.id);
    }
    
-   public void mining(ServerPlayerEntity player, ItemStack stack){
+   public void mining(ServerPlayer player, ItemStack stack){
       int wHaste = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
       int energyGain = 5+(wHaste * 2);
       int maxEnergy = 1000 + 100 * wHaste;
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       
-      profile.addMiscData(CEPTYUS_TICK, NbtInt.of(0));
-      NbtInt energy = (NbtInt) profile.getMiscData(CEPTYUS_ENERGY);
+      profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(0));
+      IntTag energy = (IntTag) profile.getMiscData(CEPTYUS_ENERGY);
       if(energy == null){
-         profile.addMiscData(CEPTYUS_ENERGY, NbtInt.of(0));
+         profile.addMiscData(CEPTYUS_ENERGY, IntTag.valueOf(0));
       }else{
-         profile.addMiscData(CEPTYUS_ENERGY, NbtInt.of(Math.min(energy.intValue() + energyGain, maxEnergy)));
+         profile.addMiscData(CEPTYUS_ENERGY, IntTag.valueOf(Math.min(energy.intValue() + energyGain, maxEnergy)));
       }
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Ancient Pickaxe\n     of Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nA curious Divine Artifact found in the deepest parts of the world amongst the rubble of the ancients’ dwellings from a calamity long past. A Pickaxe that was used to carve  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Ancient Pickaxe\n     of Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nthrough the toughest\ndeepslate like butter, aid in the gathering of obsidian, and harvest fast fortunes from the depths without suffering a single chip.\n\nThis Pickaxe contains  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Ancient Pickaxe\n     of Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nthe Fortune enchantment pushed beyond its limit to the 5th level, as well as Efficiency imbued with a ramping hast boost that increases as I mine.\n\nThe Pickaxe also mines ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Ancient Pickaxe\n     of Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nall nearby ores of the same type in a single swing, and places the resulting valuables before me.\n\nThe ancients were careful folk, and so, such a noisy ability does not activate while sneaking.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("  Ancient Pickaxe\n     of Ceptyus").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nA curious Divine Artifact found in the deepest parts of the world amongst the rubble of the ancients’ dwellings from a calamity long past. A Pickaxe that was used to carve  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Ancient Pickaxe\n     of Ceptyus").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nthrough the toughest\ndeepslate like butter, aid in the gathering of obsidian, and harvest fast fortunes from the depths without suffering a single chip.\n\nThis Pickaxe contains  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Ancient Pickaxe\n     of Ceptyus").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nthe Fortune enchantment pushed beyond its limit to the 5th level, as well as Efficiency imbued with a ramping hast boost that increases as I mine.\n\nThe Pickaxe also mines ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Ancient Pickaxe\n     of Ceptyus").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nall nearby ores of the same type in a single swing, and places the resulting valuables before me.\n\nThe ancients were careful folk, and so, such a noisy ability does not activate while sneaking.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -209,46 +213,46 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          IArcanaProfileComponent profile = ArcanaNovum.data(player);
-         NbtInt energyEle = (NbtInt) profile.getMiscData(CEPTYUS_ENERGY);
+         IntTag energyEle = (IntTag) profile.getMiscData(CEPTYUS_ENERGY);
          int energy = energyEle == null ? 0 : energyEle.intValue();
          
          if(energy > 0){
-            int lastTick = ((NbtInt)profile.getMiscData(CEPTYUS_TICK)).intValue();
-            profile.addMiscData(CEPTYUS_TICK, NbtInt.of(lastTick+1));
-            profile.addMiscData(CEPTYUS_ENERGY, NbtInt.of(Math.max(0,energy-lastTick/3)));
+            int lastTick = ((IntTag)profile.getMiscData(CEPTYUS_TICK)).intValue();
+            profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(lastTick+1));
+            profile.addMiscData(CEPTYUS_ENERGY, IntTag.valueOf(Math.max(0,energy-lastTick/3)));
             int speed = energy / 100;
             
-            StatusEffectInstance haste = new StatusEffectInstance(StatusEffects.HASTE, 100, speed, false, false, false);
-            player.addStatusEffect(haste);
+            MobEffectInstance haste = new MobEffectInstance(MobEffects.HASTE, 100, speed, false, false, false);
+            player.addEffect(haste);
             if(speed == 10) ArcanaAchievements.progress(player,ArcanaAchievements.BACK_IN_THE_MINE.id,1);
          }
       }
       
       @Override
-      public boolean postMine(ItemStack stack, World world, BlockState state, BlockPos pos, LivingEntity miner){
-         if(miner instanceof ServerPlayerEntity player){
+      public boolean mineBlock(ItemStack stack, Level world, BlockState state, BlockPos pos, LivingEntity miner){
+         if(miner instanceof ServerPlayer player){
             int energyGain = 3 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
             int maxEnergy = 1000 + 100 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
             IArcanaProfileComponent profile = ArcanaNovum.data(player);
             
-            profile.addMiscData(CEPTYUS_TICK, NbtInt.of(0));
-            NbtInt energy = (NbtInt) profile.getMiscData(CEPTYUS_ENERGY);
+            profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(0));
+            IntTag energy = (IntTag) profile.getMiscData(CEPTYUS_ENERGY);
             if(energy == null){
-               profile.addMiscData(CEPTYUS_ENERGY, NbtInt.of(0));
+               profile.addMiscData(CEPTYUS_ENERGY, IntTag.valueOf(0));
             }else{
-               profile.addMiscData(CEPTYUS_ENERGY, NbtInt.of(Math.min(energy.intValue() + energyGain, maxEnergy)));
+               profile.addMiscData(CEPTYUS_ENERGY, IntTag.valueOf(Math.min(energy.intValue() + energyGain, maxEnergy)));
             }
          }
-         return super.postMine(stack, world, state, pos, miner);
+         return super.mineBlock(stack, world, state, pos, miner);
       }
    }
 }

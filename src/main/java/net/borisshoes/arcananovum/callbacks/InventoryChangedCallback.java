@@ -5,30 +5,30 @@ import net.borisshoes.arcananovum.research.ObtainResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.MinecraftUtils;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.Map;
 
 public class InventoryChangedCallback {
    
-   public static void onSlotUpdate(ServerPlayerEntity player, PlayerInventory inventory, ItemStack stack){
+   public static void onSlotUpdate(ServerPlayer player, Inventory inventory, ItemStack stack){
       
       // Obtain Research Task Check
-      for(Map.Entry<RegistryKey<ResearchTask>, ResearchTask> entry : ResearchTasks.RESEARCH_TASKS.getEntrySet()){
+      for(Map.Entry<ResourceKey<ResearchTask>, ResearchTask> entry : ResearchTasks.RESEARCH_TASKS.entrySet()){
          ResearchTask task = entry.getValue();
          if(task instanceof ObtainResearchTask obtainTask){
-            if(stack.isOf(obtainTask.getItem())){
+            if(stack.is(obtainTask.getItem())){
                ArcanaNovum.data(player).setResearchTask(entry.getKey(), true);
             }
          }
       }
       
-      if(EnchantmentHelper.getLevel(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),stack) > 0){
+      if(EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),stack) > 0){
          ArcanaNovum.data(player).setResearchTask(ResearchTasks.OBTAIN_SILK_TOUCH, true);
       }
    }

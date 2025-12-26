@@ -17,23 +17,23 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
@@ -42,7 +42,7 @@ import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialA
 
 public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    public static final int[] TIMES = {6000,9000,12000,14000,18000,20000,23000,2000};
-   public static final Pair<Item,Integer> COST = new Pair<>(Items.NETHER_STAR,1);
+   public static final Tuple<Item,Integer> COST = new Tuple<>(Items.NETHER_STAR,1);
    
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
@@ -71,9 +71,9 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       resetCooldown();
    }
    
-   public void openGui(ServerPlayerEntity player){
+   public void openGui(ServerPlayer player){
       if(active){
-         player.sendMessage(Text.literal("You cannot access an active Altar").formatted(Formatting.RED));
+         player.sendSystemMessage(Component.literal("You cannot access an active Altar").withStyle(ChatFormatting.RED));
          return;
       }
       CelestialAltarGui gui = new CelestialAltarGui(player,this);;
@@ -81,45 +81,45 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       gui.open();
    }
    
-   private void changeTime(@Nullable ServerPlayerEntity player){
-      if(!(this.getWorld() instanceof ServerWorld serverWorld)) return;
+   private void changeTime(@Nullable ServerPlayer player){
+      if(!(this.getLevel() instanceof ServerLevel serverWorld)) return;
       int phase = this.getPhase();
       int mode = this.getMode();
-      long timeOfDay = serverWorld.getTimeOfDay();
+      long timeOfDay = serverWorld.getDayTime();
       if(mode == 0){
          int curTime = (int) (timeOfDay % 24000L);
          int targetTime = TIMES[phase];
          int timeDiff = (targetTime - curTime + 24000) % 24000;
-         serverWorld.setTimeOfDay(timeOfDay + timeDiff);
+         serverWorld.setDayTime(timeOfDay + timeDiff);
          
          if(player != null) ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OF_THE_SUN.id);
       }else{
          int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
          int phaseDiff = (phase - curPhase + 8) % 8;
-         serverWorld.setTimeOfDay(timeOfDay + phaseDiff * 24000L);
+         serverWorld.setDayTime(timeOfDay + phaseDiff * 24000L);
          
          if(phase == 0 && player != null){
             ArcanaAchievements.grant(player,ArcanaAchievements.LYCANTHROPE.id);
          }
       }
-      SoundUtils.playSound(serverWorld, this.getPos(), SoundEvents.BLOCK_END_PORTAL_SPAWN, SoundCategory.BLOCKS, 1, 0.5f);
+      SoundUtils.playSound(serverWorld, this.getBlockPos(), SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 1, 0.5f);
       this.setActive(false);
    }
    
-   public boolean startStarChange(@Nullable ServerPlayerEntity player){
-      if(this.getCooldown() > 0 || !(this.getWorld() instanceof ServerWorld serverWorld)) return false;
+   public boolean startStarChange(@Nullable ServerPlayer player){
+      if(this.getCooldown() > 0 || !(this.getLevel() instanceof ServerLevel serverWorld)) return false;
       if(player == null && getCrafterId() != null){
-         PlayerEntity crafter = serverWorld.getPlayerByUuid(AlgoUtils.getUUID(getCrafterId()));
-         if(crafter instanceof ServerPlayerEntity){
-            player = (ServerPlayerEntity) crafter;
+         Player crafter = serverWorld.getPlayerByUUID(AlgoUtils.getUUID(getCrafterId()));
+         if(crafter instanceof ServerPlayer){
+            player = (ServerPlayer) crafter;
          }
       }
-      @Nullable ServerPlayerEntity finalPlayer = player;
+      @Nullable ServerPlayer finalPlayer = player;
       
       this.resetCooldown();
       this.setActive(true);
-      ArcanaEffectUtils.celestialAltarAnim(serverWorld,this.getPos().toCenterPos(), 0, serverWorld.getBlockState(this.getPos()).get(HORIZONTAL_FACING));
+      ArcanaEffectUtils.celestialAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0, serverWorld.getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING));
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(400, () -> {
          changeTime(finalPlayer);
          if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.CELESTIAL_ALTAR_ACTIVATE));
@@ -127,7 +127,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       return true;
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof CelestialAltarBlockEntity altar){
          altar.tick();
       }
@@ -140,30 +140,30 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.CELESTIAL_ALTAR).getCheckOffset()),world.getBlockState(pos).get(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.CELESTIAL_ALTAR).getCheckOffset()), level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
       
       if(isAssembled() && cooldown > 0){
          cooldown--;
-         this.markDirty();
+         this.setChanged();
       }
       
-      if(serverWorld.getServer().getTicks() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
+         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
       
-      boolean activatable = serverWorld.getBlockState(pos).getOrEmpty(CelestialAltar.CelestialAltarBlock.ACTIVATABLE).orElse(false);
+      boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(CelestialAltar.CelestialAltarBlock.ACTIVATABLE).orElse(false);
       boolean shouldBeActivatable = this.cooldown <= 0 && this.isAssembled() && !this.isActive();
       if(activatable ^ shouldBeActivatable){
-         serverWorld.setBlockState(pos, serverWorld.getBlockState(pos).with(CelestialAltar.CelestialAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.NOTIFY_LISTENERS);
+         serverWorld.setBlock(worldPosition, serverWorld.getBlockState(worldPosition).setValue(CelestialAltar.CelestialAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.UPDATE_CLIENTS);
       }
    }
    
@@ -174,11 +174,11 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    public void setActive(boolean active){
       this.active = active;
       
-      if(this.world instanceof ServerWorld serverWorld){
-         boolean activatable = serverWorld.getBlockState(pos).getOrEmpty(CelestialAltar.CelestialAltarBlock.ACTIVATABLE).orElse(false);
+      if(this.level instanceof ServerLevel serverWorld){
+         boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(CelestialAltar.CelestialAltarBlock.ACTIVATABLE).orElse(false);
          boolean shouldBeActivatable = this.cooldown <= 0 && this.isAssembled() && !this.isActive();
          if(activatable ^ shouldBeActivatable){
-            serverWorld.setBlockState(pos, serverWorld.getBlockState(pos).with(CelestialAltar.CelestialAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.NOTIFY_LISTENERS);
+            serverWorld.setBlock(worldPosition, serverWorld.getBlockState(worldPosition).setValue(CelestialAltar.CelestialAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.UPDATE_CLIENTS);
          }
       }
    }
@@ -233,15 +233,15 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.cooldown = view.getInt("cooldown", 0);
-      this.mode = view.getInt("mode", 0);
-      this.phase = view.getInt("phase", 0);
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.cooldown = view.getIntOr("cooldown", 0);
+      this.mode = view.getIntOr("mode", 0);
+      this.phase = view.getIntOr("phase", 0);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
@@ -249,9 +249,9 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    }
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);

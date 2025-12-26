@@ -1,16 +1,16 @@
 package net.borisshoes.arcananovum.core;
 
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 public class ArcanaItemContainer {
    
-   private final Inventory inventory;
+   private final Container inventory;
    private final int size, sortMod;
    private final String concModStr, name;
    private final double concMod;
    
-   public ArcanaItemContainer(Inventory inventory, int size, int sortMod, String concModStr, String name, double concMod){
+   public ArcanaItemContainer(Container inventory, int size, int sortMod, String concModStr, String name, double concMod){
       this.inventory = inventory;
       this.size = size;
       this.sortMod = sortMod;
@@ -19,7 +19,7 @@ public class ArcanaItemContainer {
       this.concMod = concMod;
    }
    
-   public Inventory getInventory(){
+   public Container getInventory(){
       return inventory;
    }
    

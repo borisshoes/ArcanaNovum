@@ -18,24 +18,24 @@ import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomModelData;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -63,12 +63,12 @@ public class Soulstone extends ArcanaItem {
       itemVersion = 1;
       vanillaItem = Items.FIRE_CHARGE;
       item = new SoulstoneItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_RED);
-      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_KILL_A_MOB,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.USE_SOUL_SPEED,ResearchTasks.UNLOCK_STELLAR_CORE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_KILL_A_MOB,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.USE_SOUL_SPEED,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,TYPE_TAG,"unattuned");
       putProperty(stack,SOULS_TAG,0);
       putProperty(stack,MAX_TIER_TAG,0);
@@ -77,23 +77,23 @@ public class Soulstone extends ArcanaItem {
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The dark stone ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("crackles").formatted(Formatting.RED))
-            .append(Text.literal(" with ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("red energy").formatted(Formatting.DARK_RED))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("souls").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(" of mobs ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("killed").formatted(Formatting.RED))
-            .append(Text.literal(" seems to get ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("trapped").formatted(Formatting.BLUE))
-            .append(Text.literal(" inside...").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal(""));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The dark stone ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("crackles").withStyle(ChatFormatting.RED))
+            .append(Component.literal(" with ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("red energy").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("souls").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(" of mobs ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("killed").withStyle(ChatFormatting.RED))
+            .append(Component.literal(" seems to get ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("trapped").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" inside...").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal(""));
       
       
       String attunedString = "Unattuned";
@@ -104,15 +104,15 @@ public class Soulstone extends ArcanaItem {
          String type = getType(itemStack);
          souls = getSouls(itemStack);
          tier = soulsToTier(souls);
-         Optional<EntityType<?>> opt = EntityType.get(type);
+         Optional<EntityType<?>> opt = EntityType.byString(type);
          if(!type.equals("unattuned") && opt.isPresent()){
-            String entityTypeName = opt.get().getName().getString();
+            String entityTypeName = opt.get().getDescription().getString();
             attunedString = "Attuned - "+entityTypeName;
          }
       }
       
-      lore.add(Text.literal(attunedString).formatted(Formatting.LIGHT_PURPLE));
-      lore.add(Text.literal("Tier "+tier+" - ("+ LevelUtils.readableInt(souls)+" Mobs Killed)").formatted(Formatting.GRAY));
+      lore.add(Component.literal(attunedString).withStyle(ChatFormatting.LIGHT_PURPLE));
+      lore.add(Component.literal("Tier "+tier+" - ("+ LevelUtils.readableInt(souls)+" Mobs Killed)").withStyle(ChatFormatting.GRAY));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -130,16 +130,16 @@ public class Soulstone extends ArcanaItem {
       return buildItemLore(newStack,server);
    }
    
-   public void killedEntity(ServerWorld world, ServerPlayerEntity player, LivingEntity dead, ItemStack stone, ItemStack weapon){
+   public void killedEntity(ServerLevel world, ServerPlayer player, LivingEntity dead, ItemStack stone, ItemStack weapon){
       int souls = getIntProperty(stone,SOULS_TAG);
       int maxTier = getIntProperty(stone,MAX_TIER_TAG);
       int soulsFromSpear = getIntProperty(stone,SOULS_FROM_SPEAR_TAG);
       if(weapon == null) weapon = ItemStack.EMPTY;
       
-      String entityTypeId = EntityType.getId(dead.getType()).toString();
+      String entityTypeId = EntityType.getKey(dead.getType()).toString();
       
       int toAdd = new int[]{1,2,3,4,5,10}[Math.max(0,ArcanaAugments.getAugmentOnItem(stone,ArcanaAugments.SOUL_REAPER.id))];
-      if(weapon.isOf(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem())){
+      if(weapon.is(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem())){
          if(ArcanaAugments.getAugmentOnItem(weapon,ArcanaAugments.ETERNAL_CRUELTY) > 0){
             toAdd *= 2;
          }
@@ -150,8 +150,8 @@ public class Soulstone extends ArcanaItem {
       int tier = soulsToTier(souls);
       if(tier != soulsToTier(souls-toAdd)){
          // Level up notification
-         player.sendMessage(Text.literal("Your Soulstone crackles with new power!").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
-         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1,1f);
+         player.displayClientMessage(Component.literal("Your Soulstone crackles with new power!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
+         SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, 1,1f);
          if(tier > maxTier){
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
             putProperty(stone,MAX_TIER_TAG,tier);
@@ -163,11 +163,11 @@ public class Soulstone extends ArcanaItem {
             }
          }
          if(tier == 5) ArcanaAchievements.grant(player,ArcanaAchievements.PHILOSOPHER_STONE);
-         if(tier == 3 && entityTypeId.equals(EntityType.getId(EntityType.VILLAGER).toString())) ArcanaAchievements.grant(player,ArcanaAchievements.TOOK_A_VILLAGE);
+         if(tier == 3 && entityTypeId.equals(EntityType.getKey(EntityType.VILLAGER).toString())) ArcanaAchievements.grant(player,ArcanaAchievements.TOOK_A_VILLAGE);
       }
       putProperty(stone,SOULS_FROM_SPEAR_TAG,soulsFromSpear);
       putProperty(stone,SOULS_TAG,souls);
-      buildItemLore(stone,player.getEntityWorld().getServer());
+      buildItemLore(stone,player.level().getServer());
    }
    
    public static String getType(ItemStack stack){
@@ -183,7 +183,7 @@ public class Soulstone extends ArcanaItem {
          return null;
       }
       ItemStack item = stack.copy();
-      String entityTypeId = EntityType.getId(type).toString();
+      String entityTypeId = EntityType.getKey(type).toString();
       putProperty(item,TYPE_TAG,entityTypeId);
       return ArcanaRegistry.SOULSTONE.buildItemLore(item, BorisLib.SERVER);
    }
@@ -211,17 +211,17 @@ public class Soulstone extends ArcanaItem {
       }
       ItemStack item = stack.copy();
       
-      newSouls = MathHelper.clamp(newSouls,0,Integer.MAX_VALUE);
+      newSouls = Mth.clamp(newSouls,0,Integer.MAX_VALUE);
       putProperty(item,SOULS_TAG,newSouls);
       putProperty(item,SOULS_FROM_SPEAR_TAG,Math.min(getIntProperty(item,SOULS_FROM_SPEAR_TAG),newSouls));
       return ArcanaRegistry.SOULSTONE.buildItemLore(item,BorisLib.SERVER);
    }
    
    public static ItemStack getShowcaseItem(int souls, @Nullable String typeId){
-      ItemStack item = ArcanaRegistry.SOULSTONE.getItem().getDefaultStack().copy();
+      ItemStack item = ArcanaRegistry.SOULSTONE.getItem().getDefaultInstance().copy();
       
-      if(typeId != null && EntityType.get(typeId).isPresent()){
-         EntityType<?> type = EntityType.get(typeId).get();
+      if(typeId != null && EntityType.byString(typeId).isPresent()){
+         EntityType<?> type = EntityType.byString(typeId).get();
          item = setType(item, type);
       }
       item = setSouls(item,souls);
@@ -240,12 +240,12 @@ public class Soulstone extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("     Soulstone").formatted(Formatting.DARK_RED,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nI have found that souls contain a unique flavor of Arcana, a quite powerful one at that. If I am to be surrounded by death, I might as well use it. Now, how to imprison a soul…\nA seemingly impossible  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Soulstone").formatted(Formatting.DARK_RED,Formatting.BOLD),Text.literal("\ntask if it weren’t for some materials the Nether-dwellers have been working with for eons. Soulsand seems to have souls naturally imbued in it, perhaps from ancient battles?\nCombining this with Crying Obsidian and Netherite yields a \n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Soulstone").formatted(Formatting.DARK_RED,Formatting.BOLD),Text.literal("\nStone that can act as an inescapable bulk prison for souls of a single variety. I know not why soul types refuse to combine.\n\nThe Soulstone should be able to attune to a type of mob by merely using it to draw blood.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Soulstone").formatted(Formatting.DARK_RED,Formatting.BOLD),Text.literal("\nAfter that, any souls of that type that are freed from their mortal prisons should be sucked into the Stone like a black hole, never to be released…\n\nUntil I find a way to use them…\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("     Soulstone").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nI have found that souls contain a unique flavor of Arcana, a quite powerful one at that. If I am to be surrounded by death, I might as well use it. Now, how to imprison a soul…\nA seemingly impossible  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Soulstone").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\ntask if it weren’t for some materials the Nether-dwellers have been working with for eons. Soulsand seems to have souls naturally imbued in it, perhaps from ancient battles?\nCombining this with Crying Obsidian and Netherite yields a \n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Soulstone").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nStone that can act as an inescapable bulk prison for souls of a single variety. I know not why soul types refuse to combine.\n\nThe Soulstone should be able to attune to a type of mob by merely using it to draw blood.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Soulstone").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nAfter that, any souls of that type that are freed from their mortal prisons should be sucked into the Stone like a black hole, never to be released…\n\nUntil I find a way to use them…\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -272,38 +272,38 @@ public class Soulstone extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack) || getType(itemStack).equals("unattuned")) return baseStack;
          
          List<String> stringList = new ArrayList<>();
          int tier = soulsToTier(getSouls(itemStack));
          stringList.add(""+tier);
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void postHit(ItemStack stack, LivingEntity target, LivingEntity attacker){
-         if(!(attacker instanceof PlayerEntity playerEntity)) return;
+      public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker){
+         if(!(attacker instanceof Player playerEntity)) return;
          String type = getStringProperty(stack,TYPE_TAG);
          
-         if(type.equals("unattuned") && target instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player){
-            if(attackedEntity.getType().isIn(ArcanaRegistry.SOULSTONE_DISALLOWED)){
-               player.sendMessage(Text.literal("The Soulstone cannot attune to this creature.").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
+         if(type.equals("unattuned") && target instanceof Mob attackedEntity && playerEntity instanceof ServerPlayer player){
+            if(attackedEntity.getType().is(ArcanaRegistry.SOULSTONE_DISALLOWED)){
+               player.displayClientMessage(Component.literal("The Soulstone cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
             }else{
-               String entityTypeId = EntityType.getId(attackedEntity.getType()).toString();
-               String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
+               String entityTypeId = EntityType.getKey(attackedEntity.getType()).toString();
+               String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
                
                putProperty(stack,TYPE_TAG,entityTypeId);
-               buildItemLore(stack,player.getEntityWorld().getServer());
-               player.sendMessage(Text.literal("The Soulstone attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
+               buildItemLore(stack,player.level().getServer());
+               player.displayClientMessage(Component.literal("The Soulstone attunes to the essence of "+entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
             }
          }
       }

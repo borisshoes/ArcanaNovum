@@ -10,30 +10,30 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
-import net.minecraft.block.BlockState;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ChargedProjectilesComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -43,57 +43,57 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
-   public ArcanaPolymerCrossbowItem(ArcanaItem arcanaItem, net.minecraft.item.Item.Settings settings){
-      super(settings.registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,arcanaItem.getId()))));
+   public ArcanaPolymerCrossbowItem(ArcanaItem arcanaItem, net.minecraft.world.item.Item.Properties settings){
+      super(settings.setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    
    @Override
-   protected void shoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target){
-      super.shoot(shooter, projectile, index, speed, divergence, yaw, target);
+   protected void shootProjectile(LivingEntity shooter, Projectile projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target){
+      super.shootProjectile(shooter, projectile, index, speed, divergence, yaw, target);
       
       if(projectile instanceof RunicArrowEntity runicArrow){
-         SoundEvent sound = SoundEvents.ITEM_TRIDENT_THROW.value();
+         SoundEvent sound = SoundEvents.TRIDENT_THROW.value();
          float volume = 0.8f;
          
          if(runicArrow.getArrowType() instanceof PhotonicArrows photonArrows){
-            sound = SoundEvents.BLOCK_AMETHYST_BLOCK_HIT;
+            sound = SoundEvents.AMETHYST_BLOCK_HIT;
             volume = 1.2f;
             
-            if(projectile.getEntityWorld() instanceof ServerWorld serverWorld){
+            if(projectile.level() instanceof ServerLevel serverWorld){
                int alignmentLvl = Math.max(0, runicArrow.getAugment(ArcanaAugments.PRISMATIC_ALIGNMENT.id));
                photonArrows.shoot(serverWorld, shooter, projectile, alignmentLvl);
                projectile.kill(serverWorld);
             }
          }
          
-         if(shooter instanceof ServerPlayerEntity player){
+         if(shooter instanceof ServerPlayer player){
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT));
             ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, 1);
-            shooter.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundCategory.PLAYERS,volume, 1.0F / (shooter.getEntityWorld().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
+            shooter.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS,volume, 1.0F / (shooter.level().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
          }
       }
    }
    
    @Override
-   public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+   public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
       ItemStack stack = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context);
-      ChargedProjectilesComponent projs = itemStack.getOrDefault(DataComponentTypes.CHARGED_PROJECTILES, ChargedProjectilesComponent.DEFAULT);
-      stack.set(DataComponentTypes.CHARGED_PROJECTILES,projs);
+      ChargedProjectiles projs = itemStack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+      stack.set(DataComponents.CHARGED_PROJECTILES,projs);
       return stack;
    }
    
    @Override
    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
       if(PolymerResourcePackUtils.hasMainPack(context)){
-         return Identifier.of(MOD_ID,arcanaItem.getId());
+         return Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId());
       }else{
-         return Registries.ITEM.getKey(arcanaItem.getVanillaItem().asItem()).get().getValue();
+         return BuiltInRegistries.ITEM.getResourceKey(arcanaItem.getVanillaItem().asItem()).get().identifier();
       }
    }
    
    @Override
-   public Text getName(ItemStack stack) {
+   public Component getName(ItemStack stack) {
       return arcanaItem.getDisplayName() != null ? arcanaItem.getDisplayName() : super.getName(stack);
    }
    
@@ -103,7 +103,7 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    }
    
    @Override
-   public void modifyClientTooltip(List<Text> tooltip, ItemStack stack, PacketContext context){
+   public void modifyClientTooltip(List<Component> tooltip, ItemStack stack, PacketContext context){
       PolymerItem.super.modifyClientTooltip(tooltip, stack, context);
    }
    
@@ -118,17 +118,17 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    }
    
    @Override
-   public boolean isPolymerBlockInteraction(BlockState state, ServerPlayerEntity player, Hand hand, ItemStack stack, ServerWorld world, BlockHitResult blockHitResult, ActionResult actionResult){
+   public boolean isPolymerBlockInteraction(BlockState state, ServerPlayer player, InteractionHand hand, ItemStack stack, ServerLevel world, BlockHitResult blockHitResult, InteractionResult actionResult){
       return PolymerItem.super.isPolymerBlockInteraction(state, player, hand, stack, world, blockHitResult, actionResult);
    }
    
    @Override
-   public boolean isPolymerEntityInteraction(ServerPlayerEntity player, Hand hand, ItemStack stack, ServerWorld world, Entity entity, ActionResult actionResult){
+   public boolean isPolymerEntityInteraction(ServerPlayer player, InteractionHand hand, ItemStack stack, ServerLevel world, Entity entity, InteractionResult actionResult){
       return PolymerItem.super.isPolymerEntityInteraction(player, hand, stack, world, entity, actionResult);
    }
    
    @Override
-   public boolean isPolymerItemInteraction(ServerPlayerEntity player, Hand hand, ItemStack stack, ServerWorld world, ActionResult actionResult){
+   public boolean isPolymerItemInteraction(ServerPlayer player, InteractionHand hand, ItemStack stack, ServerLevel world, InteractionResult actionResult){
       return PolymerItem.super.isPolymerItemInteraction(player, hand, stack, world, actionResult);
    }
    
@@ -148,7 +148,7 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    }
    
    @Override
-   public boolean handleMiningOnServer(ItemStack tool, BlockState targetBlock, BlockPos pos, ServerPlayerEntity player){
+   public boolean handleMiningOnServer(ItemStack tool, BlockState targetBlock, BlockPos pos, ServerPlayer player){
       return PolymerItem.super.handleMiningOnServer(tool, targetBlock, pos, player);
    }
 }

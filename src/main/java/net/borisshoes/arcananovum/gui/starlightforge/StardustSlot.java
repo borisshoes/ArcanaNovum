@@ -1,17 +1,17 @@
 package net.borisshoes.arcananovum.gui.starlightforge;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 public class StardustSlot  extends Slot {
-   public StardustSlot(Inventory inventory, int index, int x, int y){
+   public StardustSlot(Container inventory, int index, int x, int y){
       super(inventory, index, x, y);
    }
    
    @Override
-   public boolean canInsert(ItemStack stack){
-      return stack.isOf(ArcanaRegistry.STARDUST);
+   public boolean mayPlace(ItemStack stack){
+      return stack.is(ArcanaRegistry.STARDUST);
    }
 }

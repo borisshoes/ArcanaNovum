@@ -18,32 +18,32 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.Potions;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -62,81 +62,81 @@ public class ConcussionArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new ConcussionArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.KILL_SQUID,ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_BLINDNESS,ResearchTasks.EFFECT_WEAKNESS,ResearchTasks.USE_FIREWORK};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.KILL_SQUID,ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_BLINDNESS,ResearchTasks.EFFECT_WEAKNESS,ResearchTasks.USE_FIREWORK};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Concussion Arrows:").formatted(Formatting.BOLD,Formatting.GOLD));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.GRAY))
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" concuss ").formatted(Formatting.GOLD))
-            .append(Text.literal("entities ").formatted(Formatting.YELLOW))
-            .append(Text.literal("near where the arrow ").formatted(Formatting.GRAY))
-            .append(Text.literal("impacts").formatted(Formatting.GOLD))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Component.literal("Concussion Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" concuss ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("entities ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("near where the arrow ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("impacts").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK.id);
-      concuss(arrow, arrow.getEntityWorld(),entityHitResult.getPos(), lvl);
+      concuss(arrow, arrow.level(),entityHitResult.getLocation(), lvl);
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK.id);
-      concuss(arrow, arrow.getEntityWorld(),blockHitResult.getPos(), lvl);
+      concuss(arrow, arrow.level(),blockHitResult.getLocation(), lvl);
    }
    
-   private void concuss(PersistentProjectileEntity arrow, World world, Vec3d pos, int levelBoost){
-      Box rangeBox = new Box(pos.x+10,pos.y+10,pos.z+10,pos.x-10,pos.y-10,pos.z-10);
-      float range = (float) MathHelper.clamp(arrow.getVelocity().length()*2.5,1,6);
-      List<Entity> entities = world.getOtherEntities(null,rangeBox,e -> !e.isSpectator() && e.squaredDistanceTo(pos) < range*range && e instanceof LivingEntity);
+   private void concuss(AbstractArrow arrow, Level world, Vec3 pos, int levelBoost){
+      AABB rangeBox = new AABB(pos.x+10,pos.y+10,pos.z+10,pos.x-10,pos.y-10,pos.z-10);
+      float range = (float) Mth.clamp(arrow.getDeltaMovement().length()*2.5,1,6);
+      List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range*range && e instanceof LivingEntity);
       float percent = (1+levelBoost*.75f)*range/6;
       int mobsHit = 0;
       for(Entity entity : entities){
-         if(entity instanceof LivingEntity e && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity || entity instanceof NulConstructEntity)){
-            if(e instanceof MobEntity) mobsHit++;
+         if(entity instanceof LivingEntity e && !(entity instanceof EnderDragon || entity instanceof WitherBoss || entity instanceof NulConstructEntity)){
+            if(e instanceof Mob) mobsHit++;
             
-            StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, (int)(25*percent), 2, false, false, true);
-            StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA, (int)(120*percent), 0, false, false, true);
-            StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, (int)(40*percent), 4, false, false, true);
-            StatusEffectInstance slow2 = new StatusEffectInstance(StatusEffects.SLOWNESS, (int)(120*percent), 2, false, false, true);
-            StatusEffectInstance fatigue = new StatusEffectInstance(StatusEffects.MINING_FATIGUE, (int)(80*percent), 2+levelBoost, false, false, true);
-            StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, (int)(120*percent), 1+levelBoost, false, false, true);
-            e.addStatusEffect(blind);
-            e.addStatusEffect(nausea);
-            e.addStatusEffect(slow);
-            e.addStatusEffect(slow2);
-            e.addStatusEffect(fatigue);
-            e.addStatusEffect(weakness);
+            MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, (int)(25*percent), 2, false, false, true);
+            MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA, (int)(120*percent), 0, false, false, true);
+            MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, (int)(40*percent), 4, false, false, true);
+            MobEffectInstance slow2 = new MobEffectInstance(MobEffects.SLOWNESS, (int)(120*percent), 2, false, false, true);
+            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, (int)(80*percent), 2+levelBoost, false, false, true);
+            MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, (int)(120*percent), 1+levelBoost, false, false, true);
+            e.addEffect(blind);
+            e.addEffect(nausea);
+            e.addEffect(slow);
+            e.addEffect(slow2);
+            e.addEffect(fatigue);
+            e.addEffect(weakness);
             
-            if(world instanceof ServerWorld serverWorld){
-               if(e instanceof MobEntity mob){
-                  mob.setAiDisabled(true);
+            if(world instanceof ServerLevel serverWorld){
+               if(e instanceof Mob mob){
+                  mob.setNoAi(true);
                   BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
                      if(mob.isAlive()){
-                        mob.setAiDisabled(false);
+                        mob.setNoAi(false);
                      }
                   }));
                }
             }
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_AWE.id);
-      if(world instanceof ServerWorld serverWorld){
-         SoundUtils.playSound(world, BlockPos.ofFloored(pos), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS, 1, .8f);
+      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_AWE.id);
+      if(world instanceof ServerLevel serverWorld){
+         SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.PLAYERS, 1, .8f);
          ArcanaEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);
       }
    }
@@ -161,9 +161,9 @@ public class ConcussionArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Concussion Arrows").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Runic Matrix has been configured to unleash a plethora of unpleasant effects at the area of impact. Anyone caught in its range will have a hard time doing anything for a few seconds after being hit.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("Concussion Arrows").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis Runic Matrix has been configured to unleash a plethora of unpleasant effects at the area of impact. Anyone caught in its range will have a hard time doing anything for a few seconds after being hit.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -173,7 +173,7 @@ public class ConcussionArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

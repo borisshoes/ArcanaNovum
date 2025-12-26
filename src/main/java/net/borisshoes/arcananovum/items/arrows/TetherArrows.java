@@ -17,23 +17,23 @@ import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.potion.Potions;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -52,70 +52,70 @@ public class TetherArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new TetherArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.RIPTIDE_TRIDENT,ResearchTasks.FISH_MOB,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.RIPTIDE_TRIDENT,ResearchTasks.FISH_MOB,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Tether Arrows:").formatted(Formatting.BOLD,Formatting.GRAY));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.YELLOW))
-            .append(Text.literal("Runic Arrows ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("pull").formatted(Formatting.AQUA))
-            .append(Text.literal(" you to a block like a ").formatted(Formatting.YELLOW))
-            .append(Text.literal("grappling hook").formatted(Formatting.GRAY))
-            .append(Text.literal(".").formatted(Formatting.YELLOW)));
-      lore.add(Text.literal("")
-            .append(Text.literal("They will also ").formatted(Formatting.YELLOW))
-            .append(Text.literal("pull").formatted(Formatting.AQUA))
-            .append(Text.literal(" a hit ").formatted(Formatting.YELLOW))
-            .append(Text.literal("entity ").formatted(Formatting.GRAY))
-            .append(Text.literal("towards you.").formatted(Formatting.AQUA)));
+      lore.add(Component.literal("Tether Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("Runic Arrows ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("pull").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" you to a block like a ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("grappling hook").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(".").withStyle(ChatFormatting.YELLOW)));
+      lore.add(Component.literal("")
+            .append(Component.literal("They will also ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("pull").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" a hit ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("entity ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("towards you.").withStyle(ChatFormatting.AQUA)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getData().getBoolean("severed", false)) return;
-      if(arrow.getOwner() instanceof ServerPlayerEntity player && entityHitResult.getEntity() instanceof LivingEntity entity){
-         Vec3d hitPos = entityHitResult.getPos();
+      if(arrow.getData().getBooleanOr("severed", false)) return;
+      if(arrow.getOwner() instanceof ServerPlayer player && entityHitResult.getEntity() instanceof LivingEntity entity){
+         Vec3 hitPos = entityHitResult.getLocation();
          
-         BorisLib.addTickTimerCallback(player.getEntityWorld(), new GenericTimer(1, () -> {
-            Vec3d motion = player.getEntityPos().subtract(hitPos);
-            Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
+         BorisLib.addTickTimerCallback(player.level(), new GenericTimer(1, () -> {
+            Vec3 motion = player.position().subtract(hitPos);
+            Vec3 horizBoost = motion.multiply(1,0,1).normalize().scale(1.5);
             motion = motion.add(horizBoost);
             double verticalMotion = motion.y < -3 ? (player.getY() - entity.getY())*.3 : velFromHeight(motion.y)/20;
-            Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,verticalMotion,velFromLength(motion.z)*2.0/9.0);
-            entity.setVelocity(velocity);
-            if(entity instanceof ServerPlayerEntity targetPlayer) targetPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(targetPlayer));
+            Vec3 velocity = new Vec3(velFromLength(motion.x)*2.0/9.0,verticalMotion,velFromLength(motion.z)*2.0/9.0);
+            entity.setDeltaMovement(velocity);
+            if(entity instanceof ServerPlayer targetPlayer) targetPlayer.connection.send(new ClientboundSetEntityMotionPacket(targetPlayer));
             
-            ArcanaEffectUtils.tetherArrowEntity(player.getEntityWorld(),entity,player);
-            SoundUtils.playSound(arrow.getEntityWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
+            ArcanaEffectUtils.tetherArrowEntity(player.level(),entity,player);
+            SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_1, SoundSource.PLAYERS,.8f,.6f);
          }));
       }
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      if(arrow.getData().getBoolean("severed", false)) return;
-      if(arrow.getOwner() instanceof ServerPlayerEntity player){
-         Vec3d hitPos = blockHitResult.getPos();
-         Vec3d motion = hitPos.subtract(player.getEntityPos());
-         Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
+      if(arrow.getData().getBooleanOr("severed", false)) return;
+      if(arrow.getOwner() instanceof ServerPlayer player){
+         Vec3 hitPos = blockHitResult.getLocation();
+         Vec3 motion = hitPos.subtract(player.position());
+         Vec3 horizBoost = motion.multiply(1,0,1).normalize().scale(1.5);
          //motion = motion.add(horizBoost);
-         Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,velFromHeight(motion.y)/20,velFromLength(motion.z)*2.0/9.0);
-         player.setVelocity(velocity);
-         player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
-         ArcanaEffectUtils.tetherArrowGrapple(player.getEntityWorld(),player,blockHitResult.getPos());
-         SoundUtils.playSound(arrow.getEntityWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_2, SoundCategory.PLAYERS,.8f,.6f);
+         Vec3 velocity = new Vec3(velFromLength(motion.x)*2.0/9.0,velFromHeight(motion.y)/20,velFromLength(motion.z)*2.0/9.0);
+         player.setDeltaMovement(velocity);
+         player.connection.send(new ClientboundSetEntityMotionPacket(player));
+         ArcanaEffectUtils.tetherArrowGrapple(player.level(),player,blockHitResult.getLocation());
+         SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_2, SoundSource.PLAYERS,.8f,.6f);
          
          if(motion.y >= 12) ArcanaAchievements.progress(player,ArcanaAchievements.SPIDERMAN.id,1);
       }
@@ -161,7 +161,7 @@ public class TetherArrows extends RunicArrow {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = ArcanaIngredient.EMPTY;
       ArcanaIngredient c = new ArcanaIngredient(Items.STRING,32);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.RIPTIDE),3));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.RIPTIDE),3));
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
       ArcanaIngredient i = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_LEAPING);
       GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
@@ -176,9 +176,9 @@ public class TetherArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Tether Arrows").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThrough precise kinematic equations formed on the Matrix, these Arrows should form the perfect tether to pull me to the location I shoot. It can also pull creatures towards me.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("   Tether Arrows").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThrough precise kinematic equations formed on the Matrix, these Arrows should form the perfect tether to pull me to the location I shoot. It can also pull creatures towards me.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -188,7 +188,7 @@ public class TetherArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

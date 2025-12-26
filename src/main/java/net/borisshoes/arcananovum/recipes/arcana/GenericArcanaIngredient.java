@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public class GenericArcanaIngredient extends ArcanaIngredient {
    

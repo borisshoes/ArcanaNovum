@@ -20,32 +20,32 @@ import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LightningEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.passive.MooshroomEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.cow.MushroomCow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -66,34 +66,34 @@ public class StormArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new StormArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE,ResearchTasks.OBTAIN_LIGHTNING_ROD};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE,ResearchTasks.OBTAIN_LIGHTNING_ROD};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Storm Arrows:").formatted(Formatting.BOLD,Formatting.GRAY));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.GRAY))
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" channel ").formatted(Formatting.GRAY))
-            .append(Text.literal("lightning ").formatted(Formatting.YELLOW))
-            .append(Text.literal("from the ").formatted(Formatting.GRAY))
-            .append(Text.literal("clouds ").formatted(Formatting.WHITE))
-            .append(Text.literal("above.").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Only a ").formatted(Formatting.GRAY))
-            .append(Text.literal("small chance").formatted(Formatting.YELLOW))
-            .append(Text.literal(" to work when not ").formatted(Formatting.GRAY))
-            .append(Text.literal("raining").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Component.literal("Storm Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" channel ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("lightning ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("from the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("clouds ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("above.").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Only a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("small chance").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(" to work when not ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("raining").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -102,45 +102,45 @@ public class StormArrows extends RunicArrow {
       int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION.id);
       int chainLvl = arrow.getAugment(ArcanaAugments.CHAIN_LIGHTNING.id);
       int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK.id);
-      strike(arrow,entityHitResult.getPos(),stableLvl,shockLvl);
+      strike(arrow,entityHitResult.getLocation(),stableLvl,shockLvl);
       if(chainLvl > 0) chainLightning(arrow,entityHitResult.getEntity(),chainLvl);
-      entityHitResult.getEntity().timeUntilRegen = 1;
+      entityHitResult.getEntity().invulnerableTime = 1;
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION.id);
       int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK.id);
-      strike(arrow,blockHitResult.getPos(),stableLvl,shockLvl);
+      strike(arrow,blockHitResult.getLocation(),stableLvl,shockLvl);
    }
    
-   private void strike(PersistentProjectileEntity arrow, Vec3d pos, int stableLevel, int shockLvl){
-      World world = arrow.getEntityWorld();
-      if(arrow.isCritical() && (world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel])){
-         LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getEntityWorld());
-         lightning.setPosition(pos);
-         world.spawnEntity(lightning);
+   private void strike(AbstractArrow arrow, Vec3 pos, int stableLevel, int shockLvl){
+      Level world = arrow.level();
+      if(arrow.isCritArrow() && (world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel])){
+         LightningBolt lightning = new LightningBolt(EntityType.LIGHTNING_BOLT, arrow.level());
+         lightning.setPos(pos);
+         world.addFreshEntity(lightning);
          
-         if(arrow.getOwner() instanceof ServerPlayerEntity player){
-            BorisLib.addTickTimerCallback(player.getEntityWorld(), new GenericTimer(2, () -> {
-               if(lightning.getStruckEntities().anyMatch(e -> e instanceof MooshroomEntity)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY.id);
+         if(arrow.getOwner() instanceof ServerPlayer player){
+            BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2, () -> {
+               if(lightning.getHitEntities().anyMatch(e -> e instanceof MushroomCow)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY.id);
             }));
          }
          
-         if(shockLvl > 0 && world instanceof ServerWorld serverWorld){
-            ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.AFTERSHOCK_AREA_EFFECT_TRACKER.getId()).addSource(AftershockAreaEffectTracker.source(arrow.getOwner(), BlockPos.ofFloored(pos),serverWorld,shockLvl));
-            SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.2f,1f);
+         if(shockLvl > 0 && world instanceof ServerLevel serverWorld){
+            ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.AFTERSHOCK_AREA_EFFECT_TRACKER.getId()).addSource(AftershockAreaEffectTracker.source(arrow.getOwner(), BlockPos.containing(pos),serverWorld,shockLvl));
+            SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS,.2f,1f);
          }
       }
    }
    
-   private void chainLightning(PersistentProjectileEntity arrow, Entity hitEntity, int lvl){
-      if(!(arrow.getEntityWorld() instanceof ServerWorld world)) return;
-      Vec3d pos = hitEntity.getEntityPos();
+   private void chainLightning(AbstractArrow arrow, Entity hitEntity, int lvl){
+      if(!(arrow.level() instanceof ServerLevel world)) return;
+      Vec3 pos = hitEntity.position();
       double range = 5;
       
-      Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
-      List<Entity> entities = world.getOtherEntities(arrow.getOwner(),rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < range*range && !(e instanceof PersistentProjectileEntity));
+      AABB rangeBox = new AABB(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
+      List<Entity> entities = world.getEntities(arrow.getOwner(),rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range*range && !(e instanceof AbstractArrow));
       
       List<LivingEntity> hits = new ArrayList<>();
       if(hitEntity instanceof LivingEntity le) hits.add(le);
@@ -149,27 +149,27 @@ public class StormArrows extends RunicArrow {
             if(hits.size() < lvl+1){
                if(!hits.isEmpty()){
                   LivingEntity lastHit = hits.getLast();
-                  double dist = lastHit.getEntityPos().distanceTo(e.getEntityPos());
+                  double dist = lastHit.position().distanceTo(e.position());
                   
-                  if(world instanceof ServerWorld serverWorld)
-                     ArcanaEffectUtils.line(serverWorld,null,lastHit.getEntityPos().add(0,lastHit.getHeight()/2,0),e.getEntityPos().add(0,e.getHeight()/2,0),ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
+                  if(world instanceof ServerLevel serverWorld)
+                     ArcanaEffectUtils.line(serverWorld,null,lastHit.position().add(0,lastHit.getBbHeight()/2,0),e.position().add(0,e.getBbHeight()/2,0), ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
                }
                
                DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow,arrow.getOwner());
-               e.timeUntilRegen = 1;
-               e.damage(world,source,6);
+               e.invulnerableTime = 1;
+               e.hurtServer(world,source,6);
                hits.add(e);
             }
          }
       }
-      SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.1f,2f);
+      SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS,.1f,2f);
    }
    
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = ArcanaIngredient.EMPTY;
       ArcanaIngredient c = new ArcanaIngredient(Items.LIGHTNING_ROD,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.CHANNELING),1));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.CHANNELING),1));
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
       GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
       
@@ -183,9 +183,9 @@ public class StormArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Storm Arrows").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe Channeling enchantment requires a storm to use. Throwing a bit of Arcana into it seems to charge the air enough to mimic a storm, although it isn’t always successful in doing so.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("   Storm Arrows").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe Channeling enchantment requires a storm to use. Throwing a bit of Arcana into it seems to charge the air enough to mimic a storm, although it isn’t always successful in doing so.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -195,7 +195,7 @@ public class StormArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

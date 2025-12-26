@@ -17,36 +17,40 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.pathing.NavigationType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -71,55 +75,55 @@ public class ContinuumAnchor extends ArcanaBlock {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
       itemVersion = 1;
       vanillaItem = Items.RESPAWN_ANCHOR;
-      block = new ContinuumAnchorBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).requiresTool().strength(50.0f, 1200.0f).luminance(state -> ContinuumAnchorBlock.getLightLevel(state, 15)));
+      block = new ContinuumAnchorBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).requiresCorrectToolForDrops().strength(50.0f, 1200.0f).lightLevel(state -> ContinuumAnchorBlock.getLightLevel(state, 15)));
       item = new ContinuumAnchorItem(block);
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.UNLOCK_EXOTIC_MATTER,ResearchTasks.ADVANCEMENT_CHARGE_RESPAWN_ANCHOR,ResearchTasks.UNLOCK_STELLAR_CORE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.UNLOCK_EXOTIC_MATTER,ResearchTasks.ADVANCEMENT_CHARGE_RESPAWN_ANCHOR,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("continuum anchor").withColor(ArcanaColors.BETTER_DARK_BLUE))
-            .append(Text.literal(" has the extraordinary ability to manipulate ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("spacetime").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("It just needs the ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("right type").formatted(Formatting.GRAY))
-            .append(Text.literal(" of ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("fuel").formatted(Formatting.GOLD))
-            .append(Text.literal("...").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("continuum anchor").withColor(ArcanaColors.BETTER_DARK_BLUE))
-            .append(Text.literal(" consumes ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("exotic matter").formatted(Formatting.BLUE))
-            .append(Text.literal(" to ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("chunk load").formatted(Formatting.AQUA))
-            .append(Text.literal(" a ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("5x5 area").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("area ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("also receives ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("random ticks").formatted(Formatting.BLUE))
-            .append(Text.literal(" and keeps ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("mobs ").formatted(Formatting.GRAY))
-            .append(Text.literal("loaded").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("continuum anchor").withColor(ArcanaColors.BETTER_DARK_BLUE))
+            .append(Component.literal(" has the extraordinary ability to manipulate ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("spacetime").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("It just needs the ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("right type").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(" of ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("fuel").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("...").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("continuum anchor").withColor(ArcanaColors.BETTER_DARK_BLUE))
+            .append(Component.literal(" consumes ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("exotic matter").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("chunk load").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" a ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("5x5 area").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("area ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("also receives ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("random ticks").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" and keeps ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("mobs ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("loaded").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   public static void loadChunks(ServerWorld serverWorld, ChunkPos pos){
+   public static void loadChunks(ServerLevel serverWorld, ChunkPos pos){
       for(int i = -RANGE; i <= RANGE; i++){
          for(int j = -RANGE; j <= RANGE; j++){
             ContinuumAnchor.addChunk(serverWorld,new ChunkPos(pos.x+i,pos.z+j));
@@ -127,18 +131,18 @@ public class ContinuumAnchor extends ArcanaBlock {
       }
    }
    
-   public static void addChunk(ServerWorld world, ChunkPos chunk){
-      world.getChunkManager().addTicket(ArcanaRegistry.ANCHOR_TICKET_TYPE, chunk, 2);
+   public static void addChunk(ServerLevel world, ChunkPos chunk){
+      world.getChunkSource().addTicketWithRadius(ArcanaRegistry.ANCHOR_TICKET_TYPE, chunk, 2);
       Long2IntOpenHashMap m = ANCHOR_CHUNKS.computeIfAbsent(world, w -> new Long2IntOpenHashMap());
       m.put(chunk.toLong(), 40);
    }
    
-   public static boolean isChunkLoaded(ServerWorld serverWorld, ChunkPos chunk){
+   public static boolean isChunkLoaded(ServerLevel serverWorld, ChunkPos chunk){
       return ANCHOR_CHUNKS.getOrDefault(serverWorld,new Long2IntOpenHashMap()).containsKey(chunk.toLong());
    }
    
    public static void updateLoadedChunks(MinecraftServer server){
-      for (ServerWorld world : server.getWorlds()){
+      for (ServerLevel world : server.getAllLevels()){
          Long2IntOpenHashMap chunks = ANCHOR_CHUNKS.get(world);
          if (chunks == null || chunks.isEmpty()) continue;
          boolean nonEmpty = false;
@@ -153,12 +157,12 @@ public class ContinuumAnchor extends ArcanaBlock {
                nonEmpty = true;
             }
          }
-         if (nonEmpty) world.resetIdleTimeout();
+         if (nonEmpty) world.resetEmptyTime();
       }
    }
    
    public static void initLoadedChunks(MinecraftServer minecraftServer){
-      for(ServerWorld serverWorld : minecraftServer.getWorlds()){
+      for(ServerLevel serverWorld : minecraftServer.getAllLevels()){
          for(BlockPos anchorPos : ACTIVE_ANCHORS.get(serverWorld).getAnchors()){
             ChunkPos chunkPos = new ChunkPos(anchorPos);
             loadChunks(serverWorld,chunkPos);
@@ -167,12 +171,12 @@ public class ContinuumAnchor extends ArcanaBlock {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing study casing that can channel Arcana, I have made additional efforts to reinforce").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nthis chassis against dimensional shear. By combining all known techniques of manipulating dimensional energy, I believe I can cause a section of space to be locked in time so that the world cannot be unloaded.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nWhen fed with Exotic Matter, the Anchor chunk loads a 5x5 chunk area and produces lazy chunks in the 7x7 ring around it. \nIt is able to stimulate mobs such that they despawn slower when a player isn’t nearby,").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nwhile also inducing new spawns and activating spawners.\nThe Anchor can be turned off with a redstone signal and its fuel can be removed by an empty hand. Additional fuel may also be added while still in use.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing study casing that can channel Arcana, I have made additional efforts to reinforce").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nthis chassis against dimensional shear. By combining all known techniques of manipulating dimensional energy, I believe I can cause a section of space to be locked in time so that the world cannot be unloaded.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nWhen fed with Exotic Matter, the Anchor chunk loads a 5x5 chunk area and produces lazy chunks in the 7x7 ring around it. \nIt is able to stimulate mobs such that they despawn slower when a player isn’t nearby,").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nwhile also inducing new spawns and activating spawners.\nThe Anchor can be turned off with a redstone signal and its fuel can be removed by an empty hand. Additional fuel may also be added while still in use.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -200,26 +204,26 @@ public class ContinuumAnchor extends ArcanaBlock {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }
    
    public class ContinuumAnchorBlock extends ArcanaPolymerBlockEntity {
-      public static final IntProperty CHARGES = Properties.CHARGES;
-      public static final BooleanProperty ACTIVE = BooleanProperty.of("active");
+      public static final IntegerProperty CHARGES = BlockStateProperties.RESPAWN_ANCHOR_CHARGES;
+      public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
       
-      public ContinuumAnchorBlock(AbstractBlock.Settings settings){
+      public ContinuumAnchorBlock(BlockBehaviour.Properties settings){
          super(getThis(), settings);
       }
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.RESPAWN_ANCHOR.getDefaultState().with(CHARGES,state.get(CHARGES));
+         return Blocks.RESPAWN_ANCHOR.defaultBlockState().setValue(CHARGES,state.getValue(CHARGES));
       }
       
       @Nullable
-      public static ContinuumAnchorBlockEntity getEntity(World world, BlockPos pos){
+      public static ContinuumAnchorBlockEntity getEntity(Level world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
          if(!(state.getBlock() instanceof ContinuumAnchorBlock)){
             return null;
@@ -228,61 +232,61 @@ public class ContinuumAnchor extends ArcanaBlock {
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
+      public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new ContinuumAnchorBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
-         return validateTicker(type, ArcanaRegistry.CONTINUUM_ANCHOR_BLOCK_ENTITY, ContinuumAnchorBlockEntity::ticker);
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
+         return createTickerHelper(type, ArcanaRegistry.CONTINUUM_ANCHOR_BLOCK_ENTITY, ContinuumAnchorBlockEntity::ticker);
       }
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx){
-         return this.getDefaultState().with(ACTIVE,false).with(CHARGES,0);
+      public BlockState getStateForPlacement(BlockPlaceContext ctx){
+         return this.defaultBlockState().setValue(ACTIVE,false).setValue(CHARGES,0);
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
+      protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager){
          stateManager.add(CHARGES, ACTIVE);
       }
       
       @Override
-      protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
+      protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit){
          ContinuumAnchorBlockEntity anchor = (ContinuumAnchorBlockEntity) world.getBlockEntity(pos);
-         if(anchor != null && anchor.interact(player, stack)) return ActionResult.SUCCESS_SERVER;
-         return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(anchor != null && anchor.interact(player, stack)) return InteractionResult.SUCCESS_SERVER;
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit){
+      public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit){
          ContinuumAnchorBlockEntity anchor = (ContinuumAnchorBlockEntity) world.getBlockEntity(pos);
-         if(anchor != null && anchor.interact(player, ItemStack.EMPTY)) return ActionResult.SUCCESS_SERVER;
-         return ActionResult.PASS;
+         if(anchor != null && anchor.interact(player, ItemStack.EMPTY)) return InteractionResult.SUCCESS_SERVER;
+         return InteractionResult.PASS;
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
+      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof ContinuumAnchorBlockEntity anchor){
             initializeArcanaBlock(stack,anchor);
             
-            if(placer instanceof ServerPlayerEntity player){
-               player.sendMessage(Text.literal("Placing the Continuum Anchor sends a ripple across spacetime.").formatted(Formatting.DARK_BLUE), true);
-               SoundUtils.playSound(world, pos, SoundEvents.BLOCK_RESPAWN_ANCHOR_AMBIENT, SoundCategory.BLOCKS, 5, .8f);
+            if(placer instanceof ServerPlayer player){
+               player.displayClientMessage(Component.literal("Placing the Continuum Anchor sends a ripple across spacetime.").withStyle(ChatFormatting.DARK_BLUE), true);
+               SoundUtils.playSound(world, pos, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 5, .8f);
             }
          }
       }
       
       @Override
-      protected boolean canPathfindThrough(BlockState state, NavigationType type){
+      protected boolean isPathfindable(BlockState state, PathComputationType type){
          return false;
       }
       
       public static int getLightLevel(BlockState state, int maxLevel){
-         return MathHelper.floor((float)(state.get(CHARGES)) / 4.0f * (float)maxLevel);
+         return Mth.floor((float)(state.getValue(CHARGES)) / 4.0f * (float)maxLevel);
       }
    }
 }

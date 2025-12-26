@@ -20,13 +20,13 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,12 +42,12 @@ import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentIn
 public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    private static final Logger LOGGER = LogManager.getLogger("Arcana Novum");
-   public static final HashMap<ServerWorld, Long2IntOpenHashMap> ANCHOR_CHUNKS = new HashMap<>();
-   public static final HashMap<Pair<BlockEntity, ArcanaBlockEntity>,Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
+   public static final HashMap<ServerLevel, Long2IntOpenHashMap> ANCHOR_CHUNKS = new HashMap<>();
+   public static final HashMap<Tuple<BlockEntity, ArcanaBlockEntity>,Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
    public static final HashMap<String,List<UUID>> PLAYER_ACHIEVEMENT_TRACKER = new HashMap<>();
    public static final HashMap<UUID,Integer> PLAYER_XP_TRACKER = new HashMap<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
-   public static final HashMap<VirtualInventoryGui<?>, ServerPlayerEntity> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
+   public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
    public static MinecraftServer SERVER = null;
    public static final boolean DEV_MODE = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
@@ -86,29 +86,29 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       LOGGER.info("Arcana Surges Through Your Client!");
    }
    
-   public static boolean addActiveAnchor(ServerWorld world, BlockPos pos){
+   public static boolean addActiveAnchor(ServerLevel world, BlockPos pos){
       return ACTIVE_ANCHORS.get(world).addAnchor(pos);
    }
    
-   public static boolean removeActiveAnchor(ServerWorld targetWorld, BlockPos pos){
+   public static boolean removeActiveAnchor(ServerLevel targetWorld, BlockPos pos){
       return ACTIVE_ANCHORS.get(targetWorld).removeAnchor(pos);
    }
    
-   public static boolean addActiveBlock(Pair<BlockEntity,ArcanaBlockEntity> pair){
-      List<Pair<BlockEntity,ArcanaBlockEntity>> existing = ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(p -> p.getRight().getUuid().equals(pair.getRight().getUuid())).toList();
+   public static boolean addActiveBlock(Tuple<BlockEntity,ArcanaBlockEntity> pair){
+      List<Tuple<BlockEntity,ArcanaBlockEntity>> existing = ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(p -> p.getB().getUuid().equals(pair.getB().getUuid())).toList();
       existing.forEach(ACTIVE_ARCANA_BLOCKS::remove);
       ACTIVE_ARCANA_BLOCKS.put(pair,30);
       return existing.isEmpty();
    }
    
-   public static IArcanaProfileComponent data(PlayerEntity player){
+   public static IArcanaProfileComponent data(Player player){
       if(player == null){
          return null;
       }
       try{
          return PLAYER_DATA.get(player);
       }catch(Exception e){
-         log(3,"Failed to get Arcane Profile for "+player.getNameForScoreboard() + " ("+player.getUuidAsString()+")");
+         log(3,"Failed to get Arcane Profile for "+player.getScoreboardName() + " ("+player.getStringUUID()+")");
          log(3,e.toString());
       }
       return null;

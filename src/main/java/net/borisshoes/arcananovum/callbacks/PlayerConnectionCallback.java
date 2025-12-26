@@ -12,12 +12,12 @@ import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,8 +26,8 @@ import java.util.Map;
 import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
 
 public class PlayerConnectionCallback {
-   public static void onPlayerJoin(ServerPlayNetworkHandler netHandler, PacketSender sender, MinecraftServer server){
-      ServerPlayerEntity player = netHandler.player;
+   public static void onPlayerJoin(ServerGamePacketListenerImpl netHandler, PacketSender sender, MinecraftServer server){
+      ServerPlayer player = netHandler.player;
       //log(player.getEntityName()+" has joined the game");
    
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
@@ -75,39 +75,39 @@ public class PlayerConnectionCallback {
       }
       
       if(profile.getMiscData(QuiverItem.QUIVER_CD_TAG) == null){
-         profile.addMiscData(QuiverItem.QUIVER_CD_TAG, NbtInt.of(0));
+         profile.addMiscData(QuiverItem.QUIVER_CD_TAG, IntTag.valueOf(0));
       }
       if(profile.getMiscData(QuiverItem.RUNIC_INV_ID_TAG) == null){
-         profile.addMiscData(QuiverItem.RUNIC_INV_ID_TAG, NbtString.of(""));
+         profile.addMiscData(QuiverItem.RUNIC_INV_ID_TAG, StringTag.valueOf(""));
       }
       if(profile.getMiscData(QuiverItem.ARROW_INV_ID_TAG) == null){
-         profile.addMiscData(QuiverItem.ARROW_INV_ID_TAG,NbtString.of(""));
+         profile.addMiscData(QuiverItem.ARROW_INV_ID_TAG, StringTag.valueOf(""));
       }
       if(profile.getMiscData(QuiverItem.RUNIC_INV_SLOT_TAG) == null){
-         profile.addMiscData(QuiverItem.RUNIC_INV_SLOT_TAG,NbtInt.of(0));
+         profile.addMiscData(QuiverItem.RUNIC_INV_SLOT_TAG, IntTag.valueOf(0));
       }
       if(profile.getMiscData(QuiverItem.ARROW_INV_SLOT_TAG) == null){
-         profile.addMiscData(QuiverItem.ARROW_INV_SLOT_TAG,NbtInt.of(0));
+         profile.addMiscData(QuiverItem.ARROW_INV_SLOT_TAG, IntTag.valueOf(0));
       }
       if(profile.getMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG) == null){
-         profile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG,NbtInt.of(0));
+         profile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG, IntTag.valueOf(0));
       }
       if(profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG) == null){
-         profile.addMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG,NbtInt.of(0));
+         profile.addMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG, IntTag.valueOf(0));
       }
    }
    
-   public static void onPlayerLeave(ServerPlayNetworkHandler handler, MinecraftServer server){
-      ServerPlayerEntity player = handler.player;
+   public static void onPlayerLeave(ServerGamePacketListenerImpl handler, MinecraftServer server){
+      ServerPlayer player = handler.player;
       if(player.getMaxHealth() > 20 && player.getHealth() > 20){
-         BorisLib.addLoginCallback(new MaxHealthLoginCallback(server,player.getUuidAsString(),player.getHealth()));
+         BorisLib.addLoginCallback(new MaxHealthLoginCallback(server,player.getStringUUID(),player.getHealth()));
       }
       
       VIRTUAL_INVENTORY_GUIS.forEach((virtualInventoryGui, p) -> {
-         if(player.getUuidAsString().equals(p.getUuidAsString()) && virtualInventoryGui.getInventory() != null){
+         if(player.getStringUUID().equals(p.getStringUUID()) && virtualInventoryGui.getInventory() != null){
             for(ItemStack itemStack : virtualInventoryGui.getInventory()){
                if(!itemStack.isEmpty()){
-                  BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(itemStack.copyAndEmpty(),player,0));
+                  BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(itemStack.copyAndClear(),player,0));
                }
             }
          }

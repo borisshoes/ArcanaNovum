@@ -5,15 +5,14 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.LoginCallback;
 import net.borisshoes.borislib.timers.GenericTimer;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +24,7 @@ public class AchievementLoginCallback extends LoginCallback {
    private ArrayList<ArcanaAchievement> achievements;
    
    public AchievementLoginCallback(){
-      super(Identifier.of(MOD_ID,"achievement_login_callback"));
+      super(Identifier.fromNamespaceAndPath(MOD_ID,"achievement_login_callback"));
    }
    
    public AchievementLoginCallback(MinecraftServer server, String player, ArcanaAchievement... achievements){
@@ -49,10 +48,10 @@ public class AchievementLoginCallback extends LoginCallback {
    }
    
    @Override
-   public void onLogin(ServerPlayNetworkHandler netHandler, MinecraftServer server){
+   public void onLogin(ServerGamePacketListenerImpl netHandler, MinecraftServer server){
       // Double check that this is the correct player
-      ServerPlayerEntity player = netHandler.player;
-      if(player.getUuidAsString().equals(playerUUID)){
+      ServerPlayer player = netHandler.player;
+      if(player.getStringUUID().equals(playerUUID)){
          BorisLib.addTickTimerCallback(new GenericTimer(100, ()->{
             for(ArcanaAchievement achievement : achievements){
                ArcanaAchievements.grant(player,achievement.id);
@@ -62,13 +61,13 @@ public class AchievementLoginCallback extends LoginCallback {
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(CompoundTag data){
       this.data = data;
       achievements = new ArrayList<>();
       if(data.contains("achievements")){
-         NbtList achTag = data.getListOrEmpty("achievements");
-         for(NbtElement e : achTag){
-            NbtString nbtS = (NbtString) e;
+         ListTag achTag = data.getListOrEmpty("achievements");
+         for(Tag e : achTag){
+            StringTag nbtS = (StringTag) e;
             ArcanaAchievement ach = ArcanaAchievements.registry.get(nbtS.asString().orElse(""));
             if(ach != null) achievements.add(ach);
          }
@@ -76,11 +75,11 @@ public class AchievementLoginCallback extends LoginCallback {
    }
    
    @Override
-   public NbtCompound getData(){
-      NbtCompound data = new NbtCompound();
-      NbtList achTag = new NbtList();
+   public CompoundTag getData(){
+      CompoundTag data = new CompoundTag();
+      ListTag achTag = new ListTag();
       for(ArcanaAchievement achievement : achievements){
-         achTag.add(NbtString.of(achievement.id));
+         achTag.add(StringTag.valueOf(achievement.id));
       }
       data.put("achievements",achTag);
       this.data = data;

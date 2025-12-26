@@ -16,22 +16,21 @@ import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.Level;
 
 import java.util.*;
 
@@ -45,27 +44,27 @@ public class ArcaneSingularityGui extends SimpleGui {
    private BookSort sort;
    private ItemStack selected = ItemStack.EMPTY;
    
-   public ArcaneSingularityGui(ServerPlayerEntity player, ArcaneSingularityBlockEntity blockEntity, int capacity){
-      super(ScreenHandlerType.GENERIC_9X6, player, false);
+   public ArcaneSingularityGui(ServerPlayer player, ArcaneSingularityBlockEntity blockEntity, int capacity){
+      super(MenuType.GENERIC_9x6, player, false);
       this.blockEntity = blockEntity;
       this.filter = BookFilter.NONE;
       this.sort = BookSort.FIRST_ALPHABETICAL;
       this.capacity = capacity;
       loadBooks();
-      setTitle(Text.literal("Arcane Singularity"));
+      setTitle(Component.literal("Arcane Singularity"));
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
       boolean accretion = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.ACCRETION.id) >= 1;
       
       if(index >= size && type == ClickType.MOUSE_LEFT_SHIFT){
          int invSlot = index >= 27+size ? index - (27+size) : index-45;
-         ItemStack stack = player.getInventory().getStack(invSlot);
-         if(stack.isOf(Items.ENCHANTED_BOOK) && EnchantmentHelper.hasEnchantments(stack)){
+         ItemStack stack = player.getInventory().getItem(invSlot);
+         if(stack.is(Items.ENCHANTED_BOOK) && EnchantmentHelper.hasAnyEnchantments(stack)){
             if(tryAddBook(stack)){
-               player.getInventory().setStack(invSlot,ItemStack.EMPTY);
+               player.getInventory().setItem(invSlot, ItemStack.EMPTY);
             }
          }
       }else if(index == 0){
@@ -98,21 +97,21 @@ public class ArcaneSingularityGui extends SimpleGui {
          if(ind >= filteredBooks.size()) return true;
          ItemStack targetBook = filteredBooks.get(ind);
          for(ItemStack book : this.books){
-            if(!ItemStack.areItemsAndComponentsEqual(targetBook,book)) continue;
+            if(!ItemStack.isSameItemSameComponents(targetBook,book)) continue;
             
             if(accretion && type == ClickType.MOUSE_LEFT_SHIFT){ // merge book
-               if(ItemStack.areItemsAndComponentsEqual(targetBook, selected)){ // deselect book
+               if(ItemStack.isSameItemSameComponents(targetBook, selected)){ // deselect book
                   selected = ItemStack.EMPTY;
                }else if(selected != ItemStack.EMPTY){ // find selected and merge
                   for(ItemStack otherBook : this.books){
-                     if(ItemStack.areItemsAndComponentsEqual(selected, otherBook)){
+                     if(ItemStack.isSameItemSameComponents(selected, otherBook)){
                         ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.mergeBooks(book,otherBook);
                         
                         if(result == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
-                           MinecraftUtils.returnItems(new SimpleInventory(new ItemStack(Items.BOOK)),player);
+                           MinecraftUtils.returnItems(new SimpleContainer(new ItemStack(Items.BOOK)),player);
                            selected = ItemStack.EMPTY;
                         }else if(result == ArcaneSingularityBlockEntity.SingularityResult.FAIL){
-                           player.sendMessage(Text.literal("Those books are incompatible").formatted(Formatting.RED),false);
+                           player.displayClientMessage(Component.literal("Those books are incompatible").withStyle(ChatFormatting.RED),false);
                         }
                         break;
                      }
@@ -121,24 +120,24 @@ public class ArcaneSingularityGui extends SimpleGui {
                   selected = book;
                }
             }else if(accretion && type == ClickType.MOUSE_RIGHT){ // split book
-               if(MinecraftUtils.removeItems(player,Items.BOOK,1)){
+               if(MinecraftUtils.removeItems(player, Items.BOOK,1)){
                   ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.splitBook(book);
                   if(result == ArcaneSingularityBlockEntity.SingularityResult.FULL){
-                     player.sendMessage(Text.literal("That Singularity is full").formatted(Formatting.RED),false);
+                     player.displayClientMessage(Component.literal("That Singularity is full").withStyle(ChatFormatting.RED),false);
                   }else if(result == ArcaneSingularityBlockEntity.SingularityResult.FAIL){
-                     player.sendMessage(Text.literal("That book cannot be split").formatted(Formatting.RED),false);
+                     player.displayClientMessage(Component.literal("That book cannot be split").withStyle(ChatFormatting.RED),false);
                   }else if(result == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
                      selected = ItemStack.EMPTY;
                   }
                }else{
-                  player.sendMessage(Text.literal("You need a book to split the enchants to").formatted(Formatting.RED,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+                  player.displayClientMessage(Component.literal("You need a book to split the enchants to").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
                }
             }else{
-               if(ItemStack.areItemsAndComponentsEqual(book,selected)) selected = ItemStack.EMPTY;
+               if(ItemStack.isSameItemSameComponents(book,selected)) selected = ItemStack.EMPTY;
                if(blockEntity.removeBook(book) == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
                   ArcanaItem.removeProperty(book, ArcaneSingularity.SINGULARITY_TAG);
-                  MinecraftUtils.returnItems(new SimpleInventory(book),player);
+                  MinecraftUtils.returnItems(new SimpleContainer(book),player);
                }
             }
             break;
@@ -156,7 +155,7 @@ public class ArcaneSingularityGui extends SimpleGui {
       ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.addBook(book);
       
       if(result == ArcaneSingularityBlockEntity.SingularityResult.FULL){
-         player.sendMessage(Text.literal("The Singularity is Full").formatted(Formatting.RED),false);
+         player.displayClientMessage(Component.literal("The Singularity is Full").withStyle(ChatFormatting.RED),false);
          return false;
       }
       if(!isFull && blockEntity.getNumBooks() == capacity){
@@ -172,51 +171,51 @@ public class ArcaneSingularityGui extends SimpleGui {
       boolean accretion = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.ACCRETION.id) >= 1;
       int maxPages = (int) Math.ceil(filteredBooks.size() / 28.0);
       
-      GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
       
       if(maxPages > 1){
          GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
-         nextArrow.setName((Text.literal("")
-               .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
-         nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
+         nextArrow.setName((Component.literal("")
+               .append(Component.literal("Next Page").withStyle(ChatFormatting.GOLD))));
+         nextArrow.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("("+page+" of "+maxPages+")").withStyle(ChatFormatting.DARK_PURPLE)))));
          setSlot(53,nextArrow);
          
          GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
-         prevArrow.setName((Text.literal("")
-               .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
-         prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
+         prevArrow.setName((Component.literal("")
+               .append(Component.literal("Prev Page").withStyle(ChatFormatting.GOLD))));
+         prevArrow.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("("+page+" of "+maxPages+")").withStyle(ChatFormatting.DARK_PURPLE)))));
          setSlot(45,prevArrow);
       }
       
       GuiElementBuilder singularityItem = new GuiElementBuilder(Items.LECTERN).hideDefaultTooltip();
-      singularityItem.setName((Text.literal("")
-            .append(Text.literal("Arcane Singularity").formatted(Formatting.LIGHT_PURPLE))));
-      singularityItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Shift Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" a book in your inventory to insert it").formatted(Formatting.DARK_PURPLE)))));
-      singularityItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" a book in the singularity to remove it").formatted(Formatting.DARK_PURPLE)))));
+      singularityItem.setName((Component.literal("")
+            .append(Component.literal("Arcane Singularity").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      singularityItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Shift Click").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" a book in your inventory to insert it").withStyle(ChatFormatting.DARK_PURPLE)))));
+      singularityItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" a book in the singularity to remove it").withStyle(ChatFormatting.DARK_PURPLE)))));
       setSlot(4,singularityItem);
       
       GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.FILTER)).hideDefaultTooltip();
-      filterBuilt.setName(Text.literal("Filter Books").formatted(Formatting.DARK_PURPLE));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(BookFilter.getColoredLabel(filter))));
+      filterBuilt.setName(Component.literal("Filter Books").withStyle(ChatFormatting.DARK_PURPLE));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to change current filter.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Right Click").withStyle(ChatFormatting.GREEN)).append(Component.literal(" to cycle filter backwards.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Shift Left Click").withStyle(ChatFormatting.YELLOW)).append(Component.literal(" to reset filter.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Current Filter: ").withStyle(ChatFormatting.AQUA)).append(BookFilter.getColoredLabel(filter))));
       setSlot(8,filterBuilt);
       
       GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.SORT)).hideDefaultTooltip();
-      sortBuilt.setName(Text.literal("Sort Books").formatted(Formatting.DARK_PURPLE));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(BookSort.getColoredLabel(sort))));
+      sortBuilt.setName(Component.literal("Sort Books").withStyle(ChatFormatting.DARK_PURPLE));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to change current sort type.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Right Click").withStyle(ChatFormatting.GREEN)).append(Component.literal(" to cycle sort backwards.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Shift Left Click").withStyle(ChatFormatting.YELLOW)).append(Component.literal(" to reset sort.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Sorting By: ").withStyle(ChatFormatting.AQUA)).append(BookSort.getColoredLabel(sort))));
       setSlot(0,sortBuilt);
       
       List<ItemStack> pageItems = getPage();
@@ -224,35 +223,35 @@ public class ArcaneSingularityGui extends SimpleGui {
       for(int i = 0; i < 4; i++){
          for(int j = 0; j < 7; j++){
             if(k < pageItems.size()){
-               ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(pageItems.get(k));
+               ItemEnchantments comp = EnchantmentHelper.getEnchantmentsForCrafting(pageItems.get(k));
                
                GuiElementBuilder enchantBook = new GuiElementBuilder(Items.ENCHANTED_BOOK).glow();
-               enchantBook.setName((Text.literal("Enchanted Book").formatted(Formatting.YELLOW)));
-               for(Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : comp.getEnchantmentEntries()){
-                  enchantBook.addLoreLine(TextUtils.removeItalics(Enchantment.getName(entry.getKey(),entry.getIntValue())));
+               enchantBook.setName((Component.literal("Enchanted Book").withStyle(ChatFormatting.YELLOW)));
+               for(Object2IntMap.Entry<Holder<Enchantment>> entry : comp.entrySet()){
+                  enchantBook.addLoreLine(TextUtils.removeItalics(Enchantment.getFullname(entry.getKey(),entry.getIntValue())));
                }
-               enchantBook.addLoreLine(TextUtils.removeItalics(Text.empty()));
-               enchantBook.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                     .append(Text.literal("Click").formatted(Formatting.AQUA))
-                     .append(Text.literal(" to take the book").formatted(Formatting.LIGHT_PURPLE)))));
+               enchantBook.addLoreLine(TextUtils.removeItalics(Component.empty()));
+               enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                     .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
+                     .append(Component.literal(" to take the book").withStyle(ChatFormatting.LIGHT_PURPLE)))));
                
                if(accretion){
-                  enchantBook.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Shift Click").formatted(Formatting.AQUA))
-                        .append(Text.literal(" to select the book for merging").formatted(Formatting.LIGHT_PURPLE)))));
-                  enchantBook.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Right Click").formatted(Formatting.AQUA))
-                        .append(Text.literal(" to split the book").formatted(Formatting.LIGHT_PURPLE)))));
+                  enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Shift Click").withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal(" to select the book for merging").withStyle(ChatFormatting.LIGHT_PURPLE)))));
+                  enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Right Click").withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal(" to split the book").withStyle(ChatFormatting.LIGHT_PURPLE)))));
                   
-                  if(ItemStack.areItemsAndComponentsEqual(pageItems.get(k),selected)){
-                     enchantBook.addLoreLine(TextUtils.removeItalics(Text.empty()));
-                     enchantBook.addLoreLine(TextUtils.removeItalics((Text.literal("<< Selected >>").formatted(Formatting.BLUE))));
+                  if(ItemStack.isSameItemSameComponents(pageItems.get(k),selected)){
+                     enchantBook.addLoreLine(TextUtils.removeItalics(Component.empty()));
+                     enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("<< Selected >>").withStyle(ChatFormatting.BLUE))));
                   }
                }
                
                setSlot((i*9+10)+j,enchantBook);
             }else{
-               setSlot((i*9+10)+j,GuiElementBuilder.from(GraphicalItem.with(ArcanaRegistry.GAS)).setName(Text.empty()).hideTooltip());
+               setSlot((i*9+10)+j,GuiElementBuilder.from(GraphicalItem.with(ArcanaRegistry.GAS)).setName(Component.empty()).hideTooltip());
             }
             k++;
          }
@@ -263,7 +262,7 @@ public class ArcaneSingularityGui extends SimpleGui {
       this.books = new ArrayList<>(blockEntity.getBooks());
       this.filteredBooks = new ArrayList<>();
       for(ItemStack book : this.books){
-         if(BookFilter.matchesFilter(filter, EnchantmentHelper.getEnchantments(book).getEnchantmentEntries())){
+         if(BookFilter.matchesFilter(filter, EnchantmentHelper.getEnchantmentsForCrafting(book).entrySet())){
             filteredBooks.add(book.copy());
          }
       }
@@ -272,7 +271,7 @@ public class ArcaneSingularityGui extends SimpleGui {
          case TOTAL_LEVELS -> {
             Comparator<ItemStack> levelComparator = Comparator.comparingInt(stack -> {
                int count = 0;
-               for(Object2IntMap.Entry<RegistryEntry<Enchantment>> e : EnchantmentHelper.getEnchantments(stack).getEnchantmentEntries()){
+               for(Object2IntMap.Entry<Holder<Enchantment>> e : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()){
                   count += e.getIntValue();
                }
                return -count;
@@ -282,7 +281,7 @@ public class ArcaneSingularityGui extends SimpleGui {
          case HIGHEST_LEVEL -> {
             Comparator<ItemStack> levelComparator = Comparator.comparingInt(stack -> {
                int highest = 0;
-               for(Object2IntMap.Entry<RegistryEntry<Enchantment>> e : EnchantmentHelper.getEnchantments(stack).getEnchantmentEntries()){
+               for(Object2IntMap.Entry<Holder<Enchantment>> e : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()){
                   if(e.getIntValue() > highest) highest = e.getIntValue();
                }
                return -highest;
@@ -292,7 +291,7 @@ public class ArcaneSingularityGui extends SimpleGui {
          case LEAST_LEVELS -> {
             Comparator<ItemStack> levelComparator = Comparator.comparingInt(stack -> {
                int count = 0;
-               for(Object2IntMap.Entry<RegistryEntry<Enchantment>> e : EnchantmentHelper.getEnchantments(stack).getEnchantmentEntries()){
+               for(Object2IntMap.Entry<Holder<Enchantment>> e : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()){
                   count += e.getIntValue();
                }
                return count;
@@ -301,9 +300,9 @@ public class ArcaneSingularityGui extends SimpleGui {
          }
          case FIRST_ALPHABETICAL -> {
             Comparator<ItemStack> nameComparator = Comparator.comparing(stack -> {
-               Iterator<RegistryEntry<Enchantment>> iter = EnchantmentHelper.getEnchantments(stack).getEnchantments().iterator();
+               Iterator<Holder<Enchantment>> iter = EnchantmentHelper.getEnchantmentsForCrafting(stack).keySet().iterator();
                if(iter.hasNext()){
-                  return Enchantment.getName(iter.next(),1).getString();
+                  return Enchantment.getFullname(iter.next(),1).getString();
                }
                return "";
             });
@@ -336,8 +335,8 @@ public class ArcaneSingularityGui extends SimpleGui {
    
    @Override
    public void onTick(){
-      World world = blockEntity.getWorld();
-      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled()){
+      Level world = blockEntity.getLevel();
+      if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled()){
          this.close();
       }
       
@@ -373,25 +372,25 @@ public class ArcaneSingularityGui extends SimpleGui {
          this.label = label;
       }
       
-      public static Text getColoredLabel(BookFilter filter){
-         MutableText text = Text.literal(filter.label);
+      public static Component getColoredLabel(BookFilter filter){
+         MutableComponent text = Component.literal(filter.label);
          
          return switch(filter){ // Only Black for future usage (before repeats)
-            case NONE -> text.formatted(Formatting.WHITE);
-            case CROSSBOWS -> text.formatted(Formatting.GRAY);
-            case SINGLE_ENCHANT -> text.formatted(Formatting.GREEN);
-            case MULTIPLE_ENCHANT -> text.formatted(Formatting.AQUA);
-            case BOWS -> text.formatted(Formatting.GOLD);
-            case MAX_LEVEL -> text.formatted(Formatting.LIGHT_PURPLE);
-            case TRIDENTS -> text.formatted(Formatting.DARK_AQUA);
-            case CURSES -> text.formatted(Formatting.DARK_PURPLE);
-            case ARMOR -> text.formatted(Formatting.DARK_GREEN);
-            case SWORDS -> text.formatted(Formatting.RED);
-            case TOOLS -> text.formatted(Formatting.BLUE);
-            case AXES -> text.formatted(Formatting.DARK_RED);
-            case TREASURE -> text.formatted(Formatting.YELLOW);
-            case FISHING -> text.formatted(Formatting.DARK_GRAY);
-            case MACES -> text.formatted(Formatting.DARK_BLUE);
+            case NONE -> text.withStyle(ChatFormatting.WHITE);
+            case CROSSBOWS -> text.withStyle(ChatFormatting.GRAY);
+            case SINGLE_ENCHANT -> text.withStyle(ChatFormatting.GREEN);
+            case MULTIPLE_ENCHANT -> text.withStyle(ChatFormatting.AQUA);
+            case BOWS -> text.withStyle(ChatFormatting.GOLD);
+            case MAX_LEVEL -> text.withStyle(ChatFormatting.LIGHT_PURPLE);
+            case TRIDENTS -> text.withStyle(ChatFormatting.DARK_AQUA);
+            case CURSES -> text.withStyle(ChatFormatting.DARK_PURPLE);
+            case ARMOR -> text.withStyle(ChatFormatting.DARK_GREEN);
+            case SWORDS -> text.withStyle(ChatFormatting.RED);
+            case TOOLS -> text.withStyle(ChatFormatting.BLUE);
+            case AXES -> text.withStyle(ChatFormatting.DARK_RED);
+            case TREASURE -> text.withStyle(ChatFormatting.YELLOW);
+            case FISHING -> text.withStyle(ChatFormatting.DARK_GRAY);
+            case MACES -> text.withStyle(ChatFormatting.DARK_BLUE);
          };
       }
       
@@ -409,7 +408,7 @@ public class ArcaneSingularityGui extends SimpleGui {
          return filters[ind];
       }
       
-      public static boolean matchesFilter(BookFilter filter, Set<Object2IntMap.Entry<RegistryEntry<Enchantment>>> enchantMap){
+      public static boolean matchesFilter(BookFilter filter, Set<Object2IntMap.Entry<Holder<Enchantment>>> enchantMap){
          if(enchantMap.isEmpty()) return false;
          return switch(filter){
             case NONE -> true;
@@ -419,7 +418,7 @@ public class ArcaneSingularityGui extends SimpleGui {
             case BOWS -> enchantMap.stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.BOW)));
             case MAX_LEVEL ->  enchantMap.stream().anyMatch(e -> e.getKey().value().getMaxLevel() == e.getIntValue());
             case TRIDENTS -> enchantMap.stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.TRIDENT)));
-            case CURSES -> enchantMap.stream().anyMatch(e ->  e.getKey().isIn(EnchantmentTags.CURSE));
+            case CURSES -> enchantMap.stream().anyMatch(e ->  e.getKey().is(EnchantmentTags.CURSE));
             case ARMOR -> enchantMap.stream().anyMatch(e ->
                   e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_HELMET)) ||
                   e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_CHESTPLATE)) ||
@@ -429,7 +428,7 @@ public class ArcaneSingularityGui extends SimpleGui {
             case SWORDS -> enchantMap.stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_SWORD)));
             case TOOLS -> enchantMap.stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_PICKAXE)));
             case AXES -> enchantMap.stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_AXE)));
-            case TREASURE -> enchantMap.stream().anyMatch(e -> e.getKey().isIn(EnchantmentTags.TREASURE) && ! e.getKey().isIn(EnchantmentTags.CURSE));
+            case TREASURE -> enchantMap.stream().anyMatch(e -> e.getKey().is(EnchantmentTags.TREASURE) && ! e.getKey().is(EnchantmentTags.CURSE));
             case FISHING -> enchantMap.stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.FISHING_ROD)));
             case MACES -> enchantMap.stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.MACE)));
          };
@@ -448,14 +447,14 @@ public class ArcaneSingularityGui extends SimpleGui {
          this.label = label;
       }
       
-      public static Text getColoredLabel(BookSort sort){
-         MutableText text = Text.literal(sort.label);
+      public static Component getColoredLabel(BookSort sort){
+         MutableComponent text = Component.literal(sort.label);
          
          return switch(sort){
-            case TOTAL_LEVELS -> text.formatted(Formatting.LIGHT_PURPLE);
-            case HIGHEST_LEVEL -> text.formatted(Formatting.AQUA);
-            case LEAST_LEVELS -> text.formatted(Formatting.RED);
-            case FIRST_ALPHABETICAL -> text.formatted(Formatting.GREEN);
+            case TOTAL_LEVELS -> text.withStyle(ChatFormatting.LIGHT_PURPLE);
+            case HIGHEST_LEVEL -> text.withStyle(ChatFormatting.AQUA);
+            case LEAST_LEVELS -> text.withStyle(ChatFormatting.RED);
+            case FIRST_ALPHABETICAL -> text.withStyle(ChatFormatting.GREEN);
          };
       }
       

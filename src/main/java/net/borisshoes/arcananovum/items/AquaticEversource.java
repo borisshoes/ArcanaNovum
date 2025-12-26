@@ -16,44 +16,44 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FluidDrainable;
-import net.minecraft.block.FluidFillable;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FlowableFluid;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BucketItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.attribute.EnvironmentAttributes;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BucketPickup;
+import net.minecraft.world.level.block.LiquidBlockContainer;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -73,12 +73,12 @@ public class AquaticEversource extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.WATER_BUCKET;
       item = new AquaticEversourceItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_HEART_OF_THE_SEA,ResearchTasks.OBTAIN_BLUE_ICE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_HEART_OF_THE_SEA,ResearchTasks.OBTAIN_BLUE_ICE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,MODE_TAG,0); // 0 place, 1 remove
       setPrefStack(stack);
    }
@@ -97,31 +97,31 @@ public class AquaticEversource extends ArcanaItem {
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Two ").formatted(Formatting.BLUE))
-            .append(Text.literal("buckets can make an ").formatted(Formatting.AQUA))
-            .append(Text.literal("ocean").formatted(Formatting.BLUE))
-            .append(Text.literal(", but ").formatted(Formatting.AQUA))
-            .append(Text.literal("one ").formatted(Formatting.BLUE))
-            .append(Text.literal("should be ").formatted(Formatting.AQUA))
-            .append(Text.literal("enough").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.BLUE))
-            .append(Text.literal(" to ").formatted(Formatting.AQUA))
-            .append(Text.literal("create ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("or ").formatted(Formatting.AQUA))
-            .append(Text.literal("evaporate ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("water.").formatted(Formatting.AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right Click").formatted(Formatting.BLUE))
-            .append(Text.literal(" to switch between ").formatted(Formatting.AQUA))
-            .append(Text.literal("placing ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("and ").formatted(Formatting.AQUA))
-            .append(Text.literal("removing ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("water.").formatted(Formatting.AQUA)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Two ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("buckets can make an ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("ocean").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(", but ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("one ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("should be ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("enough").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("create ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("or ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("evaporate ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("water.").withStyle(ChatFormatting.AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right Click").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" to switch between ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("placing ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("removing ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("water.").withStyle(ChatFormatting.AQUA)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -143,11 +143,11 @@ public class AquaticEversource extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("       Aquatic\n    Eversource").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nCarrying numerous water buckets is a waste of inventory space.\nA rudimentary contraption capable of portable condensation should alleviate this issue.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("       Aquatic\n    Eversource").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nThe trinket I created can pull water straight from the air to produce limitless water.\n\nA reversal of the process lets me use the trinket to evaporate any fluid type.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("       Aquatic\n    Eversource").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nUsing the Eversource will generate or drain water.\n\nSneak Using will switch the mode of the Eversource.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("       Aquatic\n    Eversource").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nCarrying numerous water buckets is a waste of inventory space.\nA rudimentary contraption capable of portable condensation should alleviate this issue.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Aquatic\n    Eversource").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nThe trinket I created can pull water straight from the air to produce limitless water.\n\nA reversal of the process lets me use the trinket to evaporate any fluid type.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Aquatic\n    Eversource").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nUsing the Eversource will generate or drain water.\n\nSneak Using will switch the mode of the Eversource.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -157,7 +157,7 @@ public class AquaticEversource extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
@@ -169,76 +169,76 @@ public class AquaticEversource extends ArcanaItem {
          }else{
             stringList.add("place");
          }
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
          
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          int mode = getIntProperty(stack,MODE_TAG);
          boolean floodgate = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FLOODGATE.id) > 0;
          
-         if(playerEntity.isSneaking()){
+         if(playerEntity.isShiftKeyDown()){
             int newMode = (mode+1) % (floodgate ? 3 : 2);
             putProperty(stack,MODE_TAG,newMode);
             if(newMode == 1){
-               player.sendMessage(Text.literal("The Eversource Evaporates").formatted(Formatting.BLUE,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_EMPTY,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Evaporates").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_EMPTY,1.0f,1.0f);
             }else if(newMode == 2){
-               player.sendMessage(Text.literal("The Eversource Swells").formatted(Formatting.BLUE,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_FILL,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Swells").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL,1.0f,1.0f);
             }else{
-               player.sendMessage(Text.literal("The Eversource Condenses").formatted(Formatting.BLUE,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_FILL,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Condenses").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL,1.0f,1.0f);
             }
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
          
          Fluid fluid = mode == 1 ? Fluids.EMPTY : Fluids.WATER;
          
-         BlockHitResult blockHitResult = BucketItem.raycast(world, playerEntity, fluid == Fluids.EMPTY ? RaycastContext.FluidHandling.SOURCE_ONLY : RaycastContext.FluidHandling.NONE);
+         BlockHitResult blockHitResult = BucketItem.getPlayerPOVHitResult(world, playerEntity, fluid == Fluids.EMPTY ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE);
          if(blockHitResult.getType() == HitResult.Type.MISS){
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
          }
          if(blockHitResult.getType() == HitResult.Type.BLOCK){
             BlockPos blockPos = blockHitResult.getBlockPos();
-            Direction direction = blockHitResult.getSide();
-            BlockPos blockPos2 = blockPos.offset(direction);
-            if(!world.canEntityModifyAt(playerEntity, blockPos) || !playerEntity.canPlaceOn(blockPos2, direction, stack)){
-               return ActionResult.FAIL;
+            Direction direction = blockHitResult.getDirection();
+            BlockPos blockPos2 = blockPos.relative(direction);
+            if(!world.mayInteract(playerEntity, blockPos) || !playerEntity.mayUseItemAt(blockPos2, direction, stack)){
+               return InteractionResult.FAIL;
             }
             if(fluid == Fluids.EMPTY){
-               FluidDrainable fluidDrainable;
+               BucketPickup fluidDrainable;
                BlockState blockState = world.getBlockState(blockPos);
                Block block = blockState.getBlock();
-               if(block instanceof FluidDrainable && !(fluidDrainable = (FluidDrainable) block).tryDrainFluid(playerEntity, world, blockPos, blockState).isEmpty()){
-                  playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
-                  fluidDrainable.getBucketFillSound().ifPresent(sound -> playerEntity.playSound(sound, 1.0f, 1.0f));
-                  world.emitGameEvent(playerEntity, GameEvent.FLUID_PICKUP, blockPos);
-                  return ActionResult.SUCCESS_SERVER;
+               if(block instanceof BucketPickup && !(fluidDrainable = (BucketPickup) block).pickupBlock(playerEntity, world, blockPos, blockState).isEmpty()){
+                  playerEntity.awardStat(Stats.ITEM_USED.get(this));
+                  fluidDrainable.getPickupSound().ifPresent(sound -> playerEntity.playSound(sound, 1.0f, 1.0f));
+                  world.gameEvent(playerEntity, GameEvent.FLUID_PICKUP, blockPos);
+                  return InteractionResult.SUCCESS_SERVER;
                }
-               return ActionResult.FAIL;
+               return InteractionResult.FAIL;
             }
             BlockState blockState = world.getBlockState(blockPos);
-            BlockPos blockPos3 = blockState.getBlock() instanceof FluidFillable ? blockPos : blockPos2;
+            BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer ? blockPos : blockPos2;
             int placeStatus = placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult, false);
             if(placeStatus > 0){
                if(mode == 2 && placeStatus == 2){
-                  for(BlockPos floodPos : BlockPos.iterate(blockPos3.add(-1, 0, -1), blockPos3.add(1, 0, 1))){
+                  for(BlockPos floodPos : BlockPos.betweenClosed(blockPos3.offset(-1, 0, -1), blockPos3.offset(1, 0, 1))){
                      if(floodPos.equals(blockPos3)) continue;
                      if(placeFluid(fluid,playerEntity, world, floodPos, null, true) > 0){
                         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
@@ -248,57 +248,57 @@ public class AquaticEversource extends ArcanaItem {
                }
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
-               playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
-               playerEntity.getItemCooldownManager().set(stack,5);
-               return ActionResult.SUCCESS_SERVER;
+               playerEntity.awardStat(Stats.ITEM_USED.get(this));
+               playerEntity.getCooldowns().addCooldown(stack,5);
+               return InteractionResult.SUCCESS_SERVER;
             }
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
          }
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
       
       
-      public int placeFluid(Fluid fluid, @Nullable PlayerEntity player, World world, BlockPos pos, @Nullable BlockHitResult hitResult, boolean flood){
-         FluidFillable fluidFillable;
+      public int placeFluid(Fluid fluid, @Nullable Player player, Level world, BlockPos pos, @Nullable BlockHitResult hitResult, boolean flood){
+         LiquidBlockContainer fluidFillable;
          boolean bl2;
-         if(!(fluid instanceof FlowableFluid flowableFluid)){
+         if(!(fluid instanceof FlowingFluid flowableFluid)){
             return 0;
          }
          BlockState blockState = world.getBlockState(pos);
          Block block = blockState.getBlock();
-         boolean bl = blockState.canBucketPlace(fluid);
-         bl2 = blockState.isAir() || bl || block instanceof FluidFillable && ((FluidFillable) block).canFillWithFluid(player, world, pos, blockState, fluid) && !flood;
+         boolean bl = blockState.canBeReplaced(fluid);
+         bl2 = blockState.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, pos, blockState, fluid) && !flood;
          if(!bl2){
-            return hitResult == null ? 0 : placeFluid(fluid,player, world, hitResult.getBlockPos().offset(hitResult.getSide()), null, flood);
+            return hitResult == null ? 0 : placeFluid(fluid,player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null, flood);
          }
 
-         if(world.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.WATER_EVAPORATES_GAMEPLAY, pos) && fluid.isIn(FluidTags.WATER)){
+         if(world.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && fluid.is(FluidTags.WATER)){
             int i = pos.getX();
             int j = pos.getY();
             int k = pos.getZ();
-            world.playSound(player, pos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5f, 2.6f + (world.random.nextFloat() - world.random.nextFloat()) * 0.8f);
+            world.playSound(player, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.6f + (world.random.nextFloat() - world.random.nextFloat()) * 0.8f);
             for (int l = 0; l < 8; ++l){
-               world.addParticleClient(ParticleTypes.LARGE_SMOKE, (double)i + Math.random(), (double)j + Math.random(), (double)k + Math.random(), 0.0, 0.0, 0.0);
+               world.addParticle(ParticleTypes.LARGE_SMOKE, (double)i + Math.random(), (double)j + Math.random(), (double)k + Math.random(), 0.0, 0.0, 0.0);
             }
             return 1;
          }
-         if(block instanceof FluidFillable && !flood){
-            fluidFillable = (FluidFillable) block;
+         if(block instanceof LiquidBlockContainer && !flood){
+            fluidFillable = (LiquidBlockContainer) block;
             if(fluid == Fluids.WATER){
-               fluidFillable.tryFillWithFluid(world, pos, blockState, flowableFluid.getStill(false));
-               world.playSound(player, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0f, 1.0f);
-               world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos);
+               fluidFillable.placeLiquid(world, pos, blockState, flowableFluid.getSource(false));
+               world.playSound(player, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
+               world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
                return 1;
             }
          }
-         if(!world.isClient() && bl && !blockState.isLiquid()){
-            world.breakBlock(pos, true);
+         if(!world.isClientSide() && bl && !blockState.liquid()){
+            world.destroyBlock(pos, true);
          }
-         if(world.setBlockState(pos, fluid.getDefaultState().getBlockState(), Block.NOTIFY_ALL_AND_REDRAW) || blockState.getFluidState().isStill()){
+         if(world.setBlock(pos, fluid.defaultFluidState().createLegacyBlock(), Block.UPDATE_ALL_IMMEDIATE) || blockState.getFluidState().isSource()){
             if(!flood){
-               world.playSound(player, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0f, 1.0f);
+               world.playSound(player, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
             }
-            world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos);
+            world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
             return 2;
          }
          return 0;

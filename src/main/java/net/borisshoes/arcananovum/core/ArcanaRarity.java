@@ -2,11 +2,11 @@ package net.borisshoes.arcananovum.core;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
@@ -38,36 +38,36 @@ public enum ArcanaRarity {
       return null;
    }
    
-   public static Text getColoredLabel(ArcanaRarity rarity, boolean bold){
-      MutableText text;
+   public static Component getColoredLabel(ArcanaRarity rarity, boolean bold){
+      MutableComponent text;
       if(rarity == null){
-         text = Text.literal("None").formatted(Formatting.WHITE);
+         text = Component.literal("None").withStyle(ChatFormatting.WHITE);
       }else{
-         text = Text.translatableWithFallback(rarity.getTranslationKey(),rarity.label);
+         text = Component.translatableWithFallback(rarity.getTranslationKey(),rarity.label);
       }
-      if(bold) text = text.formatted(Formatting.BOLD);
+      if(bold) text = text.withStyle(ChatFormatting.BOLD);
       if(rarity == null) return text;
    
       return switch(rarity){
-         case MUNDANE -> text.formatted(Formatting.GRAY);
-         case EMPOWERED -> text.formatted(Formatting.GREEN);
-         case EXOTIC -> text.formatted(Formatting.AQUA);
-         case SOVEREIGN -> text.formatted(Formatting.GOLD);
-         case DIVINE -> text.formatted(Formatting.LIGHT_PURPLE);
+         case MUNDANE -> text.withStyle(ChatFormatting.GRAY);
+         case EMPOWERED -> text.withStyle(ChatFormatting.GREEN);
+         case EXOTIC -> text.withStyle(ChatFormatting.AQUA);
+         case SOVEREIGN -> text.withStyle(ChatFormatting.GOLD);
+         case DIVINE -> text.withStyle(ChatFormatting.LIGHT_PURPLE);
       };
    }
    
-   public static Formatting getColor(ArcanaRarity rarity){
+   public static ChatFormatting getColor(ArcanaRarity rarity){
       if(rarity == null){
          return null;
       }
    
       return switch(rarity){
-         case MUNDANE -> Formatting.GRAY;
-         case EMPOWERED -> Formatting.GREEN;
-         case EXOTIC -> Formatting.AQUA;
-         case SOVEREIGN -> Formatting.GOLD;
-         case DIVINE -> Formatting.LIGHT_PURPLE;
+         case MUNDANE -> ChatFormatting.GRAY;
+         case EMPOWERED -> ChatFormatting.GREEN;
+         case EXOTIC -> ChatFormatting.AQUA;
+         case SOVEREIGN -> ChatFormatting.GOLD;
+         case DIVINE -> ChatFormatting.LIGHT_PURPLE;
       };
    }
    

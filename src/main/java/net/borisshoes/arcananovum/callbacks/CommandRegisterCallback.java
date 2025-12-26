@@ -3,10 +3,10 @@ package net.borisshoes.arcananovum.callbacks;
 import com.mojang.brigadier.CommandDispatcher;
 import net.borisshoes.arcananovum.ArcanaCommands;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.MessageArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.MessageArgument;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -16,33 +16,33 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.*;
 import static net.borisshoes.arcananovum.ArcanaNovum.DEV_MODE;
-import static net.minecraft.command.argument.EntityArgumentType.*;
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
+import static net.minecraft.commands.arguments.EntityArgument.*;
 
 public class CommandRegisterCallback {
-   public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment){
+   public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandRegistryAccess, Commands.CommandSelection registrationEnvironment){
       dispatcher.register(literal("arcana")
-            .then(literal("create").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+            .then(literal("create").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then(argument("id", string()).suggests(ArcanaCommands::getItemSuggestions)
                         .executes(ctx -> ArcanaCommands.createItem(ctx.getSource(), getString(ctx, "id")))
                         .then(argument("targets", players())
                               .executes(ctx -> ArcanaCommands.createItems(ctx.getSource(), getString(ctx, "id"), getPlayers(ctx,"targets"))))))
-            .then(literal("cache").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::cacheCommand))
+            .then(literal("cache").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::cacheCommand))
             .then(literal("help").executes(ArcanaCommands::openGuideBook))
             .then(literal("guide").executes(ArcanaCommands::openGuideBook))
             .then(literal("show").executes(ArcanaCommands::showItem))
             .then(literal("blocks").executes(ArcanaCommands::placedBlocks)
-                  .then(argument("player",player()).requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                  .then(argument("player",player()).requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .executes(context -> ArcanaCommands.placedBlocks(context,getPlayer(context,"player")))))
-            .then(literal("uuids").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+            .then(literal("uuids").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then(argument("player",player()).executes(context -> ArcanaCommands.uuidCommand(context,getPlayer(context,"player")))))
-            .then(literal("enhance").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+            .then(literal("enhance").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then((argument("percentage", doubleArg())
                         .executes(context -> ArcanaCommands.enhanceCommand(context,getDouble(context,"percentage"),null)))
                         .then(argument("target",player())
                               .executes(context -> ArcanaCommands.enhanceCommand(context,getDouble(context,"percentage"),getPlayer(context,"target"))))))
-            .then(literal("xp").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+            .then(literal("xp").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then(literal("add")
                         .then(argument("targets", players())
                               .then(((argument("amount", integer())
@@ -61,7 +61,7 @@ public class CommandRegisterCallback {
                   .then(literal("query")
                         .then(argument("target",player())
                               .executes(context -> ArcanaCommands.xpCommandQuery(context, getPlayer(context,"target"))))))
-            .then(literal("skillpoints").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+            .then(literal("skillpoints").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then(literal("add")
                         .then(argument("targets", players())
                               .then(argument("amount", integer())
@@ -72,7 +72,7 @@ public class CommandRegisterCallback {
                   .then(literal("query")
                         .then(argument("target",player())
                               .executes(context -> ArcanaCommands.skillpointsCommandQuery(context, getPlayer(context,"target"))))))
-            .then(literal("achievement").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+            .then(literal("achievement").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then(literal("grant")
                         .then(argument("id", string()).suggests(ArcanaCommands::getAchievementSuggestions)
                               .then(argument("targets", players())
@@ -85,7 +85,7 @@ public class CommandRegisterCallback {
                         .then(argument("id", string()).suggests(ArcanaCommands::getAchievementSuggestions)
                               .then(argument("target", player())
                                     .executes(context -> ArcanaCommands.getAchievement(context,getString(context, "id"),getPlayer(context,"target")))))))
-            .then(literal("research").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+            .then(literal("research").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then(literal("grant")
                         .then(argument("id", string()).suggests(ArcanaCommands::getResearchSuggestions)
                               .then(argument("targets", players())
@@ -98,7 +98,7 @@ public class CommandRegisterCallback {
                         .then(argument("id", string()).suggests(ArcanaCommands::getResearchSuggestions)
                               .then(argument("target", player())
                                     .executes(context -> ArcanaCommands.getResearch(context,getString(context, "id"),getPlayer(context,"target")))))))
-            .then(literal("augment").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+            .then(literal("augment").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then(literal("apply")
                         .then(argument("id", string()).suggests(ArcanaCommands::getAugmentSuggestions)
                               .then((argument("level", integer())
@@ -112,24 +112,24 @@ public class CommandRegisterCallback {
                                     .then(argument("target",player())
                                           .executes(context -> ArcanaCommands.setAugment(context,getString(context, "id"),getInteger(context,"level"),getPlayer(context,"target"))))))))
             .then(literal("boss")
-                  .then(literal("start").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                  .then(literal("start").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(literal("dragon").executes(ArcanaCommands::startDragonBoss)))
-                  .then(literal("resetAbilities").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                  .then(literal("resetAbilities").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(argument("doAbility",bool()).executes(context -> ArcanaCommands.bossResetAbilities(context,getBool(context,"doAbility")))))
-                  .then(literal("forceLairAction").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::bossForceLairAction))
-                  .then(literal("abort").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::abortBoss))
-                  .then(literal("clean").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::cleanBoss))
-                  .then(literal("status").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::bossStatus))
-                  .then(literal("forcePlayerCount").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                  .then(literal("forceLairAction").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::bossForceLairAction))
+                  .then(literal("abort").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::abortBoss))
+                  .then(literal("clean").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::cleanBoss))
+                  .then(literal("status").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::bossStatus))
+                  .then(literal("forcePlayerCount").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(argument("players", integer()).executes(ctx -> ArcanaCommands.bossForcePlayerCount(ctx, getInteger(ctx, "players")))))
-                  .then(literal("announce").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-                        .then(argument("time", MessageArgumentType.message()).executes(ctx -> ArcanaCommands.announceBoss(ctx.getSource(), MessageArgumentType.getMessage(ctx, "time").getString()))))
-                  .then(literal("begin").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::beginBoss))
+                  .then(literal("announce").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(argument("time", MessageArgument.message()).executes(ctx -> ArcanaCommands.announceBoss(ctx.getSource(), MessageArgument.getMessage(ctx, "time").getString()))))
+                  .then(literal("begin").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::beginBoss))
                   .then(literal("teleport")
                         .executes(context -> ArcanaCommands.bossTeleport(context,context.getSource().getPlayer(),false))
-                        .then(argument("player",player()).requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                        .then(argument("player",player()).requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                               .executes(context -> ArcanaCommands.bossTeleport(context,getPlayer(context,"player"),false)))
-                        .then(literal("all").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                        .then(literal("all").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                               .executes(context ->ArcanaCommands.bossTeleport(context,context.getSource().getPlayer(),true)))))
       );
    
@@ -137,17 +137,17 @@ public class CommandRegisterCallback {
    
       if(DEV_MODE){
          dispatcher.register(literal("arcana")
-               .then(literal("test").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+               .then(literal("test").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                      .executes(ArcanaCommands::testCommand)
                      .then(argument("num",integer())
                            .executes(ctx -> ArcanaCommands.testCommand(ctx, getInteger(ctx, "num")))))
-               .then(literal("getbookdata").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::getBookData))
-               .then(literal("getitemdata").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+               .then(literal("getbookdata").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::getBookData))
+               .then(literal("getitemdata").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                      .then(argument("name", string()).executes(ctx -> ArcanaCommands.getItemData(ctx, getString(ctx, "name")))))
-               .then(literal("makerecipe").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::makeCraftingRecipe))
+               .then(literal("makerecipe").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::makeCraftingRecipe))
                .then(literal("boss")
-                     .then(literal("test").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK)).executes(ArcanaCommands::testBoss)))
-               .then(literal("item").requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                     .then(literal("test").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::testBoss)))
+               .then(literal("item").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                      .then(literal("name")
                            .then(literal("set")
                                  .then(argument("name",greedyString()).executes(ctx -> ArcanaCommands.setItemName(ctx, getString(ctx,"name")))))

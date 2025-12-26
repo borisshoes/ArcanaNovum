@@ -2,8 +2,8 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,19 +48,19 @@ public class DialogHelper {
       return dialogs.get(pool.get((int) (Math.random()*pool.size())));
    }
    
-   public void sendDialog(List<ServerPlayerEntity> players, Dialog dialog, boolean sounds){
+   public void sendDialog(List<ServerPlayer> players, Dialog dialog, boolean sounds){
       int index = 0;
       int curDelay = 0;
       int[] delay = dialog.delay();
-      for(MutableText msg : dialog.message()){
+      for(MutableComponent msg : dialog.message()){
          if(index < delay.length){
             curDelay += delay[index];
          }
          if(curDelay != 0){
             int finalIndex = index;
             BorisLib.addTickTimerCallback(new GenericTimer(curDelay, () -> {
-               for(ServerPlayerEntity player : players){
-                  player.sendMessage(msg, false);
+               for(ServerPlayer player : players){
+                  player.displayClientMessage(msg, false);
                   if(sounds && finalIndex < dialog.sounds().size()){
                      Dialog.DialogSound soundEvent = dialog.sounds().get(finalIndex);
                      if(soundEvent != null){
@@ -70,8 +70,8 @@ public class DialogHelper {
                }
             }));
          }else{
-            for(ServerPlayerEntity player : players){
-               player.sendMessage(msg, false);
+            for(ServerPlayer player : players){
+               player.displayClientMessage(msg, false);
                if(sounds && index < dialog.sounds().size()){
                   Dialog.DialogSound soundEvent = dialog.sounds().get(index);
                   if(soundEvent != null){

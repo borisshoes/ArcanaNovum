@@ -9,18 +9,17 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BlockStateComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import static net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity.COST;
 import static net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity.DURATIONS;
@@ -29,15 +28,15 @@ public class StormcallerAltarGui  extends SimpleGui {
    private final StormcallerAltarBlockEntity blockEntity;
    private final boolean tempest;
    
-   public StormcallerAltarGui(ServerPlayerEntity player, StormcallerAltarBlockEntity blockEntity){
-      super(ScreenHandlerType.HOPPER, player, false);
+   public StormcallerAltarGui(ServerPlayer player, StormcallerAltarBlockEntity blockEntity){
+      super(MenuType.HOPPER, player, false);
       this.blockEntity = blockEntity;
-      setTitle(Text.literal("Altar of the Stormcaller"));
+      setTitle(Component.literal("Altar of the Stormcaller"));
       tempest = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PERSISTENT_TEMPEST.id) >= 1;
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       int duration = blockEntity.getDuration();
       int mode = blockEntity.getMode();
       if(index == 2 && tempest){
@@ -47,19 +46,19 @@ public class StormcallerAltarGui  extends SimpleGui {
             blockEntity.setMode((mode+1) % 3);
          }else{
             if(blockEntity.getCooldown() <= 0){
-               if(MinecraftUtils.removeItems(player, COST.getLeft(),COST.getRight())){
+               if(MinecraftUtils.removeItems(player, COST.getA(),COST.getB())){
                   blockEntity.startWeatherChange(player);
                   close();
                }else{
-                  player.sendMessage(Text.literal("You do not have "+COST.getRight()+" ").formatted(Formatting.RED,Formatting.ITALIC)
-                        .append(Text.translatable(COST.getLeft().getTranslationKey()).formatted(Formatting.AQUA,Formatting.ITALIC))
-                        .append(Text.literal(" to power the Altar").formatted(Formatting.RED,Formatting.ITALIC)),false);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+                  player.displayClientMessage(Component.literal("You do not have "+COST.getB()+" ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(COST.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
+                        .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)),false);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
                   close();
                }
             }else{
-               player.sendMessage(Text.literal("The Altar is on Cooldown").formatted(Formatting.RED,Formatting.ITALIC),false);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+               player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
                close();
             }
          }
@@ -69,8 +68,8 @@ public class StormcallerAltarGui  extends SimpleGui {
    
    @Override
    public void onTick(){
-      World world = blockEntity.getWorld();
-      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
+      Level world = blockEntity.getLevel();
+      if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
          this.close();
       }
       
@@ -87,26 +86,26 @@ public class StormcallerAltarGui  extends SimpleGui {
             case 2 -> GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,0x525261));
             default -> GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,0x1cffff));
          };
-         setSlot(i,menuItem.setName(Text.literal("Altar of the Stormcaller").formatted(Formatting.DARK_GRAY)));
+         setSlot(i,menuItem.setName(Component.literal("Altar of the Stormcaller").withStyle(ChatFormatting.DARK_GRAY)));
       }
       
       GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideDefaultTooltip();
       if(blockEntity.getCooldown() <= 0){
-         cooldownItem.setName((Text.literal("")
-               .append(Text.literal("Altar Ready").formatted(Formatting.AQUA))));
+         cooldownItem.setName((Component.literal("")
+               .append(Component.literal("Altar Ready").withStyle(ChatFormatting.AQUA))));
       }else{
-         cooldownItem.setName((Text.literal("")
-               .append(Text.literal("Altar Recharging").formatted(Formatting.DARK_GRAY))));
-         cooldownItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal((blockEntity.getCooldown()/20)+" Seconds").formatted(Formatting.GRAY)))));
+         cooldownItem.setName((Component.literal("")
+               .append(Component.literal("Altar Recharging").withStyle(ChatFormatting.DARK_GRAY))));
+         cooldownItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal((blockEntity.getCooldown()/20)+" Seconds").withStyle(ChatFormatting.GRAY)))));
       }
       setSlot(0,cooldownItem);
       
       ItemStack lightItem = new ItemStack(Items.LIGHT);
-      lightItem.set(DataComponentTypes.BLOCK_STATE, BlockStateComponent.DEFAULT.with(Properties.LEVEL_15,duration));
+      lightItem.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(BlockStateProperties.LEVEL,duration));
       GuiElementBuilder durationItem = GuiElementBuilder.from(lightItem).hideDefaultTooltip();
-      durationItem.setName((Text.literal("")
-            .append(Text.literal("Weather Duration").formatted(Formatting.YELLOW))));
+      durationItem.setName((Component.literal("")
+            .append(Component.literal("Weather Duration").withStyle(ChatFormatting.YELLOW))));
       
       if(tempest){
          int dur = switch(mode){
@@ -116,14 +115,14 @@ public class StormcallerAltarGui  extends SimpleGui {
             default -> 0;
          };
          String durStr = dur <= 0 ? "Random" : dur + " Minutes";
-         durationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Current Duration: "+durStr).formatted(Formatting.GOLD)))));
-         durationItem.addLoreLine(TextUtils.removeItalics((Text.literal(""))));
-         durationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Click to change duration").formatted(Formatting.GRAY)))));
+         durationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Current Duration: "+durStr).withStyle(ChatFormatting.GOLD)))));
+         durationItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
+         durationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click to change duration").withStyle(ChatFormatting.GRAY)))));
       }else{
-         durationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Unlock this ability with Augmentation").formatted(Formatting.RED)))));
+         durationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Unlock this ability with Augmentation").withStyle(ChatFormatting.RED)))));
       }
       
       
@@ -136,19 +135,19 @@ public class StormcallerAltarGui  extends SimpleGui {
          default -> "-";
       };
       GuiElementBuilder activateItem = new GuiElementBuilder(Items.LIGHTNING_ROD);
-      activateItem.setName((Text.literal("")
-            .append(Text.literal("Activate Altar").formatted(Formatting.BLUE))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Click to harness the clouds").formatted(Formatting.GOLD)))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal(""))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Current Mode: "+modeString).formatted(Formatting.BLUE)))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Right Click to switch modes").formatted(Formatting.GOLD)))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal(""))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("The Altar Requires "+COST.getRight()+" ").formatted(Formatting.AQUA))
-            .append(Text.translatable(COST.getLeft().getTranslationKey()).formatted(Formatting.AQUA)))));
+      activateItem.setName((Component.literal("")
+            .append(Component.literal("Activate Altar").withStyle(ChatFormatting.BLUE))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Click to harness the clouds").withStyle(ChatFormatting.GOLD)))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Current Mode: "+modeString).withStyle(ChatFormatting.BLUE)))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Right Click to switch modes").withStyle(ChatFormatting.GOLD)))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("The Altar Requires "+COST.getB()+" ").withStyle(ChatFormatting.AQUA))
+            .append(Component.translatable(COST.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
       setSlot(4,activateItem);
    }
    

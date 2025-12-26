@@ -16,30 +16,30 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -65,98 +65,98 @@ public class PearlOfRecall extends EnergyItem {
       initEnergy = 600;
       vanillaItem = Items.ENDER_EYE;
       item = new PearlOfRecallItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.UNLOCK_WAYSTONE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.UNLOCK_WAYSTONE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,HEAT_TAG, 0);
-      NbtCompound locTag = new NbtCompound();
+      CompoundTag locTag = new CompoundTag();
       locTag.putString("dim","unattuned");
       putProperty(stack,LOCATION_TAG,locTag);
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("An ").formatted(Formatting.GREEN))
-            .append(Text.literal("Ender Pearl").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" whose ").formatted(Formatting.GREEN))
-            .append(Text.literal("moment ").formatted(Formatting.BLUE))
-            .append(Text.literal("of ").formatted(Formatting.GREEN))
-            .append(Text.literal("activation ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("was ").formatted(Formatting.GREEN))
-            .append(Text.literal("frozen ").formatted(Formatting.AQUA))
-            .append(Text.literal("for later use.").formatted(Formatting.GREEN)));
-      lore.add(Text.literal("")
-            .append(Text.literal("It requires the ").formatted(Formatting.GREEN))
-            .append(Text.literal("flowing of time").formatted(Formatting.BLUE))
-            .append(Text.literal(" to ").formatted(Formatting.GREEN))
-            .append(Text.literal("recharge ").formatted(Formatting.AQUA))
-            .append(Text.literal("it.").formatted(Formatting.GREEN)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" to set its ").formatted(Formatting.GREEN))
-            .append(Text.literal("location ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("and ").formatted(Formatting.GREEN))
-            .append(Text.literal("to ").formatted(Formatting.GREEN))
-            .append(Text.literal("teleport ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("to its ").formatted(Formatting.GREEN))
-            .append(Text.literal("set point").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.GREEN)));
-      lore.add(Text.literal(""));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("An ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("Ender Pearl").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" whose ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("moment ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("of ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("activation ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("was ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("frozen ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("for later use.").withStyle(ChatFormatting.GREEN)));
+      lore.add(Component.literal("")
+            .append(Component.literal("It requires the ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("flowing of time").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("recharge ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("it.").withStyle(ChatFormatting.GREEN)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" to set its ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("location ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("and ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("to ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("teleport ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("to its ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("set point").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GREEN)));
+      lore.add(Component.literal(""));
       
       if(itemStack == null){
-         lore.add(Text.literal("")
-               .append(Text.literal("Location - ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal("Unbound").formatted(Formatting.GRAY)));
-         lore.add(Text.literal("")
-               .append(Text.literal("Charged - ").formatted(Formatting.DARK_AQUA))
-               .append(Text.literal("100%").formatted(Formatting.BOLD,Formatting.BLUE)));
+         lore.add(Component.literal("")
+               .append(Component.literal("Location - ").withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(Component.literal("Unbound").withStyle(ChatFormatting.GRAY)));
+         lore.add(Component.literal("")
+               .append(Component.literal("Charged - ").withStyle(ChatFormatting.DARK_AQUA))
+               .append(Component.literal("100%").withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE)));
       }else{
-         NbtCompound locNbt = getCompoundProperty(itemStack,LOCATION_TAG);
-         String dim = locNbt.getString("dim", "");
-         int x = (int) locNbt.getDouble("x", 0.0);
-         int y = (int) locNbt.getDouble("y", 0.0);
-         int z = (int) locNbt.getDouble("z", 0.0);
-         Formatting dimColor;
+         CompoundTag locNbt = getCompoundProperty(itemStack,LOCATION_TAG);
+         String dim = locNbt.getStringOr("dim", "");
+         int x = (int) locNbt.getDoubleOr("x", 0.0);
+         int y = (int) locNbt.getDoubleOr("y", 0.0);
+         int z = (int) locNbt.getDoubleOr("z", 0.0);
+         ChatFormatting dimColor;
          String dimensionName;
          String location;
          
-         if(dim.equals(ServerWorld.OVERWORLD.getValue().toString())){
-            dimColor = Formatting.GREEN;
+         if(dim.equals(ServerLevel.OVERWORLD.identifier().toString())){
+            dimColor = ChatFormatting.GREEN;
             dimensionName = "Overworld";
-         }else if(dim.equals(ServerWorld.NETHER.getValue().toString())){
-            dimColor = Formatting.RED;
+         }else if(dim.equals(ServerLevel.NETHER.identifier().toString())){
+            dimColor = ChatFormatting.RED;
             dimensionName = "The Nether";
-         }else if(dim.equals(ServerWorld.END.getValue().toString())){
-            dimColor = Formatting.DARK_PURPLE;
+         }else if(dim.equals(ServerLevel.END.identifier().toString())){
+            dimColor = ChatFormatting.DARK_PURPLE;
             dimensionName = "The End";
          }else{
-            dimColor = Formatting.YELLOW;
+            dimColor = ChatFormatting.YELLOW;
             dimensionName = dim;
          }
          
          
          if(!dim.equals("unattuned")){
             location = dimensionName + " ("+x+","+y+","+z+")";
-            lore.add(Text.literal("")
-                  .append(Text.literal("Location - ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal(location).formatted(dimColor)));
+            lore.add(Component.literal("")
+                  .append(Component.literal("Location - ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(Component.literal(location).withStyle(dimColor)));
          }else{
-            lore.add(Text.literal("")
-                  .append(Text.literal("Location - ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal("Unbound").formatted(Formatting.GRAY)));
+            lore.add(Component.literal("")
+                  .append(Component.literal("Location - ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(Component.literal("Unbound").withStyle(ChatFormatting.GRAY)));
          }
          
          int charge = (getEnergy(itemStack)*100/getMaxEnergy(itemStack));
          String charging = charge == 100 ? "Charged" : "Charging";
-         lore.add(Text.literal("")
-               .append(Text.literal(charging+" - ").formatted(Formatting.DARK_AQUA))
-               .append(Text.literal(charge+"%").formatted(Formatting.BOLD,Formatting.BLUE)));
+         lore.add(Component.literal("")
+               .append(Component.literal(charging+" - ").withStyle(ChatFormatting.DARK_AQUA))
+               .append(Component.literal(charge+"%").withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE)));
       }
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
@@ -174,7 +174,7 @@ public class PearlOfRecall extends EnergyItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound locNbt = getCompoundProperty(stack,LOCATION_TAG).copy();
+      CompoundTag locNbt = getCompoundProperty(stack,LOCATION_TAG).copy();
       int heat = getIntProperty(stack,HEAT_TAG);
       ItemStack newItem = super.updateItem(stack,server);
       putProperty(newItem,LOCATION_TAG,locNbt);
@@ -182,29 +182,29 @@ public class PearlOfRecall extends EnergyItem {
       return buildItemLore(newItem,server);
    }
    
-   private void teleport(ItemStack item, ServerPlayerEntity player){
-      NbtCompound locNbt = getCompoundProperty(item,LOCATION_TAG);
-      String dim = locNbt.getString("dim", "");
-      double x = locNbt.getDouble("x", 0.0);
-      double y = locNbt.getDouble("y", 0.0);
-      double z = locNbt.getDouble("z", 0.0);
-      float yaw = locNbt.getFloat("yaw", 0.0f);
-      float pitch = locNbt.getFloat("pitch", 0.0f);
+   private void teleport(ItemStack item, ServerPlayer player){
+      CompoundTag locNbt = getCompoundProperty(item,LOCATION_TAG);
+      String dim = locNbt.getStringOr("dim", "");
+      double x = locNbt.getDoubleOr("x", 0.0);
+      double y = locNbt.getDoubleOr("y", 0.0);
+      double z = locNbt.getDoubleOr("z", 0.0);
+      float yaw = locNbt.getFloatOr("yaw", 0.0f);
+      float pitch = locNbt.getFloatOr("pitch", 0.0f);
       
-      ServerWorld to = player.getEntityWorld();
-      for (ServerWorld w : player.getEntityWorld().getServer().getWorlds()){
-         if(w.getRegistryKey().getValue().toString().equals(dim)){
+      ServerLevel to = player.level();
+      for (ServerLevel w : player.level().getServer().getAllLevels()){
+         if(w.dimension().identifier().toString().equals(dim)){
             to = w;
             break;
          }
       }
       
-      player.teleportTo(new TeleportTarget(to, new Vec3d(x,y,z), Vec3d.ZERO, yaw, pitch, TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
+      player.teleport(new TeleportTransition(to, new Vec3(x,y,z), Vec3.ZERO, yaw, pitch, TeleportTransition.PLACE_PORTAL_TICKET));
       setEnergy(item,0);
-      if(to.getRegistryKey().getValue().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,ArcanaAchievements.BACK_TO_HELL.id);
-      if(to.getRegistryKey().getValue().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,ArcanaAchievements.ASCENDING_TO_HEAVEN.id);
-      SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_PORTAL_TRAVEL,1,2f);
-      ArcanaEffectUtils.recallTeleport(to,player.getEntityPos());
+      if(to.dimension().identifier().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,ArcanaAchievements.BACK_TO_HELL.id);
+      if(to.dimension().identifier().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,ArcanaAchievements.ASCENDING_TO_HEAVEN.id);
+      SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL,1,2f);
+      ArcanaEffectUtils.recallTeleport(to,player.position());
    }
    
    @Override
@@ -228,32 +228,32 @@ public class PearlOfRecall extends EnergyItem {
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack waystone = inv.getStack(7); // Should be the Waystone
+   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
+      ItemStack waystone = inv.getItem(7); // Should be the Waystone
       ItemStack newArcanaItem = getNewItem();
       
       Waystone.WaystoneTarget target = Waystone.getTarget(waystone);
       if(target != null){
-         NbtCompound locNbt = getCompoundProperty(newArcanaItem,LOCATION_TAG);
-         locNbt.putString("dim", target.world().getValue().toString());
+         CompoundTag locNbt = getCompoundProperty(newArcanaItem,LOCATION_TAG);
+         locNbt.putString("dim", target.world().identifier().toString());
          locNbt.putDouble("x", target.position().x);
          locNbt.putDouble("y", target.position().y);
          locNbt.putDouble("z", target.position().z);
          locNbt.putFloat("yaw", target.yaw());
          locNbt.putFloat("pitch", target.pitch());
          putProperty(newArcanaItem,LOCATION_TAG,locNbt);
-         buildItemLore(newArcanaItem,starlightForge.getWorld().getServer());
+         buildItemLore(newArcanaItem,starlightForge.getLevel().getServer());
       }
       
       return newArcanaItem;
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it by using a Waystone to encode the location. ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nI can even use it multiple times after a recharge.\n\nUsing the Pearl permanently sets its Recall point.\n\nUsing the Pearl again starts to unfreeze the Pearl in time.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nTaking damage resets the process and requires more recharging.\n\nAfter using the Pearl, it takes a while to resync to the timeline before use again.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("Pearl of Recall").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it by using a Waystone to encode the location. ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Pearl of Recall").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nI can even use it multiple times after a recharge.\n\nUsing the Pearl permanently sets its Recall point.\n\nUsing the Pearl again starts to unfreeze the Pearl in time.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Pearl of Recall").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nTaking damage resets the process and requires more recharging.\n\nAfter using the Pearl, it takes a while to resync to the timeline before use again.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -263,7 +263,7 @@ public class PearlOfRecall extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          List<String> stringList = new ArrayList<>();
          if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
@@ -271,19 +271,19 @@ public class PearlOfRecall extends EnergyItem {
          }else{
             stringList.add("charged");
          }
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          
 
          int heat = getIntProperty(stack,HEAT_TAG);
@@ -294,75 +294,75 @@ public class PearlOfRecall extends EnergyItem {
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PEARL_OF_RECALL_USE)); // Add xp
          }else if(heat > 0){
             putProperty(stack,HEAT_TAG, heat+1);
-            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.getEntityPos());
+            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.position());
          }else if(heat == -1){
             // Teleport was cancelled by damage
-            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.getEntityPos());
-            SoundUtils.playSound(player.getEntityWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
+            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.position());
+            SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.ENDERMAN_HURT, SoundSource.PLAYERS, 8,0.8f);
             putProperty(stack,HEAT_TAG, 0);
             setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));
          }
          
-         if(ItemStack.areItemsAndComponentsEqual(stack,player.getMainHandStack()) || ItemStack.areItemsAndComponentsEqual(stack,player.getOffHandStack())){
-            NbtCompound locNbt = getCompoundProperty(stack,LOCATION_TAG);
-            String dim = locNbt.getString("dim", "");
-            double x = locNbt.getDouble("x", 0.0);
-            double y = locNbt.getDouble("y", 0.0);
-            double z = locNbt.getDouble("z", 0.0);
-            Vec3d loc = new Vec3d(x,y,z);
-            if(player.getEntityWorld().getRegistryKey().getValue().toString().equals(dim) && player.getEntityPos().distanceTo(loc) < 30){
+         if(ItemStack.isSameItemSameComponents(stack,player.getMainHandItem()) || ItemStack.isSameItemSameComponents(stack,player.getOffhandItem())){
+            CompoundTag locNbt = getCompoundProperty(stack,LOCATION_TAG);
+            String dim = locNbt.getStringOr("dim", "");
+            double x = locNbt.getDoubleOr("x", 0.0);
+            double y = locNbt.getDoubleOr("y", 0.0);
+            double z = locNbt.getDoubleOr("z", 0.0);
+            Vec3 loc = new Vec3(x,y,z);
+            if(player.level().dimension().identifier().toString().equals(dim) && player.position().distanceTo(loc) < 30){
                ArcanaEffectUtils.recallLocation(serverWorld,loc,player);
             }
          }
          
          
-         if(world.getServer().getTicks() % 20 == 0){
+         if(world.getServer().getTickCount() % 20 == 0){
             addEnergy(stack, 1); // Recharge
             buildItemLore(stack,world.getServer());
          }
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack item = playerEntity.getStackInHand(hand);
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack item = playerEntity.getItemInHand(hand);
          boolean canClear = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CHRONO_TEAR.id) >= 1;
-         if(playerEntity instanceof ServerPlayerEntity player){
-            NbtCompound locNbt = getCompoundProperty(item,LOCATION_TAG);
-            String dim = locNbt.getString("dim", "");
+         if(playerEntity instanceof ServerPlayer player){
+            CompoundTag locNbt = getCompoundProperty(item,LOCATION_TAG);
+            String dim = locNbt.getStringOr("dim", "");
             
-            if(!(canClear && player.isSneaking())){
+            if(!(canClear && player.isShiftKeyDown())){
                if(dim.equals("unattuned")){
-                  locNbt.putString("dim", playerEntity.getEntityWorld().getRegistryKey().getValue().toString());
-                  locNbt.putDouble("x", playerEntity.getEntityPos().x);
-                  locNbt.putDouble("y", playerEntity.getEntityPos().y);
-                  locNbt.putDouble("z", playerEntity.getEntityPos().z);
-                  locNbt.putFloat("yaw", playerEntity.getYaw());
-                  locNbt.putFloat("pitch", playerEntity.getPitch());
+                  locNbt.putString("dim", playerEntity.level().dimension().identifier().toString());
+                  locNbt.putDouble("x", playerEntity.position().x);
+                  locNbt.putDouble("y", playerEntity.position().y);
+                  locNbt.putDouble("z", playerEntity.position().z);
+                  locNbt.putFloat("yaw", playerEntity.getYRot());
+                  locNbt.putFloat("pitch", playerEntity.getXRot());
                   putProperty(item,LOCATION_TAG,locNbt);
-                  buildItemLore(item,playerEntity.getEntityWorld().getServer());
+                  buildItemLore(item,playerEntity.level().getServer());
                }else{
                   int curEnergy = getEnergy(item);
                   if(curEnergy >= getMaxEnergy(item)){
                      putProperty(item,HEAT_TAG, 1); // Starts the heat up process
-                     SoundUtils.playSound(player.getEntityWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
+                     SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 1, 1);
                   }else{
-                     playerEntity.sendMessage(Text.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").formatted(Formatting.DARK_AQUA), true);
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
+                     playerEntity.displayClientMessage(Component.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").withStyle(ChatFormatting.DARK_AQUA), true);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                   }
                }
             }else{ // Clear location
                if(!dim.equals("unattuned")){
-                  locNbt = new NbtCompound();
+                  locNbt = new CompoundTag();
                   locNbt.putString("dim", "unattuned");
                   putProperty(item,LOCATION_TAG,locNbt);
-                  buildItemLore(item,playerEntity.getEntityWorld().getServer());
+                  buildItemLore(item,playerEntity.level().getServer());
                   
-                  playerEntity.sendMessage(Text.literal("Saved Location Cleared").formatted(Formatting.DARK_AQUA), true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, .7f);
+                  playerEntity.displayClientMessage(Component.literal("Saved Location Cleared").withStyle(ChatFormatting.DARK_AQUA), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_DEPLETE, 1, .7f);
                }
             }
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
    }
 }

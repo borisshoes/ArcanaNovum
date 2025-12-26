@@ -4,14 +4,13 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.QuiverItem;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemContainerContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,7 @@ public class QuiverGui extends SimpleGui {
    
    private final QuiverItem quiver;
    private final ItemStack item;
-   private SimpleInventory inv;
+   private SimpleContainer inv;
    private final boolean runic;
    
    /**
@@ -30,27 +29,27 @@ public class QuiverGui extends SimpleGui {
     * @param player                the player to server this gui to
     *                              will be treated as slots of this gui
     */
-   public QuiverGui(ServerPlayerEntity player, QuiverItem quiver, ItemStack item, boolean runic){
-      super(ScreenHandlerType.GENERIC_3X3, player, false);
+   public QuiverGui(ServerPlayer player, QuiverItem quiver, ItemStack item, boolean runic){
+      super(MenuType.GENERIC_3x3, player, false);
       this.quiver = quiver;
       this.item = item;
       this.runic = runic;
    }
    
    public void build(){
-      inv = new SimpleInventory(QuiverItem.size);
+      inv = new SimpleContainer(QuiverItem.size);
       QuiverInventoryListener listener = new QuiverInventoryListener(quiver,this,item);
       inv.addListener(listener);
       listener.setUpdating();
       
-      for(int i = 0; i < inv.size(); i++){
+      for(int i = 0; i < inv.getContainerSize(); i++){
          setSlotRedirect(i, new QuiverSlot(inv,runic,i,i%3,i/3));
       }
       
-      ContainerComponent arrows = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+      ItemContainerContents arrows = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
       arrows.stream().forEachOrdered(stack -> {
-         inv.setStack(i.get(),stack);
+         inv.setItem(i.get(),stack);
          i.getAndIncrement();
       });
       
@@ -59,13 +58,13 @@ public class QuiverGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
-      if(type == ClickType.OFFHAND_SWAP || action == SlotActionType.SWAP){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
+      if(type == ClickType.OFFHAND_SWAP || action == net.minecraft.world.inventory.ClickType.SWAP){
          close();
       }else if(index > 9){
          int invSlot = index >= 36 ? index - 36 : index;
-         ItemStack stack = player.getInventory().getStack(invSlot);
-         if(ItemStack.areItemsAndComponentsEqual(item,stack)){
+         ItemStack stack = player.getInventory().getItem(invSlot);
+         if(ItemStack.isSameItemSameComponents(item,stack)){
             close();
             return false;
          }
@@ -76,20 +75,20 @@ public class QuiverGui extends SimpleGui {
    
    @Override
    public void onClose(){
-      item.set(DataComponentTypes.CONTAINER,ContainerComponent.fromStacks(inv.heldStacks));
+      item.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(inv.items));
    
       List<Integer> tippedTypes = new ArrayList<>();
       if(!runic){
-         for(int i = 0; i < inv.size(); i++){
-            ItemStack arrowStack = inv.getStack(i);
-            if(arrowStack.isOf(Items.TIPPED_ARROW) && arrowStack.contains(DataComponentTypes.POTION_CONTENTS)){
-               int color = arrowStack.get(DataComponentTypes.POTION_CONTENTS).getColor();
+         for(int i = 0; i < inv.getContainerSize(); i++){
+            ItemStack arrowStack = inv.getItem(i);
+            if(arrowStack.is(Items.TIPPED_ARROW) && arrowStack.has(DataComponents.POTION_CONTENTS)){
+               int color = arrowStack.get(DataComponents.POTION_CONTENTS).getColor();
                if(!tippedTypes.contains(color)) tippedTypes.add(color);
             }
          }
          if(tippedTypes.size() == 9) ArcanaAchievements.grant(player,ArcanaAchievements.DIVERSE_ARSENAL.id);
       }
-      quiver.buildItemLore(item,player.getEntityWorld().getServer());
+      quiver.buildItemLore(item,player.level().getServer());
    }
    
    

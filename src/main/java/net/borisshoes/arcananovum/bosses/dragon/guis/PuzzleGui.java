@@ -8,15 +8,14 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,10 +33,10 @@ public class PuzzleGui extends SimpleGui {
     * @param type                        the screen handler that the client should display
     * @param player                      the player to server this gui to
     */
-   public PuzzleGui(ScreenHandlerType<?> type, ServerPlayerEntity player, DragonBossFight.ReclaimState reclaimState){
+   public PuzzleGui(MenuType<?> type, ServerPlayer player, DragonBossFight.ReclaimState reclaimState){
       super(type, player, false);
       this.reclaimState = reclaimState;
-      setTitle(Text.literal("Tower Reclamation"));
+      setTitle(Component.literal("Tower Reclamation"));
    }
    
    public void buildPuzzle(){
@@ -45,19 +44,19 @@ public class PuzzleGui extends SimpleGui {
       ArrayList<Item> puzzleItems = curPuzzle.getPuzzleItems();
       Item targetItem = curPuzzle.getTargetItem();
       
-      GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.literal("Tower Reclamation").formatted(Formatting.LIGHT_PURPLE));
+      GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.literal("Tower Reclamation").withStyle(ChatFormatting.LIGHT_PURPLE));
       
       GuiElementBuilder targetGuiItem = new GuiElementBuilder(targetItem).hideDefaultTooltip();
-      targetGuiItem.setName((Text.literal("")
-            .append(Text.translatable(targetItem.getTranslationKey()).formatted(Formatting.AQUA,Formatting.BOLD))));
-      targetGuiItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Click this item!").formatted(Formatting.DARK_PURPLE)))));
+      targetGuiItem.setName((Component.literal("")
+            .append(Component.translatable(targetItem.getDescriptionId()).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))));
+      targetGuiItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Click this item!").withStyle(ChatFormatting.DARK_PURPLE)))));
       setSlot(4,targetGuiItem);
       
       for(int i = 46; i < 53; i++){
          int lvl = i-45;
          GuiElementBuilder progressGuiItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,lvl <= level ? ArcanaColors.EQUAYUS_COLOR : ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
-         progressGuiItem.setName((Text.literal("("+level+"/7)").formatted(Formatting.AQUA,Formatting.BOLD)));
+         progressGuiItem.setName((Component.literal("("+level+"/7)").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)));
          setSlot(i,progressGuiItem);
       }
       
@@ -66,8 +65,8 @@ public class PuzzleGui extends SimpleGui {
          for(int j = 0; j < 7; j++){
             if(k < puzzleItems.size()){
                GuiElementBuilder puzzleItem = new GuiElementBuilder(puzzleItems.get(k)).hideDefaultTooltip();
-               puzzleItem.setName((Text.literal("")
-                     .append(Text.translatable(puzzleItems.get(k).getTranslationKey()).formatted(Formatting.YELLOW))));
+               puzzleItem.setName((Component.literal("")
+                     .append(Component.translatable(puzzleItems.get(k).getDescriptionId()).withStyle(ChatFormatting.YELLOW))));
                
                setSlot((i*9+10)+j,puzzleItem);
             }else{
@@ -79,7 +78,7 @@ public class PuzzleGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
       int ind = (7*(index/9 - 1) + (index % 9 - 1));
       
@@ -108,16 +107,16 @@ public class PuzzleGui extends SimpleGui {
       if(reclaimState != null){
          if(complete){
             reclaimState.playerSolved();
-            player.sendMessage(Text.literal("The Tower's Arcana Surges Through You!").formatted(Formatting.BOLD,Formatting.DARK_AQUA),true);
+            player.displayClientMessage(Component.literal("The Tower's Arcana Surges Through You!").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA),true);
          }else{
             reclaimState.setPlayer(null);
-            player.sendMessage(Text.literal("You Fail To Channel The Tower's Magic").formatted(Formatting.ITALIC,Formatting.RED),true);
+            player.displayClientMessage(Component.literal("You Fail To Channel The Tower's Magic").withStyle(ChatFormatting.ITALIC, ChatFormatting.RED),true);
          }
       }else{
          if(complete){
-            player.sendMessage(Text.literal("Success!").formatted(Formatting.BOLD,Formatting.DARK_AQUA));
+            player.sendSystemMessage(Component.literal("Success!").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA));
          }else{
-            player.sendMessage(Text.literal("Fail!").formatted(Formatting.ITALIC,Formatting.RED));
+            player.sendSystemMessage(Component.literal("Fail!").withStyle(ChatFormatting.ITALIC, ChatFormatting.RED));
          }
       }
    }
@@ -126,12 +125,12 @@ public class PuzzleGui extends SimpleGui {
       private ArrayList<Item> puzzleItems;
       private Item targetItem;
       private static final int[] itemsPerLevel = {28,28,28,28,28,28,28};
-      private static final Item[] targetItems = {Items.END_CRYSTAL,Items.OBSIDIAN,Items.ENDER_EYE,Items.AMETHYST_SHARD,Items.CRYING_OBSIDIAN,Items.NETHER_STAR,Items.END_CRYSTAL};
+      private static final Item[] targetItems = {Items.END_CRYSTAL, Items.OBSIDIAN, Items.ENDER_EYE, Items.AMETHYST_SHARD, Items.CRYING_OBSIDIAN, Items.NETHER_STAR, Items.END_CRYSTAL};
    
       public static Puzzle generatePuzzle(int level){
          Puzzle puzzle = new Puzzle();
-         Item targetItem = targetItems[MathHelper.clamp(level-1,0,6)];
-         int numItems = itemsPerLevel[MathHelper.clamp(level-1,0,6)];
+         Item targetItem = targetItems[Mth.clamp(level-1,0,6)];
+         int numItems = itemsPerLevel[Mth.clamp(level-1,0,6)];
          ArrayList<Item> puzzleItems = new ArrayList<>();
          
          for(int i = 0; i < 28; i++){
@@ -140,8 +139,8 @@ public class PuzzleGui extends SimpleGui {
                item = targetItem;
             }else if(i < numItems){
                do{
-                  item = Registries.ITEM.get(((int)(Math.random()*Registries.ITEM.size())));
-               }while(item == targetItem || !Registries.ITEM.getId(item).getNamespace().equals("minecraft"));
+                  item = BuiltInRegistries.ITEM.byId(((int)(Math.random()* BuiltInRegistries.ITEM.size())));
+               }while(item == targetItem || !BuiltInRegistries.ITEM.getKey(item).getNamespace().equals("minecraft"));
             }
             puzzleItems.add(item);
          }

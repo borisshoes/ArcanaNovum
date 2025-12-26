@@ -19,28 +19,32 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.inventory.StackReference;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -62,75 +66,75 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       itemVersion = 1;
       vanillaItem = Items.LEAD;
       item = new ArcanistsBeltItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.BELT_COLOR);
-      researchTasks = new RegistryKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.CONCENTRATION_DAMAGE,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BELT_COLOR);
+      researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.CONCENTRATION_DAMAGE,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("For when you have too many ").formatted(Formatting.YELLOW))
-            .append(Text.literal("tools ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("and ").formatted(Formatting.YELLOW))
-            .append(Text.literal("Arcana Items ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("to carry...").formatted(Formatting.YELLOW)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(" in the belt will maintain their ").formatted(Formatting.YELLOW))
-            .append(Text.literal("passive effects").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.YELLOW)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(" consume a ").formatted(Formatting.YELLOW))
-            .append(Text.literal("reduced").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" amount of ").formatted(Formatting.YELLOW))
-            .append(Text.literal("concentration").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.YELLOW)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" to access the ").formatted(Formatting.YELLOW))
-            .append(Text.literal("Belt's").withColor(ArcanaColors.BELT_COLOR))
-            .append(Text.literal(" slots").formatted(Formatting.YELLOW))
-            .append(Text.literal(".").formatted(Formatting.YELLOW)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("For when you have too many ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("tools ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("Arcana Items ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("to carry...").withStyle(ChatFormatting.YELLOW)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Arcana Items").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(" in the belt will maintain their ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("passive effects").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.YELLOW)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Arcana Items").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(" consume a ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("reduced").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" amount of ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("concentration").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.YELLOW)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" to access the ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("Belt's").withColor(ArcanaColors.BELT_COLOR))
+            .append(Component.literal(" slots").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(".").withStyle(ChatFormatting.YELLOW)));
       
       if(itemStack != null){
-         ContainerComponent beltItems = itemStack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-         SimpleInventory inv = new SimpleInventory(9);
-         List<ItemStack> streamList = beltItems.streamNonEmpty().toList();
+         ItemContainerContents beltItems = itemStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+         SimpleContainer inv = new SimpleContainer(9);
+         List<ItemStack> streamList = beltItems.nonEmptyStream().toList();
          for(int i = 0; i < streamList.size(); i++){
-            inv.setStack(i,streamList.get(i));
+            inv.setItem(i,streamList.get(i));
          }
          
          if(inv.isEmpty()){
-            lore.add(Text.literal(""));
-            lore.add(Text.literal("")
-                  .append(Text.literal("Contents: ").withColor(ArcanaColors.BELT_COLOR))
-                  .append(Text.literal("Empty").formatted(Formatting.YELLOW)));
+            lore.add(Component.literal(""));
+            lore.add(Component.literal("")
+                  .append(Component.literal("Contents: ").withColor(ArcanaColors.BELT_COLOR))
+                  .append(Component.literal("Empty").withStyle(ChatFormatting.YELLOW)));
          }else{
-            lore.add(Text.literal(""));
-            lore.add(Text.literal("").append(Text.literal("Contents:").withColor(ArcanaColors.BELT_COLOR)));
-            for(int i = 0; i < inv.size(); i++){
-               ItemStack stack = inv.getStack(i);
+            lore.add(Component.literal(""));
+            lore.add(Component.literal("").append(Component.literal("Contents:").withColor(ArcanaColors.BELT_COLOR)));
+            for(int i = 0; i < inv.getContainerSize(); i++){
+               ItemStack stack = inv.getItem(i);
                if(stack.isEmpty()) continue;
-               Style style = stack.getName().getStyle();
-               boolean keepStyle = style.isBold() || style.isItalic() || style.isObfuscated() || style.isUnderlined() || style.isStrikethrough() || (style.getColor() != null && style.getColor().getRgb() != Formatting.WHITE.getColorValue());
-               MutableText name = stack.getName().copy();
-               if(!keepStyle) name = name.formatted(Formatting.YELLOW);
+               Style style = stack.getHoverName().getStyle();
+               boolean keepStyle = style.isBold() || style.isItalic() || style.isObfuscated() || style.isUnderlined() || style.isStrikethrough() || (style.getColor() != null && style.getColor().getValue() != ChatFormatting.WHITE.getColor());
+               MutableComponent name = stack.getHoverName().copy();
+               if(!keepStyle) name = name.withStyle(ChatFormatting.YELLOW);
                
-               if(stack.getCount() == 1 && stack.getMaxCount() == 1){
-                  lore.add(Text.literal("")
-                        .append(Text.literal(" - ").formatted(Formatting.DARK_AQUA))
+               if(stack.getCount() == 1 && stack.getMaxStackSize() == 1){
+                  lore.add(Component.literal("")
+                        .append(Component.literal(" - ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(name));
                }else{
-                  lore.add(Text.literal("")
-                        .append(Text.literal(" - ").formatted(Formatting.YELLOW))
-                        .append(Text.literal(stack.getCount()+"x ").formatted(Formatting.DARK_PURPLE))
+                  lore.add(Component.literal("")
+                        .append(Component.literal(" - ").withStyle(ChatFormatting.YELLOW))
+                        .append(Component.literal(stack.getCount()+"x ").withStyle(ChatFormatting.DARK_PURPLE))
                         .append(name));
                }
             }
@@ -147,8 +151,8 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       if(getIntProperty(stack,VERSION_TAG) <= 12){ // Migrate from ITEMS_TAG to ContainerComponent
-         NbtList beltItems = getListProperty(stack,ITEMS_TAG).copy();
-         stack.set(DataComponentTypes.CONTAINER, DataFixer.nbtListToComponent(beltItems,server));
+         ListTag beltItems = getListProperty(stack,ITEMS_TAG).copy();
+         stack.set(DataComponents.CONTAINER, DataFixer.nbtListToComponent(beltItems,server));
          removeProperty(stack,ITEMS_TAG);
       }
       ItemStack newStack = super.updateItem(stack,server);
@@ -164,11 +168,11 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
       int size = 9;
       boolean padding = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MENTAL_PADDING.id) >= 1;
-      ContainerComponent beltItems = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-      SimpleInventory inv = new SimpleInventory(size);
-      List<ItemStack> streamList = beltItems.streamNonEmpty().toList();
+      ItemContainerContents beltItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      SimpleContainer inv = new SimpleContainer(size);
+      List<ItemStack> streamList = beltItems.nonEmptyStream().toList();
       for(int i = 0; i < streamList.size(); i++){
-         inv.setStack(i,streamList.get(i));
+         inv.setItem(i,streamList.get(i));
       }
       return new ArcanaItemContainer(inv, size,10, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
    }
@@ -192,91 +196,91 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD).withColor(ArcanaColors.BELT_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nWith my collection of Arcana items rapidly increasing, my inventory has become cluttered with trinkets. Some Arcana items are passive, so perhaps I can stuff them away in a mini Ender Chest of sorts and only ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD).withColor(ArcanaColors.BELT_COLOR),Text.literal("\nchannel enough Arcana to keep their passive abilities active.\n\nThe Belt should be able to accommodate unstackable items as well, as long as they aren’t too big. The Belt’s pouches can \n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD).withColor(ArcanaColors.BELT_COLOR),Text.literal("\nalso be accessed similar to a Bundle in my inventory.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("  Arcanist's Belt").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BELT_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nWith my collection of Arcana items rapidly increasing, my inventory has become cluttered with trinkets. Some Arcana items are passive, so perhaps I can stuff them away in a mini Ender Chest of sorts and only ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Arcanist's Belt").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BELT_COLOR), Component.literal("\nchannel enough Arcana to keep their passive abilities active.\n\nThe Belt should be able to accommodate unstackable items as well, as long as they aren’t too big. The Belt’s pouches can \n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Arcanist's Belt").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BELT_COLOR), Component.literal("\nalso be accessed similar to a Bundle in my inventory.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class ArcanistsBeltItem extends ArcanaPolymerItem {
       public ArcanistsBeltItem(){
          super(getThis(),getArcanaItemComponents()
-               .component(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT)
+               .component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
          );
       }
       
       public static final int[] BELT_SLOT_COUNT = new int[]{3,4,5,7,9};
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
          
-         ContainerComponent beltItems = stack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-         for(ItemStack invStack : beltItems.iterateNonEmpty()){
+         ItemContainerContents beltItems = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+         for(ItemStack invStack : beltItems.nonEmptyItems()){
             invStack.getItem().inventoryTick(invStack,world,entity,null);
          }
          buildItemLore(stack, BorisLib.SERVER);
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          // Open GUI
-         if(playerEntity instanceof ServerPlayerEntity player){
-            ItemStack stack = playerEntity.getStackInHand(hand);
+         if(playerEntity instanceof ServerPlayer player){
+            ItemStack stack = playerEntity.getItemInHand(hand);
             ArcanistsBeltGui gui = new ArcanistsBeltGui(player, ArcanistsBelt.this, stack,BELT_SLOT_COUNT[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.POUCHES))]);
             gui.build();
             gui.open();
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
-      public boolean onClicked(ItemStack stack, ItemStack otherStack, Slot slot, ClickType clickType, PlayerEntity playerEntity, StackReference cursorStackReference) {
-         if(playerEntity.getEntityWorld().isClient() || !(playerEntity instanceof ServerPlayerEntity player)) return false;
-         if (clickType == ClickType.LEFT && otherStack.isEmpty()) {
+      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference) {
+         if(playerEntity.level().isClientSide() || !(playerEntity instanceof ServerPlayer player)) return false;
+         if (clickType == ClickAction.PRIMARY && otherStack.isEmpty()) {
             return false;
          } else {
-            ContainerComponent beltItems = stack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+            ItemContainerContents beltItems = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
             List<ItemStack> beltList = beltItems.stream().toList();
             
-            if(clickType == ClickType.LEFT && !otherStack.isEmpty()){ // Try insert
+            if(clickType == ClickAction.PRIMARY && !otherStack.isEmpty()){ // Try insert
                if(!ArcanistsBeltSlot.isValidItem(otherStack)){
-                  SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT_FAIL,1f,1f);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
                }else{
                   int size = BELT_SLOT_COUNT[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.POUCHES))];
                   int count = otherStack.getCount();
-                  Pair<ContainerComponent,ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
-                  if(count == addPair.getRight().getCount()){
-                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT_FAIL,1f,1f);
+                  Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
+                  if(count == addPair.getB().getCount()){
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
                   }else{
-                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT,0.8F, 0.8F + player.getEntityWorld().getRandom().nextFloat() * 0.4F);
-                     stack.set(DataComponentTypes.CONTAINER,addPair.getLeft());
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT,0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+                     stack.set(DataComponents.CONTAINER,addPair.getA());
                   }
                }
-               buildItemLore(stack,player.getEntityWorld().getServer());
+               buildItemLore(stack,player.level().getServer());
                return true;
-            }else if(clickType == ClickType.RIGHT && otherStack.isEmpty()){ // Try remove
+            }else if(clickType == ClickAction.SECONDARY && otherStack.isEmpty()){ // Try remove
                boolean found = false;
                for(ItemStack itemStack : beltList.reversed()){
                   if(!itemStack.isEmpty()){
-                     cursorStackReference.set(itemStack.copyAndEmpty());
-                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_REMOVE_ONE,0.8F, 0.8F + player.getEntityWorld().getRandom().nextFloat() * 0.4F);
+                     cursorStackReference.set(itemStack.copyAndClear());
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE,0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
                      found = true;
                      break;
                   }
                }
                
                if(found){
-                  stack.set(DataComponentTypes.CONTAINER,ContainerComponent.fromStacks(beltList));
-                  buildItemLore(stack,player.getEntityWorld().getServer());
+                  stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(beltList));
+                  buildItemLore(stack,player.level().getServer());
                   return true;
                }else{
                   return false;

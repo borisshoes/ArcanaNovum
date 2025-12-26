@@ -13,17 +13,17 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.Potions;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -42,51 +42,51 @@ public class SmokeArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new SmokeArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_GRAY);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.KILL_SQUID,ResearchTasks.USE_CAMPFIRE,ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_BLINDNESS,ResearchTasks.EFFECT_WEAKNESS};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.KILL_SQUID,ResearchTasks.USE_CAMPFIRE,ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_BLINDNESS,ResearchTasks.EFFECT_WEAKNESS};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Smoke Arrows:").formatted(Formatting.BOLD,Formatting.DARK_GRAY));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.GRAY))
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" emit ").formatted(Formatting.GRAY))
-            .append(Text.literal("smoke").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" particles near where they land.").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Smoke").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" gives ").formatted(Formatting.GRAY))
-            .append(Text.literal("blindness").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" and ").formatted(Formatting.GRAY))
-            .append(Text.literal("weakness").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" to those inside it.").formatted(Formatting.GRAY)));
+      lore.add(Component.literal("Smoke Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GRAY));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" emit ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("smoke").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(" particles near where they land.").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Smoke").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(" gives ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("blindness").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(" and ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("weakness").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(" to those inside it.").withStyle(ChatFormatting.GRAY)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
-         float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
+      if(arrow.level() instanceof ServerLevel serverWorld){
+         float range = (float) Mth.clamp(arrow.getDeltaMovement().length()*.8,.3,2.5);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
-         ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),entityHitResult.getEntity(),null,null,range,gasLvl));
+         ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),entityHitResult.getEntity(),null,null,range,gasLvl));
       }
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
-         float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
+      if(arrow.level() instanceof ServerLevel serverWorld){
+         float range = (float) Mth.clamp(arrow.getDeltaMovement().length()*.8,.3,2.5);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
-         ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),null,blockHitResult.getBlockPos(),serverWorld,range,gasLvl));
+         ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),null,blockHitResult.getBlockPos(),serverWorld,range,gasLvl));
       }
    }
    
@@ -110,9 +110,9 @@ public class SmokeArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Smoke Arrows").formatted(Formatting.DARK_GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Runic Matrix has been configured to summon copious amounts of smoke. Those inside will have trouble seeing and even breathing, making it harder to land a solid blow.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("   Smoke Arrows").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis Runic Matrix has been configured to summon copious amounts of smoke. Those inside will have trouble seeing and even breathing, making it harder to land a solid blow.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -122,7 +122,7 @@ public class SmokeArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

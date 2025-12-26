@@ -15,14 +15,14 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -44,39 +44,39 @@ public class ExoticMatter extends EnergyItem {
       initEnergy = 600000;
       vanillaItem = Items.STRUCTURE_BLOCK;
       item = new ExoticMatterItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.OBTAIN_CLOCK,ResearchTasks.ADVANCEMENT_SLEEP_IN_BED,ResearchTasks.OBTAIN_END_CRYSTAL};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.OBTAIN_CLOCK,ResearchTasks.ADVANCEMENT_SLEEP_IN_BED,ResearchTasks.OBTAIN_END_CRYSTAL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("strange matter").formatted(Formatting.BLUE))
-            .append(Text.literal(" seems to warp ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("spacetime").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Perhaps it could be ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("useful").formatted(Formatting.ITALIC,Formatting.GRAY))
-            .append(Text.literal(" for something...").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Used as ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("fuel").formatted(Formatting.GOLD))
-            .append(Text.literal(" for the ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("Continuum Anchor").formatted(Formatting.DARK_BLUE)));
-      lore.add(Text.literal(""));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("This ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("strange matter").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" seems to warp ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("spacetime").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Perhaps it could be ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("useful").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
+            .append(Component.literal(" for something...").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Used as ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("fuel").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(" for the ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("Continuum Anchor").withStyle(ChatFormatting.DARK_BLUE)));
+      lore.add(Component.literal(""));
       
       String timeText = itemStack == null ? "7 Days" : getDuration(itemStack);
-      lore.add(Text.literal("")
-            .append(Text.literal("Fuel - ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(timeText).formatted(Formatting.BLUE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Fuel - ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(timeText).withStyle(ChatFormatting.BLUE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -103,14 +103,14 @@ public class ExoticMatter extends EnergyItem {
    }
    
    public int useFuel(ItemStack item, int fuel){
-      int newFuel = MathHelper.clamp(getEnergy(item)-fuel, 0, getMaxEnergy(item));
+      int newFuel = Mth.clamp(getEnergy(item)-fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
       buildItemLore(item, BorisLib.SERVER);
       return newFuel;
    }
    
    public void setFuel(ItemStack item, int fuel){
-      int newFuel = MathHelper.clamp(fuel, 0, getMaxEnergy(item));
+      int newFuel = Mth.clamp(fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
       buildItemLore(item,BorisLib.SERVER);
    }
@@ -131,9 +131,9 @@ public class ExoticMatter extends EnergyItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Exotic Matter").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe components of this matter seem to spontaneously warp spacetime when combined with a Temporal Moment. Perhaps this can be exploited…").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("    Exotic Matter").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe components of this matter seem to spontaneously warp spacetime when combined with a Temporal Moment. Perhaps this can be exploited…").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -160,7 +160,7 @@ public class ExoticMatter extends EnergyItem {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

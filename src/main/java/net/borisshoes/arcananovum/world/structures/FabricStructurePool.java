@@ -1,12 +1,12 @@
 package net.borisshoes.arcananovum.world.structures;
 
-import net.minecraft.structure.pool.StructurePool;
-import net.minecraft.structure.pool.StructurePoolElement;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public interface FabricStructurePool {
    /**
-    * Adds a new {@link StructurePoolElement} to the {@link StructurePool}.
+    * Adds a new {@link StructurePoolElement} to the {@link StructureTemplatePool}.
     * See the alternative {@link #addStructurePoolElement(StructurePoolElement, int)} for details.
     *
     * @param element the element to add
@@ -14,7 +14,7 @@ public interface FabricStructurePool {
    void addStructurePoolElement(StructurePoolElement element);
    
    /**
-    * Adds a new {@link StructurePoolElement} to the {@link StructurePool}.
+    * Adds a new {@link StructurePoolElement} to the {@link StructureTemplatePool}.
     *
     * @param element the element to add
     * @param weight  Minecraft handles weight by adding it that amount of times into a list.}
@@ -24,7 +24,7 @@ public interface FabricStructurePool {
    /**
     * Gets the underlying structure pool.
     */
-   StructurePool getUnderlyingPool();
+   StructureTemplatePool getUnderlyingPool();
    
    /**
     * Gets the identifier for the pool.

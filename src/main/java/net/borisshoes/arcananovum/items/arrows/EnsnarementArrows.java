@@ -15,18 +15,18 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.RepeatTimer;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.Potions;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -45,37 +45,37 @@ public class EnsnarementArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new EnsnarementArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.EFFECT_SLOWNESS};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.EFFECT_SLOWNESS};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Ensnarement Arrows:").formatted(Formatting.BOLD,Formatting.DARK_PURPLE));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.GRAY))
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" restrain ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("a ").formatted(Formatting.GRAY))
-            .append(Text.literal("target ").formatted(Formatting.YELLOW))
-            .append(Text.literal("from ").formatted(Formatting.GRAY))
-            .append(Text.literal("moving ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("of their own will.").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("Arrows ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("have a ").formatted(Formatting.GRAY))
-            .append(Text.literal("reduced effect").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(" on ").formatted(Formatting.GRAY))
-            .append(Text.literal("players").formatted(Formatting.YELLOW))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Component.literal("Ensnarement Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" restrain ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("target ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("from ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("moving ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("of their own will.").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Arrows ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("have a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("reduced effect").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(" on ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("players").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -84,18 +84,18 @@ public class EnsnarementArrows extends RunicArrow {
       int entrapment = arrow.getAugment(ArcanaAugments.ENTRAPMENT.id);
       boolean anchor = arrow.getAugment(ArcanaAugments.ETHEREAL_ANCHOR.id) > 0;
       if(entityHitResult.getEntity() instanceof LivingEntity living){
-         int duration = living instanceof ServerPlayerEntity ? (entrapment+1) : (entrapment+1)*5;
-         living.addStatusEffect(new StatusEffectInstance(ArcanaRegistry.ENSNAREMENT_EFFECT, (int) (duration*20),anchor ? 1 : 0),arrow.getOwner());
+         int duration = living instanceof ServerPlayer ? (entrapment+1) : (entrapment+1)*5;
+         living.addEffect(new MobEffectInstance(ArcanaRegistry.ENSNAREMENT_EFFECT, (int) (duration*20),anchor ? 1 : 0),arrow.getOwner());
          
-         if(arrow.getOwner() instanceof ServerPlayerEntity player){
-            if(living.getAir() <= 0){
+         if(arrow.getOwner() instanceof ServerPlayer player){
+            if(living.getAirSupply() <= 0){
                ArcanaAchievements.grant(player, ArcanaAchievements.WATERBOARDING.id);
             }
             
             if(!ArcanaAchievements.isTimerActive(player, ArcanaAchievements.SHACKLED.id)){
                ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED.id,10);
                BorisLib.addTickTimerCallback(new RepeatTimer(10,121, ()->{
-                  if(living.isAlive() && living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
+                  if(living.isAlive() && living.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
                      ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED.id,10);
                   }else{
                      ArcanaAchievements.reset(player,ArcanaAchievements.SHACKLED.id);
@@ -129,10 +129,10 @@ public class EnsnarementArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Ensnarement\n       Arrows").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThese arrows unleash Arcane chains around the target creature. These chains fully stop the creature from moving of their own will. They are still affected by the ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Ensnarement\n       Arrows").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nenvironment. Players are affected less.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("   Ensnarement\n       Arrows").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThese arrows unleash Arcane chains around the target creature. These chains fully stop the creature from moving of their own will. They are still affected by the ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Ensnarement\n       Arrows").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nenvironment. Players are affected less.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -142,7 +142,7 @@ public class EnsnarementArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

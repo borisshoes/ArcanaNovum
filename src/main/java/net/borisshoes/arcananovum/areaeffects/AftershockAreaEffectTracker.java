@@ -2,17 +2,17 @@ package net.borisshoes.arcananovum.areaeffects;
 
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
    public void onTick(MinecraftServer server){
       if(sources.isEmpty()) return;
       
-      for(ServerWorld world : server.getWorlds()){
+      for(ServerLevel world : server.getAllLevels()){
          ArrayList<BlockPos> affectedBlocks = new ArrayList<>();
          HashMap<Entity,AftershockSource> affectedEntities = new HashMap<>();
          for(AftershockSource source : sources){
@@ -51,15 +51,15 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
             }
          }
          
-         if(server.getTicks() % 5 == 0){
+         if(server.getTickCount() % 5 == 0){
             for(Map.Entry<Entity, AftershockSource> entry : affectedEntities.entrySet()){
                entry.getValue().affectEntity(world,entry.getKey());
             }
          }
          
          for(BlockPos block : affectedBlocks){
-            boolean aboveFloor = world.getBlockState(block).getCollisionShape(world,block).isEmpty() && (world.getBlockState(block.down()).isFullCube(world,block.down()) || !world.getBlockState(block.down()).getCollisionShape(world,block.down()).isEmpty());
-            if(aboveFloor && Math.random() < 0.15) world.spawnParticles(ParticleTypes.WAX_OFF,block.getX(),block.getY(),block.getZ(),1,0.5,0.5,0.5,.1);
+            boolean aboveFloor = world.getBlockState(block).getCollisionShape(world,block).isEmpty() && (world.getBlockState(block.below()).isCollisionShapeFullBlock(world,block.below()) || !world.getBlockState(block.below()).getCollisionShape(world,block.below()).isEmpty());
+            if(aboveFloor && Math.random() < 0.15) world.sendParticles(ParticleTypes.WAX_OFF,block.getX(),block.getY(),block.getZ(),1,0.5,0.5,0.5,.1);
          }
       }
       
@@ -71,13 +71,13 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
       if(source instanceof AftershockSource shockSource) sources.add(shockSource);
    }
    
-   public static AftershockSource source(@Nullable Entity contributor, BlockPos sourceBlock, ServerWorld blockWorld, int level){
+   public static AftershockSource source(@Nullable Entity contributor, BlockPos sourceBlock, ServerLevel blockWorld, int level){
       return new AftershockSource(sourceBlock,blockWorld,level,contributor);
    }
    
    public static class AftershockSource extends AreaEffectSource{
       private final BlockPos sourceBlock;
-      private final ServerWorld blockWorld;
+      private final ServerLevel blockWorld;
       private final double range;
       private final float damage;
       private final int level;
@@ -85,7 +85,7 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
       private final int duration;
       private final Entity contributor;
       
-      private AftershockSource(BlockPos sourceBlock, ServerWorld blockWorld, int level, @Nullable Entity contributor){
+      private AftershockSource(BlockPos sourceBlock, ServerLevel blockWorld, int level, @Nullable Entity contributor){
          this.sourceBlock = sourceBlock;
          this.blockWorld = blockWorld;
          this.range = level >= 4 ? 4 : 2.5;
@@ -96,7 +96,7 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
          this.duration = 30 + 20*level;
       }
       
-      public World getSourceWorld(){
+      public Level getSourceWorld(){
          return blockWorld;
       }
       
@@ -106,7 +106,7 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
       
       public boolean age(){
          if(age % 2 == 0){
-            SoundUtils.playSound(blockWorld,sourceBlock, SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.PLAYERS,.07f,2f);
+            SoundUtils.playSound(blockWorld,sourceBlock, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS,.07f,2f);
          }
          this.age++;
          return age >= duration;
@@ -120,20 +120,20 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
          return contributor;
       }
       
-      public void affectEntity(ServerWorld world, Entity entity){
+      public void affectEntity(ServerLevel world, Entity entity){
          if(entity instanceof LivingEntity e){
             DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,contributor);
-            e.damage(world,source,damage);
+            e.hurtServer(world,source,damage);
          }
       }
       
       @Override
-      public List<BlockPos> getAffectedBlocks(ServerWorld world){
-         if(getSourceWorld() instanceof ServerWorld thisWorld && thisWorld.getRegistryKey().getValue().toString().equals(world.getRegistryKey().getValue().toString())){
+      public List<BlockPos> getAffectedBlocks(ServerLevel world){
+         if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             ArrayList<BlockPos> blocks = new ArrayList<>();
-            for(BlockPos block : BlockPos.iterateOutwards(getBlockPos(), (int) range+4, (int) range+4, (int) range+4)){
-               if(block.toCenterPos().distanceTo(getBlockPos().toCenterPos()) <= range+1){
-                  blocks.add(block.mutableCopy());
+            for(BlockPos block : BlockPos.withinManhattan(getBlockPos(), (int) range+4, (int) range+4, (int) range+4)){
+               if(block.getCenter().distanceTo(getBlockPos().getCenter()) <= range+1){
+                  blocks.add(block.mutable());
                }
             }
             return blocks;
@@ -143,11 +143,11 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
       }
       
       @Override
-      public List<Entity> getAffectedEntities(ServerWorld world){
-         if(getSourceWorld() instanceof ServerWorld thisWorld && thisWorld.getRegistryKey().getValue().toString().equals(world.getRegistryKey().getValue().toString())){
+      public List<Entity> getAffectedEntities(ServerLevel world){
+         if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             BlockPos blockPos = getBlockPos();
-            Box rangeBox = Box.from(blockPos.toCenterPos()).expand(range+4);
-            return world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(blockPos.toCenterPos()) < 1.25*range*range && e instanceof LivingEntity);
+            AABB rangeBox = AABB.unitCubeFromLowerCorner(blockPos.getCenter()).inflate(range+4);
+            return world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(blockPos.getCenter()) < 1.25*range*range && e instanceof LivingEntity);
          }else{
             return new ArrayList<>();
          }

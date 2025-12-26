@@ -17,31 +17,31 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
 
 public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    public static final int[] DURATIONS = {-1,2,4,6,8,10,15,20,25,30,35,40,45,50,55,60};
-   public static final Pair<Item,Integer> COST = new Pair<>(Items.DIAMOND_BLOCK,1);
+   public static final Tuple<Item,Integer> COST = new Tuple<>(Items.DIAMOND_BLOCK,1);
    
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
@@ -70,41 +70,41 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       resetCooldown();
    }
    
-   private void changeWeather(@Nullable ServerPlayerEntity player){
-      if(!(this.getWorld() instanceof ServerWorld serverWorld)) return;
+   private void changeWeather(@Nullable ServerPlayer player){
+      if(!(this.getLevel() instanceof ServerLevel serverWorld)) return;
       int duration = this.getDuration();
       int mode = this.getMode();
-      SoundUtils.playSound(serverWorld, this.getPos(), SoundEvents.BLOCK_END_PORTAL_SPAWN, SoundCategory.BLOCKS, 1, 0.5f);
+      SoundUtils.playSound(serverWorld, this.getBlockPos(), SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 1, 0.5f);
       int dur = DURATIONS[duration];
       
       dur = switch(mode){
-         case 0 -> dur == -1 ? ServerWorld.CLEAR_WEATHER_DURATION_PROVIDER.get(serverWorld.getRandom()) : dur * 3600;
-         case 1 -> dur == -1 ? ServerWorld.RAIN_WEATHER_DURATION_PROVIDER.get(serverWorld.getRandom()) : dur * 1200;
-         case 2 -> dur == -1 ? ServerWorld.THUNDER_WEATHER_DURATION_PROVIDER.get(serverWorld.getRandom()) : dur * 600;
+         case 0 -> dur == -1 ? ServerLevel.RAIN_DELAY.sample(serverWorld.getRandom()) : dur * 3600;
+         case 1 -> dur == -1 ? ServerLevel.RAIN_DURATION.sample(serverWorld.getRandom()) : dur * 1200;
+         case 2 -> dur == -1 ? ServerLevel.THUNDER_DURATION.sample(serverWorld.getRandom()) : dur * 600;
          default -> dur;
       };
       if(mode == 0 && serverWorld.isRaining() && player != null){
          ArcanaAchievements.grant(player,ArcanaAchievements.COME_AGAIN_RAIN.id);
       }
       
-      serverWorld.setWeather(mode == 0 ? dur : 0, mode >= 1 ? dur : 0, mode >= 1, mode == 2);
-      world.emitGameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Emitter.of(getCachedState()));
+      serverWorld.setWeatherParameters(mode == 0 ? dur : 0, mode >= 1 ? dur : 0, mode >= 1, mode == 2);
+      level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
       this.setActive(false);
    }
    
-   public boolean startWeatherChange(@Nullable ServerPlayerEntity player){
-      if(this.getCooldown() > 0 || !(this.getWorld() instanceof ServerWorld serverWorld)) return false;
+   public boolean startWeatherChange(@Nullable ServerPlayer player){
+      if(this.getCooldown() > 0 || !(this.getLevel() instanceof ServerLevel serverWorld)) return false;
       if(player == null && getCrafterId() != null){
-         PlayerEntity crafter = serverWorld.getPlayerByUuid(AlgoUtils.getUUID(getCrafterId()));
-         if(crafter instanceof ServerPlayerEntity){
-            player = (ServerPlayerEntity) crafter;
+         Player crafter = serverWorld.getPlayerByUUID(AlgoUtils.getUUID(getCrafterId()));
+         if(crafter instanceof ServerPlayer){
+            player = (ServerPlayer) crafter;
          }
       }
-      @Nullable ServerPlayerEntity finalPlayer = player;
+      @Nullable ServerPlayer finalPlayer = player;
       
       this.resetCooldown();
       this.setActive(true);
-      ArcanaEffectUtils.stormcallerAltarAnim(serverWorld,this.getPos().toCenterPos(), 0);
+      ArcanaEffectUtils.stormcallerAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0);
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
          changeWeather(finalPlayer);
          if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.STORMCALLER_ALTAR_ACTIVATE));
@@ -112,9 +112,9 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       return true;
    }
    
-   public void openGui(ServerPlayerEntity player){
+   public void openGui(ServerPlayer player){
       if(active){
-         player.sendMessage(Text.literal("You cannot access an active Altar").formatted(Formatting.RED));
+         player.sendSystemMessage(Component.literal("You cannot access an active Altar").withStyle(ChatFormatting.RED));
          return;
       }
       StormcallerAltarGui gui = new StormcallerAltarGui(player,this);;
@@ -122,7 +122,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       gui.open();
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof StormcallerAltarBlockEntity altar){
          altar.tick();
       }
@@ -134,30 +134,30 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.STORMCALLER_ALTAR).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.STORMCALLER_ALTAR).getCheckOffset()),null);
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
       
       if(isAssembled() && cooldown > 0){
          cooldown--;
-         this.markDirty();
+         this.setChanged();
       }
       
-      if(serverWorld.getServer().getTicks() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
+         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
       
-      boolean activatable = serverWorld.getBlockState(pos).getOrEmpty(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE).orElse(false);
+      boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE).orElse(false);
       boolean shouldBeActivatable = this.cooldown <= 0 && this.isAssembled() && !this.isActive();
       if(activatable ^ shouldBeActivatable){
-         serverWorld.setBlockState(pos, serverWorld.getBlockState(pos).with(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.NOTIFY_LISTENERS);
+         serverWorld.setBlock(worldPosition, serverWorld.getBlockState(worldPosition).setValue(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.UPDATE_CLIENTS);
       }
    }
    
@@ -168,11 +168,11 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    public void setActive(boolean active){
       this.active = active;
       
-      if(this.world instanceof ServerWorld serverWorld){
-         boolean activatable = serverWorld.getBlockState(pos).getOrEmpty(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE).orElse(false);
+      if(this.level instanceof ServerLevel serverWorld){
+         boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE).orElse(false);
          boolean shouldBeActivatable = this.cooldown <= 0 && this.isAssembled() && !this.isActive();
          if(activatable ^ shouldBeActivatable){
-            serverWorld.setBlockState(pos, serverWorld.getBlockState(pos).with(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.NOTIFY_LISTENERS);
+            serverWorld.setBlock(worldPosition, serverWorld.getBlockState(worldPosition).setValue(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.UPDATE_CLIENTS);
          }
       }
    }
@@ -226,15 +226,15 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.cooldown = view.getInt("cooldown", 0);
-      this.mode = view.getInt("mode", 0);
-      this.duration = view.getInt("duration", 0);
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.cooldown = view.getIntOr("cooldown", 0);
+      this.mode = view.getIntOr("mode", 0);
+      this.duration = view.getIntOr("duration", 0);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
@@ -242,9 +242,9 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);

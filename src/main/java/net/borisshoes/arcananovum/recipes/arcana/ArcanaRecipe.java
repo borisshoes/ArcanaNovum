@@ -4,8 +4,8 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Pair;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,20 +60,20 @@ public class ArcanaRecipe {
       return forgeRequirement;
    }
    
-   public HashMap<String, Pair<Integer,ItemStack>> getIngredientList(){
-      HashMap<String, Pair<Integer,ItemStack>> map = new HashMap<>();
+   public HashMap<String, Tuple<Integer, ItemStack>> getIngredientList(){
+      HashMap<String, Tuple<Integer, ItemStack>> map = new HashMap<>();
       ArcanaIngredient[][] ingredients = getAlteredIngredients();
       for(int i = 0; i < ingredients.length; i++){
          for(int j = 0; j < ingredients[0].length; j++){
             ItemStack stack = ingredients[i][j].ingredientAsStack();
             if(!stack.isEmpty()){
                String ingred = ingredients[i][j].getName();
-               Pair<Integer,ItemStack> pair;
+               Tuple<Integer, ItemStack> pair;
                if(map.containsKey(ingred)){
-                  int oldCount = map.get(ingred).getLeft();
-                  pair = new Pair<>(ingredients[i][j].count+oldCount,stack);
+                  int oldCount = map.get(ingred).getA();
+                  pair = new Tuple<>(ingredients[i][j].count+oldCount,stack);
                }else{
-                  pair = new Pair<>(ingredients[i][j].count,stack);
+                  pair = new Tuple<>(ingredients[i][j].count,stack);
                }
                map.put(ingred,pair);
             }

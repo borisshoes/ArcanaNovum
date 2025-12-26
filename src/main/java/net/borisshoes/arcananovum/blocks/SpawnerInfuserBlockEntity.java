@@ -15,45 +15,44 @@ import net.borisshoes.arcananovum.gui.spawnerinfuser.SpawnerInfuserGui;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.block.entity.MobSpawnerBlockEntity;
-import net.minecraft.block.spawner.MobSpawnerLogic;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.*;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.storage.NbtWriteView;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.ErrorReporter;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.Pair;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.*;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.TreeMap;
 
-public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity implements SidedInventory, PolymerObject, InventoryChangedListener, ArcanaBlockEntity {
+public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerListener, ArcanaBlockEntity {
    
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
    private String customName;
-   private SimpleInventory inventory = new SimpleInventory(size());
+   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
    private boolean active;
    private ItemStack soulstone;
    private int points;
@@ -66,7 +65,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    private short maxEntities;
    private boolean updating;
    private boolean prevStone;
-   private final HashMap<ServerPlayerEntity, SpawnerInfuserGui> watchingPlayers = new HashMap<>();
+   private final HashMap<ServerPlayer, SpawnerInfuserGui> watchingPlayers = new HashMap<>();
    
    public SpawnerInfuserBlockEntity(BlockPos blockPos, BlockState blockState){
       super(ArcanaRegistry.SPAWNER_INFUSER_BLOCK_ENTITY, blockPos, blockState);
@@ -91,96 +90,96 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       this.spawnRange = 4;
    }
    
-   public void openGui(ServerPlayerEntity player){
-      SpawnerInfuserGui gui = new SpawnerInfuserGui(player,this, getWorld());
+   public void openGui(ServerPlayer player){
+      SpawnerInfuserGui gui = new SpawnerInfuserGui(player,this, getLevel());
       gui.build();
       gui.open();
       watchingPlayers.put(player,gui);
    }
    
-   public void removePlayer(ServerPlayerEntity player){
+   public void removePlayer(ServerPlayer player){
       watchingPlayers.remove(player);
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof SpawnerInfuserBlockEntity infuser){
          infuser.tick();
       }
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
-      if(serverWorld.getServer().getTicks() % 5 == 0){ // Infuser only ticks redstone every quarter second
+      if(serverWorld.getServer().getTickCount() % 5 == 0){ // Infuser only ticks redstone every quarter second
          // Check for spawner above, match soulstone type, update redstone power, do particles
          boolean prevActive = active;
-         boolean hasRedstone = serverWorld.isReceivingRedstonePower(pos); // Redstone high is ON
+         boolean hasRedstone = serverWorld.hasNeighborSignal(worldPosition); // Redstone high is ON
          boolean hasSoulstone = !soulstone.isEmpty();
-         BlockPos spawnerPos = pos.add(0,2,0);
+         BlockPos spawnerPos = worldPosition.offset(0,2,0);
          BlockEntity blockEntity = serverWorld.getBlockEntity(spawnerPos);
          BlockState spawnerState = serverWorld.getBlockState(spawnerPos);
-         boolean hasSpawner = spawnerState.isOf(Blocks.SPAWNER) && blockEntity instanceof MobSpawnerBlockEntity;
+         boolean hasSpawner = spawnerState.is(Blocks.SPAWNER) && blockEntity instanceof SpawnerBlockEntity;
          
          if(!hasRedstone || !hasSoulstone || !hasSpawner){
             if(prevActive) this.active = false; // Update active status
-            world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
+            level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
             return;
          }
          
          String stoneType = Soulstone.getType(soulstone);
-         MobSpawnerBlockEntity spawnerEntity = (MobSpawnerBlockEntity) blockEntity;
-         try (ErrorReporter.Logging logging = new ErrorReporter.Logging(this.getReporterContext(), LogUtils.getLogger())){
-            NbtWriteView nbtWriteView = NbtWriteView.create(logging, this.getWorld().getRegistryManager());
-            spawnerEntity.getLogic().writeData(nbtWriteView);
-            NbtCompound spawnerData = nbtWriteView.getNbt();
-            NbtCompound spawnData = spawnerData.getCompoundOrEmpty("SpawnData");
+         SpawnerBlockEntity spawnerEntity = (SpawnerBlockEntity) blockEntity;
+         try (ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(this.problemPath(), LogUtils.getLogger())){
+            TagValueOutput nbtWriteView = TagValueOutput.createWithContext(logging, this.getLevel().registryAccess());
+            spawnerEntity.getSpawner().save(nbtWriteView);
+            CompoundTag spawnerData = nbtWriteView.buildResult();
+            CompoundTag spawnData = spawnerData.getCompoundOrEmpty("SpawnData");
             if(spawnData.isEmpty() || !spawnData.contains("entity") || !spawnData.getCompoundOrEmpty("entity").contains("id")){
                if(prevActive) this.active = false; // Update active status
-               world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
+               level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
                return;
             }
-            NbtCompound spawnEntity = spawnData.getCompoundOrEmpty("entity");
+            CompoundTag spawnEntity = spawnData.getCompoundOrEmpty("entity");
             
-            boolean correctType = stoneType.equals(spawnEntity.getString("id", ""));
+            boolean correctType = stoneType.equals(spawnEntity.getStringOr("id", ""));
             
             if(correctType){
                if(!prevActive) this.active = true; // Update active status
-               world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
-               ArcanaEffectUtils.spawnerInfuser(serverWorld,pos,5);
-               SoundUtils.soulSounds(serverWorld,pos,1,5);
+               level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
+               ArcanaEffectUtils.spawnerInfuser(serverWorld, worldPosition,5);
+               SoundUtils.soulSounds(serverWorld, worldPosition,1,5);
             }
          }
       }
       
-      if(serverWorld.getServer().getTicks() % 20 == 0 && this.active){
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0 && this.active){
+         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
    }
    
-   public void tickInfuser(BlockPos spawnerPos, MobSpawnerBlockEntity spawnerEntity){
-      MobSpawnerLogic logic = spawnerEntity.getLogic();
-      try (ErrorReporter.Logging logging = new ErrorReporter.Logging(this.getReporterContext(), LogUtils.getLogger())){
-         NbtWriteView nbtWriteView = NbtWriteView.create(logging, this.getWorld().getRegistryManager());
-         logic.writeData(nbtWriteView);
-         NbtCompound savedLogic = nbtWriteView.getNbt(); // Save default data
-         NbtCompound newLogic = getSpawnerStats().copy(); // Get data from infuser
+   public void tickInfuser(BlockPos spawnerPos, SpawnerBlockEntity spawnerEntity){
+      BaseSpawner logic = spawnerEntity.getSpawner();
+      try (ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(this.problemPath(), LogUtils.getLogger())){
+         TagValueOutput nbtWriteView = TagValueOutput.createWithContext(logging, this.getLevel().registryAccess());
+         logic.save(nbtWriteView);
+         CompoundTag savedLogic = nbtWriteView.buildResult(); // Save default data
+         CompoundTag newLogic = getSpawnerStats().copy(); // Get data from infuser
          
          newLogic.put("SpawnData",savedLogic.get("SpawnData").copy()); // Copy some default data into new data
          newLogic.put("SpawnPotentials",savedLogic.get("SpawnPotentials").copy());
-         short oldDelay = savedLogic.getShort("Delay", (short) 0);
-         short maxDelay = newLogic.getShort("MaxSpawnDelay", (short) 0);
+         short oldDelay = savedLogic.getShortOr("Delay", (short) 0);
+         short maxDelay = newLogic.getShortOr("MaxSpawnDelay", (short) 0);
          newLogic.putShort("Delay", (short) Math.min(oldDelay,maxDelay));
          
-         ReadView newNbtReadView = NbtReadView.create(logging, this.getWorld().getRegistryManager(),newLogic);
-         logic.readData(world,spawnerPos,newNbtReadView); // Inject new data
-         if(world instanceof ServerWorld serverWorld) logic.serverTick(serverWorld, spawnerPos); // Tick with new data
-         NbtWriteView nbtWriteView2 = NbtWriteView.create(logging, this.getWorld().getRegistryManager());
-         logic.writeData(nbtWriteView2);
-         short newDelay = nbtWriteView2.getNbt().getShort("Delay", (short) 0);
+         ValueInput newNbtReadView = TagValueInput.create(logging, this.getLevel().registryAccess(),newLogic);
+         logic.load(level,spawnerPos,newNbtReadView); // Inject new data
+         if(level instanceof ServerLevel serverWorld) logic.serverTick(serverWorld, spawnerPos); // Tick with new data
+         TagValueOutput nbtWriteView2 = TagValueOutput.createWithContext(logging, this.getLevel().registryAccess());
+         logic.save(nbtWriteView2);
+         short newDelay = nbtWriteView2.buildResult().getShortOr("Delay", (short) 0);
          savedLogic.putShort("Delay",newDelay); // Extract new delay and put in saved data
-         ReadView savedNbtReadView = NbtReadView.create(logging, this.getWorld().getRegistryManager(),savedLogic);
-         logic.readData(world,spawnerPos,savedNbtReadView); // Return saved default data with new delay
+         ValueInput savedNbtReadView = TagValueInput.create(logging, this.getLevel().registryAccess(),savedLogic);
+         logic.load(level,spawnerPos,savedNbtReadView); // Return saved default data with new delay
       }
    }
    
@@ -246,12 +245,12 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    }
    
    @Override
-   public void onBlockReplaced(BlockPos pos, BlockState oldState){
-      super.onBlockReplaced(pos, oldState);
+   public void preRemoveSideEffects(BlockPos pos, BlockState oldState){
+      super.preRemoveSideEffects(pos, oldState);
       
-      if(!(this.world instanceof ServerWorld serverWorld)) return;
+      if(!(this.level instanceof ServerLevel serverWorld)) return;
       
-      DefaultedList<ItemStack> drops = DefaultedList.of();
+      NonNullList<ItemStack> drops = NonNullList.create();
       int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
       int points = this.getPoints();
       if(points > 0){
@@ -266,21 +265,21 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          drops.add(dropItem.copy());
       }
       
-      ItemScatterer.spawn(world, pos, drops);
+      Containers.dropContents(level, pos, drops);
    }
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.active = view.getBoolean("active", false);
-      this.points = view.getInt("points", 0);
-      this.spentPoints = view.getInt("spentPoints", 0);
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.active = view.getBooleanOr("active", false);
+      this.points = view.getIntOr("points", 0);
+      this.spentPoints = view.getIntOr("spentPoints", 0);
       this.soulstone = ItemStack.EMPTY;
-      view.read("soulstone",ItemStack.CODEC).ifPresent(stack -> {
+      view.read("soulstone", ItemStack.CODEC).ifPresent(stack -> {
          this.soulstone = stack;
       });
       
@@ -290,10 +289,10 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
-      this.inventory = new SimpleInventory(size());
+      this.inventory = new SimpleContainer(getContainerSize());
       this.inventory.addListener(this);
-      if (!this.readLootTable(view)) {
-         Inventories.readData(view, this.inventory.getHeldStacks());
+      if (!this.tryLoadLootTable(view)) {
+         ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
       
       view.read("spawnerStats",SpawnerStats.CODEC).ifPresent(stats -> {
@@ -304,9 +303,9 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
@@ -314,19 +313,19 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       view.putInt("points",this.points);
       view.putInt("spentPoints",this.spentPoints);
       view.putBoolean("active",this.active);
-      if (!this.writeLootTable(view)) {
-         Inventories.writeData(view, this.inventory.getHeldStacks());
+      if (!this.trySaveLootTable(view)) {
+         ContainerHelper.saveAllItems(view, this.inventory.getItems());
       }
       
       if(this.soulstone != null && !this.soulstone.isEmpty()){
-         view.putNullable("soulstone",ItemStack.CODEC,this.soulstone);
+         view.storeNullable("soulstone", ItemStack.CODEC,this.soulstone);
       }
       
-      view.putNullable("spawnerStats",SpawnerStats.CODEC,SpawnerStats.fromNbt(getSpawnerStats()));
+      view.storeNullable("spawnerStats",SpawnerStats.CODEC,SpawnerStats.fromNbt(getSpawnerStats()));
    }
    
-   public NbtCompound getSpawnerStats(){
-      NbtCompound stats = new NbtCompound();
+   public CompoundTag getSpawnerStats(){
+      CompoundTag stats = new CompoundTag();
       stats.putShort("MinSpawnDelay", this.minSpawnDelay);
       stats.putShort("MaxSpawnDelay", this.maxSpawnDelay);
       stats.putShort("SpawnCount", this.spawnCount);
@@ -336,70 +335,70 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       return stats;
    }
    
-   public void setSpawnerStats(NbtCompound stats){
+   public void setSpawnerStats(CompoundTag stats){
       if(stats.contains("MinSpawnDelay")){
-         this.minSpawnDelay = stats.getShort("MinSpawnDelay", (short) 0);
+         this.minSpawnDelay = stats.getShortOr("MinSpawnDelay", (short) 0);
       }
       if(stats.contains("MaxSpawnDelay")){
-         this.maxSpawnDelay = stats.getShort("MaxSpawnDelay", (short) 0);
+         this.maxSpawnDelay = stats.getShortOr("MaxSpawnDelay", (short) 0);
       }
       if(stats.contains("SpawnCount")){
-         this.spawnCount = stats.getShort("SpawnCount", (short) 0);
+         this.spawnCount = stats.getShortOr("SpawnCount", (short) 0);
       }
       if(stats.contains("MaxNearbyEntities")){
-         this.maxEntities = stats.getShort("MaxNearbyEntities", (short) 0);
+         this.maxEntities = stats.getShortOr("MaxNearbyEntities", (short) 0);
       }
       if(stats.contains("RequiredPlayerRange")){
-         this.playerRange = stats.getShort("RequiredPlayerRange", (short) 0);
+         this.playerRange = stats.getShortOr("RequiredPlayerRange", (short) 0);
       }
       if(stats.contains("SpawnRange")){
-         this.spawnRange = stats.getShort("SpawnRange", (short) 0);
+         this.spawnRange = stats.getShortOr("SpawnRange", (short) 0);
       }
    }
    
    @Override
-   protected DefaultedList<ItemStack> getHeldStacks(){
-      return this.inventory.getHeldStacks();
+   protected NonNullList<ItemStack> getItems(){
+      return this.inventory.getItems();
    }
    
    @Override
-   protected void setHeldStacks(DefaultedList<ItemStack> list){
+   protected void setItems(NonNullList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
-         this.inventory.setStack(i,list.get(i));
+         this.inventory.setItem(i,list.get(i));
       }
    }
    
    @Override
-   protected Text getContainerName(){
-      return Text.literal("Spawner Infuser");
+   protected Component getDefaultName(){
+      return Component.literal("Spawner Infuser");
    }
    
    @Override
-   protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory){
+   protected AbstractContainerMenu createMenu(int syncId, Inventory playerInventory){
       return null;
    }
    
    @Override
-   public int[] getAvailableSlots(Direction side){
+   public int[] getSlotsForFace(Direction side){
       return new int[0];
    }
    
    @Override
-   public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir){
+   public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction dir){
       return false;
    }
    
    @Override
-   public boolean canExtract(int slot, ItemStack stack, Direction dir){
+   public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction dir){
       return false;
    }
    
    @Override
-   public int size(){
+   public int getContainerSize(){
       return 2;
    }
    
-   public Inventory getInventory(){
+   public Container getInventory(){
       return this.inventory;
    }
    
@@ -408,11 +407,11 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    }
    
    @Override
-   public void onInventoryChanged(Inventory inv){
+   public void containerChanged(Container inv){
       if(!updating){
          updating = true;
          
-         ItemStack soulstoneSlot = inv.getStack(0);
+         ItemStack soulstoneSlot = inv.getItem(0);
          ItemStack extraPoints = ItemStack.EMPTY;
          int points = getPoints();
          int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.SOUL_RESERVOIR.id)];
@@ -427,7 +426,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
                }
             }
             
-            ItemStack pointsSlot = inv.getStack(1);
+            ItemStack pointsSlot = inv.getItem(1);
             if(!pointsSlot.isEmpty()){
                int maxPoints = SpawnerInfuser.pointsFromTier[Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot))] + bonusCap;
                int toAdd = pointsSlot.getCount() * ratio;
@@ -442,8 +441,8 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
                int curPoints = getPoints();
                if(toAdd != 0 && points < maxPoints){
                   watchingPlayers.keySet().forEach(player -> {
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1, (.8f+((float)curPoints/maxPoints)));
-                     if(curPoints == maxPoints)SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1, 2f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, 1, (.8f+((float)curPoints/maxPoints)));
+                     if(curPoints == maxPoints)SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1, 2f);
                      if(curPoints >= 512) ArcanaAchievements.grant(player,ArcanaAchievements.ARCHLICH.id);
                      if(curPoints >= 1024) ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OVERWHELMING.id);
                   });
@@ -452,9 +451,9 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
             prevStone = true;
          }else{
             setSoulstone(ItemStack.EMPTY);
-            points += inv.getStack(1).getCount() * ratio;
+            points += inv.getItem(1).getCount() * ratio;
             
-            DefaultedList<ItemStack> drops = DefaultedList.of();
+            NonNullList<ItemStack> drops = NonNullList.create();
             if(points > 0){
                while(points/ratio > 64){
                   ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
@@ -467,12 +466,12 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
                drops.add(dropItem.copy());
             }
             
-            if(getWorld() != null){
-               ItemScatterer.spawn(getWorld(),getPos().up(),drops);
+            if(getLevel() != null){
+               Containers.dropContents(getLevel(), getBlockPos().above(),drops);
             }
             
             if(prevStone){
-               watchingPlayers.keySet().forEach(player -> SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, .8f));
+               watchingPlayers.keySet().forEach(player -> SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_DEPLETE, 1, .8f));
             }
             
             setPoints(0);
@@ -482,8 +481,8 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
             prevStone = false;
          }
          
-         inv.setStack(1,extraPoints);
-         markDirty();
+         inv.setItem(1,extraPoints);
+         setChanged();
          refreshGuis();
          
          updating = false;
@@ -493,8 +492,8 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    public record SpawnerStats(short minSpawnDelay, short maxSpawnDelay, short spawnCount, short maxNearbyEntities, short requiredPlayerRange, short spawnRange) {
       public static final Codec<SpawnerStats> CODEC = RecordCodecBuilder.create(i -> i.group(Codec.SHORT.fieldOf("MinSpawnDelay").forGetter(s -> s.minSpawnDelay), Codec.SHORT.fieldOf("MaxSpawnDelay").forGetter(s -> s.maxSpawnDelay), Codec.SHORT.fieldOf("SpawnCount").forGetter(s -> s.spawnCount), Codec.SHORT.fieldOf("MaxNearbyEntities").forGetter(s -> s.maxNearbyEntities), Codec.SHORT.fieldOf("RequiredPlayerRange").forGetter(s -> s.requiredPlayerRange), Codec.SHORT.fieldOf("SpawnRange").forGetter(s -> s.spawnRange)).apply(i, SpawnerStats::new));
       
-      public NbtCompound toNbt(){
-         NbtCompound n = new NbtCompound();
+      public CompoundTag toNbt(){
+         CompoundTag n = new CompoundTag();
          n.putShort("MinSpawnDelay", this.minSpawnDelay);
          n.putShort("MaxSpawnDelay", this.maxSpawnDelay);
          n.putShort("SpawnCount", this.spawnCount);
@@ -504,14 +503,14 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          return n;
       }
       
-      public static SpawnerStats fromNbt(NbtCompound n){
+      public static SpawnerStats fromNbt(CompoundTag n){
          return new SpawnerStats(
-               n.getShort("MinSpawnDelay",(short) 0),
-               n.getShort("MaxSpawnDelay",(short) 0),
-               n.getShort("SpawnCount",(short) 0),
-               n.getShort("MaxNearbyEntities",(short) 0),
-               n.getShort("RequiredPlayerRange",(short) 0),
-               n.getShort("SpawnRange",(short) 0));
+               n.getShortOr("MinSpawnDelay",(short) 0),
+               n.getShortOr("MaxSpawnDelay",(short) 0),
+               n.getShortOr("SpawnCount",(short) 0),
+               n.getShortOr("MaxNearbyEntities",(short) 0),
+               n.getShortOr("RequiredPlayerRange",(short) 0),
+               n.getShortOr("SpawnRange",(short) 0));
       }
    }
 }

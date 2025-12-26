@@ -18,32 +18,32 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LodestoneTrackerComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.LodestoneTracker;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -65,94 +65,94 @@ public class Waystone extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.IRON_NUGGET;
       item = new Waystone.WaystoneItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
-      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_USE_LODESTONE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_USE_LODESTONE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       putProperty(stack,LOCATION_TAG,getUnattunedTag());
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Waystone").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe channels of Arcana that course through the realms, Leylines, as the old texts call them, are quite interesting. My measurements suggest that they are not static, but their ebb and flow mostly").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Waystone").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\naround a path, and on a timescale I would consider to be glacial. It might not be the most precise thing, but I can use the faintly unique Arcana of each Leyline to uniquely mark a location in any dimension.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Waystone").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nIt seems like I can transmute a stone to hold on to this compound Leyline signature, as long as it doesn’t get too hot.\n\nUsing the Waystone marks my current location, rotation and dimension.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Waystone").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nHeating the Waystone on a campfire for a few minutes releases the imbued location.\n\nHolding the Waystone in my offhand turns it into a compass that glows when facing its imbued location.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe channels of Arcana that course through the realms, Leylines, as the old texts call them, are quite interesting. My measurements suggest that they are not static, but their ebb and flow mostly").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\naround a path, and on a timescale I would consider to be glacial. It might not be the most precise thing, but I can use the faintly unique Arcana of each Leyline to uniquely mark a location in any dimension.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nIt seems like I can transmute a stone to hold on to this compound Leyline signature, as long as it doesn’t get too hot.\n\nUsing the Waystone marks my current location, rotation and dimension.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nHeating the Waystone on a campfire for a few minutes releases the imbued location.\n\nHolding the Waystone in my offhand turns it into a compass that glows when facing its imbued location.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack stack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("A ").formatted(Formatting.GRAY))
-            .append(Text.literal("stone ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("engraved ").formatted(Formatting.YELLOW))
-            .append(Text.literal("with a singular").formatted(Formatting.GRAY))
-            .append(Text.literal(" rune").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("rune").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" pulses subtly ").formatted(Formatting.YELLOW))
-            .append(Text.literal("like the ").formatted(Formatting.GRAY))
-            .append(Text.literal("ocean").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("You feel a slight ").formatted(Formatting.GRAY))
-            .append(Text.literal("pull").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" towards a ").formatted(Formatting.GRAY))
-            .append(Text.literal("far away").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" place").formatted(Formatting.YELLOW))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Click ").formatted(Formatting.YELLOW))
-            .append(Text.literal("to ").formatted(Formatting.GRAY))
-            .append(Text.literal("imbue").formatted(Formatting.YELLOW))
-            .append(Text.literal(" the ").formatted(Formatting.GRAY))
-            .append(Text.literal("stone").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" with a ").formatted(Formatting.GRAY))
-            .append(Text.literal("location").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
+   public List<Component> getItemLore(@Nullable ItemStack stack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("A ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("stone ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("engraved ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("with a singular").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(" rune").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("rune").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(" pulses subtly ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("like the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("ocean").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("You feel a slight ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("pull").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(" towards a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("far away").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(" place").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Click ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("imbue").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(" the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("stone").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(" with a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("location").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
       
       if(stack != null){
          if(!isUnattuned(stack)){
             WaystoneTarget target = getTarget(stack);
-            Formatting dimColor;
+            ChatFormatting dimColor;
             String dimensionName;
             String location;
             
-            if(target.world().getValue().toString().equals(ServerWorld.OVERWORLD.getValue().toString())){
-               dimColor = Formatting.GREEN;
+            if(target.world().identifier().toString().equals(ServerLevel.OVERWORLD.identifier().toString())){
+               dimColor = ChatFormatting.GREEN;
                dimensionName = "Overworld";
-            }else if(target.world().getValue().toString().equals(ServerWorld.NETHER.getValue().toString())){
-               dimColor = Formatting.RED;
+            }else if(target.world().identifier().toString().equals(ServerLevel.NETHER.identifier().toString())){
+               dimColor = ChatFormatting.RED;
                dimensionName = "The Nether";
-            }else if(target.world().getValue().toString().equals(ServerWorld.END.getValue().toString())){
-               dimColor = Formatting.DARK_PURPLE;
+            }else if(target.world().identifier().toString().equals(ServerLevel.END.identifier().toString())){
+               dimColor = ChatFormatting.DARK_PURPLE;
                dimensionName = "The End";
             }else{
-               dimColor = Formatting.YELLOW;
-               dimensionName = target.world().getValue().toString();
+               dimColor = ChatFormatting.YELLOW;
+               dimensionName = target.world().identifier().toString();
             }
             
-            location = dimensionName + " ("+(int)target.position().getX()+","+(int)target.position().getY()+","+(int)target.position().getZ()+")";
-            lore.add(Text.literal(""));
-            lore.add(Text.literal("Location - "+location).formatted(dimColor));
+            location = dimensionName + " ("+(int)target.position().x()+","+(int)target.position().y()+","+(int)target.position().z()+")";
+            lore.add(Component.literal(""));
+            lore.add(Component.literal("Location - "+location).withStyle(dimColor));
          }else{
-            lore.add(Text.literal(""));
-            lore.add(Text.literal("Unattuned").formatted(Formatting.GRAY,Formatting.ITALIC));
+            lore.add(Component.literal(""));
+            lore.add(Component.literal("Unattuned").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
          }
       }
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   public static NbtCompound getUnattunedTag(){
-      NbtCompound newComp = new NbtCompound();
+   public static CompoundTag getUnattunedTag(){
+      CompoundTag newComp = new CompoundTag();
       newComp.putBoolean("unattuned",true);
       return newComp;
    }
@@ -162,15 +162,15 @@ public class Waystone extends ArcanaItem {
    }
    
    public static boolean isUnattuned(ItemStack stack){
-      if(!stack.isOf(ArcanaRegistry.WAYSTONE.getItem())) return false;
-      NbtCompound comp = ArcanaItem.getCompoundProperty(stack,LOCATION_TAG);
-      return comp.getBoolean("unattuned", true) || getTarget(stack) == null;
+      if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return false;
+      CompoundTag comp = ArcanaItem.getCompoundProperty(stack,LOCATION_TAG);
+      return comp.getBooleanOr("unattuned", true) || getTarget(stack) == null;
    }
    
    public static void saveTarget(ItemStack stack, WaystoneTarget target){
-      if(!stack.isOf(ArcanaRegistry.WAYSTONE.getItem()) || target == null) return;
-      NbtCompound newComp = new NbtCompound();
-      newComp.putString("dim",target.world().getValue().toString());
+      if(!stack.is(ArcanaRegistry.WAYSTONE.getItem()) || target == null) return;
+      CompoundTag newComp = new CompoundTag();
+      newComp.putString("dim",target.world().identifier().toString());
       newComp.putDouble("x",target.position().x);
       newComp.putDouble("y",target.position().y);
       newComp.putDouble("z",target.position().z);
@@ -178,49 +178,49 @@ public class Waystone extends ArcanaItem {
       newComp.putFloat("pitch",target.pitch());
       newComp.putBoolean("unattuned",false);
       ArcanaItem.putProperty(stack,LOCATION_TAG,newComp);
-      stack.set(DataComponentTypes.LODESTONE_TRACKER,new LodestoneTrackerComponent(Optional.of(new GlobalPos(target.world(), BlockPos.ofFloored(target.position()))),false));
+      stack.set(DataComponents.LODESTONE_TRACKER,new LodestoneTracker(Optional.of(new GlobalPos(target.world(), BlockPos.containing(target.position()))),false));
    }
    
    public static WaystoneTarget getTarget(ItemStack stack){
-      if(!stack.isOf(ArcanaRegistry.WAYSTONE.getItem())) return null;
-      NbtCompound comp = ArcanaItem.getCompoundProperty(stack,LOCATION_TAG);
-      String worldStr = comp.getString("dim","");
-      RegistryKey<World> worldKey = null;
-      for(ServerWorld world : BorisLib.SERVER.getWorlds()){
-         if(world.getRegistryKey().getValue().toString().equals(worldStr)){
-            worldKey = world.getRegistryKey();
+      if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return null;
+      CompoundTag comp = ArcanaItem.getCompoundProperty(stack,LOCATION_TAG);
+      String worldStr = comp.getStringOr("dim","");
+      ResourceKey<Level> worldKey = null;
+      for(ServerLevel world : BorisLib.SERVER.getAllLevels()){
+         if(world.dimension().identifier().toString().equals(worldStr)){
+            worldKey = world.dimension();
             break;
          }
       }
       if(worldKey == null) return null;
-      double x = comp.getDouble("x",0);
-      double y = comp.getDouble("y",0);
-      double z = comp.getDouble("z",0);
-      float yaw = comp.getFloat("yaw",0);
-      float pitch = comp.getFloat("pitch",0);
-      return new WaystoneTarget(worldKey,new Vec3d(x,y,z),yaw,pitch);
+      double x = comp.getDoubleOr("x",0);
+      double y = comp.getDoubleOr("y",0);
+      double z = comp.getDoubleOr("z",0);
+      float yaw = comp.getFloatOr("yaw",0);
+      float pitch = comp.getFloatOr("pitch",0);
+      return new WaystoneTarget(worldKey,new Vec3(x,y,z),yaw,pitch);
    }
    
    @Override
    protected ArcanaRecipe makeRecipe(){
       ExplainIngredient b = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Text.literal("Transmutation Recipe").formatted(Formatting.AQUA,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA)));
+            .withName(Component.literal("Transmutation Recipe").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Use a Transmutation Altar").withStyle(ChatFormatting.DARK_AQUA)));
       ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LIGHT_COLOR),1,"",false)
-            .withName(Text.literal("Transmutation Recipe").formatted(Formatting.AQUA,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA)));
+            .withName(Component.literal("Transmutation Recipe").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Use a Transmutation Altar").withStyle(ChatFormatting.DARK_AQUA)));
       ExplainIngredient c = new ExplainIngredient(Items.REDSTONE,42,"Redstone Dust")
-            .withName(Text.literal("Redstone Dust").formatted(Formatting.RED,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Transmutation Reagent").formatted(Formatting.GOLD)));
+            .withName(Component.literal("Redstone Dust").withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Transmutation Reagent").withStyle(ChatFormatting.GOLD)));
       ExplainIngredient t = new ExplainIngredient(ArcanaRegistry.TRANSMUTATION_ALTAR.getItem(),1,"",false)
-            .withName(Text.literal("Transmutation Altar").formatted(Formatting.AQUA,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA)));
+            .withName(Component.literal("Transmutation Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Use a Transmutation Altar").withStyle(ChatFormatting.DARK_AQUA)));
       ExplainIngredient d = new ExplainIngredient(Items.AMETHYST_SHARD,16,"Amethyst Shard")
-            .withName(Text.literal("Amethyst Shards").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Transmutation Reagent").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Amethyst Shards").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Transmutation Reagent").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient p = new ExplainIngredient(Items.LODESTONE,1,"Lodestone")
-            .withName(Text.literal("Lodestone").formatted(Formatting.GRAY,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Infusion Input").formatted(Formatting.WHITE)));
+            .withName(Component.literal("Lodestone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Infusion Input").withStyle(ChatFormatting.WHITE)));
       
       ExplainIngredient[][] ingredients = {
             {b,b,p,b,b},
@@ -237,36 +237,36 @@ public class Waystone extends ArcanaItem {
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity user, Hand hand){
-         ItemStack stack = user.getStackInHand(hand);
-         if(isUnattuned(stack) && user instanceof ServerPlayerEntity player){
-            saveTarget(stack,new WaystoneTarget(user.getEntityWorld().getRegistryKey(), user.getEntityPos(), user.getYaw(), user.getPitch()));
-            buildItemLore(stack,player.getEntityWorld().getServer());
-            SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_LODESTONE_COMPASS_LOCK, 1, 0.7f);
-            return ActionResult.SUCCESS;
+      public InteractionResult use(Level world, Player user, InteractionHand hand){
+         ItemStack stack = user.getItemInHand(hand);
+         if(isUnattuned(stack) && user instanceof ServerPlayer player){
+            saveTarget(stack,new WaystoneTarget(user.level().dimension(), user.position(), user.getYRot(), user.getXRot()));
+            buildItemLore(stack,player.level().getServer());
+            SoundUtils.playSongToPlayer(player, SoundEvents.LODESTONE_COMPASS_LOCK, 1, 0.7f);
+            return InteractionResult.SUCCESS;
          }else{
-            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
          }
       }
       
       @Override
-      public ActionResult useOnBlock(ItemUsageContext context){
-         if(context.getPlayer() != null && context.getPlayer().isSneaking() && !isUnattuned(context.getStack())){
-            if(context.getWorld().getBlockEntity(context.getBlockPos()) instanceof StarpathAltarBlockEntity sabe){
-               WaystoneTarget target = getTarget(context.getStack());
-               if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(),ArcanaAugments.STARGATE.id) > 0 || target.world.getValue().equals(context.getWorld().getRegistryKey().getValue())){
+      public InteractionResult useOn(UseOnContext context){
+         if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown() && !isUnattuned(context.getItemInHand())){
+            if(context.getLevel().getBlockEntity(context.getClickedPos()) instanceof StarpathAltarBlockEntity sabe){
+               WaystoneTarget target = getTarget(context.getItemInHand());
+               if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(),ArcanaAugments.STARGATE.id) > 0 || target.world.identifier().equals(context.getLevel().dimension().identifier())){
                   sabe.setTarget(new StarpathAltarBlockEntity.TargetEntry(
-                        ArcanaUtils.getFormattedDimName(target.world).getString()+" "+BlockPos.ofFloored(target.position()).toShortString(),
-                        target.world.getValue().toString(),
-                        (int) target.position().getX(),
-                        (int) target.position().getY(),
-                        (int) target.position().getZ()
+                        ArcanaUtils.getFormattedDimName(target.world).getString()+" "+ BlockPos.containing(target.position()).toShortString(),
+                        target.world.identifier().toString(),
+                        (int) target.position().x(),
+                        (int) target.position().y(),
+                        (int) target.position().z()
                         ));
-                  SoundUtils.playSound(context.getPlayer().getEntityWorld(),context.getBlockPos(),SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS,1,0.7f);
+                  SoundUtils.playSound(context.getPlayer().level(),context.getClickedPos(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS,1,0.7f);
                }
             }
          }
-         return super.useOnBlock(context);
+         return super.useOn(context);
       }
       
       @Override
@@ -279,14 +279,14 @@ public class Waystone extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          super.inventoryTick(stack, world, entity, slot);
-         boolean shouldAdd = slot == EquipmentSlot.OFFHAND && !stack.contains(DataComponentTypes.LODESTONE_TRACKER) && getTarget(stack) != null;
+         boolean shouldAdd = slot == EquipmentSlot.OFFHAND && !stack.has(DataComponents.LODESTONE_TRACKER) && getTarget(stack) != null;
          if(shouldAdd){
             WaystoneTarget target = getTarget(stack);
-            stack.set(DataComponentTypes.LODESTONE_TRACKER, new LodestoneTrackerComponent(Optional.of(new GlobalPos(target.world(),BlockPos.ofFloored(target.position()))),false));
-         }else if(slot != EquipmentSlot.OFFHAND && stack.contains(DataComponentTypes.LODESTONE_TRACKER)){
-            stack.remove(DataComponentTypes.LODESTONE_TRACKER);
+            stack.set(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.of(new GlobalPos(target.world(), BlockPos.containing(target.position()))),false));
+         }else if(slot != EquipmentSlot.OFFHAND && stack.has(DataComponents.LODESTONE_TRACKER)){
+            stack.remove(DataComponents.LODESTONE_TRACKER);
          }
       }
       
@@ -294,25 +294,25 @@ public class Waystone extends ArcanaItem {
       public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
          if(PolymerResourcePackUtils.hasMainPack(context)){
             if(isUnattuned(stack)){
-               return Identifier.of(MOD_ID,"waystone_unattuned");
+               return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_unattuned");
             }else{
                WaystoneTarget target = getTarget(stack);
-               RegistryKey<World> dim = target.world();
-               if(dim.toString().equals(ServerWorld.OVERWORLD.toString())){
-                  return Identifier.of(MOD_ID,"waystone_overworld");
-               }else if(dim.toString().equals(ServerWorld.NETHER.toString())){
-                  return Identifier.of(MOD_ID,"waystone_nether");
-               }else if(dim.toString().equals(ServerWorld.END.toString())){
-                  return Identifier.of(MOD_ID,"waystone_end");
+               ResourceKey<Level> dim = target.world();
+               if(dim.toString().equals(ServerLevel.OVERWORLD.toString())){
+                  return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_overworld");
+               }else if(dim.toString().equals(ServerLevel.NETHER.toString())){
+                  return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_nether");
+               }else if(dim.toString().equals(ServerLevel.END.toString())){
+                  return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_end");
                }else{
-                  return Identifier.of(MOD_ID,"waystone_unknown");
+                  return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_unknown");
                }
             }
          }else{
-            return Registries.ITEM.getKey(getPolymerItem(stack,context)).get().getValue();
+            return BuiltInRegistries.ITEM.getResourceKey(getPolymerItem(stack,context)).get().identifier();
          }
       }
    }
    
-   public record WaystoneTarget(RegistryKey<World> world, Vec3d position, float yaw, float pitch){}
+   public record WaystoneTarget(ResourceKey<Level> world, Vec3 position, float yaw, float pitch){}
 }

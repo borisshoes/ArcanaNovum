@@ -3,8 +3,8 @@ package net.borisshoes.arcananovum.recipes.arcana;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public class SoulstoneIngredient extends ArcanaIngredient {
@@ -38,8 +38,8 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          }
 
          if(!ignoreEssenceEggTypes){
-            EntityType<?> eType = EntityType.get(Soulstone.getType(stack)).orElse(null);
-            if(eType != null && eType.isIn(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)) return false;
+            EntityType<?> eType = EntityType.byString(Soulstone.getType(stack)).orElse(null);
+            if(eType != null && eType.is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)) return false;
          }
          return Soulstone.getSouls(stack) >= souls;
       }else{
@@ -79,7 +79,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          name += " (Not Consumed)";
       }
       if(type != null){
-         name += " ("+souls+"+ "+EntityType.get(type).get().getName().getString()+")";
+         name += " ("+souls+"+ "+ EntityType.byString(type).get().getDescription().getString()+")";
       }
       return name;
    }

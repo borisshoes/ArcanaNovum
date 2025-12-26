@@ -3,11 +3,11 @@ package net.borisshoes.arcananovum.recipes.transmutation;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
@@ -23,9 +23,9 @@ public abstract class TransmutationRecipe {
       this.reagent2 = reagent2;
    }
    
-   public abstract List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayerEntity player);
+   public abstract List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayer player);
    
-   public abstract List<Pair<ItemStack,String>> doTransmutation(ItemEntity positiveInput, ItemEntity negativeInput, ItemEntity reagent1, ItemEntity reagent2, ItemEntity aequalisInput, TransmutationAltarBlockEntity altar, ServerPlayerEntity player);
+   public abstract List<Tuple<ItemStack,String>> doTransmutation(ItemEntity positiveInput, ItemEntity negativeInput, ItemEntity reagent1, ItemEntity reagent2, ItemEntity aequalisInput, TransmutationAltarBlockEntity altar, ServerPlayer player);
    
    public abstract boolean canTransmute(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, TransmutationAltarBlockEntity altar);
    
@@ -51,7 +51,7 @@ public abstract class TransmutationRecipe {
       }
       
       // TODO maybe have optional item predicate check?
-      if(!recipeStack.isOf(input.getItem())) return false;
+      if(!recipeStack.is(input.getItem())) return false;
       int reqCount = recipeStack.getCount();
       return input.getCount() >= reqCount;
    }
@@ -60,14 +60,14 @@ public abstract class TransmutationRecipe {
       final double[] bargainMod = new double[]{1,1.5,1.4,1.3,1.2,1.1};
       int count = stack.getCount();
       if(ArcanaItemUtils.isArcane(stack)) return stack.copy();
-      count = (int) Math.min(stack.getMaxCount(),count * bargainMod[bargainlvl]);
+      count = (int) Math.min(stack.getMaxStackSize(),count * bargainMod[bargainlvl]);
       return stack.copyWithCount(count);
    }
    
    public ItemStack getAequalisReagent(ItemStack stack){
       int count = stack.getCount();
       if(ArcanaItemUtils.isArcane(stack)) return stack.copy();
-      count = MathHelper.ceil(MathHelper.clamp(count*0.5,1,stack.getMaxCount()));
+      count = Mth.ceil(Mth.clamp(count*0.5,1,stack.getMaxStackSize()));
       return stack.copyWithCount(count);
    }
 }

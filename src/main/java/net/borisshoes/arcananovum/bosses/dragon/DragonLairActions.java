@@ -2,26 +2,26 @@ package net.borisshoes.arcananovum.bosses.dragon;
 
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.borisshoes.borislib.utils.MathUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BlocksAttacksComponent;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.TeleportTarget;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -39,7 +39,7 @@ public class DragonLairActions {
    private int starfallTicks;
    
    private DragonLairActionTypes curAct;
-   private ArrayList<Vec3d> stars;
+   private ArrayList<Vec3> stars;
    private HashMap<String,Integer> starHits;
    private boolean chasm;
    private BlockPos chasmStart;
@@ -48,11 +48,11 @@ public class DragonLairActions {
    private ArrayList<Spike> spikes;
    private HashMap<Integer,ArrayList<BlockPos>> spikeBlocks;
    
-   private final EnderDragonEntity dragon;
+   private final EnderDragon dragon;
    private final MinecraftServer server;
-   private final ServerWorld endWorld;
+   private final ServerLevel endWorld;
    
-   public DragonLairActions(MinecraftServer server, ServerWorld endWorld, EnderDragonEntity dragon){
+   public DragonLairActions(MinecraftServer server, ServerLevel endWorld, EnderDragon dragon){
       this.server = server;
       this.endWorld = endWorld;
       this.dragon = dragon;
@@ -66,13 +66,13 @@ public class DragonLairActions {
    }
    
    public void tick(){
-      List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300 && !p.isSpectator() && !p.isCreative());
+      List<ServerPlayer> nearbyPlayers = endWorld.getPlayers(p -> p.distanceToSqr(new Vec3(0,100,0)) <= 300*300 && !p.isSpectator() && !p.isCreative());
       if(terrainTicks > 0){
          if(chasm){
             if(terrainTicks % 4 == 0){
                int depthMod = 16-terrainTicks/4;
                for(BlockPos block : chasmBlocks.get(depthMod)){
-                  endWorld.setBlockState(block,Blocks.AIR.getDefaultState());
+                  endWorld.setBlockAndUpdate(block, Blocks.AIR.defaultBlockState());
                }
                
                
@@ -80,7 +80,7 @@ public class DragonLairActions {
                   int iter = terrainTicks/4;
                   if(spikeBlocks.get(iter) != null){
                      for(BlockPos block : spikeBlocks.get(iter)){
-                        endWorld.setBlockState(block,Blocks.AIR.getDefaultState());
+                        endWorld.setBlockAndUpdate(block, Blocks.AIR.defaultBlockState());
                      }
                   }
                }
@@ -91,7 +91,7 @@ public class DragonLairActions {
                   int depthMod = terrainTicks/4;
                   if(chasmBlocks.get(depthMod) != null){
                      for(BlockPos block : chasmBlocks.get(depthMod)){
-                        endWorld.setBlockState(block,Blocks.END_STONE.getDefaultState());
+                        endWorld.setBlockAndUpdate(block, Blocks.END_STONE.defaultBlockState());
                      }
                   }
                }
@@ -112,7 +112,7 @@ public class DragonLairActions {
                   
                   
                   for(BlockPos block : blocks){
-                     endWorld.setBlockState(block,Blocks.END_STONE.getDefaultState());
+                     endWorld.setBlockAndUpdate(block, Blocks.END_STONE.defaultBlockState());
                   }
                }
             }
@@ -125,61 +125,61 @@ public class DragonLairActions {
          if(dimensionTicks == 1){
             ArrayList<BlockPos> locations = SpawnPile.makeSpawnLocations(nearbyPlayers.size(),50,endWorld);
             int i = 0;
-            for(ServerPlayerEntity player : nearbyPlayers){
+            for(ServerPlayer player : nearbyPlayers){
                BlockPos pos = locations.get(i);
-               player.teleportTo(new TeleportTarget(endWorld, pos.toCenterPos(), player.getVelocity(), (float) (Math.random()*360-180),(float) (Math.random()*360-180), TeleportTarget.NO_OP));
-               endWorld.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.getX(),pos.getY()+1.5,pos.getZ(),300,.3,1,.3,3);
-               player.sendMessage(Text.literal("Ender Energy Surges Through You!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
+               player.teleport(new TeleportTransition(endWorld, pos.getCenter(), player.getDeltaMovement(), (float) (Math.random()*360-180),(float) (Math.random()*360-180), TeleportTransition.DO_NOTHING));
+               endWorld.sendParticles(ParticleTypes.REVERSE_PORTAL,pos.getX(),pos.getY()+1.5,pos.getZ(),300,.3,1,.3,3);
+               player.displayClientMessage(Component.literal("Ender Energy Surges Through You!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC),true);
                i++;
             }
          }else{
-            for(ServerPlayerEntity player : nearbyPlayers){
-               endWorld.spawnParticles(ParticleTypes.PORTAL, player.getX(), player.getY() - .5, player.getZ(), 1, .3, 1, .3, .3);
+            for(ServerPlayer player : nearbyPlayers){
+               endWorld.sendParticles(ParticleTypes.PORTAL, player.getX(), player.getY() - .5, player.getZ(), 1, .3, 1, .3, .3);
             }
          }
          dimensionTicks--;
       }
       if(quakeTicks > 0){
-         for(ServerPlayerEntity player : nearbyPlayers){
-            endWorld.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, Blocks.END_STONE.getDefaultState()), player.getX(), player.getY()-.5, player.getZ(), 20, 3, 1, 3, .5);
+         for(ServerPlayer player : nearbyPlayers){
+            endWorld.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.END_STONE.defaultBlockState()), player.getX(), player.getY()-.5, player.getZ(), 20, 3, 1, 3, .5);
             
             if(quakeTicks % 4 == 0){
-               player.tiltScreen(Math.random()*5-2.5, Math.random()*5-2.5);
+               player.indicateDamage(Math.random()*5-2.5, Math.random()*5-2.5);
             }
          }
          quakeTicks--;
       }
       if(starfallTicks > 0){
          for(int i = 0; i < 40; i++){
-            stars.add(new Vec3d(Math.random()*300-150,160,Math.random()*300-150));
+            stars.add(new Vec3(Math.random()*300-150,160,Math.random()*300-150));
          }
          for(int i = 0; i < stars.size(); i++){
-            Vec3d star = stars.get(i);
+            Vec3 star = stars.get(i);
             star = star.add(0,-1,0);
             stars.set(i,star);
             
-            endWorld.spawnParticles(ParticleTypes.END_ROD, star.getX(), star.getY(), star.getZ(), 2, 0.1, 0.1, 0.1, 0);
-            endWorld.spawnParticles(ParticleTypes.END_ROD, star.getX(), star.getY()-.25, star.getZ(), 1, 0, 0, 0, 0);
+            endWorld.sendParticles(ParticleTypes.END_ROD, star.x(), star.y(), star.z(), 2, 0.1, 0.1, 0.1, 0);
+            endWorld.sendParticles(ParticleTypes.END_ROD, star.x(), star.y()-.25, star.z(), 1, 0, 0, 0, 0);
    
-            Vec3d finalStar = star;
-            List<ServerPlayerEntity> hitPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(finalStar) <= 2*2 && !p.isSpectator() && !p.isCreative() && !starHits.containsKey(p.getUuidAsString()));
+            Vec3 finalStar = star;
+            List<ServerPlayer> hitPlayers = endWorld.getPlayers(p -> p.distanceToSqr(finalStar) <= 2*2 && !p.isSpectator() && !p.isCreative() && !starHits.containsKey(p.getStringUUID()));
    
-            for(ServerPlayerEntity player : hitPlayers){
-               if(player.isBlocking() && player.getPitch() < -60){
-                  ItemStack itemStack = player.getBlockingItem();
-                  BlocksAttacksComponent blocksAttacksComponent = itemStack != null ? itemStack.get(DataComponentTypes.BLOCKS_ATTACKS) : null;
+            for(ServerPlayer player : hitPlayers){
+               if(player.isBlocking() && player.getXRot() < -60){
+                  ItemStack itemStack = player.getItemBlockingWith();
+                  BlocksAttacks blocksAttacksComponent = itemStack != null ? itemStack.get(DataComponents.BLOCKS_ATTACKS) : null;
                   if (blocksAttacksComponent != null) {
-                     blocksAttacksComponent.applyShieldCooldown(endWorld, player, 10, itemStack);
+                     blocksAttacksComponent.disable(endWorld, player, 10, itemStack);
                   }
                }else{
-                  player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),10);
+                  player.hurtServer(endWorld, new DamageSource(endWorld.damageSources().magic().typeHolder(), this.dragon,this.dragon),10);
                }
-               starHits.put(player.getUuidAsString(),10);
+               starHits.put(player.getStringUUID(),10);
             }
             
          }
-         stars.removeIf(star -> star.getY() < 0);
-         stars.removeIf(star -> endWorld.getBlockState(BlockPos.ofFloored((int)(star.getX()+0.5),(int)(star.getY()),(int)(star.getZ()+0.5))).isOpaque());
+         stars.removeIf(star -> star.y() < 0);
+         stars.removeIf(star -> endWorld.getBlockState(BlockPos.containing((int)(star.x()+0.5),(int)(star.y()),(int)(star.z()+0.5))).canOcclude());
    
          for(Map.Entry<String, Integer> hitPlayer : starHits.entrySet()){
             hitPlayer.setValue(hitPlayer.getValue()-1);
@@ -191,7 +191,7 @@ public class DragonLairActions {
    }
    
    public boolean startAction(DragonLairActionTypes action){
-      List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300 && !p.isSpectator() && !p.isCreative());
+      List<ServerPlayer> nearbyPlayers = endWorld.getPlayers(p -> p.distanceToSqr(new Vec3(0,100,0)) <= 300*300 && !p.isSpectator() && !p.isCreative());
       switch(action){
          case TERRAIN_SHIFT: // Terrain Shift
             chasm = !chasm;
@@ -217,14 +217,14 @@ public class DragonLairActions {
                   int x1 = (int)(Math.random()*100-50);
                   int y1 = 55;
                   int z1 = (int)(Math.random()*100-50);
-                  Vec3d start = new Vec3d(x1+0.5,y1+0.5,z1+0.5);
+                  Vec3 start = new Vec3(x1+0.5,y1+0.5,z1+0.5);
                   double phi = Math.random() * 2 * Math.PI;
                   double theta = Math.random() * (Math.PI/3);
                   double length = Math.random() * 30 + 30;
                   double x2 = length * Math.sin(theta) * Math.cos(phi);
                   double z2 = length * Math.sin(theta) * Math.sin(phi);
                   double y2 = length * Math.cos(theta);
-                  Vec3d end = start.add(x2,y2,z2);
+                  Vec3 end = start.add(x2,y2,z2);
                   double size = Math.random() * 5 + 5;
                
                   //log("New Spike at: "+start+" to "+end+" len: "+length+" with size: "+size);
@@ -236,12 +236,12 @@ public class DragonLairActions {
             terrainTicks = terrainDur;
             break;
          case GRAVITY_LAPSE: // Gravity Lapse
-            for(ServerPlayerEntity player : nearbyPlayers){
+            for(ServerPlayer player : nearbyPlayers){
                if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
-               StatusEffectInstance jump = new StatusEffectInstance(StatusEffects.JUMP_BOOST, lapseDur, 14, false, false, true);
-               StatusEffectInstance hover = new StatusEffectInstance(StatusEffects.SLOW_FALLING, lapseDur, 0, false, false, true);
-               player.addStatusEffect(jump);
-               player.addStatusEffect(hover);
+               MobEffectInstance jump = new MobEffectInstance(MobEffects.JUMP_BOOST, lapseDur, 14, false, false, true);
+               MobEffectInstance hover = new MobEffectInstance(MobEffects.SLOW_FALLING, lapseDur, 0, false, false, true);
+               player.addEffect(jump);
+               player.addEffect(hover);
             }
          
             DragonDialog.announce(DragonDialog.Announcements.ABILITY_GRAVITY_LAPSE,endWorld.getServer(),null);
@@ -252,11 +252,11 @@ public class DragonLairActions {
             break;
          case QUAKE: // Quake
             quakeTicks = quakeDur;
-            for(ServerPlayerEntity player : nearbyPlayers){
-               StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, quakeDur, 0, false, false, true);
-               player.addStatusEffect(slow);
-               StatusEffectInstance fatigue = new StatusEffectInstance(StatusEffects.MINING_FATIGUE, quakeDur, 0, false, false, true);
-               player.addStatusEffect(fatigue);
+            for(ServerPlayer player : nearbyPlayers){
+               MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, quakeDur, 0, false, false, true);
+               player.addEffect(slow);
+               MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, quakeDur, 0, false, false, true);
+               player.addEffect(fatigue);
             }
             DragonDialog.announce(DragonDialog.Announcements.ABILITY_QUAKE,endWorld.getServer(),null);
             break;
@@ -277,32 +277,32 @@ public class DragonLairActions {
    }
    
    public DragonLairActionTypes rollAction(int phase){
-      ArrayList<Pair<DragonLairActionTypes,Integer>> actions = new ArrayList<>();
+      ArrayList<Tuple<DragonLairActionTypes,Integer>> actions = new ArrayList<>();
       ArrayList<DragonLairActionTypes> weighted = new ArrayList<>();
       
       if(phase == 1){
-         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,8));
-         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
-         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,3));
-         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,3));
-         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
+         actions.add(new Tuple<>(DragonLairActionTypes.TERRAIN_SHIFT,8));
+         actions.add(new Tuple<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
+         actions.add(new Tuple<>(DragonLairActionTypes.DIMENSION_SHIFT,3));
+         actions.add(new Tuple<>(DragonLairActionTypes.QUAKE,3));
+         actions.add(new Tuple<>(DragonLairActionTypes.STARFALL,1));
       }else if(phase == 2){
-         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,6));
-         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,6));
-         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,2));
-         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
-         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,3));
+         actions.add(new Tuple<>(DragonLairActionTypes.TERRAIN_SHIFT,6));
+         actions.add(new Tuple<>(DragonLairActionTypes.GRAVITY_LAPSE,6));
+         actions.add(new Tuple<>(DragonLairActionTypes.DIMENSION_SHIFT,2));
+         actions.add(new Tuple<>(DragonLairActionTypes.QUAKE,2));
+         actions.add(new Tuple<>(DragonLairActionTypes.STARFALL,3));
       }else if(phase == 3){
-         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,4));
-         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,2));
-         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,5));
-         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,1));
-         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,5));
+         actions.add(new Tuple<>(DragonLairActionTypes.TERRAIN_SHIFT,4));
+         actions.add(new Tuple<>(DragonLairActionTypes.GRAVITY_LAPSE,2));
+         actions.add(new Tuple<>(DragonLairActionTypes.DIMENSION_SHIFT,5));
+         actions.add(new Tuple<>(DragonLairActionTypes.QUAKE,1));
+         actions.add(new Tuple<>(DragonLairActionTypes.STARFALL,5));
       }
    
-      for(Pair<DragonLairActionTypes, Integer> action : actions){
-         for(int i = 0; i < action.getRight(); i++){
-            weighted.add(action.getLeft());
+      for(Tuple<DragonLairActionTypes, Integer> action : actions){
+         for(int i = 0; i < action.getB(); i++){
+            weighted.add(action.getA());
          }
       }
       
@@ -323,8 +323,8 @@ public class DragonLairActions {
       }
       
       //This can be further optimized by only looping through the surface once and adding the depth directly rather than reiterating for all 15 levels
-      for(BlockPos blockPos : BlockPos.iterate(minX - extra, midY, minZ - extra, maxX + extra, midY, maxZ + extra)){
-         double dist = weightDist(new Vec3d(start.getX()+.5,start.getY()+.5,start.getZ()+.5),new Vec3d(end.getX()+.5,end.getY()+.5,end.getZ()+.5),new Vec3d(blockPos.getX()+.5,blockPos.getY()+.5,blockPos.getZ()+.5));
+      for(BlockPos blockPos : BlockPos.betweenClosed(minX - extra, midY, minZ - extra, maxX + extra, midY, maxZ + extra)){
+         double dist = weightDist(new Vec3(start.getX()+.5,start.getY()+.5,start.getZ()+.5),new Vec3(end.getX()+.5,end.getY()+.5,end.getZ()+.5),new Vec3(blockPos.getX()+.5,blockPos.getY()+.5,blockPos.getZ()+.5));
          
          if(dist <= 15){
             double maxDepth = Math.min(15+1,2*15/Math.max(0,dist-0.5)+1);
@@ -335,10 +335,10 @@ public class DragonLairActions {
                   double tierDepthMax = Math.min(dm+1,2*dm/Math.max(0,dist-0.5)+1);
                   int tierDepth = (int) ((4.0/12.0)*tierDepthMax*tierDepthMax);
                   if(dist <= dm && i < tierDepth){
-                     BlockPos pos = blockPos.add(0,-i,0);
+                     BlockPos pos = blockPos.offset(0,-i,0);
    
                      BlockState state = endWorld.getBlockState(pos);
-                     float hardness = state.getHardness(endWorld,pos);
+                     float hardness = state.getDestroySpeed(endWorld,pos);
                      if(state.getBlock() != Blocks.END_STONE && !(hardness <= 4 && hardness > 0) || state.isAir()) continue;
    
                      tiers.get(dm).add(pos);
@@ -356,7 +356,7 @@ public class DragonLairActions {
       return chasmBlocks;
    }
    
-   private double weightDist(Vec3d start, Vec3d end, Vec3d pos){
+   private double weightDist(Vec3 start, Vec3 end, Vec3 pos){
       final double weight = 0.8;
    
       double px = end.x-start.x;
@@ -378,50 +378,50 @@ public class DragonLairActions {
    }
    
    private static class Spike{
-      public Vec3d start;
-      public Vec3d end;
+      public Vec3 start;
+      public Vec3 end;
       public double radius;
       
-      private Spike(Vec3d s, Vec3d e, double r){
+      private Spike(Vec3 s, Vec3 e, double r){
          start = s;
          end = e;
          radius = r;
          
       }
       
-      public ArrayList<BlockPos> generate(ServerWorld endWorld, double sizeMod){
+      public ArrayList<BlockPos> generate(ServerLevel endWorld, double sizeMod){
          ArrayList<BlockPos> blocks = new ArrayList<>();
          int intervals = 20;
    
-         Vec3d dir = end.subtract(start);
+         Vec3 dir = end.subtract(start);
          double len = dir.length();
          
          double fullSegLen = sizeMod*len/radius;
          double segLen = fullSegLen / intervals;
-         Vec3d sizeEnd = dir.multiply(fullSegLen/len);
+         Vec3 sizeEnd = dir.scale(fullSegLen/len);
          //log("Full Seg Len: "+fullSegLen+" Full Seg End: "+sizeEnd+" SegLen: "+segLen);
          for(int i = 0; i < intervals; i++){
-            Vec3d segDir = dir.multiply(segLen/len*(i+1));
+            Vec3 segDir = dir.scale(segLen/len*(i+1));
             double segR = (intervals-i)*sizeMod/intervals+1;
-            Vec3d segEnd = start.add(segDir);
+            Vec3 segEnd = start.add(segDir);
             //log("Making Spike iter "+i+" SegEnd: "+segEnd+" SegR: "+segR);
    
-            final double minX = Math.min(start.getX(),end.getX());
-            final double minZ = Math.min(start.getZ(),end.getZ());
-            final double maxY = Math.max(start.getY(),end.getY());
-            final double minY = Math.min(start.getY(),end.getY());
-            final double maxX = Math.max(start.getX(),end.getX());
-            final double maxZ = Math.max(start.getZ(),end.getZ());
+            final double minX = Math.min(start.x(),end.x());
+            final double minZ = Math.min(start.z(),end.z());
+            final double maxY = Math.max(start.y(),end.y());
+            final double minY = Math.min(start.y(),end.y());
+            final double maxX = Math.max(start.x(),end.x());
+            final double maxZ = Math.max(start.z(),end.z());
             final double extra = segR+3;
             
             BlockPos corner1 = new BlockPos((int) (minX-extra), (int) (minY-extra), (int) (minZ-extra));
             BlockPos corner2 = new BlockPos((int) (maxX+extra), (int) (maxY+extra), (int) (maxZ+extra));
-            for(BlockPos blockPos : BlockPos.iterate(corner1,corner2)){
+            for(BlockPos blockPos : BlockPos.betweenClosed(corner1,corner2)){
                
                BlockState state = endWorld.getBlockState(blockPos);
                if(!state.isAir()) continue;
                
-               double dist = MathUtils.distToLine(new Vec3d(blockPos.getX(),blockPos.getY(), blockPos.getZ()),start,segEnd);
+               double dist = MathUtils.distToLine(new Vec3(blockPos.getX(),blockPos.getY(), blockPos.getZ()),start,segEnd);
                if(dist <= segR){
                   BlockPos copy = new BlockPos(blockPos.getX(),blockPos.getY(),blockPos.getZ());
                   blocks.add(copy);

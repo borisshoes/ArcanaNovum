@@ -5,12 +5,12 @@ import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.borisshoes.borislib.utils.AlgoUtils;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.level.Level;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
@@ -25,24 +25,24 @@ public class DragonRespawnTimerCallback extends TickTimerCallback {
    @Override
    public void onTimer(){
       try{
-         Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
-         if(bossFight != null && bossFight.getLeft() == BossFights.DRAGON){
-            NbtCompound data = bossFight.getRight();
-            String state = data.getString("State", "");
-            ServerPlayerEntity gm = server.getPlayerManager().getPlayer(AlgoUtils.getUUID(data.getString("GameMaster", "")));
+         Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(server.getLevel(Level.END)).getBossFight();
+         if(bossFight != null && bossFight.getA() == BossFights.DRAGON){
+            CompoundTag data = bossFight.getB();
+            String state = data.getStringOr("State", "");
+            ServerPlayer gm = server.getPlayerList().getPlayer(AlgoUtils.getUUID(data.getStringOr("GameMaster", "")));
             if(DragonBossFight.States.valueOf(state) == DragonBossFight.States.WAITING_RESPAWN){
                //Check for alive Dragon
-               if(!server.getWorld(World.END).getAliveEnderDragons().isEmpty()){
-                  bossFight.getRight().putString("State",DragonBossFight.States.WAITING_START.name());
+               if(!server.getLevel(Level.END).getDragons().isEmpty()){
+                  bossFight.getB().putString("State",DragonBossFight.States.WAITING_START.name());
                   // Confirm message
                   if(gm != null){
-                     gm.sendMessage(Text.literal("Dragon Respawned Successfully"));
+                     gm.sendSystemMessage(Component.literal("Dragon Respawned Successfully"));
                   }
                   return;
                }
             }
             if(gm != null){
-               gm.sendMessage(Text.literal("Dragon Respawn Failed, Cleaning Boss Fight"));
+               gm.sendSystemMessage(Component.literal("Dragon Respawn Failed, Cleaning Boss Fight"));
             }
          }
          // Clean Boss

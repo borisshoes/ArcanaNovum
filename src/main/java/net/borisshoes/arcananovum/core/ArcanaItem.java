@@ -17,31 +17,35 @@ import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.*;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.equipment.trim.ArmorTrim;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.nbt.*;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.EnchantmentTags;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.object.AtlasTextObjectContents;
-import net.minecraft.text.object.TextObjectContents;
-import net.minecraft.util.*;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.util.Tuple;
+import net.minecraft.util.Unit;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.*;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,11 +83,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public int itemVersion;
    protected Item item;
    protected Item vanillaItem;
-   protected Text displayName;
-   protected RegistryKey<ResearchTask>[] researchTasks = new RegistryKey[0];
-   protected Pair<MutableText,MutableText>[] attributions = new Pair[0];
+   protected Component displayName;
+   protected ResourceKey<ResearchTask>[] researchTasks = new ResourceKey[0];
+   protected Tuple<MutableComponent, MutableComponent>[] attributions = new Tuple[0];
    
-   public Pair<MutableText, MutableText>[] getAttributions(){
+   public Tuple<MutableComponent, MutableComponent>[] getAttributions(){
       return attributions;
    }
    
@@ -97,8 +101,8 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return name;
    }
    
-   public MutableText getTranslatedName(){
-      return Text.translatableWithFallback(this.item.getTranslationKey(),getNameString());
+   public MutableComponent getTranslatedName(){
+      return Component.translatableWithFallback(this.item.getDescriptionId(),getNameString());
    }
    
    public String getId(){
@@ -109,15 +113,15 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return rarity;
    }
    
-   public abstract List<List<Text>> getBookLore();
+   public abstract List<List<Component>> getBookLore();
    
    public ArcanaRecipe getRecipe(){ return recipe; }
    
    public TomeGui.TomeFilter[] getCategories(){ return categories; }
    
-   public abstract List<Text> getItemLore(@Nullable ItemStack itemStack);
+   public abstract List<Component> getItemLore(@Nullable ItemStack itemStack);
    
-   public RegistryKey<ResearchTask>[] getResearchTasks(){
+   public ResourceKey<ResearchTask>[] getResearchTasks(){
       return researchTasks;
    }
    
@@ -128,7 +132,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return false;
    }
    
-   public Text getDisplayName(){
+   public Component getDisplayName(){
       return displayName;
    }
    
@@ -151,11 +155,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    
    public ItemStack getPrefItemNoLore(){
       ItemStack stack = prefItem.copy();
-      stack.remove(DataComponentTypes.LORE);
+      stack.remove(DataComponents.LORE);
       return stack;
    }
    
-   public static NbtCompound getArcanaTag(ItemStack stack){
+   public static CompoundTag getArcanaTag(ItemStack stack){
       return ITEM_DATA.getDataTag(stack);
    }
    
@@ -183,35 +187,35 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return ITEM_DATA.getLongProperty(stack,key);
    }
    
-   public static NbtList getListProperty(ItemStack stack, String key){
+   public static ListTag getListProperty(ItemStack stack, String key){
       return ITEM_DATA.getListProperty(stack,key);
    }
    
-   public static NbtCompound getCompoundProperty(ItemStack stack, String key){
+   public static CompoundTag getCompoundProperty(ItemStack stack, String key){
       return ITEM_DATA.getCompoundProperty(stack,key);
    }
    
    public static void putProperty(ItemStack stack, String key, int property){
-      ITEM_DATA.putProperty(stack, key, NbtInt.of(property));
+      ITEM_DATA.putProperty(stack, key, IntTag.valueOf(property));
    }
    
    public static void putProperty(ItemStack stack, String key, boolean property){
-      ITEM_DATA.putProperty(stack, key, NbtByte.of(property));
+      ITEM_DATA.putProperty(stack, key, ByteTag.valueOf(property));
    }
    
    public static void putProperty(ItemStack stack, String key, double property){
-      ITEM_DATA.putProperty(stack,key,NbtDouble.of(property));
+      ITEM_DATA.putProperty(stack,key, DoubleTag.valueOf(property));
    }
    
    public static void putProperty(ItemStack stack, String key, float property){
-      ITEM_DATA.putProperty(stack,key,NbtFloat.of(property));
+      ITEM_DATA.putProperty(stack,key, FloatTag.valueOf(property));
    }
    
    public static void putProperty(ItemStack stack, String key, String property){
-      ITEM_DATA.putProperty(stack,key,NbtString.of(property));
+      ITEM_DATA.putProperty(stack,key, StringTag.valueOf(property));
    }
    
-   public static void putProperty(ItemStack stack, String key, NbtElement property){
+   public static void putProperty(ItemStack stack, String key, Tag property){
       ITEM_DATA.putProperty(stack,key,property);
    }
    
@@ -274,34 +278,34 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       }else{
          putProperty(newStack,UUID_TAG,uuid);
       }
-      NbtCompound augments = getCompoundProperty(stack,AUGMENTS_TAG);
-      NbtList catalysts = getListProperty(stack,CATALYSTS_TAG);
+      CompoundTag augments = getCompoundProperty(stack,AUGMENTS_TAG);
+      ListTag catalysts = getListProperty(stack,CATALYSTS_TAG);
       if(!augments.isEmpty()) putProperty(newStack, AUGMENTS_TAG, augments);
       if(!catalysts.isEmpty()) putProperty(newStack, CATALYSTS_TAG, catalysts);
       addCrafter(newStack,getCrafter(stack), getOrigin(stack),server);
       
-      EnchantmentHelper.set(newStack,stack.getEnchantments());
+      EnchantmentHelper.setEnchantments(newStack,stack.getEnchantments());
       
-      ArmorTrim trim = stack.get(DataComponentTypes.TRIM);
+      ArmorTrim trim = stack.get(DataComponents.TRIM);
       if(trim != null){
-         newStack.set(DataComponentTypes.TRIM, trim);
+         newStack.set(DataComponents.TRIM, trim);
       }
       
-      DyedColorComponent dye = stack.get(DataComponentTypes.DYED_COLOR);
+      DyedItemColor dye = stack.get(DataComponents.DYED_COLOR);
       if(dye != null){
-         newStack.set(DataComponentTypes.DYED_COLOR,dye);
+         newStack.set(DataComponents.DYED_COLOR,dye);
       }
       
       if(hasProperty(stack, EnhancedStatUtils.ENHANCED_STAT_TAG)){
          EnhancedStatUtils.enhanceItem(newStack,getDoubleProperty(stack,EnhancedStatUtils.ENHANCED_STAT_TAG));
       }
       
-      if(stack.contains(DataComponentTypes.CUSTOM_NAME)){
-         newStack.set(DataComponentTypes.CUSTOM_NAME,stack.get(DataComponentTypes.CUSTOM_NAME));
+      if(stack.has(DataComponents.CUSTOM_NAME)){
+         newStack.set(DataComponents.CUSTOM_NAME,stack.get(DataComponents.CUSTOM_NAME));
       }
       
-      if(stack.contains(DataComponentTypes.CONTAINER)){
-         newStack.set(DataComponentTypes.CONTAINER,stack.get(DataComponentTypes.CONTAINER));
+      if(stack.has(DataComponents.CONTAINER)){
+         newStack.set(DataComponents.CONTAINER,stack.get(DataComponents.CONTAINER));
       }
    
       return buildItemLore(newStack,server);
@@ -312,15 +316,15 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       putProperty(stack,RARITY_TAG, ArcanaRarity.getRarityInt(rarity));
       putProperty(stack,VERSION_TAG, ArcanaItem.VERSION + getItemVersion());
       putProperty(stack,UUID_TAG,ArcanaNovum.BLANK_UUID);
-      putProperty(stack,AUGMENTS_TAG, new NbtCompound());
-      putProperty(stack,CATALYSTS_TAG,new NbtList());
+      putProperty(stack,AUGMENTS_TAG, new CompoundTag());
+      putProperty(stack,CATALYSTS_TAG,new ListTag());
       if(creativeMenuItem){
          putProperty(stack,UNINITIALIZED_TAG,true);
       }else{
          removeProperty(stack,UNINITIALIZED_TAG);
       }
       if(displayName != null){
-         stack.set(DataComponentTypes.ITEM_NAME,displayName);
+         stack.set(DataComponents.ITEM_NAME,displayName);
       }
       return stack;
    }
@@ -331,21 +335,21 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    
    public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){ return stack; }
    
-   public Item.Settings getArcanaItemComponents(){
-      return new Item.Settings().maxCount(1)
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.DAMAGE_RESISTANT, new DamageResistantComponent(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO))
-            .component(DataComponentTypes.TOOLTIP_DISPLAY,getTooltipDisplayComponent())
+   public Item.Properties getArcanaItemComponents(){
+      return new Item.Properties().stacksTo(1)
+            .component(DataComponents.LORE, new ItemLore(getItemLore(null)))
+            .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO))
+            .component(DataComponents.TOOLTIP_DISPLAY,getTooltipDisplayComponent())
             ;
    }
    
-   public Item.Settings getArcanaArrowItemComponents(int color){
-      return getArcanaItemComponents().maxCount(64).component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(color),new ArrayList<>(),Optional.empty()));
+   public Item.Properties getArcanaArrowItemComponents(int color){
+      return getArcanaItemComponents().stacksTo(64).component(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(),Optional.of(color),new ArrayList<>(),Optional.empty()));
    }
    
-   public Item.Settings getEquipmentArcanaItemComponents(){
-      return getArcanaItemComponents().maxDamage(8192).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE);
+   public Item.Properties getEquipmentArcanaItemComponents(){
+      return getArcanaItemComponents().durability(8192).component(DataComponents.UNBREAKABLE, Unit.INSTANCE);
    }
    
    public static String getUUID(ItemStack item){
@@ -363,101 +367,101 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       }
    }
    
-   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
+   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
       return getNewItem();
    }
    
-   protected void addRunicArrowLore(List<MutableText> loreList){
-      loreList.add(Text.literal("")
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" make use of the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Runic Matrix").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" to create ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("unique effects").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" will ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("only ").formatted(Formatting.ITALIC,Formatting.DARK_AQUA))
-            .append(Text.literal("activate their effect when fired from a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Runic Bow").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" can be refilled inside a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Runic Quiver").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      loreList.add(Text.literal(""));
+   protected void addRunicArrowLore(List<MutableComponent> loreList){
+      loreList.add(Component.literal("")
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" make use of the ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Runic Matrix").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" to create ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("unique effects").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" will ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("only ").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_AQUA))
+            .append(Component.literal("activate their effect when fired from a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Runic Bow").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" can be refilled inside a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Runic Quiver").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      loreList.add(Component.literal(""));
    }
    
-   protected void addAltarLore(List<MutableText> loreList){
-      loreList.add(Text.literal("")
-            .append(Text.literal("Altars ").formatted(Formatting.AQUA))
-            .append(Text.literal("are ").formatted(Formatting.BLUE))
-            .append(Text.literal("multiblock structures").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(" that must be ").formatted(Formatting.BLUE))
-            .append(Text.literal("built ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("in the world.").formatted(Formatting.BLUE)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("Left click a block").formatted(Formatting.AQUA))
-            .append(Text.literal(" with an ").formatted(Formatting.BLUE))
-            .append(Text.literal("Altar ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("to see a ").formatted(Formatting.BLUE))
-            .append(Text.literal("hologram ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("of the ").formatted(Formatting.BLUE))
-            .append(Text.literal("structure").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.BLUE)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("Right click").formatted(Formatting.AQUA))
-            .append(Text.literal(" a ").formatted(Formatting.BLUE))
-            .append(Text.literal("completed ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Altar ").formatted(Formatting.AQUA))
-            .append(Text.literal("setup to ").formatted(Formatting.BLUE))
-            .append(Text.literal("activate ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("the ").formatted(Formatting.BLUE))
-            .append(Text.literal("Altar").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.BLUE)));
-      loreList.add(Text.literal(""));
+   protected void addAltarLore(List<MutableComponent> loreList){
+      loreList.add(Component.literal("")
+            .append(Component.literal("Altars ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("are ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("multiblock structures").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(" that must be ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("built ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("in the world.").withStyle(ChatFormatting.BLUE)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("Left click a block").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" with an ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("Altar ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("to see a ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("hologram ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("of the ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("structure").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.BLUE)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("Right click").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" a ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("completed ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Altar ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("setup to ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("activate ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("the ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("Altar").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.BLUE)));
+      loreList.add(Component.literal(""));
    }
    
-   protected void addForgeLore(List<MutableText> loreList){
-      loreList.add(Text.literal(""));
-      loreList.add(Text.literal("Forge Structures:").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE));
-      loreList.add(Text.literal("")
-            .append(Text.literal("Are ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("multiblock structures").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" that must be ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("built").formatted(Formatting.AQUA))
-            .append(Text.literal(" in the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("world").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("Must ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("be ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("placed ").formatted(Formatting.AQUA))
-            .append(Text.literal("within a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("17x11x17").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" cube around a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Starlight Forge").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("completed ").formatted(Formatting.AQUA))
-            .append(Text.literal("Forge Structure").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" to ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("use").formatted(Formatting.AQUA))
-            .append(Text.literal(" it.").formatted(Formatting.DARK_PURPLE)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Forge Structure").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" to see a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("hologram ").formatted(Formatting.AQUA))
-            .append(Text.literal("of the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("structure").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+   protected void addForgeLore(List<MutableComponent> loreList){
+      loreList.add(Component.literal(""));
+      loreList.add(Component.literal("Forge Structures:").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE));
+      loreList.add(Component.literal("")
+            .append(Component.literal("Are ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("multiblock structures").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" that must be ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("built").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" in the ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("world").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("Must ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("be ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("placed ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("within a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("17x11x17").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" cube around a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Starlight Forge").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("completed ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("Forge Structure").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("use").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" it.").withStyle(ChatFormatting.DARK_PURPLE)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Forge Structure").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" to see a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("hologram ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("of the ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("structure").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
    }
    
    public ItemStack buildItemLore(ItemStack item, @Nullable MinecraftServer server){
@@ -468,16 +472,16 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       // Rarity Tag
       // Enchantments
       // Augmentations
-      List<Text> loreList = getItemLore(item);
+      List<Component> loreList = getItemLore(item);
       String player = getCrafter(item);
       player = player == null ? "" : player;
       int origin = getOrigin(item); // Origin 0 - Crafted, 1 - Synthesized, 2 - Found, 3 - Earned
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
       ArcanaRarity rarity = arcanaItem == null ? ArcanaRarity.MUNDANE : arcanaItem.getRarity();
       
-      loreList.add(Text.literal(""));
+      loreList.add(Component.literal(""));
       if(!player.isBlank() && server != null){
-         Optional<PlayerConfigEntry> optional = server.getApiServices().nameToIdCache().getByUuid(AlgoUtils.getUUID(player));
+         Optional<NameAndId> optional = server.services().nameToIdCache().get(AlgoUtils.getUUID(player));
          String crafterName = optional.isPresent() ? optional.get().name() : "???";
          String crafted = switch(origin){
             case 0 -> rarity == ArcanaRarity.DIVINE ? "Earned by" : "Crafted by";
@@ -486,100 +490,100 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
             case 3 -> "Earned by";
             default -> "Crafted by";
          };
-         loreList.add(TextUtils.removeItalics(Text.literal("")
-               .append(Text.literal(crafted+" ").formatted(Formatting.ITALIC,Formatting.DARK_PURPLE))
-               .append(Text.literal(crafterName).formatted(Formatting.LIGHT_PURPLE))));
+         loreList.add(TextUtils.removeItalics(Component.literal("")
+               .append(Component.literal(crafted+" ").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_PURPLE))
+               .append(Component.literal(crafterName).withStyle(ChatFormatting.LIGHT_PURPLE))));
       }
       
-      loreList.add(TextUtils.removeItalics(Text.literal("")
+      loreList.add(TextUtils.removeItalics(Component.literal("")
             .append(ArcanaRarity.getColoredLabel(rarity,true))
-            .append(Text.literal(" Arcana Item").formatted(Formatting.DARK_PURPLE))));
+            .append(Component.literal(" Arcana Item").withStyle(ChatFormatting.DARK_PURPLE))));
       
       if(EnhancedStatUtils.isEnhanced(item)){
-         loreList.add(Text.literal(""));
+         loreList.add(Component.literal(""));
          
          double percentile = getDoubleProperty(item,EnhancedStatUtils.ENHANCED_STAT_TAG);
          DecimalFormat df = new DecimalFormat("#0.00");
          df.setRoundingMode(RoundingMode.DOWN);
-         loreList.add(TextUtils.removeItalics(Text.literal("")
-               .append(Text.literal("Stardust Infusion: ").formatted(Formatting.YELLOW))
-               .append(Text.literal(df.format(percentile*100)+"%").formatted(Formatting.GOLD))));
+         loreList.add(TextUtils.removeItalics(Component.literal("")
+               .append(Component.literal("Stardust Infusion: ").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(df.format(percentile*100)+"%").withStyle(ChatFormatting.GOLD))));
       }
       
-      ItemEnchantmentsComponent enchantComp = EnchantmentHelper.getEnchantments(item);
-      Object2IntOpenHashMap<RegistryEntry<Enchantment>> enchants = new Object2IntOpenHashMap<>();
-      enchantComp.getEnchantmentEntries().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
+      ItemEnchantments enchantComp = EnchantmentHelper.getEnchantmentsForCrafting(item);
+      Object2IntOpenHashMap<Holder<Enchantment>> enchants = new Object2IntOpenHashMap<>();
+      enchantComp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
       
       if(!enchants.isEmpty()){
-         loreList.add(Text.literal(""));
-         loreList.add(TextUtils.removeItalics(Text.literal("Enchantments:").formatted(Formatting.AQUA)));
+         loreList.add(Component.literal(""));
+         loreList.add(TextUtils.removeItalics(Component.literal("Enchantments:").withStyle(ChatFormatting.AQUA)));
          
-         RegistryEntryList<Enchantment> registryEntryList = null;
+         HolderSet<Enchantment> registryEntryList = null;
          if(server != null){
-            Optional<RegistryEntryList.Named<Enchantment>> optional = server.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
+            Optional<HolderSet.Named<Enchantment>> optional = server.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.TOOLTIP_ORDER);
             if(optional.isPresent()){
                registryEntryList = optional.get();
             }
          }
          
          if(registryEntryList == null){
-            for(Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : enchants.object2IntEntrySet()){
-               RegistryEntry<Enchantment> registryEntry = entry.getKey();
+            for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchants.object2IntEntrySet()){
+               Holder<Enchantment> registryEntry = entry.getKey();
                int level = entry.getIntValue();
-               loreList.add(TextUtils.removeItalics(Text.literal(Enchantment.getName(registryEntry,level).getString()).formatted(Formatting.BLUE)));
+               loreList.add(TextUtils.removeItalics(Component.literal(Enchantment.getFullname(registryEntry,level).getString()).withStyle(ChatFormatting.BLUE)));
             }
          }else{
             for(int i = 0; i < registryEntryList.size(); i++){
-               RegistryEntry<Enchantment> enchantment = registryEntryList.get(i);
+               Holder<Enchantment> enchantment = registryEntryList.get(i);
                if(enchants.containsKey(enchantment)){
                   int level = enchants.getInt(enchantment);
-                  loreList.add(TextUtils.removeItalics(Text.literal(Enchantment.getName(enchantment,level).getString()).formatted(Formatting.BLUE)));
+                  loreList.add(TextUtils.removeItalics(Component.literal(Enchantment.getFullname(enchantment,level).getString()).withStyle(ChatFormatting.BLUE)));
                }
             }
          }
       }
       
-      NbtCompound augmentTag = getCompoundProperty(item,AUGMENTS_TAG);
-      if(!augmentTag.getKeys().isEmpty()){
-         loreList.add(Text.literal(""));
-         loreList.add(TextUtils.removeItalics(Text.literal("Augmentations:").formatted(Formatting.DARK_AQUA)));
-         for(String key : augmentTag.getKeys()){
+      CompoundTag augmentTag = getCompoundProperty(item,AUGMENTS_TAG);
+      if(!augmentTag.keySet().isEmpty()){
+         loreList.add(Component.literal(""));
+         loreList.add(TextUtils.removeItalics(Component.literal("Augmentations:").withStyle(ChatFormatting.DARK_AQUA)));
+         for(String key : augmentTag.keySet()){
             ArcanaAugment augment = ArcanaAugments.registry.get(key);
-            MutableText txt = augment.getTranslatedName();
+            MutableComponent txt = augment.getTranslatedName();
             if(augment.getTiers().length > 1){
-               txt.append(Text.literal(" "+LevelUtils.intToRoman(augmentTag.getInt(key, 0))));
+               txt.append(Component.literal(" "+LevelUtils.intToRoman(augmentTag.getIntOr(key, 0))));
             }
-            loreList.add(TextUtils.removeItalics(txt.formatted(Formatting.BLUE)));
+            loreList.add(TextUtils.removeItalics(txt.withStyle(ChatFormatting.BLUE)));
          }
       }
       
-      List<Text> statLines = new ArrayList<>();
-      AttributeModifiersComponent attrs = item.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+      List<Component> statLines = new ArrayList<>();
+      ItemAttributeModifiers attrs = item.get(DataComponents.ATTRIBUTE_MODIFIERS);
       // Armor: Armor + Toughness + KB Res + Max HP
-      EquippableComponent equip = item.get(DataComponentTypes.EQUIPPABLE);
+      Equippable equip = item.get(DataComponents.EQUIPPABLE);
       if(equip != null && attrs != null){
          EquipmentSlot slot = equip.slot();
-         double armor = attrs.applyOperations(EntityAttributes.ARMOR, 0,slot);
-         double toughness = attrs.applyOperations(EntityAttributes.ARMOR_TOUGHNESS, 0,slot);
-         double kbRes = attrs.applyOperations(EntityAttributes.KNOCKBACK_RESISTANCE, 0,slot);
-         double health = attrs.applyOperations(EntityAttributes.MAX_HEALTH, 20.0, slot) - 20.0;
+         double armor = attrs.compute(Attributes.ARMOR, 0,slot);
+         double toughness = attrs.compute(Attributes.ARMOR_TOUGHNESS, 0,slot);
+         double kbRes = attrs.compute(Attributes.KNOCKBACK_RESISTANCE, 0,slot);
+         double health = attrs.compute(Attributes.MAX_HEALTH, 20.0, slot) - 20.0;
          boolean anyUnusual = false;
-         MutableText text = Text.literal("").formatted(Formatting.GOLD);
+         MutableComponent text = Component.literal("").withStyle(ChatFormatting.GOLD);
          if(armor != 0 || toughness != 0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.IRON_CHESTPLATE).formatted(Formatting.WHITE));
-            text.append(Text.literal(" "+TextUtils.readableDouble(armor, 2)+" | "));
-            text.append(ArcanaUtils.getAtlasedTexture(Items.DIAMOND_CHESTPLATE).formatted(Formatting.WHITE));
-            text.append(Text.literal(" "+TextUtils.readableDouble(toughness, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.IRON_CHESTPLATE).withStyle(ChatFormatting.WHITE));
+            text.append(Component.literal(" "+TextUtils.readableDouble(armor, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.DIAMOND_CHESTPLATE).withStyle(ChatFormatting.WHITE));
+            text.append(Component.literal(" "+TextUtils.readableDouble(toughness, 2)+" | "));
             anyUnusual = true;
          }
          if(kbRes != 0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.NETHERITE_CHESTPLATE).formatted(Formatting.WHITE));
-            text.append(Text.literal(" "+TextUtils.readableDouble(kbRes, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.NETHERITE_CHESTPLATE).withStyle(ChatFormatting.WHITE));
+            text.append(Component.literal(" "+TextUtils.readableDouble(kbRes, 2)+" | "));
             anyUnusual = true;
          }
          if(health != 0){
-            text.append(ArcanaUtils.getAtlasedTexture(Atlases.GUI,Identifier.of("hud/heart/full")).formatted(Formatting.WHITE));
-            text.append(Text.literal((health > 0 ? " +" : " ")+TextUtils.readableDouble(health, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(AtlasIds.GUI, Identifier.parse("hud/heart/full")).withStyle(ChatFormatting.WHITE));
+            text.append(Component.literal((health > 0 ? " +" : " ")+TextUtils.readableDouble(health, 2)+" | "));
             anyUnusual = true;
          }
          if(anyUnusual) statLines.add(text);
@@ -588,34 +592,34 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       // Weapon: Damage + Speed + Range Min + Range Max + Shield Disable
       if(attrs != null){
          boolean anyUnusual = false;
-         double dmg = 1 + attrs.applyOperations(EntityAttributes.ATTACK_DAMAGE, 0,EquipmentSlot.MAINHAND);
-         double speed = 4.0 + attrs.applyOperations(EntityAttributes.ATTACK_SPEED, 0,EquipmentSlot.MAINHAND);
+         double dmg = 1 + attrs.compute(Attributes.ATTACK_DAMAGE, 0, EquipmentSlot.MAINHAND);
+         double speed = 4.0 + attrs.compute(Attributes.ATTACK_SPEED, 0, EquipmentSlot.MAINHAND);
          double rangeMin = 0, rangeMax = 3.0, shieldDisable = 0;
-         AttackRangeComponent rangeComp = item.get(DataComponentTypes.ATTACK_RANGE);
+         AttackRange rangeComp = item.get(DataComponents.ATTACK_RANGE);
          if(rangeComp != null){
             rangeMin = rangeComp.minRange();
             rangeMax = rangeComp.maxRange();
          }
-         WeaponComponent weaponComp = item.get(DataComponentTypes.WEAPON);
+         Weapon weaponComp = item.get(DataComponents.WEAPON);
          if(weaponComp != null){
             shieldDisable = weaponComp.disableBlockingForSeconds();
          }
-         MutableText text = Text.literal("").formatted(Formatting.GOLD);
+         MutableComponent text = Component.literal("").withStyle(ChatFormatting.GOLD);
          if(dmg != 1 || speed != 4.0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.DIAMOND_SWORD).formatted(Formatting.WHITE));
-            text.append(Text.literal(" "+TextUtils.readableDouble(dmg, 2)+" | "));
-            text.append(ArcanaUtils.getAtlasedTexture(Items.GOLDEN_SWORD).formatted(Formatting.WHITE));
-            text.append(Text.literal(" "+TextUtils.readableDouble(speed, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.DIAMOND_SWORD).withStyle(ChatFormatting.WHITE));
+            text.append(Component.literal(" "+TextUtils.readableDouble(dmg, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.GOLDEN_SWORD).withStyle(ChatFormatting.WHITE));
+            text.append(Component.literal(" "+TextUtils.readableDouble(speed, 2)+" | "));
             anyUnusual = true;
          }
          if(rangeMin != 0 || rangeMax != 3.0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.IRON_SPEAR).formatted(Formatting.WHITE));
-            text.append(Text.literal(" "+TextUtils.readableDouble(rangeMin, 2)+"-"+TextUtils.readableDouble(rangeMax, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.IRON_SPEAR).withStyle(ChatFormatting.WHITE));
+            text.append(Component.literal(" "+TextUtils.readableDouble(rangeMin, 2)+"-"+TextUtils.readableDouble(rangeMax, 2)+" | "));
             anyUnusual = true;
          }
          if(shieldDisable != 0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.COPPER_AXE).formatted(Formatting.WHITE));
-            text.append(Text.literal(" "+TextUtils.readableDouble(shieldDisable, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.COPPER_AXE).withStyle(ChatFormatting.WHITE));
+            text.append(Component.literal(" "+TextUtils.readableDouble(shieldDisable, 2)+" | "));
             anyUnusual = true;
          }
          if(anyUnusual) statLines.add(text);
@@ -626,17 +630,17 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       // Fall Damage Protection + Aqua Affinity + Movement Speed + Step Height
       
       if(!statLines.isEmpty()){
-         loreList.add(Text.literal(""));
-         loreList.add(TextUtils.removeItalics(Text.literal("Item Stats:")).formatted(Formatting.YELLOW));
+         loreList.add(Component.literal(""));
+         loreList.add(TextUtils.removeItalics(Component.literal("Item Stats:")).withStyle(ChatFormatting.YELLOW));
          loreList.addAll(statLines.stream().map(TextUtils::removeItalics).toList());
       }
       
       // Projectiles / Firework Rocket Info
-      ChargedProjectilesComponent projs = item.get(DataComponentTypes.CHARGED_PROJECTILES);
-      FireworksComponent fireworks = item.get(DataComponentTypes.FIREWORKS);
+      ChargedProjectiles projs = item.get(DataComponents.CHARGED_PROJECTILES);
+      Fireworks fireworks = item.get(DataComponents.FIREWORKS);
       // TODO
       
-      item.set(DataComponentTypes.LORE, new LoreComponent(loreList,loreList));
+      item.set(DataComponents.LORE, new ItemLore(loreList,loreList));
       return item;
    }
    
@@ -649,20 +653,20 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return null;
    }
    
-   public static TooltipDisplayComponent getTooltipDisplayComponent(){
-      return TooltipDisplayComponent.DEFAULT
-            .with(DataComponentTypes.UNBREAKABLE,true)
-            .with(DataComponentTypes.ENCHANTMENTS,true)
-            .with(DataComponentTypes.BUNDLE_CONTENTS,true)
-            .with(DataComponentTypes.CONTAINER,true)
-            .with(DataComponentTypes.ATTRIBUTE_MODIFIERS,true)
-            .with(DataComponentTypes.FIREWORK_EXPLOSION,true)
-            .with(DataComponentTypes.POTION_CONTENTS,true)
-            .with(DataComponentTypes.BASE_COLOR,true)
-            .with(DataComponentTypes.DYED_COLOR,true)
-            .with(DataComponentTypes.FIREWORKS,true)
-            .with(DataComponentTypes.CHARGED_PROJECTILES,true)
-            .with(DataComponentTypes.INTANGIBLE_PROJECTILE,true)
+   public static TooltipDisplay getTooltipDisplayComponent(){
+      return TooltipDisplay.DEFAULT
+            .withHidden(DataComponents.UNBREAKABLE,true)
+            .withHidden(DataComponents.ENCHANTMENTS,true)
+            .withHidden(DataComponents.BUNDLE_CONTENTS,true)
+            .withHidden(DataComponents.CONTAINER,true)
+            .withHidden(DataComponents.ATTRIBUTE_MODIFIERS,true)
+            .withHidden(DataComponents.FIREWORK_EXPLOSION,true)
+            .withHidden(DataComponents.POTION_CONTENTS,true)
+            .withHidden(DataComponents.BASE_COLOR,true)
+            .withHidden(DataComponents.DYED_COLOR,true)
+            .withHidden(DataComponents.FIREWORKS,true)
+            .withHidden(DataComponents.CHARGED_PROJECTILES,true)
+            .withHidden(DataComponents.INTANGIBLE_PROJECTILE,true)
             ;
    }
 }

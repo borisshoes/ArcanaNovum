@@ -1,12 +1,11 @@
 package net.borisshoes.arcananovum.callbacks.login;
 
 import net.borisshoes.borislib.callbacks.LoginCallback;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
@@ -14,7 +13,7 @@ public class MaxHealthLoginCallback extends LoginCallback {
    private float hp;
    
    public MaxHealthLoginCallback(){
-      super(Identifier.of(MOD_ID,"max_health_login_callback"));
+      super(Identifier.fromNamespaceAndPath(MOD_ID,"max_health_login_callback"));
    }
    
    public MaxHealthLoginCallback(MinecraftServer server, String player, float health){
@@ -24,23 +23,23 @@ public class MaxHealthLoginCallback extends LoginCallback {
    }
    
    @Override
-   public void onLogin(ServerPlayNetworkHandler netHandler, MinecraftServer server){
-      ServerPlayerEntity player = netHandler.player;
-      if(player.getUuidAsString().equals(playerUUID)){
-         player.getEquipmentChanges();
+   public void onLogin(ServerGamePacketListenerImpl netHandler, MinecraftServer server){
+      ServerPlayer player = netHandler.player;
+      if(player.getStringUUID().equals(playerUUID)){
+         player.collectEquipmentChanges();
          player.setHealth(hp);
       }
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(CompoundTag data){
       this.data = data;
-      hp = data.getFloat("hp", 0.0f);
+      hp = data.getFloatOr("hp", 0.0f);
    }
    
    @Override
-   public NbtCompound getData(){
-      NbtCompound data = new NbtCompound();
+   public CompoundTag getData(){
+      CompoundTag data = new CompoundTag();
       data.putFloat("hp",hp);
       this.data = data;
       return this.data;

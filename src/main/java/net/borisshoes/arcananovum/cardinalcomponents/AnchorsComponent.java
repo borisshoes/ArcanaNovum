@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
 import net.borisshoes.borislib.utils.CodecUtils;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public class AnchorsComponent implements IAnchorsComponent{
    }
    
    @Override
-   public void readData(ReadView readView){
+   public void readData(ValueInput readView){
       try{
          anchors.clear();
          readView.read("Anchors", CodecUtils.BLOCKPOS_LIST).ifPresent(anchors::addAll);
@@ -40,9 +40,9 @@ public class AnchorsComponent implements IAnchorsComponent{
    }
    
    @Override
-   public void writeData(WriteView writeView){
+   public void writeData(ValueOutput writeView){
       try{
-         writeView.put("Anchors",CodecUtils.BLOCKPOS_LIST,anchors);
+         writeView.store("Anchors",CodecUtils.BLOCKPOS_LIST,anchors);
       }catch(Exception e){
          e.printStackTrace();
       }

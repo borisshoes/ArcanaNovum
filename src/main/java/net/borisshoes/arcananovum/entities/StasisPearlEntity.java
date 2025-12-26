@@ -7,57 +7,57 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.StasisPearl;
 import net.borisshoes.arcananovum.mixins.EntityAccessor;
-import net.borisshoes.arcananovum.mixins.ThrownItemEntityAccessor;
+import net.borisshoes.arcananovum.mixins.ThrowableItemProjectileAccessor;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 
-public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity {
+public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity {
    
    private final ItemStack pearlStack = ArcanaRegistry.STASIS_PEARL.getPrefItem();
    private String itemStackId;
    private int stasisTime;
    private boolean inStasis;
-   private Vec3d savedVelocity;
-   private NbtCompound augments;
+   private Vec3 savedVelocity;
+   private CompoundTag augments;
    
-   public StasisPearlEntity(EntityType<? extends StasisPearlEntity> entityType, World world){
+   public StasisPearlEntity(EntityType<? extends StasisPearlEntity> entityType, Level world){
       super(entityType, world);
       //pearlStack.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.MENDING),1);
    }
    
-   public StasisPearlEntity(World world, LivingEntity owner, String itemUuid, NbtCompound augments){
+   public StasisPearlEntity(Level world, LivingEntity owner, String itemUuid, CompoundTag augments){
       this(ArcanaRegistry.STASIS_PEARL_ENTITY,world);
-      setPosition(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
+      setPos(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
       setOwner(owner);
       itemStackId = itemUuid;
       this.augments = augments;
-      this.savedVelocity = getVelocity();
+      this.savedVelocity = getDeltaMovement();
    }
    
    @Override
-   public void modifyRawTrackedData(List<DataTracker.SerializedEntry<?>> data, ServerPlayerEntity player, boolean initial){
-      data.add(new DataTracker.SerializedEntry<>(ThrownItemEntityAccessor.getITEM().id(),ThrownItemEntityAccessor.getITEM().dataType(), pearlStack.copy()));
-      data.add(new DataTracker.SerializedEntry<>(EntityAccessor.getNO_GRAVITY().id(), EntityAccessor.getNO_GRAVITY().dataType(), inStasis));
+   public void modifyRawTrackedData(List<SynchedEntityData.DataValue<?>> data, ServerPlayer player, boolean initial){
+      data.add(new SynchedEntityData.DataValue<>(ThrowableItemProjectileAccessor.getDATA_ITEM_STACK().id(), ThrowableItemProjectileAccessor.getDATA_ITEM_STACK().serializer(), pearlStack.copy()));
+      data.add(new SynchedEntityData.DataValue<>(EntityAccessor.getDATA_NO_GRAVITY().id(), EntityAccessor.getDATA_NO_GRAVITY().serializer(), inStasis));
    }
    
    @Override
@@ -71,14 +71,14 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
       ArcanaItem.putProperty(pearlStack, StasisPearl.PEARL_ID_TAG,stasis ? "-" : "");
       
       if(inStasis){
-         this.savedVelocity = getVelocity();
-         setVelocity(0,0,0);
+         this.savedVelocity = getDeltaMovement();
+         setDeltaMovement(0,0,0);
          setNoGravity(true);
       }else{
-         if(stasisTime >= 6000 && getOwner() instanceof ServerPlayerEntity player){
+         if(stasisTime >= 6000 && getOwner() instanceof ServerPlayer player){
             ArcanaAchievements.grant(player,ArcanaAchievements.PEARL_HANG.id);
          }
-         setVelocity(this.savedVelocity);
+         setDeltaMovement(this.savedVelocity);
          setNoGravity(false);
          stasisTime = 0;
       }
@@ -98,69 +98,69 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
       if(inStasis){
          stasisTime++;
          
-         if(getVelocity().length() > 0.001){
-            setVelocity(0,0,0);
+         if(getDeltaMovement().length() > 0.001){
+            setDeltaMovement(0,0,0);
          }
       }
       
       // Update holder every second
-      MinecraftServer server = this.getEntityWorld().getServer();
+      MinecraftServer server = this.level().getServer();
       if(server != null){
-         if(server.getTicks() % 20 == 0){
+         if(server.getTickCount() % 20 == 0){
             resyncHolder();
          }
          
-         if(this.getEntityWorld() instanceof ServerWorld serverWorld){
-            ArcanaEffectUtils.stasisPearl(serverWorld,getEntityPos());
+         if(this.level() instanceof ServerLevel serverWorld){
+            ArcanaEffectUtils.stasisPearl(serverWorld, position());
          }
       }
       
    }
    
    public void resyncHolder(){
-      ServerPlayerEntity holder = ArcanaItemUtils.findHolder(this.getEntityWorld().getServer(),itemStackId);
-      if(holder != null && holder.networkHandler.isConnectionOpen()){
+      ServerPlayer holder = ArcanaItemUtils.findHolder(this.level().getServer(),itemStackId);
+      if(holder != null && holder.connection.isAcceptingMessages()){
          setOwner(holder);
          ItemStack stack = ArcanaItemUtils.getHolderStack(holder,itemStackId);
-         ArcanaItem.putProperty(stack, StasisPearl.PEARL_ID_TAG, this.getUuidAsString());
+         ArcanaItem.putProperty(stack, StasisPearl.PEARL_ID_TAG, this.getStringUUID());
          ArcanaItem.putProperty(stack, StasisPearl.ACTIVE_TAG, this.inStasis);
       }
       
    }
    
    @Override
-   protected void onCollision(HitResult hitResult){
+   protected void onHit(HitResult hitResult){
       if(inStasis) return; // Stasis'd pearl is immune to collisions
       
       // Find Holder of the item
-      ServerPlayerEntity holder = null;
-      if(itemStackId != null && getEntityWorld().getServer() != null){
-         holder = ArcanaItemUtils.findHolder(getEntityWorld().getServer(),itemStackId);
-         if(holder != null && holder.networkHandler.isConnectionOpen() && holder.getEntityWorld() == this.getEntityWorld() && !holder.isSleeping()){
+      ServerPlayer holder = null;
+      if(itemStackId != null && level().getServer() != null){
+         holder = ArcanaItemUtils.findHolder(level().getServer(),itemStackId);
+         if(holder != null && holder.connection.isAcceptingMessages() && holder.level() == this.level() && !holder.isSleeping()){
             setOwner(holder);
             
-            if(holder.getEntityPos().distanceTo(getEntityPos()) >= 1000){
+            if(holder.position().distanceTo(position()) >= 1000){
                ArcanaAchievements.grant(holder, ArcanaAchievements.INSTANT_TRANSMISSION.id);
             }
-            int reconstructLvl = augments.getInt(ArcanaAugments.STASIS_RECONSTRUCTION.id, 0);
+            int reconstructLvl = augments.getIntOr(ArcanaAugments.STASIS_RECONSTRUCTION.id, 0);
             if(reconstructLvl > 0){
-               StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 100, reconstructLvl, false, true, true);
-               StatusEffectInstance resist = new StatusEffectInstance(StatusEffects.RESISTANCE, 60, reconstructLvl-1, false, true, true);
-               holder.addStatusEffect(regen);
-               holder.addStatusEffect(resist);
+               MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 100, reconstructLvl, false, true, true);
+               MobEffectInstance resist = new MobEffectInstance(MobEffects.RESISTANCE, 60, reconstructLvl-1, false, true, true);
+               holder.addEffect(regen);
+               holder.addEffect(resist);
                
-               holder.getEntityWorld().spawnParticles(ParticleTypes.HAPPY_VILLAGER,getX(),getY()+holder.getHeight()/2,getZ(),10*reconstructLvl, .5,.5,.5,1);
+               holder.level().sendParticles(ParticleTypes.HAPPY_VILLAGER,getX(),getY()+holder.getBbHeight()/2,getZ(),10*reconstructLvl, .5,.5,.5,1);
             }
          }
       }
-      super.onCollision(hitResult);
+      super.onHit(hitResult);
    }
    
    @Override
-   protected void writeCustomData(WriteView view){
-      super.writeCustomData(view);
+   protected void addAdditionalSaveData(ValueOutput view){
+      super.addAdditionalSaveData(view);
       if(augments != null){
-         view.put("augments",NbtCompound.CODEC,augments);
+         view.store("augments", CompoundTag.CODEC,augments);
       }
       view.putBoolean("inStasis",inStasis);
       view.putInt("stasisTime",stasisTime);
@@ -171,12 +171,12 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    }
    
    @Override
-   protected void readCustomData(ReadView view){
-      super.readCustomData(view);
-      augments = view.read("augments",NbtCompound.CODEC).orElse(new NbtCompound());
-      inStasis = view.getBoolean("inStasis", false);
-      stasisTime = view.getInt("stasisTime", 0);
-      itemStackId = view.getString("stackUuid", "");
-      savedVelocity = new Vec3d(view.getDouble("savedDX", 0.0), view.getDouble("savedDY", 0.0), view.getDouble("savedDZ", 0.0));
+   protected void readAdditionalSaveData(ValueInput view){
+      super.readAdditionalSaveData(view);
+      augments = view.read("augments", CompoundTag.CODEC).orElse(new CompoundTag());
+      inStasis = view.getBooleanOr("inStasis", false);
+      stasisTime = view.getIntOr("stasisTime", 0);
+      itemStackId = view.getStringOr("stackUuid", "");
+      savedVelocity = new Vec3(view.getDoubleOr("savedDX", 0.0), view.getDoubleOr("savedDY", 0.0), view.getDoubleOr("savedDZ", 0.0));
    }
 }

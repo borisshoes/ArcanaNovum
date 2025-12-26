@@ -9,12 +9,12 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -33,41 +33,41 @@ public class RunicMatrix extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.END_CRYSTAL;
       item = new RunicMatrixItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_END_CRYSTAL,ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS,ResearchTasks.OBTAIN_AMETHYST_SHARD};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_END_CRYSTAL,ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS,ResearchTasks.OBTAIN_AMETHYST_SHARD};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Runes ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("engraved on this ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("crystalline ").formatted(Formatting.AQUA))
-            .append(Text.literal("structure").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(" shift").formatted(Formatting.BLUE))
-            .append(Text.literal(" constantly.").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("They ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("slide").formatted(Formatting.BLUE))
-            .append(Text.literal(" to form different combinations of ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("runic ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("equations").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("matrix ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("allows for the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("invocation ").formatted(Formatting.AQUA))
-            .append(Text.literal("of many different ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("effects").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Runes ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("engraved on this ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("crystalline ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("structure").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(" shift").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" constantly.").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("They ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("slide").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" to form different combinations of ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("runic ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("equations").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("matrix ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("allows for the ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("invocation ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("of many different ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("effects").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -89,10 +89,10 @@ public class RunicMatrix extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Runic Matrix").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nRunes are part of the old Arcana that are able to evoke targeted effects. Being able to freely swap and combine runes to dynamically create runic equations, like ingredients in a ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Runic Matrix").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\ncrafting recipe, results in a device capable of producing a vast number of Arcane effects. This device should be capable of quickly switching and recombining runes and activating them with its internal power source.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("    Runic Matrix").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nRunes are part of the old Arcana that are able to evoke targeted effects. Being able to freely swap and combine runes to dynamically create runic equations, like ingredients in a ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Runic Matrix").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\ncrafting recipe, results in a device capable of producing a vast number of Arcane effects. This device should be capable of quickly switching and recombining runes and activating them with its internal power source.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -102,7 +102,7 @@ public class RunicMatrix extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

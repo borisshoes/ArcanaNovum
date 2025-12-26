@@ -18,15 +18,14 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,23 +41,23 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
    private final SimpleGui returnGui;
    private ItemStack selectionModeStack;
    
-   public TransmutationAltarRecipeGui(ServerPlayerEntity player, SimpleGui returnGui, Optional<TransmutationAltarBlockEntity> altarOpt){
-      super(ScreenHandlerType.GENERIC_9X6, player, false);
+   public TransmutationAltarRecipeGui(ServerPlayer player, SimpleGui returnGui, Optional<TransmutationAltarBlockEntity> altarOpt){
+      super(MenuType.GENERIC_9x6, player, false);
       this.recipes = TransmutationAltar.getUnlockedRecipes(player);
       this.blockEntity = altarOpt.orElse(null);
       this.returnGui = returnGui;
       this.costMode = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
-      setTitle(Text.literal("Transmutation Altar"));
+      setTitle(Component.literal("Transmutation Altar"));
    }
    
    public void enableSelectionMode(ItemStack stack){
       selectionModeStack = stack;
       recipes.removeIf(recipe -> recipe instanceof AequalisCatalystTransmutationRecipe || recipe instanceof AequalisSkillTransmutationRecipe);
-      if(stack.isOf(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())) this.costMode = -1;
+      if(stack.is(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())) this.costMode = -1;
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
       if(curRecipe == null){
          int numPages = (int) Math.ceil((float)recipes.size()/28.0);
@@ -80,8 +79,8 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             if(selectionModeStack != null && ArcanaItemUtils.identifyItem(selectionModeStack) instanceof AequalisScientia aq){
                if(recipe.getName().equals("Aequalis Reconfiguration")) ArcanaAchievements.grant(player,ArcanaAchievements.FRACTAL_ATTUNEMENT);
                ArcanaItem.putProperty(selectionModeStack, AequalisScientia.TRANSMUTATION_TAG,recipe.getName());
-               aq.buildItemLore(selectionModeStack,player.getEntityWorld().getServer());
-               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM,1,0.8f);
+               aq.buildItemLore(selectionModeStack,player.level().getServer());
+               SoundUtils.playSongToPlayer(player, SoundEvents.ALLAY_AMBIENT_WITH_ITEM,1,0.8f);
                close();
                return true;
             }
@@ -130,56 +129,56 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
    
    
    public void buildRecipeListGui(){
-      GuiHelper.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR,Text.literal("Transmutation Recipes").formatted(Formatting.BLUE));
+      GuiHelper.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR, Component.literal("Transmutation Recipes").withStyle(ChatFormatting.BLUE));
       
       List<TransmutationRecipe> pageRecipes = recipes;
       int numPages = (int) Math.ceil((float)pageRecipes.size()/28.0);
       
       if(numPages > 1){
          GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
-         nextArrow.setName(Text.literal("Next Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
-         nextArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
-               .append(Text.literal("Click").formatted(Formatting.YELLOW))
-               .append(Text.literal(" to go to the Next Page").formatted(Formatting.DARK_PURPLE))));
+         nextArrow.setName(Component.literal("Next Page ("+page+"/"+numPages+")").withStyle(ChatFormatting.GOLD));
+         nextArrow.addLoreLine(TextUtils.removeItalics(Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(" to go to the Next Page").withStyle(ChatFormatting.DARK_PURPLE))));
          setSlot(53,nextArrow);
          
          GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
-         prevArrow.setName(Text.literal("Previous Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
-         prevArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
-               .append(Text.literal("Click").formatted(Formatting.YELLOW))
-               .append(Text.literal(" to go to the Previous Page").formatted(Formatting.DARK_PURPLE))));
+         prevArrow.setName(Component.literal("Previous Page ("+page+"/"+numPages+")").withStyle(ChatFormatting.GOLD));
+         prevArrow.addLoreLine(TextUtils.removeItalics(Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(" to go to the Previous Page").withStyle(ChatFormatting.DARK_PURPLE))));
          setSlot(45,prevArrow);
       }
       
       GuiElementBuilder costItem;
       if(this.costMode == -1){
          costItem = GuiElementBuilder.from(ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore()).hideDefaultTooltip();
-         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName().formatted(Formatting.AQUA)))));
-         costItem.addLoreLine(Text.literal(""));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Click").formatted(Formatting.YELLOW))
-               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+         costItem.setName(Component.literal("Cost Calculation Mode").withStyle(ChatFormatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName().withStyle(ChatFormatting.AQUA)))));
+         costItem.addLoreLine(Component.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(" to change cost calculation").withStyle(ChatFormatting.BLUE)))));
       }else if(this.costMode == 0){
          costItem = GuiElementBuilder.from(new ItemStack(Items.EMERALD)).hideDefaultTooltip();
-         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Normal").formatted(Formatting.GREEN)))));
-         costItem.addLoreLine(Text.literal(""));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Click").formatted(Formatting.YELLOW))
-               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+         costItem.setName(Component.literal("Cost Calculation Mode").withStyle(ChatFormatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Normal").withStyle(ChatFormatting.GREEN)))));
+         costItem.addLoreLine(Component.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(" to change cost calculation").withStyle(ChatFormatting.BLUE)))));
       }else{
          costItem = GuiElementBuilder.from(new ItemStack(Items.AMETHYST_SHARD,this.costMode)).hideDefaultTooltip();
-         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.translatable(ArcanaAugments.HASTY_BARGAIN.getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(" "+LevelUtils.intToRoman(this.costMode)).formatted(Formatting.LIGHT_PURPLE)))));
-         costItem.addLoreLine(Text.literal(""));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Click").formatted(Formatting.YELLOW))
-               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+         costItem.setName(Component.literal("Cost Calculation Mode").withStyle(ChatFormatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.translatable(ArcanaAugments.HASTY_BARGAIN.getTranslationKey()).withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(Component.literal(" "+LevelUtils.intToRoman(this.costMode)).withStyle(ChatFormatting.LIGHT_PURPLE)))));
+         costItem.addLoreLine(Component.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(" to change cost calculation").withStyle(ChatFormatting.BLUE)))));
       }
       setSlot(8,costItem);
       
@@ -189,7 +188,7 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             if(k < pageRecipes.size()){
                TransmutationRecipe recipe = pageRecipes.get(k);
                GuiElementBuilder viewItem = GuiElementBuilder.from(recipe.getViewStack()).hideDefaultTooltip();
-               viewItem.setName(Text.literal(recipe.getName()).formatted(Formatting.AQUA,Formatting.BOLD));
+               viewItem.setName(Component.literal(recipe.getName()).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
                
                int reagent1Count, reagent2Count;
                if(this.costMode == -1){
@@ -201,115 +200,115 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                }
                
                if(recipe instanceof CommutativeTransmutationRecipe){
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Commutative Transmutation").formatted(Formatting.GREEN)));
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Click").formatted(Formatting.GREEN))
-                        .append(Text.literal(" to view full recipe").formatted(Formatting.DARK_GREEN)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Commutative Transmutation").withStyle(ChatFormatting.GREEN)));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent1().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent2().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Click").withStyle(ChatFormatting.GREEN))
+                        .append(Component.literal(" to view full recipe").withStyle(ChatFormatting.DARK_GREEN)))));
                }else if(recipe instanceof InfusionTransmutationRecipe infusion){
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Infusion Transmutation").formatted(Formatting.DARK_PURPLE)));
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.GRAY))
-                        .append(Text.literal(infusion.getInput().getCount()+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(infusion.getInput().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal(infusion.getOutput().getCount()+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(infusion.getOutput().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Infusion Transmutation").withStyle(ChatFormatting.DARK_PURPLE)));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(infusion.getInput().getCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(infusion.getInput().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Output: ").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(Component.literal(infusion.getOutput().getCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(infusion.getOutput().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent1().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent2().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof PermutationTransmutationRecipe permutation){
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Permutation Transmutation").formatted(Formatting.DARK_AQUA)));
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.GRAY))
-                        .append(Text.literal(permutation.getInput().getCount()+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(permutation.getInput().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
-                        .append(permutation.getOutputDescription()).formatted(Formatting.AQUA))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Permutation Transmutation").withStyle(ChatFormatting.DARK_AQUA)));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(permutation.getInput().getCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(permutation.getInput().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Output: ").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(permutation.getOutputDescription()).withStyle(ChatFormatting.AQUA))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent1().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent2().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof AequalisUnattuneTransmutationRecipe){
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Aequalis Transmutation").formatted(Formatting.AQUA)));
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.GRAY))
-                        .append(Text.literal("An Aequalis Scientia").formatted(Formatting.DARK_PURPLE)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("An Unattuned Aequalis Scientia").formatted(Formatting.DARK_PURPLE)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Aequalis Transmutation").withStyle(ChatFormatting.AQUA)));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal("An Aequalis Scientia").withStyle(ChatFormatting.DARK_PURPLE)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Output: ").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(Component.literal("An Unattuned Aequalis Scientia").withStyle(ChatFormatting.DARK_PURPLE)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent1().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent2().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof AequalisSkillTransmutationRecipe){
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Aequalis Transmutation").formatted(Formatting.AQUA)));
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.GRAY))
-                        .append(Text.literal("An Arcana Item").formatted(Formatting.DARK_PURPLE)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("An Arcana Item").formatted(Formatting.DARK_PURPLE)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.literal("Your Aequalis Scientia").formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Aequalis Transmutation").withStyle(ChatFormatting.AQUA)));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal("An Arcana Item").withStyle(ChatFormatting.DARK_PURPLE)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(Component.literal("An Arcana Item").withStyle(ChatFormatting.DARK_PURPLE)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal("Your Aequalis Scientia").withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent1().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent2().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof AequalisCatalystTransmutationRecipe){
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Aequalis Transmutation").formatted(Formatting.AQUA)));
-                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.GRAY))
-                        .append(Text.literal("An Arcana Item").formatted(Formatting.DARK_PURPLE)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("1-4 ").formatted(Formatting.GOLD))
-                        .append(Text.literal("Catalytic Matrices").formatted(Formatting.YELLOW)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Input: ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.literal("Your Aequalis Scientia").formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
-                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Aequalis Transmutation").withStyle(ChatFormatting.AQUA)));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal("An Arcana Item").withStyle(ChatFormatting.DARK_PURPLE)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(Component.literal("1-4 ").withStyle(ChatFormatting.GOLD))
+                        .append(Component.literal("Catalytic Matrices").withStyle(ChatFormatting.YELLOW)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Input: ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal("Your Aequalis Scientia").withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent1().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                        .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.translatable(recipe.getReagent2().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }
                setSlot((i*9+10)+j,viewItem);
             }else{
@@ -319,13 +318,13 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
          }
       }
       
-      setTitle(Text.literal("Transmutation Recipes"));
+      setTitle(Component.literal("Transmutation Recipes"));
    }
    
    public void buildRecipeViewGui(String recipeName){
       this.curRecipeName = recipeName;
       
-      GuiHelper.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR,Text.literal("Transmutation Recipes").formatted(Formatting.BLUE));
+      GuiHelper.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR, Component.literal("Transmutation Recipes").withStyle(ChatFormatting.BLUE));
       
       for(TransmutationRecipe rec : recipes){
          if(rec.getName().equals(recipeName) && rec instanceof CommutativeTransmutationRecipe crec){
@@ -340,17 +339,17 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       
       if(numPages > 1){
          GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
-         nextArrow.setName((Text.literal("")
-               .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
-         nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+         nextArrow.setName((Component.literal("")
+               .append(Component.literal("Next Page").withStyle(ChatFormatting.GOLD))));
+         nextArrow.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("("+commiePage+" of "+numPages+")").withStyle(ChatFormatting.DARK_PURPLE)))));
          setSlot(53,nextArrow);
          
          GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
-         prevArrow.setName((Text.literal("")
-               .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
-         prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+         prevArrow.setName((Component.literal("")
+               .append(Component.literal("Prev Page").withStyle(ChatFormatting.GOLD))));
+         prevArrow.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("("+commiePage+" of "+numPages+")").withStyle(ChatFormatting.DARK_PURPLE)))));
          setSlot(45,prevArrow);
       }
       
@@ -360,11 +359,11 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             if(k < inputs.size()){
                ItemStack item = inputs.get(k);
                GuiElementBuilder viewItem = GuiElementBuilder.from(item).hideDefaultTooltip();
-               viewItem.setName((Text.translatable(item.getItem().getTranslationKey()).formatted(Formatting.BOLD,Formatting.AQUA)));
-               viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                     .append(Text.literal("Input").formatted(Formatting.GRAY))
-                     .append(Text.literal(" or ").formatted(Formatting.DARK_AQUA))
-                     .append(Text.literal("Focus").formatted(Formatting.DARK_GRAY)))));
+               viewItem.setName((Component.translatable(item.getItem().getDescriptionId()).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA)));
+               viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                     .append(Component.literal("Input").withStyle(ChatFormatting.GRAY))
+                     .append(Component.literal(" or ").withStyle(ChatFormatting.DARK_AQUA))
+                     .append(Component.literal("Focus").withStyle(ChatFormatting.DARK_GRAY)))));
                
                setSlot((i*9+10)+j,viewItem);
             }else{
@@ -377,32 +376,32 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       GuiElementBuilder costItem;
       if(this.costMode == -1){
          costItem = GuiElementBuilder.from(ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore()).hideDefaultTooltip();
-         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName().formatted(Formatting.AQUA)))));
-         costItem.addLoreLine(Text.literal(""));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Click").formatted(Formatting.YELLOW))
-               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+         costItem.setName(Component.literal("Cost Calculation Mode").withStyle(ChatFormatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName().withStyle(ChatFormatting.AQUA)))));
+         costItem.addLoreLine(Component.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(" to change cost calculation").withStyle(ChatFormatting.BLUE)))));
       }else if(this.costMode == 0){
          costItem = GuiElementBuilder.from(new ItemStack(Items.EMERALD)).hideDefaultTooltip();
-         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Normal").formatted(Formatting.GREEN)))));
-         costItem.addLoreLine(Text.literal(""));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Click").formatted(Formatting.YELLOW))
-               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+         costItem.setName(Component.literal("Cost Calculation Mode").withStyle(ChatFormatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Normal").withStyle(ChatFormatting.GREEN)))));
+         costItem.addLoreLine(Component.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(" to change cost calculation").withStyle(ChatFormatting.BLUE)))));
       }else{
          costItem = GuiElementBuilder.from(new ItemStack(Items.AMETHYST_SHARD,this.costMode)).hideDefaultTooltip();
-         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.translatable(ArcanaAugments.HASTY_BARGAIN.getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(" "+LevelUtils.intToRoman(this.costMode)).formatted(Formatting.LIGHT_PURPLE)))));
-         costItem.addLoreLine(Text.literal(""));
-         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Click").formatted(Formatting.YELLOW))
-               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+         costItem.setName(Component.literal("Cost Calculation Mode").withStyle(ChatFormatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.translatable(ArcanaAugments.HASTY_BARGAIN.getTranslationKey()).withStyle(ChatFormatting.LIGHT_PURPLE))
+               .append(Component.literal(" "+LevelUtils.intToRoman(this.costMode)).withStyle(ChatFormatting.LIGHT_PURPLE)))));
+         costItem.addLoreLine(Component.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.YELLOW))
+               .append(Component.literal(" to change cost calculation").withStyle(ChatFormatting.BLUE)))));
       }
       setSlot(8,costItem);
       
@@ -416,37 +415,37 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       }
 
       GuiElementBuilder reagent1Item = GuiElementBuilder.from(reagent1).hideDefaultTooltip();
-      reagent1Item.setName((Text.translatable(reagent1.getItem().getTranslationKey()).formatted(Formatting.BOLD,Formatting.GREEN)));
-      reagent1Item.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(reagent1.getCount()+" ").formatted(Formatting.DARK_AQUA))
-            .append(Text.translatable(reagent1.getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+      reagent1Item.setName((Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN)));
+      reagent1Item.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(reagent1.getCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
       setSlot(48,reagent1Item);
       
       GuiElementBuilder reagent2Item = GuiElementBuilder.from(reagent2).hideDefaultTooltip();
-      reagent2Item.setName((Text.translatable(reagent2.getItem().getTranslationKey()).formatted(Formatting.BOLD,Formatting.GREEN)));
-      reagent2Item.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(reagent2.getCount()+" ").formatted(Formatting.DARK_AQUA))
-            .append(Text.translatable(reagent2.getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+      reagent2Item.setName((Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN)));
+      reagent2Item.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(reagent2.getCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
       setSlot(50,reagent2Item);
       
       GuiElementBuilder recipeItem = new GuiElementBuilder(GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK)).hideDefaultTooltip();
-      recipeItem.setName((Text.literal("")
-            .append(Text.literal("Transmutation Recipes").formatted(Formatting.DARK_AQUA))));
-      recipeItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" to view all Transmutation Recipes").formatted(Formatting.BLUE)))));
+      recipeItem.setName((Component.literal("")
+            .append(Component.literal("Transmutation Recipes").withStyle(ChatFormatting.DARK_AQUA))));
+      recipeItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" to view all Transmutation Recipes").withStyle(ChatFormatting.BLUE)))));
       setSlot(49,recipeItem);
       
-      setTitle(Text.literal(curRecipeName+" Transmutation"));
+      setTitle(Component.literal(curRecipeName+" Transmutation"));
    }
    
    @Override
    public void onTick(){
       if(blockEntity != null){
-         World world = blockEntity.getWorld();
-         if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled()){
+         Level world = blockEntity.getLevel();
+         if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled()){
             this.close();
          }
       }

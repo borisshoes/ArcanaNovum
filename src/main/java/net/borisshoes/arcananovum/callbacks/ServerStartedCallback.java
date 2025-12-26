@@ -8,10 +8,10 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.NameToIdCache;
-import net.minecraft.util.UserCache;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.CachedUserNameToIdResolver;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.UserNameToIdResolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,33 +31,33 @@ public class ServerStartedCallback {
       try{
          ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.clear();
          ArcanaNovum.PLAYER_XP_TRACKER.clear();
-         NameToIdCache baseCache = server.getApiServices().nameToIdCache();
-         List<ServerPlayerEntity> allPlayers = new ArrayList<>();
-         if(baseCache instanceof UserCache userCache){
-            List<UserCache.Entry> cacheEntries = userCache.load();
+         UserNameToIdResolver baseCache = server.services().nameToIdCache();
+         List<ServerPlayer> allPlayers = new ArrayList<>();
+         if(baseCache instanceof CachedUserNameToIdResolver userCache){
+            List<CachedUserNameToIdResolver.GameProfileInfo> cacheEntries = userCache.load();
             
-            for(UserCache.Entry cacheEntry : cacheEntries){
-               Optional<GameProfile> opt = server.getApiServices().profileResolver().getProfileById(cacheEntry.getPlayer().id());;
+            for(CachedUserNameToIdResolver.GameProfileInfo cacheEntry : cacheEntries){
+               Optional<GameProfile> opt = server.services().profileResolver().fetchById(cacheEntry.nameAndId().id());;
                if(opt.isEmpty()) continue;
                GameProfile reqProfile = opt.get();
-               ServerPlayerEntity reqPlayer = MinecraftUtils.getRequestedPlayer(server, new PlayerConfigEntry(reqProfile));
+               ServerPlayer reqPlayer = MinecraftUtils.getRequestedPlayer(server, new NameAndId(reqProfile));
                allPlayers.add(reqPlayer);
             }
          }else{
             log(2,"Was unable to pull player data");
          }
          
-         for(ServerPlayerEntity player : allPlayers){
+         for(ServerPlayer player : allPlayers){
             IArcanaProfileComponent profile = ArcanaNovum.data(player);
             
             for(ArcanaAchievement achieve : ArcanaAchievements.registry.values()){
                List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.containsKey(achieve.id) ? ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achieve.id) : new ArrayList<>();
                if(profile.hasAcheivement(achieve.getArcanaItem().getId(), achieve.id)){
-                  curList.add(player.getUuid());
+                  curList.add(player.getUUID());
                   ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.put(achieve.id,curList);
                }
             }
-            ArcanaNovum.PLAYER_XP_TRACKER.put(player.getUuid(),profile.getXP());
+            ArcanaNovum.PLAYER_XP_TRACKER.put(player.getUUID(),profile.getXP());
          }
          
          for(ArcanaAchievement achieve : ArcanaAchievements.registry.values()){

@@ -27,38 +27,38 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.EquippableComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.equipment.EquipmentType;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -90,12 +90,12 @@ public class LevitationHarness extends EnergyItem {
       itemVersion = 1;
       vanillaItem = Items.LEATHER_CHESTPLATE;
       item = new LevitationHarnessItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SHULKER_CORE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.ADVANCEMENT_ELYTRA,ResearchTasks.UNLOCK_ARCANE_SINGULARITY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SHULKER_CORE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.ADVANCEMENT_ELYTRA,ResearchTasks.UNLOCK_ARCANE_SINGULARITY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,SOULS_TAG,500);
       putProperty(stack,GLOWSTONE_TAG,960);
       putProperty(stack,STALL_TAG,-1);
@@ -104,53 +104,53 @@ public class LevitationHarness extends EnergyItem {
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Mastery over the nature of ").formatted(Formatting.WHITE))
-            .append(Text.literal("Shulkers ").formatted(Formatting.YELLOW))
-            .append(Text.literal("has yielded the ").formatted(Formatting.WHITE))
-            .append(Text.literal("Levitation Harness!").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Grants ").formatted(Formatting.WHITE))
-            .append(Text.literal("creative flight").formatted(Formatting.AQUA))
-            .append(Text.literal(" while consuming ").formatted(Formatting.WHITE))
-            .append(Text.literal("Shulker ").formatted(Formatting.YELLOW))
-            .append(Text.literal("souls ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("and ").formatted(Formatting.WHITE))
-            .append(Text.literal("Glowstone").formatted(Formatting.YELLOW))
-            .append(Text.literal(".").formatted(Formatting.WHITE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.WHITE))
-            .append(Text.literal("Harness ").formatted(Formatting.GRAY))
-            .append(Text.literal("is quite ").formatted(Formatting.WHITE))
-            .append(Text.literal("fragile ").formatted(Formatting.YELLOW))
-            .append(Text.literal("and the slightest bump causes it to ").formatted(Formatting.WHITE))
-            .append(Text.literal("stall").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.WHITE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.WHITE))
-            .append(Text.literal("Harness ").formatted(Formatting.GRAY))
-            .append(Text.literal("also provides ").formatted(Formatting.WHITE))
-            .append(Text.literal("no protection").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" against ").formatted(Formatting.WHITE))
-            .append(Text.literal("damage").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.WHITE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right click").formatted(Formatting.BLUE))
-            .append(Text.literal(" while ").formatted(Formatting.WHITE))
-            .append(Text.literal("holding ").formatted(Formatting.AQUA))
-            .append(Text.literal("the ").formatted(Formatting.WHITE))
-            .append(Text.literal("harness ").formatted(Formatting.GRAY))
-            .append(Text.literal("to open the refuelling menu.").formatted(Formatting.WHITE)));
-      lore.add(Text.literal(""));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Mastery over the nature of ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("Shulkers ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("has yielded the ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("Levitation Harness!").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Grants ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("creative flight").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" while consuming ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("Shulker ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("souls ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("and ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("Glowstone").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(".").withStyle(ChatFormatting.WHITE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("Harness ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("is quite ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("fragile ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("and the slightest bump causes it to ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("stall").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.WHITE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("Harness ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("also provides ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("no protection").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" against ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("damage").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.WHITE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right click").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" while ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("holding ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("the ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("harness ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("to open the refuelling menu.").withStyle(ChatFormatting.WHITE)));
+      lore.add(Component.literal(""));
       
       String duration = itemStack != null ? getDuration(itemStack) : "60 Minutes";
       
-      lore.add(Text.literal("")
-            .append(Text.literal("Flight Duration ").formatted(Formatting.AQUA))
-            .append(Text.literal("- ").formatted(Formatting.WHITE))
-            .append(Text.literal(duration).formatted(Formatting.YELLOW)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Flight Duration ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("- ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal(duration).withStyle(ChatFormatting.YELLOW)));
       
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
@@ -162,7 +162,7 @@ public class LevitationHarness extends EnergyItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
+      CompoundTag stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
       int souls = getIntProperty(stack,SOULS_TAG);
       int stall = getIntProperty(stack,STALL_TAG);
       int glowstone = getIntProperty(stack,GLOWSTONE_TAG);
@@ -206,10 +206,10 @@ public class LevitationHarness extends EnergyItem {
    
    public void setStone(ItemStack stack, ItemStack stone){
       if(stone == null || stone.isEmpty()){
-         putProperty(stack,STONE_DATA_TAG,new NbtCompound());
+         putProperty(stack,STONE_DATA_TAG,new CompoundTag());
          putProperty(stack,SOULS_TAG,-1);
       }else{
-         putProperty(stack,STONE_DATA_TAG,ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,BorisLib.SERVER.getRegistryManager()),stone).getOrThrow());
+         putProperty(stack,STONE_DATA_TAG, ItemStack.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE,BorisLib.SERVER.registryAccess()),stone).getOrThrow());
          putProperty(stack,SOULS_TAG,Soulstone.getSouls(stone));
       }
    }
@@ -237,19 +237,19 @@ public class LevitationHarness extends EnergyItem {
       GuiElementBuilder soulPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,souls > -1 ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
       GuiElementBuilder durationPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,energy > 0 ? ArcanaColors.LIGHT_COLOR : 0x880000));
       GuiElementBuilder glowPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,glow > 0 ? 0xffdd00 : ArcanaColors.DARK_COLOR));
-      Formatting soulTextColor = souls > -1 ? Formatting.LIGHT_PURPLE : Formatting.RED;
-      Formatting durationTextColor = energy > 0 ? Formatting.GRAY : Formatting.RED;
-      Formatting glowTextColor = glow > 0 ? Formatting.GOLD : Formatting.RED;
+      ChatFormatting soulTextColor = souls > -1 ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.RED;
+      ChatFormatting durationTextColor = energy > 0 ? ChatFormatting.GRAY : ChatFormatting.RED;
+      ChatFormatting glowTextColor = glow > 0 ? ChatFormatting.GOLD : ChatFormatting.RED;
       
-      gui.setSlot(0,soulPane.setName(Text.literal(soulText).formatted(soulTextColor)));
-      gui.setSlot(2,durationPane.setName(Text.literal(durationText).formatted(durationTextColor)));
-      gui.setSlot(4,glowPane.setName(Text.literal(glowText).formatted(glowTextColor)));
+      gui.setSlot(0,soulPane.setName(Component.literal(soulText).withStyle(soulTextColor)));
+      gui.setSlot(2,durationPane.setName(Component.literal(durationText).withStyle(durationTextColor)));
+      gui.setSlot(4,glowPane.setName(Component.literal(glowText).withStyle(glowTextColor)));
    }
    
-   public void openGui(PlayerEntity playerEntity, ItemStack stack){
-      if(!(playerEntity instanceof ServerPlayerEntity player))
+   public void openGui(Player playerEntity, ItemStack stack){
+      if(!(playerEntity instanceof ServerPlayer player))
          return;
-      LevitationHarnessGui gui = new LevitationHarnessGui(ScreenHandlerType.HOPPER,player,this, stack);
+      LevitationHarnessGui gui = new LevitationHarnessGui(MenuType.HOPPER,player,this, stack);
       
       int souls = getSouls(stack);
       
@@ -259,7 +259,7 @@ public class LevitationHarness extends EnergyItem {
       
       buildGui(stack, gui);
       
-      SimpleInventory inv = new SimpleInventory(2);
+      SimpleContainer inv = new SimpleContainer(2);
       LevitationHarnessInventoryListener listener = new LevitationHarnessInventoryListener(this,gui,stack);
       inv.addListener(listener);
       listener.setUpdating();
@@ -267,29 +267,29 @@ public class LevitationHarness extends EnergyItem {
       gui.setSlotRedirect(1, new Slot(inv,0,0,0));
       gui.setSlotRedirect(3, new Slot(inv,1,0,0));
       if(souls > -1){
-         NbtCompound stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
+         CompoundTag stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
          ItemStack stone;
          if(stoneData == null || stoneData.isEmpty()){
             stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
          }else{
-            stone = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,player.getRegistryManager()),stoneData).result().orElse(ItemStack.EMPTY);
+            stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE,player.registryAccess()),stoneData).result().orElse(ItemStack.EMPTY);
          }
          stone = Soulstone.setSouls(stone,souls);
-         inv.setStack(0,stone);
+         inv.setItem(0,stone);
          gui.validStone(stone);
       }else{
          gui.notValidStone();
       }
-      gui.setTitle(Text.literal("Levitation Harness"));
+      gui.setTitle(Component.literal("Levitation Harness"));
       listener.finishUpdate();
       
       gui.open();
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
+   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
       // Souls n stuff
-      ItemStack coreStack = inv.getStack(12); // Should be the Core
+      ItemStack coreStack = inv.getItem(12); // Should be the Core
       ItemStack newArcanaItem = null;
       if(ArcanaItemUtils.identifyItem(coreStack) instanceof ShulkerCore core){
          newArcanaItem = getNewItem();
@@ -322,42 +322,42 @@ public class LevitationHarness extends EnergyItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Levitation Harness").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe sheer amount of effort and research that has gone into this is incomparable. A crowning achievement to be sure. The ability to fly freely through the sky is at my command, albeit fueled by innocent souls.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Levitation Harness").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nGlowstone was an adequate moderator for the Shulker Core, but now it is an absolute necessity that is consumed in large quantities to stabilize the flight reaction. Even with more Glowstone, the reaction is incredibly sensitive to damage.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Levitation Harness").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nWearing the Harness grants creative flight. The Harness provides no armor value, and taking even the slightest bump while in flight will destabilize the flight process, dealing half my health in damage, and taking a few seconds to restabilize.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("Levitation Harness").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe sheer amount of effort and research that has gone into this is incomparable. A crowning achievement to be sure. The ability to fly freely through the sky is at my command, albeit fueled by innocent souls.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Levitation Harness").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nGlowstone was an adequate moderator for the Shulker Core, but now it is an absolute necessity that is consumed in large quantities to stabilize the flight reaction. Even with more Glowstone, the reaction is incredibly sensitive to damage.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Levitation Harness").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWearing the Harness grants creative flight. The Harness provides no armor value, and taking even the slightest bump while in flight will destabilize the flight process, dealing half my health in damage, and taking a few seconds to restabilize.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class LevitationHarnessItem extends ArcanaPolymerItem {
       public LevitationHarnessItem(){
          super(getThis(),getEquipmentArcanaItemComponents()
-               .armor(ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL, EquipmentType.CHESTPLATE)
-               .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0x966996))
+               .humanoidArmor(ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL, ArmorType.CHESTPLATE)
+               .component(DataComponents.DYED_COLOR, new DyedItemColor(0x966996))
          );
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
-         EquippableComponent equippableComponent = baseStack.get(DataComponentTypes.EQUIPPABLE);
-         EquippableComponent newComp = EquippableComponent.builder(equippableComponent.slot()).equipSound(equippableComponent.equipSound()).model(RegistryKey.of(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.of(MOD_ID,ID))).build();
-         baseStack.set(DataComponentTypes.EQUIPPABLE,newComp);
+         Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
+         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.fromNamespaceAndPath(MOD_ID,ID))).build();
+         baseStack.set(DataComponents.EQUIPPABLE,newComp);
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
-         boolean chestItem = ItemStack.areItemsAndComponentsEqual(player.getEquippedStack(EquipmentSlot.CHEST),stack);
-         boolean riding = player.hasVehicle();
+         if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
+         boolean chestItem = ItemStack.isSameItemSameComponents(player.getItemBySlot(EquipmentSlot.CHEST),stack);
+         boolean riding = player.isPassenger();
          boolean survival = !(player.isCreative() || player.isSpectator());
          boolean flying = VanillaAbilities.ALLOW_FLYING.getTracker(player).isEnabled() &&
                VanillaAbilities.ALLOW_FLYING.getTracker(player).isGrantedBy(LEVITATION_HARNESS_ABILITY) &&
@@ -366,7 +366,7 @@ public class LevitationHarness extends EnergyItem {
          
          int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HARNESS_RECYCLER.id));
          
-         if(world.getServer().getTicks() % 20 == 0){
+         if(world.getServer().getTickCount() % 20 == 0){
             if(chestItem && flying && survival){
                if(Math.random() >= efficiencyChance[efficiency]){
                   addEnergy(stack,-1);
@@ -374,7 +374,7 @@ public class LevitationHarness extends EnergyItem {
                      putProperty(stack,SOULS_TAG,getSouls(stack)-1);
                      putProperty(stack,GLOWSTONE_TAG,getGlow(stack)-16);
                   }
-                  buildItemLore(stack,player.getEntityWorld().getServer());
+                  buildItemLore(stack,player.level().getServer());
                }
                
                ArcanaAchievements.progress(player,ArcanaAchievements.FREQUENT_FLIER.id,1);
@@ -382,7 +382,7 @@ public class LevitationHarness extends EnergyItem {
                
                boolean hasAllay = false, hasBlaze = false, hasBreeze = false, hasBee = false, hasDragon = false, hasPhantom = false,
                      hasGhast = false, hasHappyGhast = false, hasWither = false, hasParrot = false, hasVex = false, hasBat = false;
-               for(Entity other : world.getOtherEntities(entity, entity.getBoundingBox().expand(32.0))){
+               for(Entity other : world.getEntities(entity, entity.getBoundingBox().inflate(32.0))){
                   EntityType<?> type = other.getType();
                   if(type == EntityType.ALLAY){
                      hasAllay = true;
@@ -417,15 +417,15 @@ public class LevitationHarness extends EnergyItem {
                ArcanaEffectUtils.harnessFly(serverWorld,player,10);
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LEVITATION_HARNESS_PER_SECOND));
                
-               if(world.getServer().getTicks() % 120 == 0){
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_AMBIENT,1f,0.8f);
+               if(world.getServer().getTickCount() % 120 == 0){
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_AMBIENT,1f,0.8f);
                }
             }
             int stall = getIntProperty(stack,STALL_TAG);
             if(stall > 0){
                if(stall == 1){
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_POWER_SELECT,0.5f,1.6f);
-                  player.sendMessage(Text.literal("Your Harness Reboots").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_POWER_SELECT,0.5f,1.6f);
+                  player.displayClientMessage(Component.literal("Your Harness Reboots").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC),true);
                   putProperty(stack,STALL_TAG,-1);
                }else{
                   putProperty(stack,STALL_TAG,stall-1);
@@ -438,27 +438,27 @@ public class LevitationHarness extends EnergyItem {
          }else if(chestItem && survival){
             if(wasFlying && !flying){
                // Deactivate sound
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE,0.5f,0.9f);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_DEACTIVATE,0.5f,0.9f);
                putProperty(stack,WAS_FLYING_TAG,false);
             }else if(!wasFlying && flying){
                // Activate Sound
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE,0.5f,1.7f);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_ACTIVATE,0.5f,1.7f);
                putProperty(stack,WAS_FLYING_TAG,true);
             }
          }
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         if(playerEntity.isSneaking()){
-            ItemStack item = playerEntity.getStackInHand(hand);
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         if(playerEntity.isShiftKeyDown()){
+            ItemStack item = playerEntity.getItemInHand(hand);
             openGui(playerEntity,item);
-            if(playerEntity instanceof ServerPlayerEntity player){
-               PlayerInventory inv = player.getInventory();
-               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.getSelectedSlot() : 45, item));
-               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 6, player.getEquippedStack(EquipmentSlot.CHEST)));
+            if(playerEntity instanceof ServerPlayer player){
+               Inventory inv = player.getInventory();
+               player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), hand == InteractionHand.MAIN_HAND ? 36 + inv.getSelectedSlot() : 45, item));
+               player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), 6, player.getItemBySlot(EquipmentSlot.CHEST)));
             }
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }else{
             return super.use(world, playerEntity, hand);
          }

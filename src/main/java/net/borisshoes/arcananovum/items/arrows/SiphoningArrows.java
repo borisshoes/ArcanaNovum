@@ -9,7 +9,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.borisshoes.arcananovum.mixins.PersistentProjectileEntityAccessor;
+import net.borisshoes.arcananovum.mixins.AbstractArrowAccessor;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -20,21 +20,21 @@ import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.potion.Potions;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class SiphoningArrows extends RunicArrow {
 	public static final String ID = "siphoning_arrows";
-   public static final Identifier EFFECT_ID = Identifier.of(ArcanaNovum.MOD_ID,ID+".overheal");
+   public static final Identifier EFFECT_ID = Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,ID+".overheal");
    
    private static final int[] overhealCap = {0,2,4,10};
    
@@ -56,60 +56,60 @@ public class SiphoningArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new SiphoningArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_RED);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.OBTAIN_GLISTERING_MELON};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.OBTAIN_GLISTERING_MELON};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Siphoning Arrows:").formatted(Formatting.BOLD,Formatting.DARK_RED));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.RED))
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" siphon health ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("from hit ").formatted(Formatting.RED))
-            .append(Text.literal("entities").formatted(Formatting.GOLD))
-            .append(Text.literal(".").formatted(Formatting.RED)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The amount ").formatted(Formatting.RED))
-            .append(Text.literal("siphoned ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("is proportional to the ").formatted(Formatting.RED))
-            .append(Text.literal("damage ").formatted(Formatting.GOLD))
-            .append(Text.literal("dealt.").formatted(Formatting.RED)));
+      lore.add(Component.literal("Siphoning Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" siphon health ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("from hit ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("entities").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(".").withStyle(ChatFormatting.RED)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The amount ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("siphoned ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("is proportional to the ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("damage ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("dealt.").withStyle(ChatFormatting.RED)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getOwner() instanceof ServerPlayerEntity player){
-         double damage = MathHelper.ceil(MathHelper.clamp(arrow.getVelocity().length() * ((PersistentProjectileEntityAccessor)arrow).getDamage(), 0.0, 2.147483647E9)) / 5.5;
-         damage += arrow.isCritical() ? damage/4 : 0;
+      if(arrow.getOwner() instanceof ServerPlayer player){
+         double damage = Mth.ceil(Mth.clamp(arrow.getDeltaMovement().length() * ((AbstractArrowAccessor)arrow).getBaseDamage(), 0.0, 2.147483647E9)) / 5.5;
+         damage += arrow.isCritArrow() ? damage/4 : 0;
          
          if(player.getHealth() < 1.5f){
-            BorisLib.addTickTimerCallback(player.getEntityWorld(), new GenericTimer(2, () -> {
-               if(entityHitResult.getEntity() instanceof MobEntity mob && mob.isDead()) ArcanaAchievements.grant(player,ArcanaAchievements.CIRCLE_OF_LIFE.id);
+            BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2, () -> {
+               if(entityHitResult.getEntity() instanceof Mob mob && mob.isDeadOrDying()) ArcanaAchievements.grant(player,ArcanaAchievements.CIRCLE_OF_LIFE.id);
             }));
          }
          
          int overhealLvl = arrow.getAugment(ArcanaAugments.OVERHEAL.id);
-         float overheal = (float) MathHelper.clamp((damage+player.getHealth()) - player.getMaxHealth(),0,overhealCap[overhealLvl]);
+         float overheal = (float) Mth.clamp((damage+player.getHealth()) - player.getMaxHealth(),0,overhealCap[overhealLvl]);
          if(overheal > 0){
             float curAbs = player.getAbsorptionAmount();
             BorisLib.addTickTimerCallback(new OverhealTimerCallback(100,player,overheal));
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
+            SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 1.8f);
             MinecraftUtils.addMaxAbsorption(player, SiphoningArrows.EFFECT_ID,overheal);
             player.setAbsorptionAmount((curAbs + overheal));
          }
          
          player.heal((float)damage);
-         player.getEntityWorld().spawnParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
+         player.level().sendParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getBbHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
       }
    }
    
@@ -136,9 +136,9 @@ public class SiphoningArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Siphoning Arrows").formatted(Formatting.DARK_RED,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nHealth manipulation is something that I have rarely explored. I’ve invoked some simple life runes to draw upon the health lost from my arrows and draw it back to me.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal(" Siphoning Arrows").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nHealth manipulation is something that I have rarely explored. I’ve invoked some simple life runes to draw upon the health lost from my arrows and draw it back to me.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -148,7 +148,7 @@ public class SiphoningArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

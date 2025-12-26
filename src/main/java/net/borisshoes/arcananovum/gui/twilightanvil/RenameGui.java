@@ -8,26 +8,25 @@ import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.StringHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.StringUtil;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class RenameGui extends AnvilInputGui {
    private final TwilightAnvilBlockEntity blockEntity;
-   private Text newName;
-   private SimpleInventory inv;
+   private Component newName;
+   private SimpleContainer inv;
    private TinkerInventoryListener listener;
    private ItemStack item;
    
@@ -36,7 +35,7 @@ public class RenameGui extends AnvilInputGui {
     * @param player                the player to serve this gui to
     *                              will be treated as slots of this gui
     */
-   public RenameGui(ServerPlayerEntity player, TwilightAnvilBlockEntity blockEntity){
+   public RenameGui(ServerPlayer player, TwilightAnvilBlockEntity blockEntity){
       super(player, false);
       this.blockEntity = blockEntity;
    }
@@ -46,10 +45,10 @@ public class RenameGui extends AnvilInputGui {
    }
    
    public void build(){
-      setTitle(Text.literal("Rename Item"));
-      setSlot(1, GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultStack()).setName(Text.literal("")).hideTooltip());
+      setTitle(Component.literal("Rename Item"));
+      setSlot(1, GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultInstance()).setName(Component.literal("")).hideTooltip());
       
-      inv = new SimpleInventory(2);
+      inv = new SimpleContainer(2);
       listener = new TinkerInventoryListener(this,1,blockEntity);
       inv.addListener(listener);
       
@@ -57,19 +56,19 @@ public class RenameGui extends AnvilInputGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       if(index == 2){
          ItemStack outputStack = getSlot(2) == null ? ItemStack.EMPTY : getSlot(2).getItemStack();
          if(item != null && !item.isEmpty() && !outputStack.isEmpty()){
             if(newName.getString().isBlank()){
-               item.remove(DataComponentTypes.CUSTOM_NAME);
+               item.remove(DataComponents.CUSTOM_NAME);
             }else{
-               item.set(DataComponentTypes.CUSTOM_NAME,newName);
+               item.set(DataComponents.CUSTOM_NAME,newName);
                if(ArcanaItemUtils.isArcane(item)){
                   ArcanaAchievements.grant(player,ArcanaAchievements.TOUCH_OF_PERSONALITY.id);
                }
             }
-            SoundUtils.playSound(player.getEntityWorld(),blockEntity.getPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));
+            SoundUtils.playSound(player.level(),blockEntity.getBlockPos(), SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));
             this.close();
          }
       }
@@ -84,24 +83,24 @@ public class RenameGui extends AnvilInputGui {
       }
       String string = sanitize(input);
       ItemStack newItem = item.copy();
-      Text name = newItem.getName();
+      Component name = newItem.getHoverName();
       if(string == null || string.equals(name.getString())){
          setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
          return;
       }
-      if(StringHelper.isBlank(string)){
-         newItem.remove(DataComponentTypes.CUSTOM_NAME);
-         newName = Text.literal("");
+      if(StringUtil.isBlank(string)){
+         newItem.remove(DataComponents.CUSTOM_NAME);
+         newName = Component.literal("");
       }else{
-         newName = Text.literal(string);
+         newName = Component.literal(string);
          if(ArcanaItemUtils.isArcane(newItem)){
-            List<Text> textList = newName.getWithStyle(newItem.getOrDefault(DataComponentTypes.ITEM_NAME,Text.literal("")).getStyle().withItalic(false));
+            List<Component> textList = newName.toFlatList(newItem.getOrDefault(DataComponents.ITEM_NAME, Component.literal("")).getStyle().withItalic(false));
             if(!textList.isEmpty()){
                newName = textList.getFirst();
             }
-            newItem.set(DataComponentTypes.CUSTOM_NAME, newName);
+            newItem.set(DataComponents.CUSTOM_NAME, newName);
          }else{
-            newItem.set(DataComponentTypes.CUSTOM_NAME, Text.literal(string));
+            newItem.set(DataComponents.CUSTOM_NAME, Component.literal(string));
          }
       }
       setSlot(2,GuiElementBuilder.from(newItem));
@@ -109,7 +108,7 @@ public class RenameGui extends AnvilInputGui {
    
    @Nullable
    private static String sanitize(String name){
-      String string = StringHelper.stripInvalidChars(name);
+      String string = StringUtil.filterText(name);
       if(string.length() <= 50){
          return string;
       }
@@ -118,8 +117,8 @@ public class RenameGui extends AnvilInputGui {
    
    @Override
    public void onTick(){
-      World world = blockEntity.getWorld();
-      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled()){
+      Level world = blockEntity.getLevel();
+      if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled()){
          this.close();
       }
       

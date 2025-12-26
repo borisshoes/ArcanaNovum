@@ -10,18 +10,17 @@ import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,18 +36,18 @@ public class StarpathAltarChartsGui extends SimpleGui {
    private int page = 1;
    private final boolean stargate;
    
-   public StarpathAltarChartsGui(ServerPlayerEntity player, SimpleGui returnGui, StarpathAltarBlockEntity blockEntity){
-      super(ScreenHandlerType.GENERIC_9X6, player, false);
+   public StarpathAltarChartsGui(ServerPlayer player, SimpleGui returnGui, StarpathAltarBlockEntity blockEntity){
+      super(MenuType.GENERIC_9x6, player, false);
       this.blockEntity = blockEntity;
       this.returnGui = returnGui;
       this.destinations = new ArrayList<>(blockEntity.getSavedTargets());
       stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE.id) > 0;
       
-      setTitle(Text.literal("Star Charts"));
+      setTitle(Component.literal("Star Charts"));
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
       int numPages = (int) Math.ceil((float) destinations.size()/28.0);
       if(index == 0){
@@ -73,7 +72,7 @@ public class StarpathAltarChartsGui extends SimpleGui {
       }else if(index == 49){
          AtomicReference<BlockPos> newDest = new AtomicReference<>();
          StarpathTargetGui nameGui = new StarpathTargetGui(player,blockEntity,false,this,(obj) -> {
-            blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry((String) obj,player.getEntityWorld().getRegistryKey().getValue().toString(),newDest.get().getX(),newDest.get().getY(),newDest.get().getZ()));
+            blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry((String) obj,player.level().dimension().identifier().toString(),newDest.get().getX(),newDest.get().getY(),newDest.get().getZ()));
             buildGui();
          });
          
@@ -110,10 +109,10 @@ public class StarpathAltarChartsGui extends SimpleGui {
       
       switch(sort){
          case CLOSEST -> {
-            destinations.sort(Comparator.comparingInt(pair -> (int) pair.getBlockCoords().getSquaredDistance(blockEntity.getPos())));
+            destinations.sort(Comparator.comparingInt(pair -> (int) pair.getBlockCoords().distSqr(blockEntity.getBlockPos())));
          }
          case FURTHEST -> {
-            destinations.sort(Comparator.comparingInt(pair -> (int) -pair.getBlockCoords().getSquaredDistance(blockEntity.getPos())));
+            destinations.sort(Comparator.comparingInt(pair -> (int) -pair.getBlockCoords().distSqr(blockEntity.getBlockPos())));
          }
          case ALPHABETICAL -> {
             destinations.sort(Comparator.comparing(StarpathAltarBlockEntity.TargetEntry::name));
@@ -122,50 +121,50 @@ public class StarpathAltarChartsGui extends SimpleGui {
    }
    
    public void buildGui(){
-      GuiHelper.outlineGUI(this, ArcanaColors.STARPATH_COLOR,Text.literal("Saved Locations").formatted(Formatting.BLUE));
+      GuiHelper.outlineGUI(this, ArcanaColors.STARPATH_COLOR, Component.literal("Saved Locations").withStyle(ChatFormatting.BLUE));
       loadDestinations();
       
       int numPages = (int) Math.ceil((float) destinations.size()/28.0);
       
       GuiElementBuilder labelItem = new GuiElementBuilder(Items.ENDER_EYE).hideDefaultTooltip();
-      labelItem.setName((Text.literal("")
-            .append(Text.literal("Starpath Altar Destinations").formatted(Formatting.DARK_AQUA))));
-      labelItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" to return to the altar").formatted(Formatting.BLUE)))));
+      labelItem.setName((Component.literal("")
+            .append(Component.literal("Starpath Altar Destinations").withStyle(ChatFormatting.DARK_AQUA))));
+      labelItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" to return to the altar").withStyle(ChatFormatting.BLUE)))));
       setSlot(4,labelItem);
       
       GuiElementBuilder newItem = new GuiElementBuilder(Items.WRITABLE_BOOK).hideDefaultTooltip();
-      newItem.setName((Text.literal("")
-            .append(Text.literal("New Destination").formatted(Formatting.DARK_AQUA))));
-      newItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" to add a new destination").formatted(Formatting.BLUE)))));
+      newItem.setName((Component.literal("")
+            .append(Component.literal("New Destination").withStyle(ChatFormatting.DARK_AQUA))));
+      newItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+            .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" to add a new destination").withStyle(ChatFormatting.BLUE)))));
       setSlot(49,newItem);
       
       if(numPages > 1){
          GuiElementBuilder nextArrow = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
-         nextArrow.setName((Text.literal("")
-               .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
-         nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+         nextArrow.setName((Component.literal("")
+               .append(Component.literal("Next Page").withStyle(ChatFormatting.GOLD))));
+         nextArrow.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("("+page+" of "+numPages+")").withStyle(ChatFormatting.DARK_PURPLE)))));
          setSlot(53,nextArrow);
          
          GuiElementBuilder prevArrow = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
-         prevArrow.setName((Text.literal("")
-               .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
-         prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+         prevArrow.setName((Component.literal("")
+               .append(Component.literal("Prev Page").withStyle(ChatFormatting.GOLD))));
+         prevArrow.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("("+page+" of "+numPages+")").withStyle(ChatFormatting.DARK_PURPLE)))));
          setSlot(45,prevArrow);
       }
       
       GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.SORT)).hideDefaultTooltip();
-      sortBuilt.setName(Text.literal("Sort Destinations").formatted(Formatting.DARK_PURPLE));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(DestinationSort.getColoredLabel(sort))));
+      sortBuilt.setName(Component.literal("Sort Destinations").withStyle(ChatFormatting.DARK_PURPLE));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to change current sort type.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Right Click").withStyle(ChatFormatting.GREEN)).append(Component.literal(" to cycle sort backwards.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Shift Left Click").withStyle(ChatFormatting.YELLOW)).append(Component.literal(" to reset sort.").withStyle(ChatFormatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Sorting By: ").withStyle(ChatFormatting.AQUA)).append(DestinationSort.getColoredLabel(sort))));
       setSlot(0,sortBuilt);
       
       int k = (page-1)*28;
@@ -173,25 +172,25 @@ public class StarpathAltarChartsGui extends SimpleGui {
          for(int j = 0; j < 7; j++){
             if(k < destinations.size()){
                GuiElementBuilder destItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
-               destItem.setName(Text.literal(destinations.get(k).name()).formatted(Formatting.GOLD,Formatting.BOLD));
-               destItem.addLoreLine(TextUtils.removeItalics(Text.literal(destinations.get(k).getBlockCoords().toShortString()).formatted(Formatting.YELLOW)));
+               destItem.setName(Component.literal(destinations.get(k).name()).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+               destItem.addLoreLine(TextUtils.removeItalics(Component.literal(destinations.get(k).getBlockCoords().toShortString()).withStyle(ChatFormatting.YELLOW)));
                if(stargate){
-                  RegistryKey<World> dim = RegistryKey.of(RegistryKeys.WORLD, Identifier.of(destinations.get(k).dimension()));
+                  ResourceKey<Level> dim = ResourceKey.create(Registries.DIMENSION, Identifier.parse(destinations.get(k).dimension()));
                   if(dim == null){
-                     dim = blockEntity.getWorld().getRegistryKey();
+                     dim = blockEntity.getLevel().dimension();
                   }
-                  destItem.addLoreLine(Text.literal("Dimension: ").formatted(Formatting.YELLOW).append(ArcanaUtils.getFormattedDimName(dim)));
+                  destItem.addLoreLine(Component.literal("Dimension: ").withStyle(ChatFormatting.YELLOW).append(ArcanaUtils.getFormattedDimName(dim)));
                }
-               destItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-               destItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                     .append(Text.literal("Click").formatted(Formatting.AQUA))
-                     .append(Text.literal(" to select this destination").formatted(Formatting.BLUE)))));
-               destItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                     .append(Text.literal("Right Click").formatted(Formatting.GREEN))
-                     .append(Text.literal(" to rename this destination").formatted(Formatting.BLUE)))));
-               destItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                     .append(Text.literal("Shift Left Click").formatted(Formatting.RED))
-                     .append(Text.literal(" to delete this destination").formatted(Formatting.BLUE)))));
+               destItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+               destItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                     .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
+                     .append(Component.literal(" to select this destination").withStyle(ChatFormatting.BLUE)))));
+               destItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                     .append(Component.literal("Right Click").withStyle(ChatFormatting.GREEN))
+                     .append(Component.literal(" to rename this destination").withStyle(ChatFormatting.BLUE)))));
+               destItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                     .append(Component.literal("Shift Left Click").withStyle(ChatFormatting.RED))
+                     .append(Component.literal(" to delete this destination").withStyle(ChatFormatting.BLUE)))));
                setSlot((i*9+10)+j, destItem);
             }else{
                setSlot((i*9+10)+j,new GuiElementBuilder(Items.AIR));
@@ -205,8 +204,8 @@ public class StarpathAltarChartsGui extends SimpleGui {
    @Override
    public void onTick(){
       if(blockEntity != null){
-         World world = blockEntity.getWorld();
-         if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
+         Level world = blockEntity.getLevel();
+         if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
             this.close();
          }
       }
@@ -230,13 +229,13 @@ public class StarpathAltarChartsGui extends SimpleGui {
          this.label = label;
       }
       
-      public static Text getColoredLabel(DestinationSort sort){
-         MutableText text = Text.literal(sort.label);
+      public static Component getColoredLabel(DestinationSort sort){
+         MutableComponent text = Component.literal(sort.label);
          
          return switch(sort){
-            case CLOSEST -> text.formatted(Formatting.LIGHT_PURPLE);
-            case FURTHEST -> text.formatted(Formatting.DARK_PURPLE);
-            case ALPHABETICAL -> text.formatted(Formatting.GREEN);
+            case CLOSEST -> text.withStyle(ChatFormatting.LIGHT_PURPLE);
+            case FURTHEST -> text.withStyle(ChatFormatting.DARK_PURPLE);
+            case ALPHABETICAL -> text.withStyle(ChatFormatting.GREEN);
          };
       }
       

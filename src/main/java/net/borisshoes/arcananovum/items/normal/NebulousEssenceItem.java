@@ -8,13 +8,13 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class NebulousEssenceItem extends NormalPolymerItem {
    
-   public NebulousEssenceItem(String id, net.minecraft.item.Item.Settings settings){
+   public NebulousEssenceItem(String id, net.minecraft.world.item.Item.Properties settings){
       super(id, settings);
    }
    
@@ -35,58 +35,58 @@ public class NebulousEssenceItem extends NormalPolymerItem {
    }
    
    @Override
-   public ItemStack getDefaultStack(){
-      ItemStack defStack = super.getDefaultStack();
-      defStack.set(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+".nebulous_essence").formatted(Formatting.DARK_PURPLE,Formatting.BOLD));
+   public ItemStack getDefaultInstance(){
+      ItemStack defStack = super.getDefaultInstance();
+      defStack.set(DataComponents.ITEM_NAME, Component.translatable("item."+MOD_ID+".nebulous_essence").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
       return defStack;
    }
    
    @Override
-   public Text getName(ItemStack stack) {
-      return Text.translatable("item."+MOD_ID+".nebulous_essence").formatted(Formatting.DARK_PURPLE,Formatting.BOLD);
+   public Component getName(ItemStack stack) {
+      return Component.translatable("item."+MOD_ID+".nebulous_essence").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD);
    }
    
-   public static LoreComponent getDefaultLore(){
-      List<Text> loreList = new ArrayList<>();
-      loreList.add(Text.literal("")
-            .append(Text.literal("With precise ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("deconstruction").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(", an ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("amorphic essence").formatted(Formatting.AQUA))
-            .append(Text.literal(" has been ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("distilled").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("This ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("ethereal substance").formatted(Formatting.AQUA))
-            .append(Text.literal(" must be pure ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("enchantment ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Arcana").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
-      loreList.add(Text.literal("")
-            .append(Text.literal("It ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("pulses ").formatted(Formatting.AQUA))
-            .append(Text.literal("and ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("undulates").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(", changing in ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("color ").formatted(Formatting.AQUA))
-            .append(Text.literal("and ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("texture").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
-      return new LoreComponent(loreList.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new)));
+   public static ItemLore getDefaultLore(){
+      List<Component> loreList = new ArrayList<>();
+      loreList.add(Component.literal("")
+            .append(Component.literal("With precise ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("deconstruction").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(", an ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("amorphic essence").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" has been ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("distilled").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("This ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("ethereal substance").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" must be pure ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("enchantment ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Arcana").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
+      loreList.add(Component.literal("")
+            .append(Component.literal("It ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("pulses ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("undulates").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(", changing in ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("color ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("texture").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
+      return new ItemLore(loreList.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new)));
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
       ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
-            .withName(Text.literal("In Midnight Enchanter").formatted(Formatting.DARK_AQUA));
+            .withName(Component.literal("In Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA));
       ExplainIngredient m = new ExplainIngredient(ArcanaRegistry.MIDNIGHT_ENCHANTER.getItem(),1,"",false)
-            .withName(Text.literal("Midnight Enchanter").formatted(Formatting.DARK_AQUA, Formatting.BOLD))
-            .withLore(List.of(Text.literal("Disenchant an item using the Midnight Enchanter").formatted(Formatting.BLUE)));
+            .withName(Component.literal("Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Disenchant an item using the Midnight Enchanter").withStyle(ChatFormatting.BLUE)));
       ItemStack chestplate = new ItemStack(Items.DIAMOND_CHESTPLATE);
-      chestplate.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,true);
+      chestplate.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE,true);
       ExplainIngredient b = new ExplainIngredient(chestplate,1,"Enchanted Item", true)
-            .withName(Text.literal("Enchanted Item").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
-            .withLore(List.of(Text.literal("Better enchantments yield more Essence").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Enchanted Item").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE))
+            .withLore(List.of(Component.literal("Better enchantments yield more Essence").withStyle(ChatFormatting.DARK_PURPLE)));
       
       ExplainIngredient[][] ingredients = {
             {a,a,a,a,a},
@@ -95,6 +95,6 @@ public class NebulousEssenceItem extends NormalPolymerItem {
             {a,a,m,a,a},
             {a,a,a,a,a}};
       
-      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getTranslationKey()), new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()), new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE), new ExplainRecipe(ingredients));
    }
 }

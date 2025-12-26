@@ -10,16 +10,15 @@ import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,7 +26,7 @@ public class ArcanistsBeltGui extends SimpleGui {
    
    private final ArcanistsBelt belt;
    private final ItemStack beltStack;
-   private SimpleInventory inv;
+   private SimpleContainer inv;
    private final int slotCount;
    
    /**
@@ -36,30 +35,30 @@ public class ArcanistsBeltGui extends SimpleGui {
     * @param player                the player to server this gui to
     *                              will be treated as slots of this gui
     */
-   public ArcanistsBeltGui(ServerPlayerEntity player, ArcanistsBelt belt, ItemStack beltStack, int slotCount){
-      super(ScreenHandlerType.GENERIC_9X1, player, false);
+   public ArcanistsBeltGui(ServerPlayer player, ArcanistsBelt belt, ItemStack beltStack, int slotCount){
+      super(MenuType.GENERIC_9x1, player, false);
       this.belt = belt;
       this.beltStack = beltStack;
       this.slotCount = slotCount;
    }
    
    public void build(){
-      inv = new SimpleInventory(9);
-      for(int i = 0; i < inv.size(); i++){
+      inv = new SimpleContainer(9);
+      for(int i = 0; i < inv.getContainerSize(); i++){
          if(i < slotCount){
             setSlotRedirect(i, new ArcanistsBeltSlot(inv,i,i,0));
          }else{
             setSlot(i,GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL))
-                  .setName(Text.literal("Slot Locked").formatted(Formatting.DARK_PURPLE))
-                  .addLoreLine(TextUtils.removeItalics(Text.literal("")
-                        .append(Text.literal("Unlock this slot with Augments").formatted(Formatting.LIGHT_PURPLE)))));
+                  .setName(Component.literal("Slot Locked").withStyle(ChatFormatting.DARK_PURPLE))
+                  .addLoreLine(TextUtils.removeItalics(Component.literal("")
+                        .append(Component.literal("Unlock this slot with Augments").withStyle(ChatFormatting.LIGHT_PURPLE)))));
          }
       }
       
-      ContainerComponent beltItems = beltStack.getOrDefault(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT);
+      ItemContainerContents beltItems = beltStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
       beltItems.stream().forEachOrdered(stack -> {
-         inv.setStack(i.get(),stack);
+         inv.setItem(i.get(),stack);
          i.getAndIncrement();
       });
       
@@ -67,13 +66,13 @@ public class ArcanistsBeltGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
-      if(type == ClickType.OFFHAND_SWAP || action == SlotActionType.SWAP){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
+      if(type == ClickType.OFFHAND_SWAP || action == net.minecraft.world.inventory.ClickType.SWAP){
          close();
       }else if(index > 9){
          int invSlot = index >= 36 ? index - 36 : index;
-         ItemStack stack = player.getInventory().getStack(invSlot);
-         if(ItemStack.areItemsAndComponentsEqual(beltStack,stack)){
+         ItemStack stack = player.getInventory().getItem(invSlot);
+         if(ItemStack.isSameItemSameComponents(beltStack,stack)){
             close();
             return false;
          }
@@ -84,17 +83,17 @@ public class ArcanistsBeltGui extends SimpleGui {
    
    @Override
    public void onClose(){
-      DefaultedList<ItemStack> items = DefaultedList.ofSize(9,ItemStack.EMPTY);
+      NonNullList<ItemStack> items = NonNullList.withSize(9, ItemStack.EMPTY);
       int charmCount = 0;
-      for(int i = 0; i < inv.size(); i++){
-         ItemStack itemStack = inv.getStack(i);
+      for(int i = 0; i < inv.getContainerSize(); i++){
+         ItemStack itemStack = inv.getItem(i);
          if(itemStack.isEmpty()) continue;
          items.set(i, itemStack);
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(itemStack);
          if(arcanaItem != null && arcanaItem.hasCategory(TomeGui.TomeFilter.CHARMS)) charmCount++;
       }
-      beltStack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(items));
-      belt.buildItemLore(beltStack,player.getEntityWorld().getServer());
+      beltStack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(items));
+      belt.buildItemLore(beltStack,player.level().getServer());
       
       if(charmCount >= slotCount){
          ArcanaAchievements.grant(player,ArcanaAchievements.BELT_CHARMING.id);

@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -11,10 +11,10 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface EntityAccessor {
    
    @Invoker
-   public void callSetWorld(World world);
+   public void callSetLevel(Level world);
    
    @Accessor
-   static TrackedData<Boolean> getNO_GRAVITY(){
+   static EntityDataAccessor<Boolean> getDATA_NO_GRAVITY(){
       throw new UnsupportedOperationException();
    }
 }

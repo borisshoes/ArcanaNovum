@@ -4,37 +4,37 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.condition.LootCondition;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.function.ConditionalLootFunction;
-import net.minecraft.loot.function.LootFunctionType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.List;
 
-public class FoundArcanaItemLootFunction extends ConditionalLootFunction {
+public class FoundArcanaItemLootFunction extends LootItemConditionalFunction {
    
    public static final MapCodec<FoundArcanaItemLootFunction> CODEC = RecordCodecBuilder.mapCodec(
-         instance -> addConditionsField(instance).apply(instance, FoundArcanaItemLootFunction::new)
+         instance -> commonFields(instance).apply(instance, FoundArcanaItemLootFunction::new)
    );
    
    
-   protected FoundArcanaItemLootFunction(List<LootCondition> conditions){
+   protected FoundArcanaItemLootFunction(List<LootItemCondition> conditions){
       super(conditions);
    }
    
    @SuppressWarnings("unchecked")
    @Override
-   public LootFunctionType<? extends ConditionalLootFunction> getType(){
-      return (LootFunctionType<FoundArcanaItemLootFunction>) ArcanaRegistry.FOUND_ARCANA_ITEM_LOOT_FUNCTION;
+   public LootItemFunctionType<? extends LootItemConditionalFunction> getType(){
+      return (LootItemFunctionType<FoundArcanaItemLootFunction>) ArcanaRegistry.FOUND_ARCANA_ITEM_LOOT_FUNCTION;
    }
    
    @Override
-   protected ItemStack process(ItemStack stack, LootContext context){
+   protected ItemStack run(ItemStack stack, LootContext context){
       for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
-         if(stack.isOf(arcanaItem.getItem())){
-            stack = arcanaItem.addCrafter(arcanaItem.getNewItem(),null,2,context.getWorld().getServer());
-            arcanaItem.buildItemLore(stack,context.getWorld().getServer());
+         if(stack.is(arcanaItem.getItem())){
+            stack = arcanaItem.addCrafter(arcanaItem.getNewItem(),null,2,context.getLevel().getServer());
+            arcanaItem.buildItemLore(stack,context.getLevel().getServer());
             return stack;
          }
       }

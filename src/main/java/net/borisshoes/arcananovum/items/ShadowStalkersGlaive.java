@@ -21,41 +21,35 @@ import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttackRangeComponent;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.component.type.WeaponComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.component.AttackRange;
+import net.minecraft.world.item.component.Weapon;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -79,54 +73,54 @@ public class ShadowStalkersGlaive extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_SWORD;
       item = new ShadowStalkersGlaiveItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_SWORD,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.ADVANCEMENT_KILL_A_MOB,ResearchTasks.UNLOCK_STELLAR_CORE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_SWORD,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.ADVANCEMENT_KILL_A_MOB,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,TETHER_TIME_TAG,-1);
       putProperty(stack,TETHER_TARGET_TAG,"");
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("blade ").formatted(Formatting.GRAY))
-            .append(Text.literal("lets you move through your opponents ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("shadow").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("blade ").formatted(Formatting.GRAY))
-            .append(Text.literal("stores the ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("blood ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("from every strike and uses it as ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("energy").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Stride ").formatted(Formatting.AQUA))
-            .append(Text.literal("through the ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("darkness ").formatted(Formatting.BLUE))
-            .append(Text.literal("behind your opponent or ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("blink forward").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.GRAY))
-            .append(Text.literal(" to ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("teleport ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("behind ").formatted(Formatting.BLUE))
-            .append(Text.literal("your most recently attacked foe.").formatted(Formatting.DARK_GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right Click").formatted(Formatting.GRAY))
-            .append(Text.literal(" to ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("teleport ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("a ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("short distance").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("This ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("blade ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("lets you move through your opponents ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("shadow").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("blade ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("stores the ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("blood ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("from every strike and uses it as ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("energy").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Stride ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("through the ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("darkness ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("behind your opponent or ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("blink forward").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("teleport ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("behind ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("your most recently attacked foe.").withStyle(ChatFormatting.DARK_GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right Click").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("teleport ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("a ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("short distance").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -145,20 +139,20 @@ public class ShadowStalkersGlaive extends EnergyItem {
       return buildItemLore(newStack,server);
    }
    
-   public void entityAttacked(PlayerEntity player, ItemStack stack, Entity entity){
-      if(entity instanceof MobEntity || entity instanceof PlayerEntity){
-         putProperty(stack,TETHER_TARGET_TAG,entity.getUuidAsString());
+   public void entityAttacked(Player player, ItemStack stack, Entity entity){
+      if(entity instanceof Mob || entity instanceof Player){
+         putProperty(stack,TETHER_TARGET_TAG,entity.getStringUUID());
          putProperty(stack,TETHER_TIME_TAG,60);
       }
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack toolStack = inv.getStack(12); // Should be the Sword
+   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
+      ItemStack toolStack = inv.getItem(12); // Should be the Sword
       ItemStack newArcanaItem = getNewItem();
       
-      if(toolStack.hasEnchantments()){
-         EnchantmentHelper.set(newArcanaItem,toolStack.getEnchantments());
+      if(toolStack.isEnchanted()){
+         EnchantmentHelper.setEnchantments(newArcanaItem,toolStack.getEnchantments());
       }
       
       if(hasProperty(toolStack,EnhancedStatUtils.ENHANCED_STAT_TAG)){
@@ -187,40 +181,40 @@ public class ShadowStalkersGlaive extends EnergyItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Blade was forged to mimic the power of Endermen to teleport and relentlessly pursue foes. However, instead of using Ender particles to warp through dimensions, this Glaive  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nrelies on a mechanism I came up with after my studies in the Nether. Using the Glaive lets me fall through the shadows and emerge elsewhere. The feeling is far different from Ender-based teleportation, such as ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nan Ender Pearl. \n\nBlood that is spilled on the Glaive gets soaked up by its shadowy surface.\nStriking and killing foes grants Glaive Charges.\n\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nSneak Use consumes one Charge to blink forward and emerge from the shadows 10 blocks in the direction of my gaze. \n\nThe Glaive remembers the last target it struck, and Using the ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nGlaive consumes four Charges to emerge behind the target.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("  Shadow Stalkers\n       Glaive").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis Blade was forged to mimic the power of Endermen to teleport and relentlessly pursue foes. However, instead of using Ender particles to warp through dimensions, this Glaive  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Shadow Stalkers\n       Glaive").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nrelies on a mechanism I came up with after my studies in the Nether. Using the Glaive lets me fall through the shadows and emerge elsewhere. The feeling is far different from Ender-based teleportation, such as ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Shadow Stalkers\n       Glaive").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nan Ender Pearl. \n\nBlood that is spilled on the Glaive gets soaked up by its shadowy surface.\nStriking and killing foes grants Glaive Charges.\n\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Shadow Stalkers\n       Glaive").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nSneak Use consumes one Charge to blink forward and emerge from the shadows 10 blocks in the direction of my gaze. \n\nThe Glaive remembers the last target it struck, and Using the ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Shadow Stalkers\n       Glaive").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nGlaive consumes four Charges to emerge behind the target.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class ShadowStalkersGlaiveItem extends ArcanaPolymerItem {
       public ShadowStalkersGlaiveItem(){
          super(getThis(), getEquipmentArcanaItemComponents()
-               .component(DataComponentTypes.ATTACK_RANGE, new AttackRangeComponent(0.5f,3.75f,0.5f,5.75f,0.075f,0.8f))
+               .component(DataComponents.ATTACK_RANGE, new AttackRange(0.5f,3.75f,0.5f,5.75f,0.075f,0.8f))
                .sword(ToolMaterial.NETHERITE, 3.0F, -2.4F)
-               .component(DataComponentTypes.WEAPON, new WeaponComponent(1,0.75f))
+               .component(DataComponents.WEAPON, new Weapon(1,0.75f))
          );
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
-         if(world.getServer().getTicks() % (20) == 0){
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(world.getServer().getTickCount() % (20) == 0){
             
             String targetID = getStringProperty(stack,TETHER_TARGET_TAG);
             if(targetID != null && !targetID.isEmpty()){
-               Entity target = player.getEntityWorld().getEntity(AlgoUtils.getUUID(targetID));
-               if(target == null || !target.isAlive() || player.getEntityWorld().getRegistryKey() != target.getEntityWorld().getRegistryKey()){
+               Entity target = player.level().getEntity(AlgoUtils.getUUID(targetID));
+               if(target == null || !target.isAlive() || player.level().dimension() != target.level().dimension()){
                   putProperty(stack,TETHER_TIME_TAG,-1);
                   putProperty(stack,TETHER_TARGET_TAG,"");
                }
@@ -234,7 +228,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                putProperty(stack,TETHER_TARGET_TAG,"");
             }
             
-            if(world.getServer().getTicks() % (100) == 0){
+            if(world.getServer().getTickCount() % (100) == 0){
                int energy = getEnergy(stack);
                boolean recharge = false;
                if(energy < 20){
@@ -249,45 +243,45 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   for(int i = 1; i <= 5; i++){
                      message.append(getEnergy(stack) >= i * 20 ? "✦ " : "✧ ");
                   }
-                  player.sendMessage(Text.literal(message.toString()).withColor(ArcanaColors.NUL_COLOR), true);
+                  player.displayClientMessage(Component.literal(message.toString()).withColor(ArcanaColors.NUL_COLOR), true);
                }
             }
          }
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player))
-            return ActionResult.PASS;
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player))
+            return InteractionResult.PASS;
          
          int energy = getEnergy(stack);
          String tetherTarget = getStringProperty(stack,TETHER_TARGET_TAG);
          
-         if(tetherTarget != null && !tetherTarget.isEmpty() && !player.isSneaking()){
+         if(tetherTarget != null && !tetherTarget.isEmpty() && !player.isShiftKeyDown()){
             if(energy >= 80){
-               Entity target = player.getEntityWorld().getEntity(AlgoUtils.getUUID(tetherTarget));
-               if(target == null || !target.isAlive() || player.getEntityWorld().getRegistryKey() != target.getEntityWorld().getRegistryKey()){
-                  player.sendMessage(Text.literal("The Glaive Has No Target").withColor(ArcanaColors.NUL_COLOR),true);
+               Entity target = player.level().getEntity(AlgoUtils.getUUID(tetherTarget));
+               if(target == null || !target.isAlive() || player.level().dimension() != target.level().dimension()){
+                  player.displayClientMessage(Component.literal("The Glaive Has No Target").withColor(ArcanaColors.NUL_COLOR),true);
                }else{
-                  Vec3d targetPos = target.getEntityPos();
-                  Vec3d targetView = target.getRotationVecClient();
-                  Vec3d tpPos = targetPos.add(targetView.multiply(-1.5,0,-1.5));
+                  Vec3 targetPos = target.position();
+                  Vec3 targetView = target.getForward();
+                  Vec3 tpPos = targetPos.add(targetView.multiply(-1.5,0,-1.5));
                   
-                  ArcanaEffectUtils.shadowGlaiveTp(player.getEntityWorld(),player);
-                  player.teleportTo(new TeleportTarget(player.getEntityWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, target.getYaw(),target.getPitch(), TeleportTarget.NO_OP));
-                  ArcanaEffectUtils.shadowGlaiveTp(player.getEntityWorld(),player);
-                  SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
+                  ArcanaEffectUtils.shadowGlaiveTp(player.level(),player);
+                  player.teleport(new TeleportTransition(player.level(),tpPos.add(0,0.25,0), Vec3.ZERO, target.getYRot(),target.getXRot(), TeleportTransition.DO_NOTHING));
+                  ArcanaEffectUtils.shadowGlaiveTp(player.level(),player);
+                  SoundUtils.playSound(world,player.blockPosition(), SoundEvents.ILLUSIONER_CAST_SPELL, SoundSource.PLAYERS,.8f,.8f);
                   addEnergy(stack,-80);
                   String message = "Glaive Charges: ";
                   for(int i=1; i<=5; i++){
                      message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                   }
-                  player.sendMessage(Text.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
+                  player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
                   ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
                   
-                  if(target instanceof ServerPlayerEntity || target instanceof WardenEntity) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,0);
-                  if(target instanceof MobEntity){
+                  if(target instanceof ServerPlayer || target instanceof Warden) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,0);
+                  if(target instanceof Mob){
                      if(ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id)){
                         if(ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY.id) % 2 == 1){
                            ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,1);
@@ -299,48 +293,48 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   
                   int blindDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PARANOIA.id))];
                   int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE.id))];
-                  StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
-                  player.addStatusEffect(invis);
+                  MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
+                  player.addEffect(invis);
                   if(target instanceof LivingEntity living){
-                     StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, blindDur, 5, false, true, true);
-                     living.addStatusEffect(blind);
+                     MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, blindDur, 5, false, true, true);
+                     living.addEffect(blind);
                   }
                   
-                  return ActionResult.SUCCESS_SERVER;
+                  return InteractionResult.SUCCESS_SERVER;
                }
             }else{
-               player.sendMessage(Text.literal("The Glaive Needs At Least 4 Charges").withColor(ArcanaColors.NUL_COLOR),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
+               player.displayClientMessage(Component.literal("The Glaive Needs At Least 4 Charges").withColor(ArcanaColors.NUL_COLOR),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
             }
-         }else if(player.isSneaking()){
+         }else if(player.isShiftKeyDown()){
             if(energy >= 20){
-               Vec3d playerPos = player.getEntityPos();
-               Vec3d view = player.getRotationVecClient();
-               Vec3d tpPos = playerPos.add(view.multiply(teleportLength));
+               Vec3 playerPos = player.position();
+               Vec3 view = player.getForward();
+               Vec3 tpPos = playerPos.add(view.scale(teleportLength));
                
-               ArcanaEffectUtils.shadowGlaiveTp(player.getEntityWorld(),player);
-               player.teleportTo(new TeleportTarget(player.getEntityWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.NO_OP));
-               ArcanaEffectUtils.shadowGlaiveTp(player.getEntityWorld(),player);
-               SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
+               ArcanaEffectUtils.shadowGlaiveTp(player.level(),player);
+               player.teleport(new TeleportTransition(player.level(),tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(),player.getXRot(), TeleportTransition.DO_NOTHING));
+               ArcanaEffectUtils.shadowGlaiveTp(player.level(),player);
+               SoundUtils.playSound(world,player.blockPosition(), SoundEvents.ILLUSIONER_CAST_SPELL, SoundSource.PLAYERS,.8f,.8f);
                addEnergy(stack,-20);
                String message = "Glaive Charges: ";
                for(int i=1; i<=5; i++){
                   message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                }
-               player.sendMessage(Text.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
+               player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
                
                int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE.id))];
-               StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
-               player.addStatusEffect(invis);
+               MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
+               player.addEffect(invis);
                
-               return ActionResult.SUCCESS_SERVER;
+               return InteractionResult.SUCCESS_SERVER;
             }else{
-               player.sendMessage(Text.literal("The Glaive Needs At Least 1 Charge").withColor(ArcanaColors.NUL_COLOR),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
+               player.displayClientMessage(Component.literal("The Glaive Needs At Least 1 Charge").withColor(ArcanaColors.NUL_COLOR),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
             }
          }
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
    }
 }

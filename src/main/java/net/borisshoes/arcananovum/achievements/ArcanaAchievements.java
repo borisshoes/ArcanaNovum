@@ -4,10 +4,10 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.*;
 
@@ -722,10 +722,10 @@ public class ArcanaAchievements {
          new ConditionalsAchievement("Kill Them All!", "kill_them_all", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.SPEAR_OF_TENBROUS, 2500, 2,
                new String[]{"Use the Spear to kill one of each End mob"},
                new String[]{
-                     EntityType.ENDERMAN.getName().getString(),
-                     EntityType.ENDERMITE.getName().getString(),
-                     EntityType.SHULKER.getName().getString(),
-                     EntityType.ENDER_DRAGON.getName().getString()
+                     EntityType.ENDERMAN.getDescription().getString(),
+                     EntityType.ENDERMITE.getDescription().getString(),
+                     EntityType.SHULKER.getDescription().getString(),
+                     EntityType.ENDER_DRAGON.getDescription().getString()
                }
          ));
    public static final ArcanaAchievement HISTORY_CARVED_IN_STONE = ArcanaAchievements.register(
@@ -758,11 +758,11 @@ public class ArcanaAchievements {
       return achs;
    }
    
-   public static void grant(ServerPlayerEntity player, ArcanaAchievement achievement){
+   public static void grant(ServerPlayer player, ArcanaAchievement achievement){
       grant(player,achievement.id);
    }
    
-   public static void grant(ServerPlayerEntity player, String id){
+   public static void grant(ServerPlayer player, String id){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
@@ -823,7 +823,7 @@ public class ArcanaAchievements {
       }
    }
    
-   public static void setCondition(ServerPlayerEntity player, String id, String condition, boolean set){
+   public static void setCondition(ServerPlayer player, String id, String condition, boolean set){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ConditionalsAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
@@ -844,11 +844,11 @@ public class ArcanaAchievements {
       }
    }
    
-   public static void progress(ServerPlayerEntity player, ArcanaAchievement ach, int toAdd){
+   public static void progress(ServerPlayer player, ArcanaAchievement ach, int toAdd){
       progress(player,ach.id,toAdd);
    }
    
-   public static void progress(ServerPlayerEntity player, String id, int toAdd){
+   public static void progress(ServerPlayer player, String id, int toAdd){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
@@ -885,7 +885,7 @@ public class ArcanaAchievements {
       }
    }
    
-   public static int getProgress(ServerPlayerEntity player, String id){
+   public static int getProgress(ServerPlayer player, String id){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
@@ -907,7 +907,7 @@ public class ArcanaAchievements {
       return -1;
    }
    
-   public static void revoke(ServerPlayerEntity player, String id){
+   public static void revoke(ServerPlayer player, String id){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       ArcanaAchievement achieve = registry.get(id);
       if(achieve != null){
@@ -915,7 +915,7 @@ public class ArcanaAchievements {
       }
    }
    
-   public static void reset(ServerPlayerEntity player, String id){
+   public static void reset(ServerPlayer player, String id){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof TimedAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
@@ -928,7 +928,7 @@ public class ArcanaAchievements {
       }
    }
    
-   public static boolean isTimerActive(ServerPlayerEntity player, String id){
+   public static boolean isTimerActive(ServerPlayer player, String id){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof TimedAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();

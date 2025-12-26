@@ -8,36 +8,36 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.InventoryChangedListener;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerListener;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 
 import java.util.Optional;
 
-public class StarlightForgeInventoryListener implements InventoryChangedListener {
+public class StarlightForgeInventoryListener implements ContainerListener {
    private final StarlightForgeBlockEntity blockEntity;
-   private final World world;
+   private final Level world;
    private final StarlightForgeGui gui;
    private boolean updating = false;
    
-   public StarlightForgeInventoryListener(StarlightForgeGui gui, StarlightForgeBlockEntity blockEntity, World world, int mode){
+   public StarlightForgeInventoryListener(StarlightForgeGui gui, StarlightForgeBlockEntity blockEntity, Level world, int mode){
       this.blockEntity = blockEntity;
       this.gui = gui;
       this.world = world;
    }
    
    @Override
-   public void onInventoryChanged(Inventory inv){
+   public void containerChanged(Container inv){
       if(!updating){
          updating = true;
          //Check Valid Recipe, and update gui
@@ -54,51 +54,51 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
       updating = true;
    }
    
-   public ItemStack getEnhancedStack(Inventory inv){
-      if(!(world instanceof ServerWorld serverWorld)) return null;
-      DefaultedList<ItemStack> craftingStacks = DefaultedList.of();
+   public ItemStack getEnhancedStack(Container inv){
+      if(!(world instanceof ServerLevel serverWorld)) return null;
+      NonNullList<ItemStack> craftingStacks = NonNullList.create();
       boolean hasGold = true;
       boolean hasPaper = true;
       for(int i = 0; i < 9; i++){
-         craftingStacks.add(inv.getStack(i));
+         craftingStacks.add(inv.getItem(i));
          
          if(i == 4){
-            hasGold = inv.getStack(i).isOf(Items.GOLD_INGOT);
-         }else if(hasPaper && !inv.getStack(i).isOf(ArcanaRegistry.EXOTIC_ARCANE_PAPER)){
+            hasGold = inv.getItem(i).is(Items.GOLD_INGOT);
+         }else if(hasPaper && !inv.getItem(i).is(ArcanaRegistry.EXOTIC_ARCANE_PAPER)){
             hasPaper = false;
          }
       }
       
-      CraftingRecipeInput input = CraftingRecipeInput.create(3,3,craftingStacks);
-      Optional<RecipeEntry<CraftingRecipe>> optional = serverWorld.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,input,world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().craft(input,world.getRegistryManager()))){
-         return optional.get().value().craft(input,world.getRegistryManager()).copy();
+      CraftingInput input = CraftingInput.of(3,3,craftingStacks);
+      Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING,input,world);
+      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input,world.registryAccess()))){
+         return optional.get().value().assemble(input,world.registryAccess()).copy();
       }
       
       return hasGold && hasPaper ? new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER) : ItemStack.EMPTY;
    }
    
-   public DefaultedList<ItemStack> getRemainders(Inventory inv){
-      if(!(world instanceof ServerWorld serverWorld)) return DefaultedList.of();
-      DefaultedList<ItemStack> remainders = DefaultedList.of();
-      DefaultedList<ItemStack> craftingStacks = DefaultedList.of();
+   public NonNullList<ItemStack> getRemainders(Container inv){
+      if(!(world instanceof ServerLevel serverWorld)) return NonNullList.create();
+      NonNullList<ItemStack> remainders = NonNullList.create();
+      NonNullList<ItemStack> craftingStacks = NonNullList.create();
       for(int i = 0; i < 9; i++){
-         craftingStacks.add(inv.getStack(i));
+         craftingStacks.add(inv.getItem(i));
       }
-      CraftingRecipeInput input = CraftingRecipeInput.create(3,3,craftingStacks);
-      Optional<RecipeEntry<CraftingRecipe>> optional = serverWorld.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,input,world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().craft(input,world.getRegistryManager()))){
-         return optional.get().value().getRecipeRemainders(input);
+      CraftingInput input = CraftingInput.of(3,3,craftingStacks);
+      Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING,input,world);
+      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input,world.registryAccess()))){
+         return optional.get().value().getRemainingItems(input);
       }
       return remainders;
    }
    
-   public void validRecipe(Inventory inv){
+   public void validRecipe(Container inv){
       if(gui.getMode() == 1){
          ItemStack[][] curItems = new ItemStack[5][5];
          for(int i = 0; i < 5; i++){
             for(int j = 0; j < 5; j++){
-               curItems[i][j] = inv.getStack(i * 5 + j);
+               curItems[i][j] = inv.getItem(i * 5 + j);
             }
          }
          ArcanaItem matchedItem = null;
@@ -113,40 +113,40 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
          }
          if(matchedItem == null){
             GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
-            table.setName(Text.literal("Forge Item").formatted(Formatting.DARK_PURPLE));
-            table.addLoreLine(TextUtils.removeItalics(Text.literal("")
-                  .append(Text.literal("Click Here").formatted(Formatting.GREEN))
-                  .append(Text.literal(" to forge an Arcana Item once a recipe is loaded!").formatted(Formatting.LIGHT_PURPLE))));
-            table.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-            table.addLoreLine(TextUtils.removeItalics(Text.literal("This slot will show an Arcana Item once a valid recipe is loaded.").formatted(Formatting.ITALIC,Formatting.AQUA)));
+            table.setName(Component.literal("Forge Item").withStyle(ChatFormatting.DARK_PURPLE));
+            table.addLoreLine(TextUtils.removeItalics(Component.literal("")
+                  .append(Component.literal("Click Here").withStyle(ChatFormatting.GREEN))
+                  .append(Component.literal(" to forge an Arcana Item once a recipe is loaded!").withStyle(ChatFormatting.LIGHT_PURPLE))));
+            table.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+            table.addLoreLine(TextUtils.removeItalics(Component.literal("This slot will show an Arcana Item once a valid recipe is loaded.").withStyle(ChatFormatting.ITALIC, ChatFormatting.AQUA)));
             gui.setSlot(25, table);
          }else{
-            gui.setSlot(25, GuiElementBuilder.from(matchedItem.getPrefItem()).addLoreLine(Text.literal("")).addLoreLine(TextUtils.removeItalics(Text.literal("Click to Forge!").formatted(Formatting.AQUA, Formatting.BOLD))).glow());
+            gui.setSlot(25, GuiElementBuilder.from(matchedItem.getPrefItem()).addLoreLine(Component.literal("")).addLoreLine(TextUtils.removeItalics(Component.literal("Click to Forge!").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))).glow());
          }
       }else if(gui.getMode() == 2 && world != null){
          ItemStack output = MinecraftUtils.removeLore(getEnhancedStack(inv).copy());
          
          if(!output.isEmpty()){
             GuiElementBuilder craftingItem = GuiElementBuilder.from(output).hideDefaultTooltip();
-            craftingItem.setName((Text.literal("")
-                  .append(Text.literal("Forge Item").formatted(Formatting.AQUA))));
-            craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("Click Here ").formatted(Formatting.GREEN))
-                  .append(Text.literal("to begin forging this ").formatted(Formatting.DARK_AQUA))
-                  .append(Text.translatable(output.getItem().getTranslationKey()).formatted(Formatting.YELLOW))
-                  .append(Text.literal("!").formatted(Formatting.DARK_AQUA)))));
+            craftingItem.setName((Component.literal("")
+                  .append(Component.literal("Forge Item").withStyle(ChatFormatting.AQUA))));
+            craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                  .append(Component.literal("Click Here ").withStyle(ChatFormatting.GREEN))
+                  .append(Component.literal("to begin forging this ").withStyle(ChatFormatting.DARK_AQUA))
+                  .append(Component.translatable(output.getItem().getDescriptionId()).withStyle(ChatFormatting.YELLOW))
+                  .append(Component.literal("!").withStyle(ChatFormatting.DARK_AQUA)))));
             gui.setSlot(15,craftingItem);
          }else{
             GuiElementBuilder craftingItem = new GuiElementBuilder(Items.CRAFTING_TABLE);
-            craftingItem.setName((Text.literal("")
-                  .append(Text.literal("Forge Item").formatted(Formatting.AQUA))));
-            craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("Click Here ").formatted(Formatting.GREEN))
-                  .append(Text.literal("to forge an item once a recipe is loaded!").formatted(Formatting.DARK_AQUA)))));
-            craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("").formatted(Formatting.DARK_AQUA)))));
-            craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("This slot will show an item once a valid recipe is loaded.").formatted(Formatting.LIGHT_PURPLE)))));
+            craftingItem.setName((Component.literal("")
+                  .append(Component.literal("Forge Item").withStyle(ChatFormatting.AQUA))));
+            craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                  .append(Component.literal("Click Here ").withStyle(ChatFormatting.GREEN))
+                  .append(Component.literal("to forge an item once a recipe is loaded!").withStyle(ChatFormatting.DARK_AQUA)))));
+            craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                  .append(Component.literal("").withStyle(ChatFormatting.DARK_AQUA)))));
+            craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                  .append(Component.literal("This slot will show an item once a valid recipe is loaded.").withStyle(ChatFormatting.LIGHT_PURPLE)))));
             gui.setSlot(15,craftingItem);
          }
       }

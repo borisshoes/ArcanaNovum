@@ -1,23 +1,23 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.MobSpawnerBlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(MobSpawnerBlockEntity.class)
-public class MobSpawnerBlockEntityMixin {
+@Mixin(SpawnerBlockEntity.class)
+public class SpawnerBlockEntityMixin {
 
-   @Inject(method="serverTick", at = @At(value="HEAD"), cancellable = true)
-   private static void arcananovum$infuseSpawner(World world, BlockPos pos, BlockState state, MobSpawnerBlockEntity blockEntity, CallbackInfo ci){
+   @Inject(method= "serverTick", at = @At(value="HEAD"), cancellable = true)
+   private static void arcananovum$infuseSpawner(Level world, BlockPos pos, BlockState state, SpawnerBlockEntity blockEntity, CallbackInfo ci){
       try{
-         BlockPos infuserPos = blockEntity.getPos().add(0,-2,0);
+         BlockPos infuserPos = blockEntity.getBlockPos().offset(0,-2,0);
          
          BlockState infuserState = world.getBlockState(infuserPos);
          BlockEntity be = world.getBlockEntity(infuserPos);

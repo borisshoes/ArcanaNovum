@@ -16,41 +16,41 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FluidDrainable;
-import net.minecraft.block.FluidFillable;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FlowableFluid;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BucketItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BucketPickup;
+import net.minecraft.world.level.block.LiquidBlockContainer;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -72,12 +72,12 @@ public class MagmaticEversource extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.LAVA_BUCKET;
       item = new MagmaticEversourceItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
-      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_LAVA_BUCKET,ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.UNLOCK_AQUATIC_EVERSOURCE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_LAVA_BUCKET,ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.UNLOCK_AQUATIC_EVERSOURCE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,MODE_TAG,0); // 0 place, 1 remove
       putProperty(stack,USES_TAG,1);
       setPrefStack(stack);
@@ -94,45 +94,45 @@ public class MagmaticEversource extends EnergyItem {
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Lava ").formatted(Formatting.GOLD))
-            .append(Text.literal("is harder to create than ").formatted(Formatting.RED))
-            .append(Text.literal("water").formatted(Formatting.BLUE))
-            .append(Text.literal(", luckily there's a ").formatted(Formatting.RED))
-            .append(Text.literal("dimension ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("made of it.").formatted(Formatting.RED)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Unfortunately, it takes ").formatted(Formatting.RED))
-            .append(Text.literal("time ").formatted(Formatting.BLUE))
-            .append(Text.literal("to pull ").formatted(Formatting.RED))
-            .append(Text.literal("lava ").formatted(Formatting.GOLD))
-            .append(Text.literal("between worlds.").formatted(Formatting.RED)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" to ").formatted(Formatting.RED))
-            .append(Text.literal("materialize ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("or ").formatted(Formatting.RED))
-            .append(Text.literal("dismiss ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("lava ").formatted(Formatting.GOLD))
-            .append(Text.literal("from the world.").formatted(Formatting.RED)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right Click").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" to switch between ").formatted(Formatting.RED))
-            .append(Text.literal("placing ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("and ").formatted(Formatting.RED))
-            .append(Text.literal("removing ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("lava").formatted(Formatting.GOLD))
-            .append(Text.literal(".").formatted(Formatting.RED)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Lava ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("is harder to create than ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("water").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(", luckily there's a ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("dimension ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("made of it.").withStyle(ChatFormatting.RED)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Unfortunately, it takes ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("time ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("to pull ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("lava ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("between worlds.").withStyle(ChatFormatting.RED)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("materialize ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("or ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("dismiss ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("lava ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("from the world.").withStyle(ChatFormatting.RED)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right Click").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" to switch between ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("placing ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("and ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("removing ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("lava").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(".").withStyle(ChatFormatting.RED)));
       
       if(itemStack != null && getMaxCharges(itemStack) > 1){
          int charges = getIntProperty(itemStack, USES_TAG);
-         lore.add(Text.literal(""));
-         lore.add(Text.literal("")
-               .append(Text.literal("Charges ").formatted(Formatting.GOLD))
-               .append(Text.literal("- ").formatted(Formatting.DARK_RED))
-               .append(Text.literal(""+charges).formatted(Formatting.RED)));
+         lore.add(Component.literal(""));
+         lore.add(Component.literal("")
+               .append(Component.literal("Charges ").withStyle(ChatFormatting.GOLD))
+               .append(Component.literal("- ").withStyle(ChatFormatting.DARK_RED))
+               .append(Component.literal(""+charges).withStyle(ChatFormatting.RED)));
       }
       
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
@@ -173,11 +173,11 @@ public class MagmaticEversource extends EnergyItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Magmatic\n    Eversource").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nMy inventory issue expands to lava as well as water. Unfortunately, there isn’t lava in the air I can pull from and condense.\nA different solution is in order: The Nether.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Magmatic\n    Eversource").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nA limitless realm of molten rock that I can pull from through a microscopic portal. The only downside is that it takes time to siphon lava through the portal. The Magmatic Eversource functions exactly like the Aquatic  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Magmatic\n    Eversource").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nEversource, however it takes time to recharge after creating lava.\n\nUsing the Eversource will generate or drain lava.\nSneak Using will switch the mode of the Eversource.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nMy inventory issue expands to lava as well as water. Unfortunately, there isn’t lava in the air I can pull from and condense.\nA different solution is in order: The Nether.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nA limitless realm of molten rock that I can pull from through a microscopic portal. The only downside is that it takes time to siphon lava through the portal. The Magmatic Eversource functions exactly like the Aquatic  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nEversource, however it takes time to recharge after creating lava.\n\nUsing the Eversource will generate or drain lava.\nSneak Using will switch the mode of the Eversource.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -187,7 +187,7 @@ public class MagmaticEversource extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
@@ -209,20 +209,20 @@ public class MagmaticEversource extends EnergyItem {
             }
          }
          
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld)) return;
-         if(world.getServer().getTicks() % 20 == 0){
+         if(!(world instanceof ServerLevel)) return;
+         if(world.getServer().getTickCount() % 20 == 0){
             int charges = getIntProperty(stack,USES_TAG);
             int maxCharges = getMaxCharges(stack);
             if(charges < maxCharges){
@@ -230,105 +230,105 @@ public class MagmaticEversource extends EnergyItem {
                if(getEnergy(stack) >= getMaxEnergy(stack)){
                   setEnergy(stack,0);
                   putProperty(stack,USES_TAG,charges+1);
-                  buildItemLore(stack, entity.getEntityWorld().getServer());
+                  buildItemLore(stack, entity.level().getServer());
                }
             }
          }
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          int mode = getIntProperty(stack,MODE_TAG);
          int charges = getIntProperty(stack,USES_TAG);
          
-         if(playerEntity.isSneaking()){
+         if(playerEntity.isShiftKeyDown()){
             int newMode = (mode+1) % 2;
             putProperty(stack,MODE_TAG,newMode);
             if(newMode == 1){
-               player.sendMessage(Text.literal("The Eversource Evaporates").formatted(Formatting.RED,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BUCKET_EMPTY_LAVA,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Evaporates").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_EMPTY_LAVA,1.0f,1.0f);
             }else{
-               player.sendMessage(Text.literal("The Eversource Condenses").formatted(Formatting.RED,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_FILL_LAVA,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Condenses").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL_LAVA,1.0f,1.0f);
             }
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
          
          if(mode != 1 && charges <= 0){
-            player.sendMessage(Text.literal("The Eversource is Recharging").formatted(Formatting.RED,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
-            return ActionResult.PASS;
+            player.displayClientMessage(Component.literal("The Eversource is Recharging").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
+            return InteractionResult.PASS;
          }
          
          Fluid fluid = mode == 1 ? Fluids.EMPTY : Fluids.LAVA;
          
-         BlockHitResult blockHitResult = BucketItem.raycast(world, playerEntity, fluid == Fluids.EMPTY ? RaycastContext.FluidHandling.SOURCE_ONLY : RaycastContext.FluidHandling.NONE);
+         BlockHitResult blockHitResult = BucketItem.getPlayerPOVHitResult(world, playerEntity, fluid == Fluids.EMPTY ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE);
          if(blockHitResult.getType() == HitResult.Type.MISS){
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
          }
          if(blockHitResult.getType() == HitResult.Type.BLOCK){
             BlockPos blockPos = blockHitResult.getBlockPos();
-            Direction direction = blockHitResult.getSide();
-            BlockPos blockPos2 = blockPos.offset(direction);
-            if(!world.canEntityModifyAt(playerEntity, blockPos) || !playerEntity.canPlaceOn(blockPos2, direction, stack)){
-               return ActionResult.FAIL;
+            Direction direction = blockHitResult.getDirection();
+            BlockPos blockPos2 = blockPos.relative(direction);
+            if(!world.mayInteract(playerEntity, blockPos) || !playerEntity.mayUseItemAt(blockPos2, direction, stack)){
+               return InteractionResult.FAIL;
             }
             if(fluid == Fluids.EMPTY){
-               FluidDrainable fluidDrainable;
+               BucketPickup fluidDrainable;
                BlockState blockState = world.getBlockState(blockPos);
                Block block = blockState.getBlock();
-               if(block instanceof FluidDrainable && !(fluidDrainable = (FluidDrainable) block).tryDrainFluid(playerEntity, world, blockPos, blockState).isEmpty()){
-                  playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
-                  fluidDrainable.getBucketFillSound().ifPresent(sound -> playerEntity.playSound(sound, 1.0f, 1.0f));
-                  world.emitGameEvent(playerEntity, GameEvent.FLUID_PICKUP, blockPos);
-                  return ActionResult.SUCCESS_SERVER;
+               if(block instanceof BucketPickup && !(fluidDrainable = (BucketPickup) block).pickupBlock(playerEntity, world, blockPos, blockState).isEmpty()){
+                  playerEntity.awardStat(Stats.ITEM_USED.get(this));
+                  fluidDrainable.getPickupSound().ifPresent(sound -> playerEntity.playSound(sound, 1.0f, 1.0f));
+                  world.gameEvent(playerEntity, GameEvent.FLUID_PICKUP, blockPos);
+                  return InteractionResult.SUCCESS_SERVER;
                }
-               return ActionResult.FAIL;
+               return InteractionResult.FAIL;
             }
             BlockState blockState = world.getBlockState(blockPos);
-            BlockPos blockPos3 = blockState.getBlock() instanceof FluidFillable ? blockPos : blockPos2;
+            BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer ? blockPos : blockPos2;
             if(placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult)){
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MAGMATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.HELLGATE.id,1);
                putProperty(stack,USES_TAG,charges-1);
-               buildItemLore(stack, playerEntity.getEntityWorld().getServer());
-               playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
-               return ActionResult.SUCCESS_SERVER;
+               buildItemLore(stack, playerEntity.level().getServer());
+               playerEntity.awardStat(Stats.ITEM_USED.get(this));
+               return InteractionResult.SUCCESS_SERVER;
             }
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
          }
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
       
       
-      public boolean placeFluid(Fluid fluid, @Nullable PlayerEntity player, World world, BlockPos pos, @Nullable BlockHitResult hitResult){
+      public boolean placeFluid(Fluid fluid, @Nullable Player player, Level world, BlockPos pos, @Nullable BlockHitResult hitResult){
          boolean bl2;
-         if(!(fluid instanceof FlowableFluid flowableFluid)){
+         if(!(fluid instanceof FlowingFluid flowableFluid)){
             return false;
          }
          BlockState blockState = world.getBlockState(pos);
          Block block = blockState.getBlock();
-         boolean bl = blockState.canBucketPlace(fluid);
-         bl2 = blockState.isAir() || bl || block instanceof FluidFillable && ((FluidFillable) block).canFillWithFluid(player, world, pos, blockState, fluid);
+         boolean bl = blockState.canBeReplaced(fluid);
+         bl2 = blockState.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, pos, blockState, fluid);
          if(!bl2){
-            return hitResult != null && placeFluid(fluid,player, world, hitResult.getBlockPos().offset(hitResult.getSide()), null);
+            return hitResult != null && placeFluid(fluid,player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null);
          }
-         if(block instanceof FluidFillable fluidFillable){
+         if(block instanceof LiquidBlockContainer fluidFillable){
             if(fluid == Fluids.LAVA){
-               fluidFillable.tryFillWithFluid(world, pos, blockState, flowableFluid.getStill(false));
-               world.playSound(player, pos, SoundEvents.ITEM_BUCKET_EMPTY_LAVA, SoundCategory.BLOCKS, 1.0f, 1.0f);
-               world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos);
+               fluidFillable.placeLiquid(world, pos, blockState, flowableFluid.getSource(false));
+               world.playSound(player, pos, SoundEvents.BUCKET_EMPTY_LAVA, SoundSource.BLOCKS, 1.0f, 1.0f);
+               world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
                return true;
             }
          }
-         if(!world.isClient() && bl && !blockState.isLiquid()){
-            world.breakBlock(pos, true);
+         if(!world.isClientSide() && bl && !blockState.liquid()){
+            world.destroyBlock(pos, true);
          }
-         if(world.setBlockState(pos, fluid.getDefaultState().getBlockState(), Block.NOTIFY_ALL_AND_REDRAW) || blockState.getFluidState().isStill()){
-            world.playSound(player, pos, SoundEvents.ITEM_BUCKET_EMPTY_LAVA, SoundCategory.BLOCKS, 1.0f, 1.0f);
-            world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos);
+         if(world.setBlock(pos, fluid.defaultFluidState().createLegacyBlock(), Block.UPDATE_ALL_IMMEDIATE) || blockState.getFluidState().isSource()){
+            world.playSound(player, pos, SoundEvents.BUCKET_EMPTY_LAVA, SoundSource.BLOCKS, 1.0f, 1.0f);
+            world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
             return true;
          }
          return false;

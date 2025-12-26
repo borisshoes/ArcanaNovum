@@ -15,26 +15,26 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CarvedPumpkinBlock;
-import net.minecraft.block.pattern.BlockPattern;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CarvedPumpkinBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -55,77 +55,77 @@ public class DivineCatalyst extends ArcanaItem {
       itemVersion = 1;
       vanillaItem = Items.AMETHYST_CLUSTER;
       item = new DivineCatalystItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOVEREIGN_CATALYST,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOVEREIGN_CATALYST,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Augment ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Catalysts").formatted(Formatting.BLUE))
-            .append(Text.literal(" can be used to ").formatted(Formatting.GRAY))
-            .append(Text.literal("augment ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("your ").formatted(Formatting.GRAY))
-            .append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Augments ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("require more ").formatted(Formatting.GRAY))
-            .append(Text.literal("powerful ").formatted(Formatting.GREEN))
-            .append(Text.literal("Catalysts ").formatted(Formatting.BLUE))
-            .append(Text.literal("at higher levels").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Apply ").formatted(Formatting.GREEN))
-            .append(Text.literal("these ").formatted(Formatting.GRAY))
-            .append(Text.literal("Catalysts ").formatted(Formatting.BLUE))
-            .append(Text.literal("in the ").formatted(Formatting.GRAY))
-            .append(Text.literal("Tinkering Menu").formatted(Formatting.BLUE))
-            .append(Text.literal(" of a ").formatted(Formatting.GRAY))
-            .append(Text.literal("Twilight Anvil").formatted(Formatting.GREEN)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Augment ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("Catalysts").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" can be used to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("augment ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("your ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Arcana Items").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Augments ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("require more ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("powerful ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("Catalysts ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("at higher levels").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Apply ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("these ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Catalysts ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("in the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Tinkering Menu").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" of a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Twilight Anvil").withStyle(ChatFormatting.GREEN)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Text.literal("In World Recipe").formatted(Formatting.BLUE,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Build this in the World").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("In World Recipe").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Build this in the World").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient s = new ExplainIngredient(Items.SOUL_SAND,1,"Soul Sand or Soil")
-            .withName(Text.literal("Soul Sand or Soil").formatted(Formatting.GRAY,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Soul Sand or Soil").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient k = new ExplainIngredient(Items.WITHER_SKELETON_SKULL,1,"Wither Skeleton Skull")
-            .withName(Text.literal("Wither Skeleton Skull").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Wither Skeleton Skull").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient n = new ExplainIngredient(Items.NETHERITE_BLOCK,1,"Netherite Block")
-            .withName(Text.literal("Block of Netherite").formatted(Formatting.DARK_RED,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Block of Netherite").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD))
+            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient c = new ExplainIngredient(ArcanaRegistry.SOVEREIGN_CATALYST.getItem(),1,"Sovereign Augment Catalyst")
-            .withName(Text.literal("Sovereign Augmentation Catalyst").formatted(Formatting.GOLD,Formatting.BOLD))
+            .withName(Component.literal("Sovereign Augmentation Catalyst").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
             .withLore(List.of(
-                  Text.literal("")
-                        .append(Text.literal("Right Click").formatted(Formatting.BLUE))
-                        .append(Text.literal(" the ").formatted(Formatting.DARK_PURPLE))
-                        .append(Text.literal("Catalyst").formatted(Formatting.GOLD))
-                        .append(Text.literal(" on the ").formatted(Formatting.DARK_PURPLE))
-                        .append(Text.literal("Netherite Heart").formatted(Formatting.DARK_RED)),
-                  Text.literal("")
-                        .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE))
-                        .append(Text.literal(" will flow into the ").formatted(Formatting.DARK_PURPLE))
-                        .append(Text.literal("Nul Construct").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal(" empowering it").formatted(Formatting.DARK_PURPLE)),
-                  Text.literal("")
-                        .append(Text.literal("Defeat the ").formatted(Formatting.DARK_PURPLE))
-                        .append(Text.literal("Nul Construct").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal(" without dying to receive a ").formatted(Formatting.DARK_PURPLE))
-                        .append(Text.literal("Divine Catalyst").formatted(Formatting.LIGHT_PURPLE)),
-                  Text.literal(""),
-                  Text.literal("Warning! This fight is difficult, preparation is necessary.").formatted(Formatting.RED)
+                  Component.literal("")
+                        .append(Component.literal("Right Click").withStyle(ChatFormatting.BLUE))
+                        .append(Component.literal(" the ").withStyle(ChatFormatting.DARK_PURPLE))
+                        .append(Component.literal("Catalyst").withStyle(ChatFormatting.GOLD))
+                        .append(Component.literal(" on the ").withStyle(ChatFormatting.DARK_PURPLE))
+                        .append(Component.literal("Netherite Heart").withStyle(ChatFormatting.DARK_RED)),
+                  Component.literal("")
+                        .append(Component.literal("Divine Energy").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(" will flow into the ").withStyle(ChatFormatting.DARK_PURPLE))
+                        .append(Component.literal("Nul Construct").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(Component.literal(" empowering it").withStyle(ChatFormatting.DARK_PURPLE)),
+                  Component.literal("")
+                        .append(Component.literal("Defeat the ").withStyle(ChatFormatting.DARK_PURPLE))
+                        .append(Component.literal("Nul Construct").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(Component.literal(" without dying to receive a ").withStyle(ChatFormatting.DARK_PURPLE))
+                        .append(Component.literal("Divine Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE)),
+                  Component.literal(""),
+                  Component.literal("Warning! This fight is difficult, preparation is necessary.").withStyle(ChatFormatting.RED)
             ));
       
       ExplainIngredient[][] ingredients = {
@@ -138,13 +138,13 @@ public class DivineCatalyst extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe Divine Artifacts are examples of Divine Arcana, the Runic Matrix should be able to replicate that Divine magic to some degree. But how?").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nPerhaps I need to expose my strongest Catalyst to some Divine Arcana for it to absorb and adapt to. I just need to get the attention of a Divine entity without risking too much of their wrath.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nI have three leads on Divine entities, one in each dimension. Given what I’ve heard, I’d rather not risk messing with the End’s mad tyrant. The entity in the leylines of the Overworld is one option. ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nI also believe that the entity behind the original Wither constructs is of Divine nature. Perhaps modifying the construct pattern with a Netherite heart and activating it with my ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nCatalyst could draw out some Divine Arcana.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("       Divine\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe Divine Artifacts are examples of Divine Arcana, the Runic Matrix should be able to replicate that Divine magic to some degree. But how?").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Divine\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nPerhaps I need to expose my strongest Catalyst to some Divine Arcana for it to absorb and adapt to. I just need to get the attention of a Divine entity without risking too much of their wrath.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Divine\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nI have three leads on Divine entities, one in each dimension. Given what I’ve heard, I’d rather not risk messing with the End’s mad tyrant. The entity in the leylines of the Overworld is one option. ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Divine\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nI also believe that the entity behind the original Wither constructs is of Divine nature. Perhaps modifying the construct pattern with a Netherite heart and activating it with my ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Divine\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nCatalyst could draw out some Divine Arcana.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -154,46 +154,46 @@ public class DivineCatalyst extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public ActionResult useOnBlock(ItemUsageContext context){
-         World world = context.getWorld();
-         PlayerEntity playerEntity = context.getPlayer();
-         BlockPos pos = context.getBlockPos();
+      public InteractionResult useOn(UseOnContext context){
+         Level world = context.getLevel();
+         Player playerEntity = context.getPlayer();
+         BlockPos pos = context.getClickedPos();
          BlockState state = world.getBlockState(pos);
          boolean canSpawn = world.getDifficulty() != Difficulty.PEACEFUL;
-         if(canSpawn && playerEntity instanceof ServerPlayerEntity serverPlayer){
+         if(canSpawn && playerEntity instanceof ServerPlayer serverPlayer){
             canSpawn = ArcanaNovum.data(serverPlayer).hasResearched(ArcanaRegistry.NUL_MEMENTO);
          }
          
-         if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY() && canSpawn){ // Check construct
+         if(state.is(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getMinY() && canSpawn){ // Check construct
             BlockPattern pattern = getConstructPattern();
-            BlockPattern.Result patternResult = pattern.searchAround(world, pos.add(-1,-1,-1));
+            BlockPattern.BlockPatternMatch patternResult = pattern.find(world, pos.offset(-1,-1,-1));
             if(patternResult != null){
-               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, SpawnReason.TRIGGERED);
-               if(constructEntity != null && world instanceof ServerWorld serverWorld){
-                  CarvedPumpkinBlock.breakPatternBlocks(world, patternResult);
-                  BlockPos blockPos = patternResult.translate(1, 1, 0).getBlockPos();
-                  constructEntity.refreshPositionAndAngles((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
-                  constructEntity.bodyYaw = patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
+               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, EntitySpawnReason.TRIGGERED);
+               if(constructEntity != null && world instanceof ServerLevel serverWorld){
+                  CarvedPumpkinBlock.clearPatternBlocks(world, patternResult);
+                  BlockPos blockPos = patternResult.getBlock(1, 1, 0).getPos();
+                  constructEntity.snapTo((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
+                  constructEntity.yBodyRot = patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
                   constructEntity.onSummoned(playerEntity,true);
                   
-                  world.spawnEntity(constructEntity);
+                  world.addFreshEntity(constructEntity);
                   CarvedPumpkinBlock.updatePatternBlocks(world, patternResult);
                   
-                  if(playerEntity instanceof ServerPlayerEntity player){
+                  if(playerEntity instanceof ServerPlayer player){
                      ArcanaAchievements.grant(player,ArcanaAchievements.DOOR_OF_DIVINITY.id);
                   }
                   
-                  context.getStack().decrement(1);
+                  context.getItemInHand().shrink(1);
                }
-               return ActionResult.SUCCESS_SERVER;
+               return InteractionResult.SUCCESS_SERVER;
             }
          }
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
    }
 }

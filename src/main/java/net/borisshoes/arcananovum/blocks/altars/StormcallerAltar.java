@@ -14,31 +14,35 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
-import net.minecraft.world.block.WireOrientation;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -61,48 +65,48 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.RAW_COPPER_BLOCK;
-      block = new StormcallerAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.ORANGE).strength(5.0f,1200.0f).requiresTool().sounds(BlockSoundGroup.METAL));
+      block = new StormcallerAltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(5.0f,1200.0f).requiresCorrectToolForDrops().sound(SoundType.METAL));
       item = new StormcallerAltarItem(this.block);
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE,ResearchTasks.OBTAIN_HEART_OF_THE_SEA,ResearchTasks.OBTAIN_LIGHTNING_ROD,ResearchTasks.ADVANCEMENT_WAX_ON,ResearchTasks.ADVANCEMENT_WAX_OFF,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE,ResearchTasks.OBTAIN_HEART_OF_THE_SEA,ResearchTasks.OBTAIN_LIGHTNING_ROD,ResearchTasks.ADVANCEMENT_WAX_ON,ResearchTasks.ADVANCEMENT_WAX_OFF,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addAltarLore(lore);
-      lore.add(Text.literal("Stormcaller Altar:").formatted(Formatting.BOLD,Formatting.AQUA));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("Altar ").formatted(Formatting.AQUA))
-            .append(Text.literal("calls upon the ").formatted(Formatting.GRAY))
-            .append(Text.literal("clouds ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("to ").formatted(Formatting.GRAY))
-            .append(Text.literal("shift ").formatted(Formatting.AQUA))
-            .append(Text.literal("and ").formatted(Formatting.GRAY))
-            .append(Text.literal("darken").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("Altar ").formatted(Formatting.AQUA))
-            .append(Text.literal("can be used to ").formatted(Formatting.GRAY))
-            .append(Text.literal("change ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("the ").formatted(Formatting.GRAY))
-            .append(Text.literal("weather ").formatted(Formatting.AQUA))
-            .append(Text.literal("to any state.").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("Altar ").formatted(Formatting.AQUA))
-            .append(Text.literal("requires a ").formatted(Formatting.GRAY))
-            .append(Text.literal("Diamond Block").formatted(Formatting.AQUA))
-            .append(Text.literal(" to ").formatted(Formatting.GRAY))
-            .append(Text.literal("activate").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Component.literal("Stormcaller Altar:").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Altar ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("calls upon the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("clouds ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("shift ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("darken").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Altar ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("can be used to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("change ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("weather ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("to any state.").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Altar ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("requires a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Diamond Block").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("activate").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -140,10 +144,10 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Altar of the\n    Stormcaller").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nIn order to influence the world, I need to tap into the leylines. I have devised a structure capable of such, with this at its heart. It should be able to cause changes in the  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Altar of the\n    Stormcaller").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\natmosphere so that I can dictate the weather. Thunder, Rain, or Shine at my command! However, in order to provide enough energy to the leylines, I need to use a Diamond Block as a catalyst.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("    Altar of the\n    Stormcaller").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nIn order to influence the world, I need to tap into the leylines. I have devised a structure capable of such, with this at its heart. It should be able to cause changes in the  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Altar of the\n    Stormcaller").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\natmosphere so that I can dictate the weather. Thunder, Rain, or Shine at my command! However, in order to provide enough energy to the leylines, I need to use a Diamond Block as a catalyst.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -153,25 +157,25 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }
    
    public class StormcallerAltarBlock extends ArcanaPolymerBlockEntity {
-      public static final BooleanProperty ACTIVATABLE = BooleanProperty.of("activatable");
+      public static final BooleanProperty ACTIVATABLE = BooleanProperty.create("activatable");
       
-      public StormcallerAltarBlock(AbstractBlock.Settings settings){
+      public StormcallerAltarBlock(BlockBehaviour.Properties settings){
          super(getThis(), settings);
       }
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.RAW_COPPER_BLOCK.getDefaultState();
+         return Blocks.RAW_COPPER_BLOCK.defaultBlockState();
       }
       
       @Nullable
-      public static StormcallerAltarBlockEntity getEntity(World world, BlockPos pos){
+      public static StormcallerAltarBlockEntity getEntity(Level world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
          if(!(state.getBlock() instanceof StormcallerAltarBlock)){
             return null;
@@ -181,67 +185,67 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx){
-         return this.getDefaultState().with(ACTIVATABLE,false);
+      public BlockState getStateForPlacement(BlockPlaceContext ctx){
+         return this.defaultBlockState().setValue(ACTIVATABLE,false);
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
+      protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager){
          stateManager.add(ACTIVATABLE);
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
+      public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new StormcallerAltarBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
-         return validateTicker(type, ArcanaRegistry.STORMCALLER_ALTAR_BLOCK_ENTITY, StormcallerAltarBlockEntity::ticker);
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
+         return createTickerHelper(type, ArcanaRegistry.STORMCALLER_ALTAR_BLOCK_ENTITY, StormcallerAltarBlockEntity::ticker);
       }
       
       @Override
-      protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, BlockHitResult hit){
+      protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult hit){
          StormcallerAltarBlockEntity altar = (StormcallerAltarBlockEntity) world.getBlockEntity(pos);
          if(altar != null){
-            if(playerEntity instanceof ServerPlayerEntity player){
+            if(playerEntity instanceof ServerPlayer player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
-                  player.getItemCooldownManager().set(playerEntity.getOffHandStack(),1);
+                  player.getCooldowns().addCooldown(playerEntity.getMainHandItem(),1);
+                  player.getCooldowns().addCooldown(playerEntity.getOffhandItem(),1);
                }else{
-                  player.sendMessage(Text.literal("Multiblock not constructed."));
+                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
                }
             }
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
+      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof StormcallerAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
          }
       }
       
-      private void tryActivate(BlockState state, World world, BlockPos pos){
+      private void tryActivate(BlockState state, Level world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(entity instanceof StormcallerAltarBlockEntity altar && world instanceof ServerWorld serverWorld){
-            boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new Box(pos.up()),(itemStack) -> itemStack.isOf(COST.getLeft()),COST.getRight());
+         if(entity instanceof StormcallerAltarBlockEntity altar && world instanceof ServerLevel serverWorld){
+            boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new AABB(pos.above()),(itemStack) -> itemStack.is(COST.getA()),COST.getB());
             if(paid) altar.startWeatherChange(null);
          }
       }
       
       @Override
-      protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
-         boolean bl = world.isReceivingRedstonePower(pos);
-         boolean bl2 = state.getOrEmpty(ACTIVATABLE).orElse(false);
+      protected void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify) {
+         boolean bl = world.hasNeighborSignal(pos);
+         boolean bl2 = state.getOptionalValue(ACTIVATABLE).orElse(false);
          if (bl && bl2) {
             this.tryActivate(state, world, pos);
-            world.setBlockState(pos, state.with(ACTIVATABLE, false), Block.NOTIFY_LISTENERS);
+            world.setBlock(pos, state.setValue(ACTIVATABLE, false), Block.UPDATE_CLIENTS);
          }
       }
    }

@@ -1,13 +1,13 @@
 package net.borisshoes.arcananovum.bosses;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
 public class BossFight {
    public static int cleanBoss(MinecraftServer server){
-      for(ServerWorld world : server.getWorlds()){
+      for(ServerLevel world : server.getAllLevels()){
          if(BOSS_FIGHT.get(world).getBossFight() != null){
             BOSS_FIGHT.get(world).removeBossFight();
          }

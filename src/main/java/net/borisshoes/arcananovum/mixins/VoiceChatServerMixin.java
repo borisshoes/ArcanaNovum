@@ -6,7 +6,7 @@ import de.maxhenkel.voicechat.voice.common.PlayerState;
 import de.maxhenkel.voicechat.voice.common.SoundPacket;
 import de.maxhenkel.voicechat.voice.server.Server;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,17 +20,17 @@ import java.util.UUID;
 @Mixin(Server.class)
 public class VoiceChatServerMixin {
    
-   @ModifyArgs(method = "processProximityPacket", at = @At(value = "INVOKE", target = "Lde/maxhenkel/voicechat/voice/server/Server;broadcast(Ljava/util/Collection;Lde/maxhenkel/voicechat/voice/common/SoundPacket;Lnet/minecraft/server/network/ServerPlayerEntity;Lde/maxhenkel/voicechat/voice/common/PlayerState;Ljava/util/UUID;Ljava/lang/String;)V"))
+   @ModifyArgs(method = "processProximityPacket", at = @At(value = "INVOKE", target = "Lde/maxhenkel/voicechat/voice/server/Server;broadcast(Ljava/util/Collection;Lde/maxhenkel/voicechat/voice/common/SoundPacket;Lnet/minecraft/server/level/ServerPlayer;Lde/maxhenkel/voicechat/voice/common/PlayerState;Ljava/util/UUID;Ljava/lang/String;)V"))
    private void arcananovum$modifyBroadcast(Args args){
       //Collection<ServerPlayerEntity> players, SoundPacket<?> packet, @Nullable ServerPlayerEntity sender, @Nullable PlayerState senderState, @Nullable UUID groupId, String source
-      Collection<ServerPlayerEntity> players = args.get(0);
+      Collection<ServerPlayer> players = args.get(0);
       SoundPacket<?> packet = args.get(1);
-      ServerPlayerEntity sender = args.get(2);
+      ServerPlayer sender = args.get(2);
       PlayerState senderState = args.get(3);
       UUID groupId = args.get(4);
       String source = args.get(5);
-      if(sender != null && sender.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) && packet instanceof PlayerSoundPacket playerSoundPacket){
-         args.set(1, new LocationSoundPacket(sender.getUuid(), sender.getUuid(), sender.getEyePos(), packet.getData(), packet.getSequenceNumber(), playerSoundPacket.getDistance(), (String)null));
+      if(sender != null && sender.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) && packet instanceof PlayerSoundPacket playerSoundPacket){
+         args.set(1, new LocationSoundPacket(sender.getUUID(), sender.getUUID(), sender.getEyePosition(), packet.getData(), packet.getSequenceNumber(), playerSoundPacket.getDistance(), (String)null));
          args.set(5, "spectator");
       }
    }

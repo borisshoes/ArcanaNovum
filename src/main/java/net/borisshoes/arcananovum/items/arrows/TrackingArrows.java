@@ -13,20 +13,20 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -45,27 +45,27 @@ public class TrackingArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new TrackingArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.USE_ENDER_EYE,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.USE_ENDER_EYE,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Tracking Arrows:").formatted(Formatting.BOLD,Formatting.YELLOW));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.AQUA))
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" lock on").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal(" to a ").formatted(Formatting.AQUA))
-            .append(Text.literal("creature ").formatted(Formatting.YELLOW))
-            .append(Text.literal("in front of it.").formatted(Formatting.AQUA)));
+      lore.add(Component.literal("Tracking Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" lock on").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal(" to a ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("creature ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("in front of it.").withStyle(ChatFormatting.AQUA)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -74,13 +74,13 @@ public class TrackingArrows extends RunicArrow {
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       int broadheads = arrow.getAugment(ArcanaAugments.BROADHEADS.id);
       if(entityHitResult.getEntity() instanceof LivingEntity living && broadheads > 0){
-         living.addStatusEffect(new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT,broadheads*100,1),arrow.getOwner());
+         living.addEffect(new MobEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT,broadheads*100,1),arrow.getOwner());
       }
-      NbtCompound arrowData = arrow.getData();
-      if(arrow.getOwner() instanceof ServerPlayerEntity player && arrowData.contains("initPos")){
-         NbtList posList = arrowData.getListOrEmpty("initPos");
-         Vec3d initPos = new Vec3d(posList.getDouble(0,0.0),posList.getDouble(1,0.0),posList.getDouble(2,0.0));
-         double dist = initPos.multiply(1,0,1).distanceTo(arrow.getEntityPos().multiply(1,0,1));
+      CompoundTag arrowData = arrow.getData();
+      if(arrow.getOwner() instanceof ServerPlayer player && arrowData.contains("initPos")){
+         ListTag posList = arrowData.getListOrEmpty("initPos");
+         Vec3 initPos = new Vec3(posList.getDoubleOr(0,0.0),posList.getDoubleOr(1,0.0),posList.getDoubleOr(2,0.0));
+         double dist = initPos.multiply(1,0,1).distanceTo(arrow.position().multiply(1,0,1));
          if(dist >= 250){
             ArcanaAchievements.grant(player,ArcanaAchievements.ACTUAL_AIMBOT.id);
          }
@@ -109,9 +109,9 @@ public class TrackingArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Tracking Arrows").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThese arrows take advantage of Ender Eyes’ ability to home in on a location. \nThe arrow will look ahead a short distance and correct its angle to head for a creature in sight.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal(" Tracking Arrows").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThese arrows take advantage of Ender Eyes’ ability to home in on a location. \nThe arrow will look ahead a short distance and correct its angle to head for a creature in sight.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -121,7 +121,7 @@ public class TrackingArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

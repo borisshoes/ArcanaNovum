@@ -12,33 +12,33 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.radiantfletchery.RadiantFletcheryGui;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.*;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.*;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity implements SidedInventory, PolymerObject, InventoryChangedListener, ArcanaBlockEntity {
+public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerListener, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -48,9 +48,9 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    private boolean assembled;
    private boolean seenForge;
    private boolean updating;
-   private SimpleInventory inventory = new SimpleInventory(size());
+   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
    private final int[] efficiency = {24,32,40,48,56,64};
-   private final Set<ServerPlayerEntity> watchingPlayers = new HashSet<>();
+   private final Set<ServerPlayer> watchingPlayers = new HashSet<>();
    
    public RadiantFletcheryBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY, pos, state);
@@ -66,26 +66,26 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
       this.customName = customName == null ? "" : customName;
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof RadiantFletcheryBlockEntity fletchery){
          fletchery.tick();
       }
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
       
-      if(serverWorld.getServer().getTicks() % 10 == 0){
+      if(serverWorld.getServer().getTickCount() % 10 == 0){
          this.assembled = multiblock.matches(getMultiblockCheck());
-         this.seenForge = StarlightForge.findActiveForge(serverWorld,pos) != null;
+         this.seenForge = StarlightForge.findActiveForge(serverWorld, worldPosition) != null;
       }
-      if(serverWorld.getServer().getTicks() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
+         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
       
-      watchingPlayers.removeIf(player -> player.currentScreenHandler == player.playerScreenHandler);
+      watchingPlayers.removeIf(player -> player.containerMenu == player.inventoryMenu);
    }
    
    public int getPotionRatio(){
@@ -93,14 +93,14 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
       return efficiency[lvl];
    }
    
-   public void openGui(ServerPlayerEntity player){
+   public void openGui(ServerPlayer player){
       RadiantFletcheryGui gui = new RadiantFletcheryGui(player,this);
       gui.buildGui();
       gui.open();
       watchingPlayers.add(player);
    }
    
-   public void removePlayer(ServerPlayerEntity player){
+   public void removePlayer(ServerPlayer player){
       watchingPlayers.remove(player);
    }
    
@@ -109,13 +109,13 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getCheckOffset()),null);
    }
    
-   public Inventory getInventory(){
+   public Container getInventory(){
       return this.inventory;
    }
    
@@ -144,16 +144,16 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    }
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.inventory = new SimpleInventory(size());
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.inventory = new SimpleContainer(getContainerSize());
       this.inventory.addListener(this);
-      if (!this.readLootTable(view)) {
-         Inventories.readData(view, this.inventory.getHeldStacks());
+      if (!this.tryLoadLootTable(view)) {
+         ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
@@ -162,85 +162,85 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    }
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      if (!this.writeLootTable(view)) {
-         Inventories.writeData(view, this.inventory.getHeldStacks());
+      if (!this.trySaveLootTable(view)) {
+         ContainerHelper.saveAllItems(view, this.inventory.getItems());
       }
    }
    
    @Override
-   protected DefaultedList<ItemStack> getHeldStacks(){
-      return this.inventory.getHeldStacks();
+   protected NonNullList<ItemStack> getItems(){
+      return this.inventory.getItems();
    }
    
    @Override
-   protected void setHeldStacks(DefaultedList<ItemStack> list){
+   protected void setItems(NonNullList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
-         this.inventory.setStack(i,list.get(i));
+         this.inventory.setItem(i,list.get(i));
       }
    }
    
    @Override
-   protected Text getContainerName(){
-      return Text.literal("Radiant Fletchery");
+   protected Component getDefaultName(){
+      return Component.literal("Radiant Fletchery");
    }
    
    @Override
-   protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory){
+   protected AbstractContainerMenu createMenu(int syncId, Inventory playerInventory){
       return null;
    }
    
    @Override
-   public int[] getAvailableSlots(Direction side){
+   public int[] getSlotsForFace(Direction side){
       return new int[0];
    }
    
    @Override
-   public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir){
+   public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction dir){
       return false;
    }
    
    @Override
-   public boolean canExtract(int slot, ItemStack stack, Direction dir){
+   public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction dir){
       return false;
    }
    
    @Override
-   public int size(){
+   public int getContainerSize(){
       return 3;
    }
    
    @Override
-   public void onInventoryChanged(Inventory inv){
+   public void containerChanged(Container inv){
       if(!updating){
          updating = true;
-         ItemStack arrowStack = inv.getStack(0);
-         ItemStack potionStack = inv.getStack(1);
-         ItemStack outputStack = inv.getStack(2);
+         ItemStack arrowStack = inv.getItem(0);
+         ItemStack potionStack = inv.getItem(1);
+         ItemStack outputStack = inv.getItem(2);
          int potionRatio = getPotionRatio();
          ItemStack resultStack = new ItemStack(Items.TIPPED_ARROW);
-         resultStack.set(DataComponentTypes.POTION_CONTENTS,potionStack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT));
+         resultStack.set(DataComponents.POTION_CONTENTS,potionStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY));
          resultStack.setCount(potionRatio);
          
-         while(arrowStack.getCount() >= potionRatio && potionStack.getCount() >= 1 && (((outputStack.getMaxCount()-outputStack.getCount()) >= potionRatio && ItemStack.areItemsAndComponentsEqual(outputStack,resultStack)) || outputStack.isEmpty())){
-            arrowStack.decrement(potionRatio);
-            inv.setStack(0,arrowStack.isEmpty() ? ItemStack.EMPTY : arrowStack);
+         while(arrowStack.getCount() >= potionRatio && potionStack.getCount() >= 1 && (((outputStack.getMaxStackSize()-outputStack.getCount()) >= potionRatio && ItemStack.isSameItemSameComponents(outputStack,resultStack)) || outputStack.isEmpty())){
+            arrowStack.shrink(potionRatio);
+            inv.setItem(0,arrowStack.isEmpty() ? ItemStack.EMPTY : arrowStack);
             
-            potionStack.decrement(1);
-            inv.setStack(1,potionStack.isEmpty() ? ItemStack.EMPTY : potionStack);
+            potionStack.shrink(1);
+            inv.setItem(1,potionStack.isEmpty() ? ItemStack.EMPTY : potionStack);
             
             if(outputStack.isEmpty()){
                outputStack = resultStack;
-               inv.setStack(2,resultStack);
+               inv.setItem(2,resultStack);
             }else{
-               outputStack.increment(potionRatio);
-               inv.setStack(2,outputStack);
+               outputStack.grow(potionRatio);
+               inv.setItem(2,outputStack);
             }
             
             watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.FINALLY_USEFUL_2.id));
@@ -248,7 +248,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
          }
          
          //Update gui
-         markDirty();
+         setChanged();
          updating = false;
       }
    }

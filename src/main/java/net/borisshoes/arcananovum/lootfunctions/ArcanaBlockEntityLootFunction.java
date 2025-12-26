@@ -12,48 +12,48 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.condition.LootCondition;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.function.ConditionalLootFunction;
-import net.minecraft.loot.function.LootFunctionType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class ArcanaBlockEntityLootFunction extends ConditionalLootFunction {
+public class ArcanaBlockEntityLootFunction extends LootItemConditionalFunction {
    
    public static final MapCodec<ArcanaBlockEntityLootFunction> CODEC = RecordCodecBuilder.mapCodec(
-         instance -> addConditionsField(instance).apply(instance, ArcanaBlockEntityLootFunction::new)
+         instance -> commonFields(instance).apply(instance, ArcanaBlockEntityLootFunction::new)
    );
    
    
-   protected ArcanaBlockEntityLootFunction(List<LootCondition> conditions){
+   protected ArcanaBlockEntityLootFunction(List<LootItemCondition> conditions){
       super(conditions);
    }
    
    @SuppressWarnings("unchecked")
    @Override
-   public LootFunctionType<? extends ConditionalLootFunction> getType(){
-      return (LootFunctionType<ArcanaBlockEntityLootFunction>) ArcanaRegistry.ARCANA_BLOCK_ENTITY_LOOT_FUNCTION;
+   public LootItemFunctionType<? extends LootItemConditionalFunction> getType(){
+      return (LootItemFunctionType<ArcanaBlockEntityLootFunction>) ArcanaRegistry.ARCANA_BLOCK_ENTITY_LOOT_FUNCTION;
    }
    
    @Override
-   protected ItemStack process(ItemStack stack, LootContext context){
-      BlockEntity blockEntity = context.get(LootContextParameters.BLOCK_ENTITY);
+   protected ItemStack run(ItemStack stack, LootContext context){
+      BlockEntity blockEntity = context.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
       if(!(blockEntity instanceof ArcanaBlockEntity arcanaBlockEntity)) return stack;
-      ServerWorld world = context.getWorld();
+      ServerLevel world = context.getLevel();
       
       String uuid = arcanaBlockEntity.getUuid();
       if(uuid == null) uuid = UUID.randomUUID().toString();
-      NbtCompound augmentsTag = new NbtCompound();
+      CompoundTag augmentsTag = new CompoundTag();
       if(arcanaBlockEntity.getAugments() != null){
          for(Map.Entry<ArcanaAugment, Integer> entry : arcanaBlockEntity.getAugments().entrySet()){
             augmentsTag.putInt(entry.getKey().id, entry.getValue());
@@ -74,11 +74,11 @@ public class ArcanaBlockEntityLootFunction extends ConditionalLootFunction {
       ArcanaItem.putProperty(stack, ArcanaItem.UUID_TAG,uuid);
       
       if(arcanaBlockEntity.getCustomArcanaName() != null && !arcanaBlockEntity.getCustomArcanaName().isEmpty()){
-         stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(arcanaBlockEntity.getCustomArcanaName()));
+         stack.set(DataComponents.CUSTOM_NAME, Component.literal(arcanaBlockEntity.getCustomArcanaName()));
       }
       
       if(arcanaBlockEntity instanceof ArcaneSingularityBlockEntity singularity){
-         ArcanaItem.putProperty(stack, ArcaneSingularity.BOOKS_TAG,singularity.saveBooks(world.getRegistryManager()));
+         ArcanaItem.putProperty(stack, ArcaneSingularity.BOOKS_TAG,singularity.saveBooks(world.registryAccess()));
       }
       if(arcanaBlockEntity instanceof StarpathAltarBlockEntity altar){
          ArcanaItem.putProperty(stack, StarpathAltar.TARGETS_TAG,altar.writeTargets());

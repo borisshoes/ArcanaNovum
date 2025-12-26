@@ -16,28 +16,28 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.component.type.BlocksAttacksComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -50,7 +50,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ShieldOfFortitude extends ArcanaItem {
    public static final String ID = "shield_of_fortitude";
-   public static final Identifier EFFECT_ID = Identifier.of(ArcanaNovum.MOD_ID,ID);
+   public static final Identifier EFFECT_ID = Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,ID);
    
    public ShieldOfFortitude(){
       id = ID;
@@ -59,67 +59,67 @@ public class ShieldOfFortitude extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.SHIELD;
       item = new ShieldOfFortitudeItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_ABSORPTION,ResearchTasks.ADVANCEMENT_DEFLECT_ARROW,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_ABSORPTION,ResearchTasks.ADVANCEMENT_DEFLECT_ARROW,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("This shield is ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("overflowing").formatted(Formatting.ITALIC,Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" with powerful ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("defensive magic").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Your will for ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("protection").formatted(Formatting.AQUA))
-            .append(Text.literal(" becomes a tangible ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("fortitude").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Damage").formatted(Formatting.RED))
-            .append(Text.literal(" blocked").formatted(Formatting.BLUE))
-            .append(Text.literal(" becomes ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("absorption hearts").formatted(Formatting.YELLOW))
-            .append(Text.literal(" and the shield is ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("unbreakable").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("This shield is ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("overflowing").withStyle(ChatFormatting.ITALIC, ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" with powerful ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("defensive magic").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Your will for ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("protection").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" becomes a tangible ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("fortitude").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Damage").withStyle(ChatFormatting.RED))
+            .append(Component.literal(" blocked").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" becomes ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("absorption hearts").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(" and the shield is ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("unbreakable").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      BannerPatternsComponent patterns = stack.get(DataComponentTypes.BANNER_PATTERNS);
-      DyeColor color = stack.get(DataComponentTypes.BASE_COLOR);
+      BannerPatternLayers patterns = stack.get(DataComponents.BANNER_PATTERNS);
+      DyeColor color = stack.get(DataComponents.BASE_COLOR);
       ItemStack newStack = super.updateItem(stack,server);
-      if(patterns != null) stack.set(DataComponentTypes.BANNER_PATTERNS,patterns);
-      if(color != null) stack.set(DataComponentTypes.BASE_COLOR,color);
+      if(patterns != null) stack.set(DataComponents.BANNER_PATTERNS,patterns);
+      if(color != null) stack.set(DataComponents.BASE_COLOR,color);
       return buildItemLore(newStack,server);
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack shieldStack = inv.getStack(12); // Should be the Sword
+   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
+      ItemStack shieldStack = inv.getItem(12); // Should be the Sword
       ItemStack newArcanaItem = getNewItem();
       
-      if(shieldStack.hasEnchantments()){
-         EnchantmentHelper.set(newArcanaItem,shieldStack.getEnchantments());
+      if(shieldStack.isEnchanted()){
+         EnchantmentHelper.setEnchantments(newArcanaItem,shieldStack.getEnchantments());
       }
       
-      BannerPatternsComponent patterns = shieldStack.get(DataComponentTypes.BANNER_PATTERNS);
-      DyeColor color = shieldStack.get(DataComponentTypes.BASE_COLOR);
+      BannerPatternLayers patterns = shieldStack.get(DataComponents.BANNER_PATTERNS);
+      DyeColor color = shieldStack.get(DataComponents.BASE_COLOR);
       if(color != null){
-         newArcanaItem.set(DataComponentTypes.BASE_COLOR,color);
+         newArcanaItem.set(DataComponents.BASE_COLOR,color);
       }
       if(patterns != null){
-         newArcanaItem.set(DataComponentTypes.BANNER_PATTERNS,patterns);
+         newArcanaItem.set(DataComponents.BANNER_PATTERNS,patterns);
       }
 
       return newArcanaItem;
@@ -130,20 +130,20 @@ public class ShieldOfFortitude extends ArcanaItem {
       float curAbs = entity.getAbsorptionAmount();
       float addedAbs = (float) Math.min(maxAbs,amount*.5);
       int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
-      if(entity instanceof ServerPlayerEntity player){
+      if(entity instanceof ServerPlayer player){
          BorisLib.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
-         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 1.8f);
       }
       MinecraftUtils.addMaxAbsorption(entity, EFFECT_ID,addedAbs);
       entity.setAbsorptionAmount((curAbs + addedAbs));
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Shield of Fortitude").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Shield is my attempt at pouring Arcana into a fully defensive item. The Netherite and obsidian reinforced Shield absorbs the energy of impacts and reconfigures it into a fortification barrier ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Shield of Fortitude").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\naround myself by invoking all four basic protection enchantments and mimicking the effect of golden apples.\n\nHalf of all damage blocked by the Shield becomes an absorption barrier lasting 10 seconds.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Shield of Fortitude").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nDisabling the Shield with an axe causes the absorption barrier to shatter prematurely.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("Shield of Fortitude").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis Shield is my attempt at pouring Arcana into a fully defensive item. The Netherite and obsidian reinforced Shield absorbs the energy of impacts and reconfigures it into a fortification barrier ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Shield of Fortitude").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\naround myself by invoking all four basic protection enchantments and mimicking the effect of golden apples.\n\nHalf of all damage blocked by the Shield becomes an absorption barrier lasting 10 seconds.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Shield of Fortitude").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nDisabling the Shield with an axe causes the absorption barrier to shatter prematurely.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -151,13 +151,13 @@ public class ShieldOfFortitude extends ArcanaItem {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient r = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.FIRE_PROTECTION),4));
+      ArcanaIngredient r = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.FIRE_PROTECTION),4));
       ArcanaIngredient c = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       ArcanaIngredient g = new ArcanaIngredient(Items.GOLDEN_APPLE,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.BLAST_PROTECTION),4));
-      ArcanaIngredient l = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),4));
+      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.BLAST_PROTECTION),4));
+      ArcanaIngredient l = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),4));
       ArcanaIngredient m = new ArcanaIngredient(Items.SHIELD,1, true);
-      ArcanaIngredient n = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.PROJECTILE_PROTECTION),4));
+      ArcanaIngredient n = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.PROJECTILE_PROTECTION),4));
       
       ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
@@ -174,31 +174,31 @@ public class ShieldOfFortitude extends ArcanaItem {
          super(getThis(),
                getEquipmentArcanaItemComponents()
                      .equippableUnswappable(EquipmentSlot.OFFHAND)
-                     .component(DataComponentTypes.BLOCKS_ATTACKS,
-                           new BlocksAttacksComponent(
+                     .component(DataComponents.BLOCKS_ATTACKS,
+                           new BlocksAttacks(
                                  0.25F,
                                  1.0F,
-                                 List.of(new BlocksAttacksComponent.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
-                                 new BlocksAttacksComponent.ItemDamage(3.0F, 1.0F, 1.0F),
+                                 List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
+                                 new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F),
                                  Optional.of(DamageTypeTags.BYPASSES_SHIELD),
-                                 Optional.of(SoundEvents.ITEM_SHIELD_BLOCK),
-                                 Optional.of(SoundEvents.ITEM_SHIELD_BREAK)
+                                 Optional.of(SoundEvents.SHIELD_BLOCK),
+                                 Optional.of(SoundEvents.SHIELD_BREAK)
                            ))
-                     .component(DataComponentTypes.BREAK_SOUND, SoundEvents.ITEM_SHIELD_BREAK)
-                     .component(DataComponentTypes.BANNER_PATTERNS, BannerPatternsComponent.DEFAULT)
+                     .component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK)
+                     .component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)
          );
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack stack = super.getPolymerItemStack(itemStack, tooltipType, context);
-         if(stack.contains(DataComponentTypes.BASE_COLOR) && !stack.contains(DataComponentTypes.CUSTOM_NAME)){
-            stack.set(DataComponentTypes.CUSTOM_NAME, TextUtils.removeItalics(this.getName(stack)));
+         if(stack.has(DataComponents.BASE_COLOR) && !stack.has(DataComponents.CUSTOM_NAME)){
+            stack.set(DataComponents.CUSTOM_NAME, TextUtils.removeItalics(this.getName(stack)));
          }
          return stack;
       }

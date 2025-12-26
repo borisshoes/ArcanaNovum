@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.recipes.arcana;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public class ShulkerCoreIngredient extends ArcanaIngredient {
    

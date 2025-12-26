@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import org.ladysnake.cca.api.v3.component.ComponentV3;
 
 import java.util.List;

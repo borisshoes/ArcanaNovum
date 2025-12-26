@@ -22,44 +22,48 @@ import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.ExperienceDroppingBlock;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.*;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.consume.UseAction;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.*;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DropExperienceBlock;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -82,12 +86,12 @@ public class GravitonMaul extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.MACE;
       item = new GravitonMaulItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_MACE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OVER_OVERKILL};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_MACE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OVER_OVERKILL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,MODE_TAG,0); // 0 jump boost, 1 gravity amp, 2 channel
       putProperty(stack,FALL_START_HEIGHT_TAG,Double.NaN);
       setPrefStack(stack);
@@ -104,56 +108,56 @@ public class GravitonMaul extends ArcanaItem {
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("heavy core").formatted(Formatting.BLUE))
-            .append(Text.literal(" has been brought to its ").formatted(Formatting.GRAY))
-            .append(Text.literal("limit").formatted(Formatting.AQUA))
-            .append(Text.literal(", becoming a ").formatted(Formatting.GRAY))
-            .append(Text.literal("singularity").withColor(ArcanaColors.BETTER_DARK_BLUE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
-            .append(Text.literal("acts as a ").formatted(Formatting.GRAY))
-            .append(Text.literal("mace ").formatted(Formatting.AQUA))
-            .append(Text.literal("combined with an ").formatted(Formatting.GRAY))
-            .append(Text.literal("axe").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
-            .append(Text.literal("can ").formatted(Formatting.GRAY))
-            .append(Text.literal("disable shields").formatted(Formatting.BLUE))
-            .append(Text.literal(" and deal ").formatted(Formatting.GRAY))
-            .append(Text.literal("massive damage").formatted(Formatting.AQUA))
-            .append(Text.literal(" while falling.").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("maul's ").withColor(ArcanaColors.BETTER_DARK_BLUE))
-            .append(Text.literal("gravity well").formatted(Formatting.BLUE))
-            .append(Text.literal(" can ").formatted(Formatting.GRAY))
-            .append(Text.literal("fell trees").formatted(Formatting.AQUA))
-            .append(Text.literal(" in a single blow.").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Clicking").formatted(Formatting.BLUE))
-            .append(Text.literal(" with the ").formatted(Formatting.GRAY))
-            .append(Text.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
-            .append(Text.literal("launches ").formatted(Formatting.AQUA))
-            .append(Text.literal("you in the ").formatted(Formatting.GRAY))
-            .append(Text.literal("air").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Clicking in the air").formatted(Formatting.BLUE))
-            .append(Text.literal(" ").formatted(Formatting.GRAY))
-            .append(Text.literal("rockets ").formatted(Formatting.GRAY))
-            .append(Text.literal("you ").formatted(Formatting.GRAY))
-            .append(Text.literal("downward").formatted(Formatting.AQUA))
-            .append(Text.literal(", causing a ").formatted(Formatting.GRAY))
-            .append(Text.literal("powerful impact").withColor(ArcanaColors.BETTER_DARK_BLUE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("heavy core").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" has been brought to its ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("limit").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(", becoming a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("singularity").withColor(ArcanaColors.BETTER_DARK_BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
+            .append(Component.literal("acts as a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("mace ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("combined with an ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("axe").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
+            .append(Component.literal("can ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("disable shields").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" and deal ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("massive damage").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" while falling.").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("maul's ").withColor(ArcanaColors.BETTER_DARK_BLUE))
+            .append(Component.literal("gravity well").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" can ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("fell trees").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" in a single blow.").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Clicking").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" with the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
+            .append(Component.literal("launches ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("you in the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("air").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Clicking in the air").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("rockets ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("you ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("downward").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(", causing a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("powerful impact").withColor(ArcanaColors.BETTER_DARK_BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
       
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
@@ -162,22 +166,22 @@ public class GravitonMaul extends ArcanaItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.BREACH),5)
+      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
+            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.BREACH),5)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack maceStack = inv.getStack(12); // Should be the Mace
+   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
+      ItemStack maceStack = inv.getItem(12); // Should be the Mace
       ItemStack newArcanaItem = getNewItem();
       
-      newArcanaItem.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.BREACH),5);
-      if(maceStack.hasEnchantments()){
-         for(RegistryEntry<Enchantment> enchantment : maceStack.getEnchantments().getEnchantments()){
-            if(EnchantmentHelper.isCompatible(newArcanaItem.getEnchantments().getEnchantments(), enchantment)){
-               newArcanaItem.addEnchantment(enchantment,maceStack.getEnchantments().getLevel(enchantment));
+      newArcanaItem.enchant(MinecraftUtils.getEnchantment(Enchantments.BREACH),5);
+      if(maceStack.isEnchanted()){
+         for(Holder<Enchantment> enchantment : maceStack.getEnchantments().keySet()){
+            if(EnchantmentHelper.isEnchantmentCompatible(newArcanaItem.getEnchantments().keySet(), enchantment)){
+               newArcanaItem.enchant(enchantment,maceStack.getEnchantments().getLevel(enchantment));
             }
          }
       }
@@ -189,22 +193,22 @@ public class GravitonMaul extends ArcanaItem {
       return newArcanaItem;
    }
    
-   public void treeFell(World world, PlayerEntity player, ItemStack item, BlockPos pos){
-      if(!(world instanceof ServerWorld serverWorld)) return;
+   public void treeFell(Level world, Player player, ItemStack item, BlockPos pos){
+      if(!(world instanceof ServerLevel serverWorld)) return;
       Block type = world.getBlockState(pos).getBlock();
-      if(!world.getBlockState(pos).isIn(BlockTags.LOGS)) return;
+      if(!world.getBlockState(pos).is(BlockTags.LOGS)) return;
       
       int maxBlocks = 128;
       
-      Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
+      Queue<Tuple<BlockPos, Integer>> queue = Lists.newLinkedList();
       Queue<BlockPos> visited = Lists.newLinkedList();
-      queue.add(new Pair<>(pos, 0));
+      queue.add(new Tuple<>(pos, 0));
       ArrayList<BlockPos> toMine = new ArrayList<>();
       
       while(!queue.isEmpty()){
-         Pair<BlockPos, Integer> pair = queue.poll();
-         BlockPos blockPos = pair.getLeft();
-         int depth = pair.getRight();
+         Tuple<BlockPos, Integer> pair = queue.poll();
+         BlockPos blockPos = pair.getA();
+         int depth = pair.getB();
          visited.add(blockPos);
          Block curType = world.getBlockState(blockPos).getBlock();
          
@@ -217,9 +221,9 @@ public class GravitonMaul extends ArcanaItem {
                for(int j = -1; j <= 1; j++){
                   for(int k = -1; k <= 1; k++){
                      if(!(i==0 && j==0 && k==0)){
-                        BlockPos pos2 = blockPos.add(i,j,k);
-                        if(queue.stream().noneMatch(p -> p.getLeft().equals(pos2)) && !visited.contains(pos2)){
-                           queue.add(new Pair<>(pos2,depth+1));
+                        BlockPos pos2 = blockPos.offset(i,j,k);
+                        if(queue.stream().noneMatch(p -> p.getA().equals(pos2)) && !visited.contains(pos2)){
+                           queue.add(new Tuple<>(pos2,depth+1));
                         }
                      }
                   }
@@ -232,75 +236,75 @@ public class GravitonMaul extends ArcanaItem {
       ItemStack veinAxe = new ItemStack(Items.NETHERITE_AXE);
       
       for(BlockPos blockPos : toMine){
-         drops.addAll(Block.getDroppedStacks(world.getBlockState(blockPos), serverWorld, blockPos, null, player, veinAxe));
-         world.breakBlock(blockPos,false,player);
-         if(type instanceof ExperienceDroppingBlock experienceBlock){
-            experienceBlock.onStacksDropped(world.getBlockState(blockPos),serverWorld, pos, veinAxe,true);
+         drops.addAll(Block.getDrops(world.getBlockState(blockPos), serverWorld, blockPos, null, player, veinAxe));
+         world.destroyBlock(blockPos,false,player);
+         if(type instanceof DropExperienceBlock experienceBlock){
+            experienceBlock.spawnAfterBreak(world.getBlockState(blockPos),serverWorld, pos, veinAxe,true);
          }
       }
       for(ItemStack stack : drops){
-         Block.dropStack(world, pos, stack);
+         Block.popResource(world, pos, stack);
       }
    }
    
-   private List<Entity> getAffectedEntities(ServerPlayerEntity player, boolean includePlayer, double range){
-      List<Entity> entities = new ArrayList<>(player.getEntityWorld().getOtherEntities(player, player.getBoundingBox().expand(range*2), e -> e.distanceTo(player) <= range));
+   private List<Entity> getAffectedEntities(ServerPlayer player, boolean includePlayer, double range){
+      List<Entity> entities = new ArrayList<>(player.level().getEntities(player, player.getBoundingBox().inflate(range*2), e -> e.distanceTo(player) <= range));
       if(includePlayer) entities.add(player);
       return entities;
    }
    
    
-   private void gravityEffects(ServerPlayerEntity player, ItemStack stack){
+   private void gravityEffects(ServerPlayer player, ItemStack stack){
       int mode = getIntProperty(stack, MODE_TAG); // 0 - boost, 1 - fall, 2 - maelstrom
       boolean domain = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.GRAVITIC_DOMAIN) > 0;
       
       if(mode == 0){
          for(Entity affectedEntity : domain ? getAffectedEntities(player,true, 3.5) : List.of(player)){
-            affectedEntity.addVelocity(0,0.085,0);
-            if(affectedEntity instanceof ServerPlayerEntity affectedPlayer){
-               affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
-               affectedPlayer.networkHandler.floatingTicks = 0;
+            affectedEntity.push(0,0.085,0);
+            if(affectedEntity instanceof ServerPlayer affectedPlayer){
+               affectedPlayer.connection.send(new ClientboundSetEntityMotionPacket(affectedPlayer));
+               affectedPlayer.connection.aboveGroundTickCount = 0;
             }
             
-            if(affectedEntity.verticalCollision && !affectedEntity.groundCollision && affectedEntity instanceof LivingEntity livingEntity){
-               livingEntity.damage(player.getEntityWorld(),player.getDamageSources().flyIntoWall(),2.0f);
-               if(livingEntity.getHealth() < 2.0 && livingEntity instanceof ServerPlayerEntity affectedPlayer){
+            if(affectedEntity.verticalCollision && !affectedEntity.verticalCollisionBelow && affectedEntity instanceof LivingEntity livingEntity){
+               livingEntity.hurtServer(player.level(),player.damageSources().flyIntoWall(),2.0f);
+               if(livingEntity.getHealth() < 2.0 && livingEntity instanceof ServerPlayer affectedPlayer){
                   ArcanaAchievements.grant(affectedPlayer,ArcanaAchievements.RAISE_THE_ROOF);
                }
             }
             
-            player.getEntityWorld().spawnParticles(ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,affectedEntity.getX(),affectedEntity.getY()+affectedEntity.getHeight()/2,affectedEntity.getZ(),5,affectedEntity.getWidth()/2,affectedEntity.getHeight()/2,affectedEntity.getWidth()/2,0.01);
+            player.level().sendParticles(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS,affectedEntity.getX(),affectedEntity.getY()+affectedEntity.getBbHeight()/2,affectedEntity.getZ(),5,affectedEntity.getBbWidth()/2,affectedEntity.getBbHeight()/2,affectedEntity.getBbWidth()/2,0.01);
          }
       }else if(mode == 1){
          for(Entity affectedEntity : domain ? getAffectedEntities(player,true, 3.5) : List.of(player)){
-            player.getEntityWorld().spawnParticles(ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,affectedEntity.getX(),affectedEntity.getY()+affectedEntity.getHeight()/2,affectedEntity.getZ(),5,affectedEntity.getWidth()/2,affectedEntity.getHeight()/2,affectedEntity.getWidth()/2,0.01);
+            player.level().sendParticles(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS,affectedEntity.getX(),affectedEntity.getY()+affectedEntity.getBbHeight()/2,affectedEntity.getZ(),5,affectedEntity.getBbWidth()/2,affectedEntity.getBbHeight()/2,affectedEntity.getBbWidth()/2,0.01);
          }
          
-         if(player.isOnGround()){
-            if(player.getItemUseTime() >= 11){
-               double impactVel = MathHelper.clamp(BorisLib.PLAYER_MOVEMENT_TRACKER.get(player).velocity().getY(),-3,-0.5);
+         if(player.onGround()){
+            if(player.getTicksUsingItem() >= 11){
+               double impactVel = Mth.clamp(BorisLib.PLAYER_MOVEMENT_TRACKER.get(player).velocity().y(),-3,-0.5);
                double radius = 3 - impactVel; // 3.5 - 6 block range
                double totalDmg = 0;
                for(Entity affectedEntity : getAffectedEntities(player,false, radius)){
-                  Vec3d diff = player.getEntityPos().subtract(affectedEntity.getEntityPos());
-                  double multiplier = MathHelper.clamp(diff.length()*.2,.03,2);
-                  Vec3d motion = diff.normalize().multiply(-multiplier,0,-multiplier).add(0,radius*0.15,0);
-                  affectedEntity.addVelocity(motion.x,motion.y,motion.z);
-                  if(affectedEntity instanceof ServerPlayerEntity affectedPlayer){
-                     affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
+                  Vec3 diff = player.position().subtract(affectedEntity.position());
+                  double multiplier = Mth.clamp(diff.length()*.2,.03,2);
+                  Vec3 motion = diff.normalize().multiply(-multiplier,0,-multiplier).add(0,radius*0.15,0);
+                  affectedEntity.push(motion.x,motion.y,motion.z);
+                  if(affectedEntity instanceof ServerPlayer affectedPlayer){
+                     affectedPlayer.connection.send(new ClientboundSetEntityMotionPacket(affectedPlayer));
                   }
                   if(affectedEntity instanceof LivingEntity livingEntity){
-                     livingEntity.damage(player.getEntityWorld(),player.getDamageSources().fallingBlock(player),(float)radius);
+                     livingEntity.hurtServer(player.level(),player.damageSources().fallingBlock(player),(float)radius);
                      totalDmg += radius;
                   }
                }
                ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_PER_10) * totalDmg / 10,ArcanaConfig.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_CAP)));
-               ArcanaEffectUtils.gravitonMaulSlam(player.getEntityWorld(), player.getSteppingPos(),radius,0);
-               player.stopUsingItem();
-               player.getItemCooldownManager().set(stack,40);
+               ArcanaEffectUtils.gravitonMaulSlam(player.level(), player.getOnPos(),radius,0);
+               player.releaseUsingItem();
+               player.getCooldowns().addCooldown(stack,40);
             }else{
-               player.stopUsingItem();
-               player.getItemCooldownManager().set(stack,5);
+               player.releaseUsingItem();
+               player.getCooldowns().addCooldown(stack,5);
             }
             double fallStart = getDoubleProperty(stack,FALL_START_HEIGHT_TAG);
             if(!Double.isNaN(fallStart)){
@@ -310,24 +314,24 @@ public class GravitonMaul extends ArcanaItem {
          }
       }else if(mode == 2){
          for(Entity affectedEntity : getAffectedEntities(player,false, 5.5)){
-            Vec3d diff = affectedEntity.getEntityPos().subtract(player.getEntityPos().add(0,0.1,0));
-            double multiplier = MathHelper.clamp(diff.length()*.2,.03,2);
-            Vec3d motion = diff.add(0,0,0).normalize().multiply(-multiplier);
-            affectedEntity.setVelocity(motion.x,motion.y,motion.z);
-            if(affectedEntity instanceof ServerPlayerEntity affectedPlayer){
-               affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
+            Vec3 diff = affectedEntity.position().subtract(player.position().add(0,0.1,0));
+            double multiplier = Mth.clamp(diff.length()*.2,.03,2);
+            Vec3 motion = diff.add(0,0,0).normalize().scale(-multiplier);
+            affectedEntity.setDeltaMovement(motion.x,motion.y,motion.z);
+            if(affectedEntity instanceof ServerPlayer affectedPlayer){
+               affectedPlayer.connection.send(new ClientboundSetEntityMotionPacket(affectedPlayer));
             }
             
             if(affectedEntity instanceof LivingEntity livingEntity){
-               StatusEffectInstance amp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 10, 1, false, true, true);
-               livingEntity.addStatusEffect(amp);
-               livingEntity.damage(player.getEntityWorld(),player.getDamageSources().cramming(),1.0f);
+               MobEffectInstance amp = new MobEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 10, 1, false, true, true);
+               livingEntity.addEffect(amp);
+               livingEntity.hurtServer(player.level(),player.damageSources().cramming(),1.0f);
             }
          }
-         ArcanaEffectUtils.gravitonMaulMaelstrom(player,player.getItemUseTime());
+         ArcanaEffectUtils.gravitonMaulMaelstrom(player,player.getTicksUsingItem());
          
-         StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 10, 2, false, false, true);
-         player.addStatusEffect(res);
+         MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 10, 2, false, false, true);
+         player.addEffect(res);
       }
    }
    
@@ -335,7 +339,7 @@ public class GravitonMaul extends ArcanaItem {
    protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,32);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.BREACH),4));
+      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.BREACH),4));
       ArcanaIngredient g = new ArcanaIngredient(Items.COBWEB,32);
       ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,3);
       ArcanaIngredient c = new ArcanaIngredient(Items.BREEZE_ROD,32);
@@ -352,93 +356,93 @@ public class GravitonMaul extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Graviton Maul").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nAfter much experimentation with the Heavy Core, I have brought it to its apex. A singularity, a point of infinite density, contained by an Arcane casing. Gravity itself is at my will.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Graviton Maul").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nThe Maul is an empowered mace that has damage that scales with fall height. To aid in this ability, Using the Maul while on the ground causes a localized lapse in gravity, sending me into the air.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Graviton Maul").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nHowever, I have to be careful not to hit my head on the ceiling. As to not give my foe time to react, I can Use the Maul in the air to amplify gravity and rapidly send me downwards. Impacting the ground causes damage to nearby creatures. ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Graviton Maul").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nThe Maul’s immense gravity also gives it the heft to fell entire trees at once and bust through shields.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("   Graviton Maul").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nAfter much experimentation with the Heavy Core, I have brought it to its apex. A singularity, a point of infinite density, contained by an Arcane casing. Gravity itself is at my will.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Graviton Maul").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nThe Maul is an empowered mace that has damage that scales with fall height. To aid in this ability, Using the Maul while on the ground causes a localized lapse in gravity, sending me into the air.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Graviton Maul").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nHowever, I have to be careful not to hit my head on the ceiling. As to not give my foe time to react, I can Use the Maul in the air to amplify gravity and rapidly send me downwards. Impacting the ground causes damage to nearby creatures. ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Graviton Maul").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nThe Maul’s immense gravity also gives it the heft to fell entire trees at once and bust through shields.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class GravitonMaulItem extends ArcanaPolymerMaceItem {
       public GravitonMaulItem(){
          super(getThis(),getEquipmentArcanaItemComponents()
-               .component(DataComponentTypes.TOOL, new ToolComponent(List.of(), 1.0F, 2, false))
-               .component(DataComponentTypes.CONSUMABLE, ConsumableComponent.builder().consumeSeconds(72000).useAction(UseAction.BOW).sound(Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME)).build())
-               .component(DataComponentTypes.WEAPON, new WeaponComponent(1, 7.5F))
-               .component(DataComponentTypes.USE_EFFECTS, new UseEffectsComponent(false,true,0.01f))
-               .attributeModifiers(AttributeModifiersComponent.builder()
-                     .add(EntityAttributes.ATTACK_DAMAGE, new EntityAttributeModifier(BASE_ATTACK_DAMAGE_MODIFIER_ID, 5.0, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND)
-                     .add(EntityAttributes.ATTACK_SPEED, new EntityAttributeModifier(BASE_ATTACK_SPEED_MODIFIER_ID, -3.4F, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND)
-                     .add(EntityAttributes.FALL_DAMAGE_MULTIPLIER, new EntityAttributeModifier(Identifier.of(MOD_ID,id), -0.80F, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), AttributeModifierSlot.MAINHAND)
+               .component(DataComponents.TOOL, new Tool(List.of(), 1.0F, 2, false))
+               .component(DataComponents.CONSUMABLE, Consumable.builder().consumeSeconds(72000).animation(ItemUseAnimation.BOW).sound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.AMETHYST_BLOCK_CHIME)).build())
+               .component(DataComponents.WEAPON, new Weapon(1, 7.5F))
+               .component(DataComponents.USE_EFFECTS, new UseEffects(false,true,0.01f))
+               .attributes(ItemAttributeModifiers.builder()
+                     .add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 5.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
+                     .add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, -3.4F, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
+                     .add(Attributes.FALL_DAMAGE_MULTIPLIER, new AttributeModifier(Identifier.fromNamespaceAndPath(MOD_ID,id), -0.80F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), EquipmentSlotGroup.MAINHAND)
                      .build())
                .enchantable(15)
          );
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          
-         if(player.isOnGround()){
+         if(player.onGround()){
             boolean maelstrom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SINGULARITY_MAELSTROM) > 0;
-            if(maelstrom && player.isSneaking()){
+            if(maelstrom && player.isShiftKeyDown()){
                putProperty(stack,MODE_TAG,2);
             }else{
                putProperty(stack,MODE_TAG,0);
                boolean domain = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.GRAVITIC_DOMAIN) > 0;
                for(Entity affectedEntity : domain ? getAffectedEntities(player,true, 3.5) : List.of(player)){
-                  if(affectedEntity.getVelocity().getY() < 0.75) affectedEntity.setVelocity(affectedEntity.getVelocity().multiply(1,0,1).add(0,0.75,0));
-                  if(affectedEntity instanceof ServerPlayerEntity affectedPlayer){
-                     affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
+                  if(affectedEntity.getDeltaMovement().y() < 0.75) affectedEntity.setDeltaMovement(affectedEntity.getDeltaMovement().multiply(1,0,1).add(0,0.75,0));
+                  if(affectedEntity instanceof ServerPlayer affectedPlayer){
+                     affectedPlayer.connection.send(new ClientboundSetEntityMotionPacket(affectedPlayer));
                   }
                }
-               ArcanaEffectUtils.circle(player.getEntityWorld(),null,player.getEntityPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
+               ArcanaEffectUtils.circle(player.level(),null,player.position().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
             }
          }else{
             putProperty(stack,MODE_TAG,1);
             putProperty(stack,FALL_START_HEIGHT_TAG,player.getY());
             boolean domain = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.GRAVITIC_DOMAIN) > 0;
             for(Entity affectedEntity : domain ? getAffectedEntities(player,true, 3.5) : List.of(player)){
-               if(affectedEntity.getVelocity().getY() > -1) affectedEntity.setVelocity(affectedEntity.getVelocity().multiply(1,0,1).add(0,-1,0));
-               if(affectedEntity instanceof ServerPlayerEntity affectedPlayer){
-                  affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
+               if(affectedEntity.getDeltaMovement().y() > -1) affectedEntity.setDeltaMovement(affectedEntity.getDeltaMovement().multiply(1,0,1).add(0,-1,0));
+               if(affectedEntity instanceof ServerPlayer affectedPlayer){
+                  affectedPlayer.connection.send(new ClientboundSetEntityMotionPacket(affectedPlayer));
                }
             }
-            ArcanaEffectUtils.circle(player.getEntityWorld(),null,player.getEntityPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
+            ArcanaEffectUtils.circle(player.level(),null,player.position().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
          }
          gravityEffects(player,stack);
-         playerEntity.setCurrentHand(hand);
-         return ActionResult.CONSUME;
+         playerEntity.startUsingItem(hand);
+         return InteractionResult.CONSUME;
       }
       
       @Override
-      public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks){
-         if(!(user instanceof ServerPlayerEntity player)) return;
+      public void onUseTick(Level world, LivingEntity user, ItemStack stack, int remainingUseTicks){
+         if(!(user instanceof ServerPlayer player)) return;
          gravityEffects(player,stack);
       }
       
       @Override
-      public int getMaxUseTime(ItemStack stack, LivingEntity user) {
+      public int getUseDuration(ItemStack stack, LivingEntity user) {
          return 72000;
       }
       
       @Override
-      public UseAction getUseAction(ItemStack stack) {
-         return UseAction.BOW;
+      public ItemUseAnimation getUseAnimation(ItemStack stack) {
+         return ItemUseAnimation.BOW;
       }
    }
 }

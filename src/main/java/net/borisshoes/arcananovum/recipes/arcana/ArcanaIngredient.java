@@ -1,19 +1,19 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.Potion;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -32,14 +32,14 @@ public class ArcanaIngredient {
       this.itemType = itemType;
       this.ignoresResourceful = ignoresResourceful;
       this.exampleStack = new ItemStack(itemType,count);
-      this.itemPredicate = (stack) -> stack.isOf(itemType);
+      this.itemPredicate = (stack) -> stack.is(itemType);
    }
    
    public ArcanaIngredient(Item itemType, int count){
       this.count = count;
       this.itemType = itemType;
       this.exampleStack = new ItemStack(itemType,count);
-      this.itemPredicate = (stack) -> stack.isOf(itemType);
+      this.itemPredicate = (stack) -> stack.is(itemType);
       this.ignoresResourceful = false;
    }
    
@@ -55,36 +55,36 @@ public class ArcanaIngredient {
       return new ArcanaIngredient(itemType,newCount,ignoresResourceful,exampleStack,itemPredicate);
    }
    
-   public ArcanaIngredient withEnchantments(EnchantmentLevelEntry... enchantments){
+   public ArcanaIngredient withEnchantments(EnchantmentInstance... enchantments){
       this.itemPredicate = this.itemPredicate.and((stack) -> {
-         ItemEnchantmentsComponent enchants = EnchantmentHelper.getEnchantments(stack);
-         for(EnchantmentLevelEntry enchantment : enchantments){
+         ItemEnchantments enchants = EnchantmentHelper.getEnchantmentsForCrafting(stack);
+         for(EnchantmentInstance enchantment : enchantments){
             if(enchants.getLevel(enchantment.enchantment()) < enchantment.level()) return false;
          }
          return true;
       });
       
-      for(EnchantmentLevelEntry enchantment : enchantments){
-         this.exampleStack.addEnchantment(enchantment.enchantment(),enchantment.level());
+      for(EnchantmentInstance enchantment : enchantments){
+         this.exampleStack.enchant(enchantment.enchantment(),enchantment.level());
       }
       
       return this;
    }
    
-   public ArcanaIngredient withPotions(RegistryEntry<Potion>... potions){
-      List<StatusEffectInstance> effects = new ArrayList<>();
+   public ArcanaIngredient withPotions(Holder<Potion>... potions){
+      List<MobEffectInstance> effects = new ArrayList<>();
       Arrays.stream(potions).forEach(potion -> effects.addAll(potion.value().getEffects()));
-      return withEffects(effects.toArray(new StatusEffectInstance[0]));
+      return withEffects(effects.toArray(new MobEffectInstance[0]));
    }
    
-   public ArcanaIngredient withEffects(StatusEffectInstance... effects){
+   public ArcanaIngredient withEffects(MobEffectInstance... effects){
       this.itemPredicate = this.itemPredicate.and((stack) -> {
-         PotionContentsComponent pots = stack.get(DataComponentTypes.POTION_CONTENTS);
+         PotionContents pots = stack.get(DataComponents.POTION_CONTENTS);
          
-         for(StatusEffectInstance reqEffect : effects){
+         for(MobEffectInstance reqEffect : effects){
             boolean found = false;
-            for(StatusEffectInstance effect : pots.getEffects()){
-               if(reqEffect.getEffectType().value().equals(effect.getEffectType().value()) && effect.getAmplifier() >= reqEffect.getAmplifier() && effect.getDuration() >= reqEffect.getDuration()){
+            for(MobEffectInstance effect : pots.getAllEffects()){
+               if(reqEffect.getEffect().value().equals(effect.getEffect().value()) && effect.getAmplifier() >= reqEffect.getAmplifier() && effect.getDuration() >= reqEffect.getDuration()){
                   found = true;
                   break;
                }
@@ -94,16 +94,16 @@ public class ArcanaIngredient {
          return true;
       });
       
-      OptionalInt colorOpt = PotionContentsComponent.mixColors(List.of(effects));
-      PotionContentsComponent newComp = new PotionContentsComponent(Optional.empty(),colorOpt.isPresent() ? Optional.of(colorOpt.getAsInt()) : Optional.empty(),List.of(effects),Optional.empty());
-      this.exampleStack.set(DataComponentTypes.POTION_CONTENTS,newComp);
+      OptionalInt colorOpt = PotionContents.getColorOptional(List.of(effects));
+      PotionContents newComp = new PotionContents(Optional.empty(),colorOpt.isPresent() ? Optional.of(colorOpt.getAsInt()) : Optional.empty(),List.of(effects),Optional.empty());
+      this.exampleStack.set(DataComponents.POTION_CONTENTS,newComp);
       
-      if(this.exampleStack.isOf(Items.POTION)){
-         this.exampleStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Potion").setStyle(Style.EMPTY.withItalic(false)));
-      }else if(this.exampleStack.isOf(Items.SPLASH_POTION)){
-         this.exampleStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Splash Potion").setStyle(Style.EMPTY.withItalic(false)));
-      }else if(this.exampleStack.isOf(Items.LINGERING_POTION)){
-         this.exampleStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Lingering Potion").setStyle(Style.EMPTY.withItalic(false)));
+      if(this.exampleStack.is(Items.POTION)){
+         this.exampleStack.set(DataComponents.CUSTOM_NAME, Component.literal("Potion").setStyle(Style.EMPTY.withItalic(false)));
+      }else if(this.exampleStack.is(Items.SPLASH_POTION)){
+         this.exampleStack.set(DataComponents.CUSTOM_NAME, Component.literal("Splash Potion").setStyle(Style.EMPTY.withItalic(false)));
+      }else if(this.exampleStack.is(Items.LINGERING_POTION)){
+         this.exampleStack.set(DataComponents.CUSTOM_NAME, Component.literal("Lingering Potion").setStyle(Style.EMPTY.withItalic(false)));
       }
       
       return this;
@@ -140,7 +140,7 @@ public class ArcanaIngredient {
          return ItemStack.EMPTY;
       }else{
          ItemStack stackCopy = stack.copy();
-         stackCopy.decrement(newCount);
+         stackCopy.shrink(newCount);
          return stackCopy;
       }
    }
@@ -150,7 +150,7 @@ public class ArcanaIngredient {
    }
    
    public String getName(){
-      return ingredientAsStack().getName().getString();
+      return ingredientAsStack().getHoverName().getString();
    }
    
    @Override

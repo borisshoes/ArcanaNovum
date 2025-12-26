@@ -14,26 +14,26 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CarvedPumpkinBlock;
-import net.minecraft.block.pattern.BlockPattern;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CarvedPumpkinBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -53,39 +53,39 @@ public class SovereignCatalyst extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.GOLD_INGOT;
       item = new SovereignCatalystItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_EXOTIC_CATALYST,ResearchTasks.OBTAIN_GOLD_INGOT,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_CATALYST,ResearchTasks.OBTAIN_GOLD_INGOT,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Augment ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Catalysts").formatted(Formatting.BLUE))
-            .append(Text.literal(" can be used to ").formatted(Formatting.GRAY))
-            .append(Text.literal("augment ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("your ").formatted(Formatting.GRAY))
-            .append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Augments ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("require more ").formatted(Formatting.GRAY))
-            .append(Text.literal("powerful ").formatted(Formatting.GREEN))
-            .append(Text.literal("Catalysts ").formatted(Formatting.BLUE))
-            .append(Text.literal("at higher levels").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Apply ").formatted(Formatting.GREEN))
-            .append(Text.literal("these ").formatted(Formatting.GRAY))
-            .append(Text.literal("Catalysts ").formatted(Formatting.BLUE))
-            .append(Text.literal("in the ").formatted(Formatting.GRAY))
-            .append(Text.literal("Tinkering Menu").formatted(Formatting.BLUE))
-            .append(Text.literal(" of a ").formatted(Formatting.GRAY))
-            .append(Text.literal("Twilight Anvil").formatted(Formatting.GREEN)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Augment ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("Catalysts").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" can be used to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("augment ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("your ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Arcana Items").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Augments ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("require more ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("powerful ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("Catalysts ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("at higher levels").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Apply ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("these ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Catalysts ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("in the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Tinkering Menu").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" of a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Twilight Anvil").withStyle(ChatFormatting.GREEN)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -107,10 +107,10 @@ public class SovereignCatalyst extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("     Sovereign\n   Augmentation\n      Catalyst").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nGOLD! The gemstones already provide enough reinforcement. Gold lets the energy be more malleable to more creative applications. But, I ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Sovereign\n   Augmentation\n      Catalyst").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nthink there’s a little more potential here…").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("     Sovereign\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nGOLD! The gemstones already provide enough reinforcement. Gold lets the energy be more malleable to more creative applications. But, I ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Sovereign\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nthink there’s a little more potential here…").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -120,46 +120,46 @@ public class SovereignCatalyst extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public ActionResult useOnBlock(ItemUsageContext context){
-         World world = context.getWorld();
-         PlayerEntity playerEntity = context.getPlayer();
-         BlockPos pos = context.getBlockPos();
+      public InteractionResult useOn(UseOnContext context){
+         Level world = context.getLevel();
+         Player playerEntity = context.getPlayer();
+         BlockPos pos = context.getClickedPos();
          BlockState state = world.getBlockState(pos);
          boolean canSpawn = world.getDifficulty() != Difficulty.PEACEFUL;
-         if(canSpawn && playerEntity instanceof ServerPlayerEntity serverPlayer){
+         if(canSpawn && playerEntity instanceof ServerPlayer serverPlayer){
             canSpawn = ArcanaNovum.data(serverPlayer).hasResearched(ArcanaRegistry.DIVINE_CATALYST);
          }
          
-         if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY() && canSpawn){ // Check construct
+         if(state.is(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getMinY() && canSpawn){ // Check construct
             BlockPattern pattern = getConstructPattern();
-            BlockPattern.Result patternResult = pattern.searchAround(world, pos.add(-1,-1,-1));
+            BlockPattern.BlockPatternMatch patternResult = pattern.find(world, pos.offset(-1,-1,-1));
             if(patternResult != null){
-               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, SpawnReason.TRIGGERED);
-               if(constructEntity != null && world instanceof ServerWorld serverWorld){
-                  CarvedPumpkinBlock.breakPatternBlocks(world, patternResult);
-                  BlockPos blockPos = patternResult.translate(1, 1, 0).getBlockPos();
-                  constructEntity.refreshPositionAndAngles((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
-                  constructEntity.bodyYaw = patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
+               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, EntitySpawnReason.TRIGGERED);
+               if(constructEntity != null && world instanceof ServerLevel serverWorld){
+                  CarvedPumpkinBlock.clearPatternBlocks(world, patternResult);
+                  BlockPos blockPos = patternResult.getBlock(1, 1, 0).getPos();
+                  constructEntity.snapTo((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
+                  constructEntity.yBodyRot = patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
                   constructEntity.onSummoned(playerEntity);
                   
-                  world.spawnEntity(constructEntity);
+                  world.addFreshEntity(constructEntity);
                   CarvedPumpkinBlock.updatePatternBlocks(world, patternResult);
                   
-                  if(playerEntity instanceof ServerPlayerEntity player){
+                  if(playerEntity instanceof ServerPlayer player){
                      ArcanaAchievements.grant(player,ArcanaAchievements.DOOR_OF_DIVINITY.id);
                   }
                   
-                  context.getStack().decrement(1);
+                  context.getItemInHand().shrink(1);
                }
-               return ActionResult.SUCCESS_SERVER;
+               return InteractionResult.SUCCESS_SERVER;
             }
          }
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
    }
 }

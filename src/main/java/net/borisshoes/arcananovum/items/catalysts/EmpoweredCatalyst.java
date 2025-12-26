@@ -11,12 +11,12 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -35,39 +35,39 @@ public class EmpoweredCatalyst extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.EMERALD;
       item = new EmpoweredCatalystItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GREEN);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_MUNDANE_CATALYST,ResearchTasks.OBTAIN_EMERALD,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_MUNDANE_CATALYST,ResearchTasks.OBTAIN_EMERALD,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Augment ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Catalysts").formatted(Formatting.BLUE))
-            .append(Text.literal(" can be used to ").formatted(Formatting.GRAY))
-            .append(Text.literal("augment ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("your ").formatted(Formatting.GRAY))
-            .append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Augments ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("require more ").formatted(Formatting.GRAY))
-            .append(Text.literal("powerful ").formatted(Formatting.GREEN))
-            .append(Text.literal("Catalysts ").formatted(Formatting.BLUE))
-            .append(Text.literal("at higher levels").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Apply ").formatted(Formatting.GREEN))
-            .append(Text.literal("these ").formatted(Formatting.GRAY))
-            .append(Text.literal("Catalysts ").formatted(Formatting.BLUE))
-            .append(Text.literal("in the ").formatted(Formatting.GRAY))
-            .append(Text.literal("Tinkering Menu").formatted(Formatting.BLUE))
-            .append(Text.literal(" of a ").formatted(Formatting.GRAY))
-            .append(Text.literal("Twilight Anvil").formatted(Formatting.GREEN)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Augment ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("Catalysts").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" can be used to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("augment ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("your ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Arcana Items").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Augments ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("require more ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("powerful ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("Catalysts ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("at higher levels").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Apply ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("these ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Catalysts ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("in the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Tinkering Menu").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" of a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Twilight Anvil").withStyle(ChatFormatting.GREEN)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -89,10 +89,10 @@ public class EmpoweredCatalyst extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("     Empowered\n    Augmentation\n       Catalyst").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nMy previous endeavor was successful, at least somewhat. The Matrix destabilized with more demanding augmentations. I believe I can press it ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Empowered\n    Augmentation\n       Catalyst").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nfurther if I use some better crystals.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("     Empowered\n    Augmentation\n       Catalyst").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nMy previous endeavor was successful, at least somewhat. The Matrix destabilized with more demanding augmentations. I believe I can press it ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Empowered\n    Augmentation\n       Catalyst").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nfurther if I use some better crystals.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -102,7 +102,7 @@ public class EmpoweredCatalyst extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

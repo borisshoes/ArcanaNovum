@@ -14,29 +14,29 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -57,43 +57,43 @@ public class FelidaeCharm extends ArcanaItem {
       itemVersion = 1;
       vanillaItem = Items.STRING;
       item = new FelidaeCharmItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_CREEPER_HEAD,ResearchTasks.ADVANCEMENT_COMPLETE_CATALOGUE,ResearchTasks.CAT_SCARE,ResearchTasks.FEATHER_FALL,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CREEPER_HEAD,ResearchTasks.ADVANCEMENT_COMPLETE_CATALOGUE,ResearchTasks.CAT_SCARE,ResearchTasks.FEATHER_FALL,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The charm ").formatted(Formatting.GOLD))
-            .append(Text.literal("purrs ").formatted(Formatting.YELLOW))
-            .append(Text.literal("softly when worn.").formatted(Formatting.GOLD)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Keeping this ").formatted(Formatting.GOLD))
-            .append(Text.literal("charm ").formatted(Formatting.YELLOW))
-            .append(Text.literal("on your person gives you ").formatted(Formatting.GOLD))
-            .append(Text.literal("cat-like").formatted(Formatting.GRAY))
-            .append(Text.literal(" abilities.").formatted(Formatting.GOLD)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Your ").formatted(Formatting.GOLD))
-            .append(Text.literal("falls ").formatted(Formatting.GRAY))
-            .append(Text.literal("become somewhat ").formatted(Formatting.GOLD))
-            .append(Text.literal("graceful ").formatted(Formatting.AQUA))
-            .append(Text.literal("and ").formatted(Formatting.GOLD))
-            .append(Text.literal("cushioned").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.GOLD)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Creepers ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("and ").formatted(Formatting.GOLD))
-            .append(Text.literal("Phantoms ").formatted(Formatting.BLUE))
-            .append(Text.literal("give you a ").formatted(Formatting.GOLD))
-            .append(Text.literal("wide berth").formatted(Formatting.YELLOW))
-            .append(Text.literal(".").formatted(Formatting.GOLD)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The charm ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("purrs ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("softly when worn.").withStyle(ChatFormatting.GOLD)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Keeping this ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("charm ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("on your person gives you ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("cat-like").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(" abilities.").withStyle(ChatFormatting.GOLD)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Your ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("falls ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("become somewhat ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("graceful ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("cushioned").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.GOLD)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Creepers ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("and ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("Phantoms ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("give you a ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("wide berth").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(".").withStyle(ChatFormatting.GOLD)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -104,7 +104,7 @@ public class FelidaeCharm extends ArcanaItem {
       ArcanaIngredient c = new ArcanaIngredient(Items.PUFFERFISH,16);
       ArcanaIngredient g = new ArcanaIngredient(Items.PHANTOM_MEMBRANE,4);
       ArcanaIngredient w = new ArcanaIngredient(Items.SALMON,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING),4));
+      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING),4));
       ArcanaIngredient k = new ArcanaIngredient(Items.COD,16);
       ArcanaIngredient m = new ArcanaIngredient(Items.CREEPER_HEAD,1, true);
       ArcanaIngredient o = new ArcanaIngredient(Items.TROPICAL_FISH,16);
@@ -120,10 +120,10 @@ public class FelidaeCharm extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Charm of Felidae").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nCats are quite powerful creatures, managing to frighten phantoms and creepers. They can even fall from any height without care.\n\nThis Charm seeks to mimic a fraction of  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Charm of Felidae").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\ntheir majestic power.\n\nThe Charm halves all fall damage, stops phantoms from swooping the holder, and gives creepers a good scare if they get too close.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal(" Charm of Felidae").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nCats are quite powerful creatures, managing to frighten phantoms and creepers. They can even fall from any height without care.\n\nThis Charm seeks to mimic a fraction of  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Charm of Felidae").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\ntheir majestic power.\n\nThe Charm halves all fall damage, stops phantoms from swooping the holder, and gives creepers a good scare if they get too close.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -133,7 +133,7 @@ public class FelidaeCharm extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
@@ -141,31 +141,31 @@ public class FelidaeCharm extends ArcanaItem {
          if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.PANTHERA.id) >= 1){
             stringList.add("panthera");
          }
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
-         SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_AMBIENT, 1f, (float) (0.5*(Math.random()-0.5)+1));
-         return ActionResult.SUCCESS_SERVER;
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
+         SoundUtils.playSongToPlayer(player, SoundEvents.CAT_AMBIENT, 1f, (float) (0.5*(Math.random()-0.5)+1));
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
-         if(world.getServer().getTicks() % 20 == 0 && !player.isSpectator()){
-            Vec3d pos = player.getEntityPos();
-            Box rangeBox = new Box(pos.x+5,pos.y+3,pos.z+5,pos.x-5,pos.y-3,pos.z-5);
-            List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e instanceof CreeperEntity);
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(world.getServer().getTickCount() % 20 == 0 && !player.isSpectator()){
+            Vec3 pos = player.position();
+            AABB rangeBox = new AABB(pos.x+5,pos.y+3,pos.z+5,pos.x-5,pos.y-3,pos.z-5);
+            List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e instanceof Creeper);
             if(entities.size() >= 4) ArcanaAchievements.grant(player,ArcanaAchievements.INFILTRATION.id);
          }
       }

@@ -2,17 +2,17 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.TickTimerCallback;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class BeaconMiningLaserCallback extends TickTimerCallback {
-   private final ServerWorld world;
+   private final ServerLevel world;
    private final BlockPos beaconPos;
    private final BlockPos breakPos;
    
-   public BeaconMiningLaserCallback(ServerWorld world, BlockPos beaconPos, BlockPos breakPos){
+   public BeaconMiningLaserCallback(ServerLevel world, BlockPos beaconPos, BlockPos breakPos){
       super(5, null, null);
       this.world = world;
       this.beaconPos = beaconPos;
@@ -22,13 +22,13 @@ public class BeaconMiningLaserCallback extends TickTimerCallback {
    
    @Override
    public void onTimer(){
-      if(world.getBlockState(beaconPos).isOf(Blocks.BEACON)){
+      if(world.getBlockState(beaconPos).is(Blocks.BEACON)){
          BlockState breakState = world.getBlockState(breakPos);
-         if(!(breakState.getOpacity() < 15 || breakState.isOf(Blocks.BEDROCK))){
-            world.breakBlock(breakPos,true);
+         if(!(breakState.getLightBlock() < 15 || breakState.is(Blocks.BEDROCK))){
+            world.destroyBlock(breakPos,true);
          }
-         if(world.isInBuildLimit(breakPos.up())){
-            BorisLib.addTickTimerCallback(world,new BeaconMiningLaserCallback(world,beaconPos,breakPos.up()));
+         if(world.isInWorldBounds(breakPos.above())){
+            BorisLib.addTickTimerCallback(world,new BeaconMiningLaserCallback(world,beaconPos,breakPos.above()));
          }
       }
    }

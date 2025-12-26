@@ -8,13 +8,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.permission.PermissionPredicate;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.dedicated.command.OpCommand;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.TranslatableTextContent;
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.util.StringRepresentable;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,8 +21,8 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 @SuppressWarnings({"unchecked","rawtype"})
 public class ConfigUtils {
@@ -104,24 +102,24 @@ public class ConfigUtils {
       }
    }
    
-   public LiteralArgumentBuilder<ServerCommandSource> generateCommand(){
-      LiteralArgumentBuilder<ServerCommandSource> out =
-            literal("arcana").then(literal("config").requires(CommandManager.requirePermissionLevel(CommandManager.OWNERS_CHECK))
+   public LiteralArgumentBuilder<CommandSourceStack> generateCommand(){
+      LiteralArgumentBuilder<CommandSourceStack> out =
+            literal("arcana").then(literal("config").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
                   .executes(ctx -> {
                      values.stream().filter(v -> v.command != null).forEach(value ->
-                           ctx.getSource().sendFeedback(()-> MutableText.of(new TranslatableTextContent(value.command.getterText, null, new String[] {String.valueOf(value.value.toString())})), false));
+                           ctx.getSource().sendSuccess(()-> MutableComponent.create(new TranslatableContents(value.command.getterText, null, new String[] {String.valueOf(value.value.toString())})), false));
                      return 1;
                   }));
       values.stream().filter(v -> v.command != null).forEach(value ->
             out.then(literal("config").then(literal(value.name)
                   .executes(ctx -> {
-                     ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new String[] {String.valueOf(value.value.toString())})), false);
+                     ctx.getSource().sendSuccess(()-> MutableComponent.create(new TranslatableContents(value.command.getterText, null, new String[] {String.valueOf(value.value.toString())})), false);
                      return 1;
                   })
                   .then(argument(value.name, value.getArgumentType()).suggests(value::getSuggestions)
                         .executes(ctx -> {
                            value.value = value.parseArgumentValue(ctx);
-                           ((CommandContext<ServerCommandSource>) ctx).getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.setterText, null, new String[] {String.valueOf(value.value.toString())})), true);
+                           ((CommandContext<CommandSourceStack>) ctx).getSource().sendSuccess(()-> MutableComponent.create(new TranslatableContents(value.command.setterText, null, new String[] {String.valueOf(value.value.toString())})), true);
                            this.save();
                            return 1;
                         })))));
@@ -154,9 +152,9 @@ public class ConfigUtils {
       
       public abstract ArgumentType<?> getArgumentType();
       
-      public abstract T parseArgumentValue(CommandContext<ServerCommandSource> ctx);
+      public abstract T parseArgumentValue(CommandContext<CommandSourceStack> ctx);
       
-      public abstract CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder);
+      public abstract CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder);
    }
    
    public static class IntegerConfigValue extends IConfigValue<Integer> {
@@ -184,11 +182,11 @@ public class ConfigUtils {
       }
       
       @Override
-      public Integer parseArgumentValue(CommandContext<ServerCommandSource> ctx){
+      public Integer parseArgumentValue(CommandContext<CommandSourceStack> ctx){
          return IntegerArgumentType.getInteger(ctx, name);
       }
       
-      public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+      public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
          if(limits.max - limits.min < 10000){
             String start = builder.getRemaining().toLowerCase(Locale.ROOT);
             Set<String> nums = new HashSet<>();
@@ -235,11 +233,11 @@ public class ConfigUtils {
       }
       
       @Override
-      public Boolean parseArgumentValue(CommandContext<ServerCommandSource> ctx){
+      public Boolean parseArgumentValue(CommandContext<CommandSourceStack> ctx){
          return BoolArgumentType.getBool(ctx, name);
       }
       
-      public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+      public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
          Set<String> options = new HashSet<>();
          options.add("true");
          options.add("false");
@@ -270,18 +268,18 @@ public class ConfigUtils {
       }
       
       @Override
-      public String parseArgumentValue(CommandContext<ServerCommandSource> ctx){
+      public String parseArgumentValue(CommandContext<CommandSourceStack> ctx){
          return StringArgumentType.getString(ctx, name);
       }
       
-      public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+      public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
          String start = builder.getRemaining().toLowerCase(Locale.ROOT);
          Arrays.stream(options).filter(s -> s.toLowerCase(Locale.ROOT).startsWith(start)).forEach(builder::suggest);
          return builder.buildFuture();
       }
    }
    
-   public static class EnumConfigValue<K extends Enum<K> & StringIdentifiable> extends IConfigValue<K>{
+   public static class EnumConfigValue<K extends Enum<K> & StringRepresentable> extends IConfigValue<K>{
       protected final K defaultValue;
       private final Class<K> typeClass;
       
@@ -298,7 +296,7 @@ public class ConfigUtils {
       @Override
       public K getFromString(String value){
          for(K k : EnumSet.allOf(typeClass)){
-            if(k.asString().equalsIgnoreCase(value)){
+            if(k.getSerializedName().equalsIgnoreCase(value)){
                return k;
             }
          }
@@ -311,15 +309,15 @@ public class ConfigUtils {
       }
       
       @Override
-      public K parseArgumentValue(CommandContext<ServerCommandSource> ctx){
+      public K parseArgumentValue(CommandContext<CommandSourceStack> ctx){
          String parsedString = StringArgumentType.getString(ctx, name);
          return K.valueOf(this.typeClass,parsedString);
       }
       
-      public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+      public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
          Set<String> options = new HashSet<>();
          for(K k : EnumSet.allOf(typeClass)){
-            options.add(k.asString());
+            options.add(k.getSerializedName());
          }
          String start = builder.getRemaining().toLowerCase(Locale.ROOT);
          options.stream().filter(s -> s.toLowerCase(Locale.ROOT).startsWith(start)).forEach(builder::suggest);
@@ -343,18 +341,18 @@ public class ConfigUtils {
       }
    }
    
-   public static <K extends Enum<K> & StringIdentifiable> CompletableFuture<Suggestions> getEnumSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder, Class<K> enumClass){
+   public static <K extends Enum<K> & StringRepresentable> CompletableFuture<Suggestions> getEnumSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder, Class<K> enumClass){
       Set<String> options = new HashSet<>();
       for(K k : EnumSet.allOf(enumClass)){
-         options.add(k.asString());
+         options.add(k.getSerializedName());
       }
       String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       options.stream().filter(s -> s.toLowerCase(Locale.ROOT).startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
    }
    
-   public static <K extends Enum<K> & StringIdentifiable> K parseEnum(String string, Class<K> enumClass){
-      Optional<K> opt = EnumSet.allOf(enumClass).stream().filter(en -> en.asString().equals(string)).findFirst();
+   public static <K extends Enum<K> & StringRepresentable> K parseEnum(String string, Class<K> enumClass){
+      Optional<K> opt = EnumSet.allOf(enumClass).stream().filter(en -> en.getSerializedName().equals(string)).findFirst();
       return opt.orElse(null);
    }
 }

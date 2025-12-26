@@ -15,29 +15,29 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -61,50 +61,50 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.SMITHING_TABLE;
-      block = new StarlightForgeBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
+      block = new StarlightForgeBlock(BlockBehaviour.Properties.of().strength(2.5f,1200.0f).sound(SoundType.WOOD));
       item = new StarlightForgeItem(this.block);
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_ARCANE_TOME,ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_ARCANE_TOME,ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,SEED_USES_TAG,0);
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("With the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("stars ").formatted(Formatting.WHITE))
-            .append(Text.literal("as your witness...").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Your ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("journey ").formatted(Formatting.WHITE))
-            .append(Text.literal("of ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("forging ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("new ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Arcana ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("begins!").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal(""));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Forge").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" lets you craft ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Arcana Items").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" and ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("enhanced equipment").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Forge").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" acts as a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("hub ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("for other ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Forge Structures").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("With the ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("stars ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("as your witness...").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Your ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("journey ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("of ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("forging ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("new ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Arcana ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("begins!").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal(""));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Forge").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" lets you craft ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Arcana Items").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" and ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("enhanced equipment").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Forge").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" acts as a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("hub ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("for other ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Forge Structures").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
       addForgeLore(lore);
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
@@ -124,9 +124,9 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       return multiblock;
    }
    
-   public static StarlightForgeBlockEntity findActiveForge(ServerWorld world, BlockPos searchingPos){
+   public static StarlightForgeBlockEntity findActiveForge(ServerLevel world, BlockPos searchingPos){
       BlockPos range = new BlockPos(15, 8, 15);
-      for(BlockPos blockPos : BlockPos.iterate(searchingPos.add(range), searchingPos.subtract(range))){
+      for(BlockPos blockPos : BlockPos.betweenClosed(searchingPos.offset(range), searchingPos.subtract(range))){
          BlockEntity be = world.getBlockEntity(blockPos);
          if(be instanceof StarlightForgeBlockEntity forge && forge.isAssembled()){
             BlockPos offset = blockPos.subtract(searchingPos);
@@ -140,20 +140,20 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Text.literal("In World Recipe").formatted(Formatting.BLUE))
-            .withLore(List.of(Text.literal("Do this in the World").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("In World Recipe").withStyle(ChatFormatting.BLUE))
+            .withLore(List.of(Component.literal("Do this in the World").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient s = new ExplainIngredient(Items.SMITHING_TABLE,1,"Smithing Table")
-            .withName(Text.literal("Smithing Table").formatted(Formatting.BOLD,Formatting.GRAY))
-            .withLore(List.of(Text.literal("Place a Smithing Table in the World").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Smithing Table").withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY))
+            .withLore(List.of(Component.literal("Place a Smithing Table in the World").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient m = new ExplainIngredient(Items.SEA_LANTERN,1,"",false)
-            .withName(Text.literal("Night of a New Moon").formatted(Formatting.BOLD,Formatting.GRAY))
-            .withLore(List.of(Text.literal("Follow this Recipe under the darkness of a New Moon").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Night of a New Moon").withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY))
+            .withLore(List.of(Component.literal("Follow this Recipe under the darkness of a New Moon").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient g = new ExplainIngredient(Items.ENCHANTED_GOLDEN_APPLE,1,"Enchanted Golden Apple")
-            .withName(Text.literal("Enchanted Golden Apple").formatted(Formatting.BOLD,Formatting.GOLD))
-            .withLore(List.of(Text.literal("Place the apple upon the Smithing Table.").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Enchanted Golden Apple").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD))
+            .withLore(List.of(Component.literal("Place the apple upon the Smithing Table.").withStyle(ChatFormatting.DARK_PURPLE)));
       ExplainIngredient t = new ExplainIngredient(ArcanaRegistry.ARCANE_TOME.getItem(),1,"Tome of Arcana Novum")
-            .withName(Text.literal("Tome of Arcana Novum").formatted(Formatting.BOLD,Formatting.DARK_AQUA))
-            .withLore(List.of(Text.literal("Place the Tome upon the Smithing Table.").formatted(Formatting.DARK_PURPLE)));
+            .withName(Component.literal("Tome of Arcana Novum").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA))
+            .withLore(List.of(Component.literal("Place the Tome upon the Smithing Table.").withStyle(ChatFormatting.DARK_PURPLE)));
       
       ExplainIngredient[][] ingredients = {
             {m,a,a,a,a},
@@ -165,12 +165,12 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Starlight Forge").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nEnchanted Golden Apples are a unique arcane artifact that I have discovered. Modern replicants do not seem to hold the same caliber of properties. My latest theories of Arcana suggest that the magic ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Starlight Forge").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nof this land is far more versatile than the old scholars believed. I just need something to kickstart my new field of research. It is possible that I can use some energy from starlight to transfer the ancient enchantment of a ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Starlight Forge").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nGolden Apple. If I am to be successful in my research, I will need a forge…\n\nThe Starlight Forge allows the creation of infused weapons, tools, and armor.\n\nIt creates a 17x11x17 workspace that can ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Starlight Forge").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\ninteract with additions to the forge that can be crafted as I advance my research.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("  Starlight Forge").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nEnchanted Golden Apples are a unique arcane artifact that I have discovered. Modern replicants do not seem to hold the same caliber of properties. My latest theories of Arcana suggest that the magic ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Starlight Forge").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nof this land is far more versatile than the old scholars believed. I just need something to kickstart my new field of research. It is possible that I can use some energy from starlight to transfer the ancient enchantment of a ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Starlight Forge").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nGolden Apple. If I am to be successful in my research, I will need a forge…\n\nThe Starlight Forge allows the creation of infused weapons, tools, and armor.\n\nIt creates a 17x11x17 workspace that can ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Starlight Forge").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\ninteract with additions to the forge that can be crafted as I advance my research.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -180,23 +180,23 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }
    
    public class StarlightForgeBlock extends ArcanaPolymerBlockEntity {
-      public StarlightForgeBlock(AbstractBlock.Settings settings){
+      public StarlightForgeBlock(BlockBehaviour.Properties settings){
          super(getThis(), settings);
       }
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.SMITHING_TABLE.getDefaultState();
+         return Blocks.SMITHING_TABLE.defaultBlockState();
       }
       
       @Nullable
-      public static StarlightForgeBlockEntity getEntity(World world, BlockPos pos){
+      public static StarlightForgeBlockEntity getEntity(Level world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
          if(!(state.getBlock() instanceof StarlightForgeBlock)){
             return null;
@@ -205,34 +205,34 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
+      public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new StarlightForgeBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
-         return validateTicker(type, ArcanaRegistry.STARLIGHT_FORGE_BLOCK_ENTITY, StarlightForgeBlockEntity::ticker);
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
+         return createTickerHelper(type, ArcanaRegistry.STARLIGHT_FORGE_BLOCK_ENTITY, StarlightForgeBlockEntity::ticker);
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, BlockHitResult hit){
+      public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult hit){
          StarlightForgeBlockEntity forge = (StarlightForgeBlockEntity) world.getBlockEntity(pos);
          if(forge != null){
-            if(playerEntity instanceof ServerPlayerEntity player){
+            if(playerEntity instanceof ServerPlayer player){
                if(forge.isAssembled()){
                   forge.openGui(0, player,"",null);
                }else{
-                  player.sendMessage(Text.literal("Multiblock not constructed."));
+                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
                   multiblock.displayStructure(forge.getMultiblockCheck(),player);
                }
             }
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
+      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof StarlightForgeBlockEntity forge){
             initializeArcanaBlock(stack,forge);

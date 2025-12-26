@@ -7,28 +7,28 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.*;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BundleContentsComponent;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.PlayerEnderChestContainer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.*;
 
@@ -40,7 +40,7 @@ public class ArcanaItemUtils {
    public static boolean isArcane(ItemStack item){
       try{
          if(item == null) return false;
-         ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.get(Identifier.of(MOD_ID, ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
+         ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.getValue(Identifier.fromNamespaceAndPath(MOD_ID, ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
          return arcanaItem != null;
       }catch(Exception e){
          e.printStackTrace();
@@ -98,7 +98,7 @@ public class ArcanaItemUtils {
    
    public static ArcanaItem identifyItem(ItemStack item){
       if(isArcane(item)){
-         return ArcanaRegistry.ARCANA_ITEMS.get(Identifier.of(MOD_ID, ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
+         return ArcanaRegistry.ARCANA_ITEMS.getValue(Identifier.fromNamespaceAndPath(MOD_ID, ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
       }
       return null;
    }
@@ -117,17 +117,17 @@ public class ArcanaItemUtils {
       return null;
    }
    
-   public static ServerPlayerEntity findHolder(MinecraftServer server, String uuid){
-      for(ServerPlayerEntity player : server.getPlayerManager().getPlayerList()){
+   public static ServerPlayer findHolder(MinecraftServer server, String uuid){
+      for(ServerPlayer player : server.getPlayerList().getPlayers()){
          if(getHolderStack(player, uuid) != null) return player;
       }
       return null;
    }
    
-   public static ItemStack getHolderStack(ServerPlayerEntity player, String uuid){
-      PlayerInventory inv = player.getInventory();
-      for(int i=0; i<inv.size();i++){
-         ItemStack item = inv.getStack(i);
+   public static ItemStack getHolderStack(ServerPlayer player, String uuid){
+      Inventory inv = player.getInventory();
+      for(int i = 0; i<inv.getContainerSize(); i++){
+         ItemStack item = inv.getItem(i);
          if(item.isEmpty()){
             continue;
          }
@@ -141,26 +141,26 @@ public class ArcanaItemUtils {
       return null;
    }
    
-   public static List<ArcanaInvItem> getActiveArcanaBlocks(ServerPlayerEntity player){
+   public static List<ArcanaInvItem> getActiveArcanaBlocks(ServerPlayer player){
       List<ArcanaInvItem> arcanaInv = new ArrayList<>();
       
-      for(Pair<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getUuidAsString().equals(pair.getRight().getCrafterId()) && pair.getLeft().hasWorld() && pair.getLeft().getWorld().getBlockEntity(pair.getLeft().getPos()) == pair.getLeft()).toList()){
-         BlockEntity blockEntity = pair.getLeft();
-         ArcanaBlockEntity arcanaBlockEntity = pair.getRight();
+      for(Tuple<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getStringUUID().equals(pair.getB().getCrafterId()) && pair.getA().hasLevel() && pair.getA().getLevel().getBlockEntity(pair.getA().getBlockPos()) == pair.getA()).toList()){
+         BlockEntity blockEntity = pair.getA();
+         ArcanaBlockEntity arcanaBlockEntity = pair.getB();
          
-         String dim = blockEntity.getWorld().getRegistryKey().getValue().toString();
+         String dim = blockEntity.getLevel().dimension().identifier().toString();
          String dimensionName = "Unknown";
-         if(dim.equals(ServerWorld.OVERWORLD.getValue().toString())){
+         if(dim.equals(ServerLevel.OVERWORLD.identifier().toString())){
             dimensionName = "Overworld";
-         }else if(dim.equals(ServerWorld.NETHER.getValue().toString())){
+         }else if(dim.equals(ServerLevel.NETHER.identifier().toString())){
             dimensionName = "Nether";
-         }else if(dim.equals(ServerWorld.END.getValue().toString())){
+         }else if(dim.equals(ServerLevel.END.identifier().toString())){
             dimensionName = "End";
          }
-         BlockPos pos = blockEntity.getPos();
+         BlockPos pos = blockEntity.getBlockPos();
          String posStr = " ("+pos.getX()+","+pos.getY()+","+pos.getZ()+")";
          
-         ArcanaItemContainer worldContainer = new ArcanaItemContainer(new SimpleInventory(1),1,1000,"World",dimensionName+posStr,0.25);
+         ArcanaItemContainer worldContainer = new ArcanaItemContainer(new SimpleContainer(1),1,1000,"World",dimensionName+posStr,0.25);
          ArcanaInvItem invItem = new ArcanaInvItem(arcanaBlockEntity.getArcanaItem(),1,arcanaBlockEntity.getAugments(),new ArrayList<>(List.of(worldContainer)));
          arcanaInv.add(invItem);
       }
@@ -168,45 +168,45 @@ public class ArcanaItemUtils {
       return arcanaInv;
    }
    
-   public static List<ArcanaInvItem> getArcanaInventory(ServerPlayerEntity player){
+   public static List<ArcanaInvItem> getArcanaInventory(ServerPlayer player){
       List<ArcanaInvItem> arcanaInv = new ArrayList<>();
-      PlayerInventory inv = player.getInventory();
-      EnderChestInventory eChest = player.getEnderChestInventory();
+      Inventory inv = player.getInventory();
+      PlayerEnderChestContainer eChest = player.getEnderChestInventory();
       arcanaInvHelper(inv,arcanaInv,new ArrayList<>());
-      arcanaInvHelper(eChest,arcanaInv,new ArrayList<>(List.of(new ArcanaItemContainer(player.getEnderChestInventory(),player.getEnderChestInventory().size(),100,"EC","Ender Chest",0.5))));
+      arcanaInvHelper(eChest,arcanaInv,new ArrayList<>(List.of(new ArcanaItemContainer(player.getEnderChestInventory(),player.getEnderChestInventory().getContainerSize(),100,"EC","Ender Chest",0.5))));
       arcanaInv.addAll(getActiveArcanaBlocks(player));
       return arcanaInv;
    }
    
-   public static void arcanaInvHelper(Inventory inv, List<ArcanaInvItem> arcanaInv, List<ArcanaItemContainer> containers){
-      for(int i=0; i<inv.size();i++){
-         ItemStack item = inv.getStack(i);
+   public static void arcanaInvHelper(Container inv, List<ArcanaInvItem> arcanaInv, List<ArcanaItemContainer> containers){
+      for(int i = 0; i<inv.getContainerSize(); i++){
+         ItemStack item = inv.getItem(i);
          if(item.isEmpty())
             continue;
          boolean isArcane = ArcanaItemUtils.isArcane(item);
-         boolean isBox = item.isOf(Items.SHULKER_BOX) || item.isOf(Items.WHITE_SHULKER_BOX) || item.isOf(Items.BLACK_SHULKER_BOX) || item.isOf(Items.BLUE_SHULKER_BOX) || item.isOf(Items.BROWN_SHULKER_BOX) || item.isOf(Items.CYAN_SHULKER_BOX) || item.isOf(Items.GRAY_SHULKER_BOX) || item.isOf(Items.GREEN_SHULKER_BOX) || item.isOf(Items.LIGHT_BLUE_SHULKER_BOX) || item.isOf(Items.LIGHT_GRAY_SHULKER_BOX) || item.isOf(Items.LIME_SHULKER_BOX) || item.isOf(Items.MAGENTA_SHULKER_BOX) || item.isOf(Items.ORANGE_SHULKER_BOX) || item.isOf(Items.PINK_SHULKER_BOX) || item.isOf(Items.PURPLE_SHULKER_BOX) || item.isOf(Items.RED_SHULKER_BOX) || item.isOf(Items.YELLOW_SHULKER_BOX);
-         boolean isBundle = item.contains(DataComponentTypes.BUNDLE_CONTENTS);
+         boolean isBox = item.is(Items.SHULKER_BOX) || item.is(Items.WHITE_SHULKER_BOX) || item.is(Items.BLACK_SHULKER_BOX) || item.is(Items.BLUE_SHULKER_BOX) || item.is(Items.BROWN_SHULKER_BOX) || item.is(Items.CYAN_SHULKER_BOX) || item.is(Items.GRAY_SHULKER_BOX) || item.is(Items.GREEN_SHULKER_BOX) || item.is(Items.LIGHT_BLUE_SHULKER_BOX) || item.is(Items.LIGHT_GRAY_SHULKER_BOX) || item.is(Items.LIME_SHULKER_BOX) || item.is(Items.MAGENTA_SHULKER_BOX) || item.is(Items.ORANGE_SHULKER_BOX) || item.is(Items.PINK_SHULKER_BOX) || item.is(Items.PURPLE_SHULKER_BOX) || item.is(Items.RED_SHULKER_BOX) || item.is(Items.YELLOW_SHULKER_BOX);
+         boolean isBundle = item.has(DataComponents.BUNDLE_CONTENTS);
          if(isBundle && !isArcane){
-            BundleContentsComponent bundleComp = item.get(DataComponentTypes.BUNDLE_CONTENTS);
-            SimpleInventory bundleInv = new SimpleInventory(bundleComp.size());
+            BundleContents bundleComp = item.get(DataComponents.BUNDLE_CONTENTS);
+            SimpleContainer bundleInv = new SimpleContainer(bundleComp.size());
             int index = 0;
-            for(ItemStack itemStack : bundleComp.iterateCopy()){
-               bundleInv.setStack(index,itemStack);
+            for(ItemStack itemStack : bundleComp.itemsCopy()){
+               bundleInv.setItem(index,itemStack);
                index++;
             }
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
-            containersCopy.add(new ArcanaItemContainer(bundleInv,bundleInv.size(),5,"BD","Bundle",1));
+            containersCopy.add(new ArcanaItemContainer(bundleInv,bundleInv.getContainerSize(),5,"BD","Bundle",1));
             arcanaInvHelper(bundleInv,arcanaInv,containersCopy);
          }else if(isBox && !isArcane){
-            ContainerComponent comp = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-            DefaultedList<ItemStack> shulkerItems = DefaultedList.ofSize(27, ItemStack.EMPTY);
-            comp.copyTo(shulkerItems);
-            SimpleInventory shulkerInv = new SimpleInventory(27);
+            ItemContainerContents comp = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+            NonNullList<ItemStack> shulkerItems = NonNullList.withSize(27, ItemStack.EMPTY);
+            comp.copyInto(shulkerItems);
+            SimpleContainer shulkerInv = new SimpleContainer(27);
             for(int j = 0; j < shulkerItems.size(); j++){
-               shulkerInv.setStack(j,shulkerItems.get(j));
+               shulkerInv.setItem(j,shulkerItems.get(j));
             }
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
-            containersCopy.add(new ArcanaItemContainer(shulkerInv,shulkerInv.size(),50,"SB","Shulker Box",0.5));
+            containersCopy.add(new ArcanaItemContainer(shulkerInv,shulkerInv.getContainerSize(),50,"SB","Shulker Box",0.5));
             arcanaInvHelper(shulkerInv,arcanaInv,containersCopy);
          }
          if(!isArcane){
@@ -233,7 +233,7 @@ public class ArcanaItemUtils {
       }
    }
    
-   public static int getUsedConcentration(ServerPlayerEntity player){
+   public static int getUsedConcentration(ServerPlayer player){
       int concSum = 0;
       List<ArcanaInvItem> arcanaInv = getArcanaInventory(player);
       for(ArcanaInvItem arcanaInvItem : arcanaInv){
@@ -247,8 +247,8 @@ public class ArcanaItemUtils {
    }
    
    
-   public static List<MutableText> getConcBreakdown(ServerPlayerEntity player){
-      ArrayList<MutableText> list = new ArrayList<>();
+   public static List<MutableComponent> getConcBreakdown(ServerPlayer player){
+      ArrayList<MutableComponent> list = new ArrayList<>();
       
       List<ArcanaInvItem> arcanaInv = getArcanaInventory(player);
       Comparator<ArcanaInvItem> comparator = (ArcanaInvItem i1, ArcanaInvItem i2) -> {
@@ -270,18 +270,18 @@ public class ArcanaItemUtils {
          
          String multStr = multiplier > 1 ? " x"+multiplier : "";
          String contStr = arcanaInvItem.getContainerString();
-         MutableText line = Text.literal("")
-               .append((Text.literal("- ").append(arcanaItem.getTranslatedName())).formatted(Formatting.DARK_AQUA))
-               .append(Text.literal(multStr).formatted(Formatting.BLUE))
-               .append(Text.literal(" ("+itemConc+")").formatted(Formatting.DARK_GREEN))
-               .append(Text.literal(" "+contStr).formatted(Formatting.DARK_PURPLE));
+         MutableComponent line = Component.literal("")
+               .append((Component.literal("- ").append(arcanaItem.getTranslatedName())).withStyle(ChatFormatting.DARK_AQUA))
+               .append(Component.literal(multStr).withStyle(ChatFormatting.BLUE))
+               .append(Component.literal(" ("+itemConc+")").withStyle(ChatFormatting.DARK_GREEN))
+               .append(Component.literal(" "+contStr).withStyle(ChatFormatting.DARK_PURPLE));
          list.add(line);
       }
       
       return list;
    }
    
-   public static int countItemsTakingConc(ServerPlayerEntity player){
+   public static int countItemsTakingConc(ServerPlayer player){
       List<ArcanaInvItem> arcanaInv = getArcanaInventory(player);
       int itemsTakingConc = 0;
       
@@ -297,14 +297,14 @@ public class ArcanaItemUtils {
       return itemsTakingConc;
    }
    
-   public static boolean hasItemInInventory(PlayerEntity player, Item itemType){
-      List<Pair<List<ItemStack>,ItemStack>> allItems = ArcanaUtils.getAllItems(player);
+   public static boolean hasItemInInventory(Player player, Item itemType){
+      List<Tuple<List<ItemStack>, ItemStack>> allItems = ArcanaUtils.getAllItems(player);
       
-      for(Pair<List<ItemStack>, ItemStack> allItem : allItems){
-         List<ItemStack> itemList = allItem.getLeft();
+      for(Tuple<List<ItemStack>, ItemStack> allItem : allItems){
+         List<ItemStack> itemList = allItem.getA();
          
          for(ItemStack item : itemList){
-            if(item.isOf(itemType)) return true;
+            if(item.is(itemType)) return true;
          }
          
       }
@@ -314,8 +314,8 @@ public class ArcanaItemUtils {
    public static int countRarityInList(List<String> ids, ArcanaRarity rarity, boolean exclude){
       int count = 0;
       for(String id : ids){
-         Identifier identifier = id.contains(":") ? Identifier.of(id) : Identifier.of(MOD_ID,id);
-         if(!ArcanaRegistry.ARCANA_ITEMS.containsId(identifier)) continue;
+         Identifier identifier = id.contains(":") ? Identifier.parse(id) : Identifier.fromNamespaceAndPath(MOD_ID,id);
+         if(!ArcanaRegistry.ARCANA_ITEMS.containsKey(identifier)) continue;
          if(getItemFromId(id).getRarity() == rarity ^ exclude) count++;
       }
       return count;
@@ -323,15 +323,15 @@ public class ArcanaItemUtils {
    
    public static ArcanaItem getItemFromId(String id){
       if(id == null) return null;
-      Identifier identifier = id.contains(":") ? Identifier.of(id) : Identifier.of(MOD_ID,id);
-      return ArcanaRegistry.ARCANA_ITEMS.get(identifier);
+      Identifier identifier = id.contains(":") ? Identifier.parse(id) : Identifier.fromNamespaceAndPath(MOD_ID,id);
+      return ArcanaRegistry.ARCANA_ITEMS.getValue(identifier);
    }
    
    public static class ArcanaInvItem {
       private int count;
       public final ArcanaItem item;
       public final String hash;
-      private final ArrayList<Pair<String,ItemStack>> stacks;
+      private final ArrayList<Tuple<String, ItemStack>> stacks;
       private final TreeMap<ArcanaAugment,Integer> augments;
       private final List<ArcanaItemContainer> containers;
       private double concMod;
@@ -375,10 +375,10 @@ public class ArcanaItemUtils {
       }
       
       public void addItem(ItemStack stack){
-         stacks.add(new Pair<>(ArcanaItem.getUUID(stack),stack));
+         stacks.add(new Tuple<>(ArcanaItem.getUUID(stack),stack));
       }
       
-      public ArrayList<Pair<String,ItemStack>> getStacks(){
+      public ArrayList<Tuple<String, ItemStack>> getStacks(){
          return stacks;
       }
    
@@ -394,7 +394,7 @@ public class ArcanaItemUtils {
          return sortMod;
       }
       
-      public int getAugmentConc(ServerPlayerEntity player){
+      public int getAugmentConc(ServerPlayer player){
          IArcanaProfileComponent profile = ArcanaNovum.data(player);
          int adaptability = profile.getAugmentLevel(ArcanaAugments.ADAPTABILITY.id);
          int augmentConc = 0;
@@ -408,7 +408,7 @@ public class ArcanaItemUtils {
          return Math.max(0,augmentConc-adaptability);
       }
       
-      public double getFocusedConcMod(ServerPlayerEntity player){
+      public double getFocusedConcMod(ServerPlayer player){
          IArcanaProfileComponent profile = ArcanaNovum.data(player);
          int focus = profile.getAugmentLevel(ArcanaAugments.FOCUS.id);
          if(focus == 1){

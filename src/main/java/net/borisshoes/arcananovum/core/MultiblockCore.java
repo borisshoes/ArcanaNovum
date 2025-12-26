@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.core;
 
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.core.Vec3i;
 
 public interface MultiblockCore {
    void loadMultiblock();

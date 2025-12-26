@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
-   @Inject(at = @At("TAIL"), method = "prepareStartRegion")
+   @Inject(at = @At("TAIL"), method = "prepareLevels")
    private void prepareStartRegion(CallbackInfo ci){
       ContinuumAnchor.initLoadedChunks((MinecraftServer) (Object) this);
    }

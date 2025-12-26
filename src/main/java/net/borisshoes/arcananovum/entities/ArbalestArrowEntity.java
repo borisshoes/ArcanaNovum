@@ -8,89 +8,89 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.QuiverItem;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.projectile.ArrowEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
+public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
    
    private int lvl;
    private static final int[] lvlLookup = new int[]{1,2,3,5};
    private double range;
    
-   public ArbalestArrowEntity(EntityType<? extends ArbalestArrowEntity> entityType, World world){
+   public ArbalestArrowEntity(EntityType<? extends ArbalestArrowEntity> entityType, Level world){
       super(entityType, world);
       this.lvl = 0;
       this.range = 2;
    }
    
-   public ArbalestArrowEntity(World world, LivingEntity owner, int ampLvl, int rangeLvl, ItemStack arrowStack, @Nullable ItemStack weaponStack){
+   public ArbalestArrowEntity(Level world, LivingEntity owner, int ampLvl, int rangeLvl, ItemStack arrowStack, @Nullable ItemStack weaponStack){
       this(ArcanaRegistry.ARBALEST_ARROW_ENTITY, world);
       this.setOwner(owner);
-      this.setPosition(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
+      this.setPos(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
       this.lvl = ampLvl > 3 ? ampLvl : lvlLookup[ampLvl];
       this.range = 2 + rangeLvl;
       initFromStack(arrowStack, weaponStack);
       
-      if(owner instanceof ServerPlayerEntity player){
+      if(owner instanceof ServerPlayer player){
          ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.ALCHEMICAL_ARBALEST_SHOOT)); // Add xp
       }
    }
    
    public void initFromStack(ItemStack arrowStack, ItemStack weaponStack){
-      setStack(arrowStack);
+      setPickupItemStack(arrowStack);
       
-      Unit unit = stack.remove(DataComponentTypes.INTANGIBLE_PROJECTILE);
+      Unit unit = pickupItemStack.remove(DataComponents.INTANGIBLE_PROJECTILE);
       if(unit != null){
-         this.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
+         this.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
       }
       
-      ArcanaItem.removeProperty(this.stack, QuiverItem.QUIVER_ID_TAG);
-      ArcanaItem.removeProperty(this.stack, QuiverItem.QUIVER_SLOT_TAG);
+      ArcanaItem.removeProperty(this.pickupItemStack, QuiverItem.QUIVER_ID_TAG);
+      ArcanaItem.removeProperty(this.pickupItemStack, QuiverItem.QUIVER_SLOT_TAG);
       
-      if(this.stack.contains(DataComponentTypes.CUSTOM_NAME)){
-         this.setCustomName(this.stack.getName());
+      if(this.pickupItemStack.has(DataComponents.CUSTOM_NAME)){
+         this.setCustomName(this.pickupItemStack.getHoverName());
       }
       
       if(weaponStack != null){
-         this.weapon = weaponStack.copy();
+         this.firedFromWeapon = weaponStack.copy();
          
-         if(getEntityWorld() instanceof ServerWorld serverWorld){
-            int i = EnchantmentHelper.getProjectilePiercing(serverWorld, weapon, this.stack);
+         if(level() instanceof ServerLevel serverWorld){
+            int i = EnchantmentHelper.getPiercingCount(serverWorld, firedFromWeapon, this.pickupItemStack);
             if(i > 0){
                this.setPierceLevel((byte)i);
             }
             
-            EnchantmentHelper.onProjectileSpawned(serverWorld, weapon, this, item -> this.weapon = null);
+            EnchantmentHelper.onProjectileSpawned(serverWorld, firedFromWeapon, this, item -> this.firedFromWeapon = null);
          }
       }
    }
    
    @Override
    public EntityType<?> getPolymerEntityType(PacketContext context){
-      return this.stack.contains(DataComponentTypes.POTION_CONTENTS) ? EntityType.ARROW : EntityType.SPECTRAL_ARROW;
+      return this.pickupItemStack.has(DataComponents.POTION_CONTENTS) ? EntityType.ARROW : EntityType.SPECTRAL_ARROW;
    }
    
    @Override
@@ -99,54 +99,54 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   protected void onEntityHit(EntityHitResult entityHitResult){
-      if(getEntityWorld() instanceof ServerWorld world){
-         deployAura(world,getEntityPos());
+   protected void onHitEntity(EntityHitResult entityHitResult){
+      if(level() instanceof ServerLevel world){
+         deployAura(world, position());
       }
-      super.onEntityHit(entityHitResult);
+      super.onHitEntity(entityHitResult);
       
       if(entityHitResult.getEntity().getType() == EntityType.PHANTOM && !entityHitResult.getEntity().isAlive()){
-         if(getOwner() instanceof ServerPlayerEntity player){
+         if(getOwner() instanceof ServerPlayer player){
             ArcanaAchievements.progress(player,ArcanaAchievements.MANY_BIRDS_MANY_ARROWS.id, 1);
          }
       }
    }
    
    @Override
-   protected void onBlockHit(BlockHitResult blockHitResult){
-      if(getEntityWorld() instanceof ServerWorld world){
-         deployAura(world,getEntityPos());
+   protected void onHitBlock(BlockHitResult blockHitResult){
+      if(level() instanceof ServerLevel world){
+         deployAura(world, position());
       }
-      super.onBlockHit(blockHitResult);
+      super.onHitBlock(blockHitResult);
       
-      if(pickupType != PickupPermission.ALLOWED){
+      if(pickup != Pickup.ALLOWED){
          this.discard();
       }
    }
    
-   private void deployAura(ServerWorld serverWorld, Vec3d pos){
-      List<StatusEffectInstance> effects = new ArrayList<>();
-      this.stack.getOrDefault(DataComponentTypes.POTION_CONTENTS,PotionContentsComponent.DEFAULT).getEffects().forEach(effects::add);
+   private void deployAura(ServerLevel serverWorld, Vec3 pos){
+      List<MobEffectInstance> effects = new ArrayList<>();
+      this.pickupItemStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).getAllEffects().forEach(effects::add);
       if(effects.isEmpty()){
-         effects.add(new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT,100,lvl,false,false,false));
-         effects.add(new StatusEffectInstance(StatusEffects.GLOWING,100,0,false,true,true));
+         effects.add(new MobEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT,100,lvl,false,false,false));
+         effects.add(new MobEffectInstance(MobEffects.GLOWING,100,0,false,true,true));
       }
       
-      ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), BlockPos.ofFloored(pos),serverWorld,range,lvl,effects));
+      ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), BlockPos.containing(pos),serverWorld,range,lvl,effects));
    }
    
    
    @Override
-   protected void writeCustomData(WriteView view){
-      super.writeCustomData(view);
+   protected void addAdditionalSaveData(ValueOutput view){
+      super.addAdditionalSaveData(view);
       view.putInt("ampLvl",lvl);
       view.putDouble("range",range);
    }
    
    @Override
-   protected void readCustomData(ReadView view){
-      super.readCustomData(view);
-      lvl = view.getInt("ampLvl", 0);
-      range = view.getDouble("range", 0.0);
+   protected void readAdditionalSaveData(ValueInput view){
+      super.readAdditionalSaveData(view);
+      lvl = view.getIntOr("ampLvl", 0);
+      range = view.getDoubleOr("range", 0.0);
    }
 }

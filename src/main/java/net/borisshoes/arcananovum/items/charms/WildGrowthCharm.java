@@ -17,35 +17,35 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.*;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.TadpoleEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BoneMealItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldEvents;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.frog.Tadpole;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BoneMealItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -71,45 +71,45 @@ public class WildGrowthCharm extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.DARK_OAK_SAPLING;
       item = new WildGrowthCharmItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GREEN);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_BREED_AN_ANIMAL,ResearchTasks.ADVANCEMENT_PLANT_ANY_SNIFFER_SEED,ResearchTasks.ADVANCEMENT_PLANT_SEED,ResearchTasks.ADVANCEMENT_OBTAIN_NETHERITE_HOE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_BREED_AN_ANIMAL,ResearchTasks.ADVANCEMENT_PLANT_ANY_SNIFFER_SEED,ResearchTasks.ADVANCEMENT_PLANT_SEED,ResearchTasks.ADVANCEMENT_OBTAIN_NETHERITE_HOE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,ACTIVE_TAG,false);
       putProperty(stack,HARVEST_TAG,false);
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("charm").formatted(Formatting.GREEN))
-            .append(Text.literal(" smells of a ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("cool").formatted(Formatting.AQUA))
-            .append(Text.literal(" spring").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal(" breeze.").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Nearby ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("plants").formatted(Formatting.GREEN))
-            .append(Text.literal(" and ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("animals").formatted(Formatting.GREEN))
-            .append(Text.literal(" seem to be").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal(" invigorated").formatted(Formatting.AQUA))
-            .append(Text.literal(" by its ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("proximity").formatted(Formatting.GREEN))
-            .append(Text.literal(".").formatted(Formatting.DARK_GREEN)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" the ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("charm ").formatted(Formatting.GREEN))
-            .append(Text.literal("to toggle ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("its ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("effect").formatted(Formatting.GREEN))
-            .append(Text.literal(".").formatted(Formatting.DARK_GREEN)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("charm").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(" smells of a ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("cool").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" spring").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal(" breeze.").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Nearby ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("plants").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(" and ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("animals").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(" seem to be").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal(" invigorated").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" by its ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("proximity").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right Click").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" the ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("charm ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("to toggle ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("its ").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal("effect").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -148,10 +148,10 @@ public class WildGrowthCharm extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Charm of\n     Wild Growth").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nLiving things constantly grow and change with time. It should be possible to accelerate this process in all organisms as long as adequate nutrients are supplied with a \n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Charm of\n     Wild Growth").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nfew temporal tricks.\n\nThe Charm causes nearby animals and plants to grow faster.\nThe Charm also causes animals to breed periodically.\n\nSneak Using toggles the Charm’s effect.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("      Charm of\n     Wild Growth").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nLiving things constantly grow and change with time. It should be possible to accelerate this process in all organisms as long as adequate nutrients are supplied with a \n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Charm of\n     Wild Growth").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nfew temporal tricks.\n\nThe Charm causes nearby animals and plants to grow faster.\nThe Charm also causes animals to breed periodically.\n\nSneak Using toggles the Charm’s effect.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -161,7 +161,7 @@ public class WildGrowthCharm extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
@@ -172,19 +172,19 @@ public class WildGrowthCharm extends ArcanaItem {
          }else{
             stringList.add("off");
          }
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          
          try{
             boolean active = getBooleanProperty(stack,ACTIVE_TAG);
@@ -192,97 +192,97 @@ public class WildGrowthCharm extends ArcanaItem {
             int fertLvl = Math.max(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION.id),0);
             int tickTime = RATES[fertLvl];
             
-            if(active && !world.isClient() && player.getEntityWorld().getServer().getTicks() % tickTime == 0){
+            if(active && !world.isClientSide() && player.level().getServer().getTickCount() % tickTime == 0){
                boolean bloom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CHARM_OF_BLOOMING.id) >= 1;
                int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING.id);
                
                int count = 0;
-               for(BlockPos blockPos : BlockPos.iterateRandomly(player.getRandom(), 100, player.getBlockPos(), 4)){
+               for(BlockPos blockPos : BlockPos.randomInCube(player.getRandom(), 100, player.blockPosition(), 4)){
                   BlockState state = world.getBlockState(blockPos);
                   Block block = state.getBlock();
                   if(count >= 2) break;
                   count++;
-                  Vec3d blockCenter = blockPos.toCenterPos();
+                  Vec3 blockCenter = blockPos.getCenter();
                   
-                  if(block instanceof ShortPlantBlock){
+                  if(block instanceof TallGrassBlock){
                      count--;
                   }else if(block instanceof SugarCaneBlock ||
                         block instanceof NetherWartBlock ||
                         block instanceof CactusBlock ||
                         block instanceof ChorusFlowerBlock ||
                         block instanceof StemBlock){
-                     state.randomTick(player.getEntityWorld(),blockPos,world.getRandom());
-                     world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
-                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
-                  }else if(block instanceof Oxidizable){
-                     state.randomTick(player.getEntityWorld(),blockPos,world.getRandom());
-                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+                     state.randomTick(player.level(),blockPos,world.getRandom());
+                     world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
+                     world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+                  }else if(block instanceof WeatheringCopper){
+                     state.randomTick(player.level(),blockPos,world.getRandom());
+                     world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
                   }else if(block instanceof BuddingAmethystBlock){
                      for(int i = 0; i < 10; i++){
-                        state.randomTick(player.getEntityWorld(),blockPos,world.getRandom());
+                        state.randomTick(player.level(),blockPos,world.getRandom());
                      }
-                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
-                  }else if((block instanceof AbstractPlantStemBlock ||
+                     world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+                  }else if((block instanceof GrowingPlantHeadBlock ||
                         block instanceof CropBlock ||
                         block instanceof CocoaBlock ||
                         block instanceof StemBlock ||
-                        block instanceof SweetBerryBushBlock) && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
-                     world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
-                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
-                     if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
+                        block instanceof SweetBerryBushBlock) && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+                     world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
+                     world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+                     if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMaxAge(world.getBlockState(blockPos))){
                         ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST.id,1);
                         ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
                      }
-                  }else if(bloom && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
-                     world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
-                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,2,0.5,0.5,0.5,1);
-                  }else if(bloom && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos, Direction.random(player.getRandom()))){
-                     world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
-                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,2,0.5,0.5,0.5,1);
+                  }else if(bloom && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+                     world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
+                     world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,2,0.5,0.5,0.5,1);
+                  }else if(bloom && BoneMealItem.growWaterPlant(new ItemStack(Items.BONE_MEAL,64), world, blockPos, Direction.getRandom(player.getRandom()))){
+                     world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
+                     world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,2,0.5,0.5,0.5,1);
                   }else{
                      count--;
                   }
                   
                   if(reaping >= 1 && harvest){
-                     if(block instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
-                        world.breakBlock(blockPos,true,player);
-                        if(reaping >= 2 && crop.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
-                           world.setBlockState(blockPos,block.getDefaultState());
+                     if(block instanceof CropBlock crop && crop.isMaxAge(world.getBlockState(blockPos))){
+                        world.destroyBlock(blockPos,true,player);
+                        if(reaping >= 2 && crop.canSurvive(world.getBlockState(blockPos.below()),world,blockPos)){
+                           world.setBlockAndUpdate(blockPos,block.defaultBlockState());
                         }
-                        world.spawnParticles(ParticleTypes.POOF, blockCenter.x,blockCenter.y,blockCenter.z,3,0.5,0.5,0.5,0.05);
-                     }else if(block instanceof NetherWartBlock wart && world.getBlockState(blockPos).get(NetherWartBlock.AGE) == 3){
-                        world.breakBlock(blockPos,true,player);
-                        if(reaping >= 2 && wart.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
-                           world.setBlockState(blockPos,block.getDefaultState());
+                        world.sendParticles(ParticleTypes.POOF, blockCenter.x,blockCenter.y,blockCenter.z,3,0.5,0.5,0.5,0.05);
+                     }else if(block instanceof NetherWartBlock wart && world.getBlockState(blockPos).getValue(NetherWartBlock.AGE) == 3){
+                        world.destroyBlock(blockPos,true,player);
+                        if(reaping >= 2 && wart.canSurvive(world.getBlockState(blockPos.below()),world,blockPos)){
+                           world.setBlockAndUpdate(blockPos,block.defaultBlockState());
                         }
-                        world.spawnParticles(ParticleTypes.POOF, blockCenter.x,blockCenter.y,blockCenter.z,3,0.5,0.5,0.5,0.05);
+                        world.sendParticles(ParticleTypes.POOF, blockCenter.x,blockCenter.y,blockCenter.z,3,0.5,0.5,0.5,0.05);
                      }
                   }
                }
                
-               List<Entity> animals = world.getOtherEntities(player,player.getBoundingBox().expand(5), e -> e instanceof AnimalEntity || e instanceof TadpoleEntity);
+               List<Entity> animals = world.getEntities(player,player.getBoundingBox().inflate(5), e -> e instanceof Animal || e instanceof Tadpole);
                Collections.shuffle(animals);
                for(Entity a : animals){
                   
-                  if(a instanceof AnimalEntity animal){
-                     int i = animal.getBreedingAge();
-                     if(!animal.getEntityWorld().isClient() && i == 0 && animal.canEat()){
-                        animal.lovePlayer(player);
+                  if(a instanceof Animal animal){
+                     int i = animal.getAge();
+                     if(!animal.level().isClientSide() && i == 0 && animal.canFallInLove()){
+                        animal.setInLove(player);
                         break;
                      }
                      if(animal.isBaby()){
-                        animal.growUp(AnimalEntity.toGrowUpAge(-i), true);
-                        serverWorld.spawnParticles(ParticleTypes.COMPOSTER,animal.getX(),animal.getY()+animal.getHeight()*0.5,animal.getZ(),3,0.2,0.2,0.2,1);
+                        animal.ageUp(Animal.getSpeedUpSecondsWhenFeeding(-i), true);
+                        serverWorld.sendParticles(ParticleTypes.COMPOSTER,animal.getX(),animal.getY()+animal.getBbHeight()*0.5,animal.getZ(),3,0.2,0.2,0.2,1);
                         break;
                      }
-                  }else if(a instanceof TadpoleEntity tadpole){
-                     tadpole.increaseAge(PassiveEntity.toGrowUpAge(tadpole.getTicksUntilGrowth()));
-                     serverWorld.spawnParticles(ParticleTypes.COMPOSTER,tadpole.getX(),tadpole.getY()+tadpole.getHeight()*0.5,tadpole.getZ(),3,0.2,0.2,0.2,1);
+                  }else if(a instanceof Tadpole tadpole){
+                     tadpole.ageUp(AgeableMob.getSpeedUpSecondsWhenFeeding(tadpole.getTicksLeftUntilAdult()));
+                     serverWorld.sendParticles(ParticleTypes.COMPOSTER,tadpole.getX(),tadpole.getY()+tadpole.getBbHeight()*0.5,tadpole.getZ(),3,0.2,0.2,0.2,1);
                      break;
                   }
                }
                
-               if(animals.stream().filter(e -> (e instanceof AnimalEntity animal && animal.isBaby())).count() >= 5){
+               if(animals.stream().filter(e -> (e instanceof Animal animal && animal.isBaby())).count() >= 5){
                   ArcanaAchievements.grant(player,ArcanaAchievements.THEY_GROW_UP_SO_FAST.id);
                }
                
@@ -297,82 +297,82 @@ public class WildGrowthCharm extends ArcanaItem {
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);
          boolean harvest = getBooleanProperty(stack,HARVEST_TAG);
          int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING.id);
          
-         if(playerEntity.isSneaking()){
-            if(reaping > 0 && hand == Hand.OFF_HAND){
+         if(playerEntity.isShiftKeyDown()){
+            if(reaping > 0 && hand == InteractionHand.OFF_HAND){
                harvest = !harvest;
                putProperty(stack,HARVEST_TAG,harvest);
                if(harvest){
-                  player.sendMessage(Text.literal("The Charm Begins to Reap").formatted(Formatting.GREEN,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_GRASS_PLACE, .7f,.7f);
+                  player.displayClientMessage(Component.literal("The Charm Begins to Reap").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f,.7f);
                }else{
-                  player.sendMessage(Text.literal("The Charm Ceases Reaping").formatted(Formatting.GREEN,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
+                  player.displayClientMessage(Component.literal("The Charm Ceases Reaping").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f,.5f);
                }
             }else{
                active = !active;
                putProperty(stack,ACTIVE_TAG,active);
                if(active){
-                  player.sendMessage(Text.literal("The Charm Begins to Bloom").formatted(Formatting.GREEN,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_GRASS_PLACE, .7f,.7f);
+                  player.displayClientMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f,.7f);
                }else{
-                  player.sendMessage(Text.literal("The Charm Recedes").formatted(Formatting.GREEN,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
+                  player.displayClientMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f,.5f);
                }
             }
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
       
       @Override
-      public ActionResult useOnBlock(ItemUsageContext context){
-         PlayerEntity playerEntity = context.getPlayer();
-         World world = context.getWorld();
-         BlockPos blockPos = context.getBlockPos();
-         BlockPos blockPos2 = blockPos.offset(context.getSide());
-         ItemStack stack = context.getStack();
+      public InteractionResult useOn(UseOnContext context){
+         Player playerEntity = context.getPlayer();
+         Level world = context.getLevel();
+         BlockPos blockPos = context.getClickedPos();
+         BlockPos blockPos2 = blockPos.relative(context.getClickedFace());
+         ItemStack stack = context.getItemInHand();
          
-         if(playerEntity != null && playerEntity.isSneaking() && playerEntity instanceof ServerPlayerEntity player){
+         if(playerEntity != null && playerEntity.isShiftKeyDown() && playerEntity instanceof ServerPlayer player){
             boolean active = getBooleanProperty(stack,ACTIVE_TAG);
             
             active = !active;
             putProperty(stack,ACTIVE_TAG,active);
             if(active){
-               playerEntity.sendMessage(Text.literal("The Charm Begins to Bloom").formatted(Formatting.GREEN,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_GRASS_PLACE, .7f,.7f);
+               playerEntity.displayClientMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f,.7f);
             }else{
-               playerEntity.sendMessage(Text.literal("The Charm Recedes").formatted(Formatting.GREEN,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
+               playerEntity.displayClientMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f,.5f);
             }
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
          
-         if(ArcanaAugments.getAugmentOnItem(context.getStack(),ArcanaAugments.CHARM_OF_BLOOMING.id) < 1){
-            return ActionResult.PASS;
+         if(ArcanaAugments.getAugmentOnItem(context.getItemInHand(),ArcanaAugments.CHARM_OF_BLOOMING.id) < 1){
+            return InteractionResult.PASS;
          }
          
-         if(BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
-            if(!world.isClient()){
-               world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+         if(BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+            if(!world.isClientSide()){
+               world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
             }
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
          BlockState blockState = world.getBlockState(blockPos);
-         boolean bl = blockState.isSideSolidFullSquare(world, blockPos, context.getSide());
-         if(bl && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos2, context.getSide())){
-            if(!world.isClient()){
-               world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos2, 15);
+         boolean bl = blockState.isFaceSturdy(world, blockPos, context.getClickedFace());
+         if(bl && BoneMealItem.growWaterPlant(new ItemStack(Items.BONE_MEAL,64), world, blockPos2, context.getClickedFace())){
+            if(!world.isClientSide()){
+               world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos2, 15);
             }
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
    }
 }

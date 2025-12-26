@@ -15,28 +15,32 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.inventory.StackReference;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -58,83 +62,83 @@ public class OverflowingQuiver extends QuiverItem{
       name = "Overflowing Quiver";
       rarity = ArcanaRarity.EXOTIC;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
-      color = Formatting.DARK_AQUA;
+      color = ChatFormatting.DARK_AQUA;
       vanillaItem = Items.RABBIT_HIDE;
       itemVersion = 1;
       item = new OverflowingQuiverItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("One can never have enough ").formatted(Formatting.AQUA))
-            .append(Text.literal("arrows").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("...").formatted(Formatting.AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Tipped Arrows").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" placed within the ").formatted(Formatting.AQUA))
-            .append(Text.literal("quiver ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("restock ").formatted(Formatting.BLUE))
-            .append(Text.literal("over ").formatted(Formatting.AQUA))
-            .append(Text.literal("time").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.BLUE))
-            .append(Text.literal(" to put ").formatted(Formatting.AQUA))
-            .append(Text.literal("arrows ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("in the ").formatted(Formatting.AQUA))
-            .append(Text.literal("quiver").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Left Click ").formatted(Formatting.BLUE))
-            .append(Text.literal("with a ").formatted(Formatting.AQUA))
-            .append(Text.literal("bow ").formatted(Formatting.BLUE))
-            .append(Text.literal("to ").formatted(Formatting.AQUA))
-            .append(Text.literal("swap ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("which type of ").formatted(Formatting.AQUA))
-            .append(Text.literal("arrow ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("will be shot.").formatted(Formatting.AQUA)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("One can never have enough ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("arrows").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("...").withStyle(ChatFormatting.AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Tipped Arrows").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" placed within the ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("quiver ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("restock ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("over ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("time").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" to put ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("arrows ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("in the ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("quiver").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Left Click ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("with a ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("bow ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("to ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("swap ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("which type of ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("arrow ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("will be shot.").withStyle(ChatFormatting.AQUA)));
       
       if(itemStack != null){
-         ContainerComponent arrowItems = itemStack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-         SimpleInventory inv = new SimpleInventory(9);
-         List<ItemStack> streamList = arrowItems.streamNonEmpty().toList();
+         ItemContainerContents arrowItems = itemStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+         SimpleContainer inv = new SimpleContainer(9);
+         List<ItemStack> streamList = arrowItems.nonEmptyStream().toList();
          for(int i = 0; i < streamList.size(); i++){
-            inv.setStack(i,streamList.get(i));
+            inv.setItem(i,streamList.get(i));
          }
          
          if(inv.isEmpty()){
-            lore.add(Text.literal(""));
-            lore.add(Text.literal("")
-                  .append(Text.literal("Contents: ").formatted(Formatting.DARK_AQUA))
-                  .append(Text.literal("Empty").formatted(Formatting.AQUA)));
+            lore.add(Component.literal(""));
+            lore.add(Component.literal("")
+                  .append(Component.literal("Contents: ").withStyle(ChatFormatting.DARK_AQUA))
+                  .append(Component.literal("Empty").withStyle(ChatFormatting.AQUA)));
          }else{
-            lore.add(Text.literal(""));
-            lore.add(Text.literal("").append(Text.literal("Contents: ").formatted(Formatting.DARK_AQUA)));
-            for(int i = 0; i < inv.size(); i++){
-               ItemStack stack = inv.getStack(i);
+            lore.add(Component.literal(""));
+            lore.add(Component.literal("").append(Component.literal("Contents: ").withStyle(ChatFormatting.DARK_AQUA)));
+            for(int i = 0; i < inv.getContainerSize(); i++){
+               ItemStack stack = inv.getItem(i);
                if(stack.isEmpty()) continue;
-               Style style = stack.getName().getStyle();
-               boolean keepStyle = style.isBold() || style.isItalic() || style.isObfuscated() || style.isUnderlined() || style.isStrikethrough() || (style.getColor() != null && style.getColor().getRgb() != Formatting.WHITE.getColorValue());
-               MutableText name = stack.getName().copy();
-               if(!keepStyle) name = name.formatted(Formatting.AQUA);
+               Style style = stack.getHoverName().getStyle();
+               boolean keepStyle = style.isBold() || style.isItalic() || style.isObfuscated() || style.isUnderlined() || style.isStrikethrough() || (style.getColor() != null && style.getColor().getValue() != ChatFormatting.WHITE.getColor());
+               MutableComponent name = stack.getHoverName().copy();
+               if(!keepStyle) name = name.withStyle(ChatFormatting.AQUA);
                
-               if(stack.getCount() == 1 && stack.getMaxCount() == 1){
-                  lore.add(Text.literal("")
-                        .append(Text.literal(" - ").formatted(Formatting.DARK_AQUA))
+               if(stack.getCount() == 1 && stack.getMaxStackSize() == 1){
+                  lore.add(Component.literal("")
+                        .append(Component.literal(" - ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(name));
                }else{
-                  lore.add(Text.literal("")
-                        .append(Text.literal(" - ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.literal(stack.getCount()+"x ").formatted(Formatting.BLUE))
+                  lore.add(Component.literal("")
+                        .append(Component.literal(" - ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(stack.getCount()+"x ").withStyle(ChatFormatting.BLUE))
                         .append(name));
                }
             }
@@ -163,7 +167,7 @@ public class OverflowingQuiver extends QuiverItem{
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.INFINITY),1));
+      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.INFINITY),1));
       ArcanaIngredient c = new ArcanaIngredient(Items.RABBIT_HIDE,12);
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,32);
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
@@ -178,13 +182,13 @@ public class OverflowingQuiver extends QuiverItem{
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Overflowing Quiver").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nMore experienced archers keep a variety of arrows on hand. However, it is difficult to switch between them in the heat of a fight. This quiver has slots that not only save space, and keep arrows ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Overflowing Quiver").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\norganized, but it also contains a mechanism to help guide the archer’s hand to the desired arrow type.\n\nPunching with any bow or crossbow, cycles the preferred arrows.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Overflowing Quiver").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nI have also managed to unlock greater potential from the Infinity enchantment and imbued it within the quiver.\n\nThe quiver now slowly regenerates all arrows placed inside of it.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Overflowing Quiver").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nIt is worth noting that the quiver is not sturdy enough to channel Arcana to arrows placed inside, restricting Runic Arrows from being contained within.\n\nI am looking into possible improvements to this design to").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Overflowing Quiver").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\naccommodate more powerful projectiles. The Quiver can also be accessed similar to a Bundle in my inventory.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("Overflowing Quiver").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nMore experienced archers keep a variety of arrows on hand. However, it is difficult to switch between them in the heat of a fight. This quiver has slots that not only save space, and keep arrows ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Overflowing Quiver").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\norganized, but it also contains a mechanism to help guide the archer’s hand to the desired arrow type.\n\nPunching with any bow or crossbow, cycles the preferred arrows.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Overflowing Quiver").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nI have also managed to unlock greater potential from the Infinity enchantment and imbued it within the quiver.\n\nThe quiver now slowly regenerates all arrows placed inside of it.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Overflowing Quiver").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nIt is worth noting that the quiver is not sturdy enough to channel Arcana to arrows placed inside, restricting Runic Arrows from being contained within.\n\nI am looking into possible improvements to this design to").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Overflowing Quiver").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\naccommodate more powerful projectiles. The Quiver can also be accessed similar to a Bundle in my inventory.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -202,68 +206,68 @@ public class OverflowingQuiver extends QuiverItem{
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
-         if(world.getServer().getTicks() % getRefillMod(stack) == 0) refillArrow(player, stack);
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(world.getServer().getTickCount() % getRefillMod(stack) == 0) refillArrow(player, stack);
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          // Open GUI
-         if(playerEntity instanceof ServerPlayerEntity player){
-            ItemStack stack = playerEntity.getStackInHand(hand);
+         if(playerEntity instanceof ServerPlayer player){
+            ItemStack stack = playerEntity.getItemInHand(hand);
             QuiverGui gui = new QuiverGui(player, getOuter(), stack,false);
             gui.build();
             gui.open();
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
-      public boolean onClicked(ItemStack stack, ItemStack otherStack, Slot slot, ClickType clickType, PlayerEntity playerEntity, StackReference cursorStackReference) {
-         if(playerEntity.getEntityWorld().isClient() || !(playerEntity instanceof ServerPlayerEntity player)) return false;
-         if (clickType == ClickType.LEFT && otherStack.isEmpty()) {
+      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference) {
+         if(playerEntity.level().isClientSide() || !(playerEntity instanceof ServerPlayer player)) return false;
+         if (clickType == ClickAction.PRIMARY && otherStack.isEmpty()) {
             return false;
          } else {
-            ContainerComponent beltItems = stack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+            ItemContainerContents beltItems = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
             List<ItemStack> beltList = beltItems.stream().toList();
             
-            if(clickType == ClickType.LEFT && !otherStack.isEmpty()){ // Try insert
+            if(clickType == ClickAction.PRIMARY && !otherStack.isEmpty()){ // Try insert
                if(!QuiverSlot.isValidItem(otherStack,false)){
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BUNDLE_INSERT_FAIL,1f,1f);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
                }else{
                   int size = 9;
                   int count = otherStack.getCount();
-                  Pair<ContainerComponent,ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
-                  if(count == addPair.getRight().getCount()){
-                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT_FAIL,1f,1f);
+                  Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
+                  if(count == addPair.getB().getCount()){
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
                   }else{
-                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT,0.8F, 0.8F + player.getEntityWorld().getRandom().nextFloat() * 0.4F);
-                     stack.set(DataComponentTypes.CONTAINER,addPair.getLeft());
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT,0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+                     stack.set(DataComponents.CONTAINER,addPair.getA());
                   }
                }
-               buildItemLore(stack,player.getEntityWorld().getServer());
+               buildItemLore(stack,player.level().getServer());
                return true;
-            }else if(clickType == ClickType.RIGHT && otherStack.isEmpty()){ // Try remove
+            }else if(clickType == ClickAction.SECONDARY && otherStack.isEmpty()){ // Try remove
                boolean found = false;
                for(ItemStack itemStack : beltList.reversed()){
                   if(!itemStack.isEmpty()){
-                     cursorStackReference.set(itemStack.copyAndEmpty());
-                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_REMOVE_ONE,0.8F, 0.8F + player.getEntityWorld().getRandom().nextFloat() * 0.4F);
+                     cursorStackReference.set(itemStack.copyAndClear());
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE,0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
                      found = true;
                      break;
                   }
                }
                
                if(found){
-                  stack.set(DataComponentTypes.CONTAINER,ContainerComponent.fromStacks(beltList));
-                  buildItemLore(stack,player.getEntityWorld().getServer());
+                  stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(beltList));
+                  buildItemLore(stack,player.level().getServer());
                   return true;
                }else{
                   return false;

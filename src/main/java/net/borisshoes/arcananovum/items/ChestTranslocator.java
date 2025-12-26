@@ -18,44 +18,48 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.*;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.potion.Potions;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryOps;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Clearable;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Clearable;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -79,55 +83,55 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       itemVersion = 0;
       vanillaItem = Items.SPRUCE_BOAT;
       item = new ChestTranslocatorItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
-      researchTasks = new RegistryKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.EFFECT_STRENGTH};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.EFFECT_STRENGTH};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
-      putProperty(stack,CONTENTS_TAG,new NbtCompound());
-      putProperty(stack,STATE_TAG,new NbtCompound());
+      stack.setCount(item.getDefaultMaxStackSize());
+      putProperty(stack,CONTENTS_TAG,new CompoundTag());
+      putProperty(stack,STATE_TAG,new CompoundTag());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Moving items").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" from one ").formatted(Formatting.GRAY))
-            .append(Text.literal("chest ").formatted(Formatting.GOLD))
-            .append(Text.literal("to ").formatted(Formatting.GRAY))
-            .append(Text.literal("another ").formatted(Formatting.GOLD))
-            .append(Text.literal("is a ").formatted(Formatting.GRAY))
-            .append(Text.literal("hassle").formatted(Formatting.RED))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Chests").formatted(Formatting.GOLD))
-            .append(Text.literal(" are ").formatted(Formatting.GRAY))
-            .append(Text.literal("heavy").formatted(Formatting.RED))
-            .append(Text.literal(" and carrying them ").formatted(Formatting.GRAY))
-            .append(Text.literal("slows ").formatted(Formatting.RED))
-            .append(Text.literal("you down ").formatted(Formatting.GRAY))
-            .append(Text.literal("significantly").formatted(Formatting.DARK_RED))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right Click").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" a ").formatted(Formatting.GRAY))
-            .append(Text.literal("chest ").formatted(Formatting.GOLD))
-            .append(Text.literal("to ").formatted(Formatting.GRAY))
-            .append(Text.literal("store ").formatted(Formatting.RED))
-            .append(Text.literal("it in the ").formatted(Formatting.GRAY))
-            .append(Text.literal("Translocator").formatted(Formatting.GOLD))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" to ").formatted(Formatting.GRAY))
-            .append(Text.literal("place ").formatted(Formatting.RED))
-            .append(Text.literal("a ").formatted(Formatting.GRAY))
-            .append(Text.literal("stored ").formatted(Formatting.RED))
-            .append(Text.literal("chest").formatted(Formatting.GOLD))
-            .append(Text.literal(" down.").formatted(Formatting.GRAY)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Moving items").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" from one ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("chest ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("another ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("is a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("hassle").withStyle(ChatFormatting.RED))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Chests").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(" are ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("heavy").withStyle(ChatFormatting.RED))
+            .append(Component.literal(" and carrying them ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("slows ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("you down ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("significantly").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right Click").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("chest ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("store ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("it in the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Translocator").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Right Click").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("place ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("a ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("stored ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("chest").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(" down.").withStyle(ChatFormatting.GRAY)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -144,19 +148,19 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    
    @Override
    public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
-      NbtCompound contents = getCompoundProperty(item,CONTENTS_TAG);
-      SimpleInventory inv = new SimpleInventory(27);
-      for(int i = 0; i < inv.size(); i++){
-         inv.setStack(i,ItemStack.EMPTY.copy());
+      CompoundTag contents = getCompoundProperty(item,CONTENTS_TAG);
+      SimpleContainer inv = new SimpleContainer(27);
+      for(int i = 0; i < inv.getContainerSize(); i++){
+         inv.setItem(i, ItemStack.EMPTY.copy());
       }
       
       if(!contents.isEmpty()){
-         NbtList items = contents.getListOrEmpty("Items");
+         ListTag items = contents.getListOrEmpty("Items");
          
          for(int i = 0; i < items.size(); i++){
-            NbtCompound stack = items.getCompoundOrEmpty(i);
-            ItemStack itemStack = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, BorisLib.SERVER.getRegistryManager()),stack).result().orElse(ItemStack.EMPTY);
-            inv.setStack(stack.getByte("Slot", (byte) 0), itemStack);
+            CompoundTag stack = items.getCompoundOrEmpty(i);
+            ItemStack itemStack = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()),stack).result().orElse(ItemStack.EMPTY);
+            inv.setItem(stack.getByteOr("Slot", (byte) 0), itemStack);
          }
       }
       
@@ -165,8 +169,8 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound contents = getCompoundProperty(stack,CONTENTS_TAG);
-      NbtCompound state = getCompoundProperty(stack,STATE_TAG);
+      CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
+      CompoundTag state = getCompoundProperty(stack,STATE_TAG);
       ItemStack newStack = super.updateItem(stack,server);
       putProperty(newStack,CONTENTS_TAG,contents);
       putProperty(newStack,STATE_TAG,state);
@@ -192,11 +196,11 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("       Chest\n   Translocator").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nChests are great for storage and organization. However, whenever I try to move them, their contents spill all over the place.\nMaybe I can do something about that").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("       Chest\n   Translocator").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nusing an augmented Ender Chest and some additional strength.\n\nUsing the Translocator on a Chest, Trapped Chest, or Barrel will pick it up at the cost of a significant loss in dexterity.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("       Chest\n   Translocator").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nUsing the Translocator again places the container down, contents intact.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("       Chest\n   Translocator").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nChests are great for storage and organization. However, whenever I try to move them, their contents spill all over the place.\nMaybe I can do something about that").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Chest\n   Translocator").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nusing an augmented Ender Chest and some additional strength.\n\nUsing the Translocator on a Chest, Trapped Chest, or Barrel will pick it up at the cost of a significant loss in dexterity.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Chest\n   Translocator").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nUsing the Translocator again places the container down, contents intact.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -206,80 +210,80 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         NbtCompound contents = getCompoundProperty(itemStack,CONTENTS_TAG);
-         NbtCompound state = getCompoundProperty(itemStack,STATE_TAG);
+         CompoundTag contents = getCompoundProperty(itemStack,CONTENTS_TAG);
+         CompoundTag state = getCompoundProperty(itemStack,STATE_TAG);
          if(!contents.isEmpty()){
-            BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK,state);
-            if(blockState.isOf(Blocks.CHEST) || blockState.isOf(Blocks.TRAPPED_CHEST)){
+            BlockState blockState = NbtUtils.readBlockState(BuiltInRegistries.BLOCK,state);
+            if(blockState.is(Blocks.CHEST) || blockState.is(Blocks.TRAPPED_CHEST)){
                stringList.add("chest");
-            }else if(blockState.isOf(Blocks.BARREL)){
+            }else if(blockState.is(Blocks.BARREL)){
                stringList.add("barrel");
             }
          }
          
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ActionResult useOnBlock(ItemUsageContext context){
-         ItemStack stack = context.getStack();
-         PlayerEntity playerEntity = context.getPlayer();
-         if(!ArcanaItemUtils.isArcane(stack) || !(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+      public InteractionResult useOn(UseOnContext context){
+         ItemStack stack = context.getItemInHand();
+         Player playerEntity = context.getPlayer();
+         if(!ArcanaItemUtils.isArcane(stack) || !(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          
-         World world = context.getWorld();
-         BlockPos blockPos = context.getBlockPos();
-         NbtCompound contents = getCompoundProperty(stack,CONTENTS_TAG);
-         NbtCompound stateTag = getCompoundProperty(stack,STATE_TAG);
+         Level world = context.getLevel();
+         BlockPos blockPos = context.getClickedPos();
+         CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
+         CompoundTag stateTag = getCompoundProperty(stack,STATE_TAG);
          int cooldown = getEnergy(stack);
          BlockState state = world.getBlockState(blockPos);
          
          if(contents.isEmpty()){
-            if(state.isOf(Blocks.CHEST) || state.isOf(Blocks.TRAPPED_CHEST) || state.isOf(Blocks.BARREL)){
+            if(state.is(Blocks.CHEST) || state.is(Blocks.TRAPPED_CHEST) || state.is(Blocks.BARREL)){
                if(cooldown == 0){
                   BlockEntity be = world.getBlockEntity(blockPos);
-                  if(be == null) return ActionResult.PASS;
-                  NbtCompound contentData = be.createNbtWithIdentifyingData(BorisLib.SERVER.getRegistryManager());
+                  if(be == null) return InteractionResult.PASS;
+                  CompoundTag contentData = be.saveWithFullMetadata(BorisLib.SERVER.registryAccess());
                   putProperty(stack,CONTENTS_TAG,contentData);
-                  putProperty(stack,STATE_TAG,NbtHelper.fromBlockState(state));
-                  if(be instanceof Clearable clearable) clearable.clear();
-                  world.setBlockState(blockPos,Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
-                  SoundUtils.playSound(world,blockPos,SoundEvents.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1,1);
+                  putProperty(stack,STATE_TAG, NbtUtils.writeBlockState(state));
+                  if(be instanceof Clearable clearable) clearable.clearContent();
+                  world.setBlock(blockPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                  SoundUtils.playSound(world,blockPos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1,1);
                   setEnergy(stack,getMaxEnergy(stack));
                }else{
-                  player.sendMessage(Text.literal("Translocator Cooldown: "+cooldown+(cooldown != 1 ? " seconds" : " second")).formatted(Formatting.GOLD), true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
+                  player.displayClientMessage(Component.literal("Translocator Cooldown: "+cooldown+(cooldown != 1 ? " seconds" : " second")).withStyle(ChatFormatting.GOLD), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                }
             }else{
-               return ActionResult.PASS;
+               return InteractionResult.PASS;
             }
          }else{
-            Direction side = context.getSide();
-            BlockPos placePos = blockPos.add(side.getVector());
+            Direction side = context.getClickedFace();
+            BlockPos placePos = blockPos.offset(side.getUnitVec3i());
             if(world.getBlockState(placePos).isAir()){
-               BlockState blockState = NbtHelper.toBlockState(world.createCommandRegistryWrapper(RegistryKeys.BLOCK),stateTag);
-               ItemPlacementContext ipc = new ItemPlacementContext(player,context.getHand(),context.getStack(),new BlockHitResult(context.getHitPos(),context.getSide(),context.getBlockPos(),context.hitsInsideBlock()));
-               if(blockState.isOf(Blocks.CHEST)){
-                  blockState = Blocks.CHEST.getPlacementState(ipc);
-               }else if(blockState.isOf(Blocks.TRAPPED_CHEST)){
-                  blockState = Blocks.TRAPPED_CHEST.getPlacementState(ipc);
-               }else if(blockState.isOf(Blocks.BARREL)){
-                  blockState = Blocks.BARREL.getPlacementState(ipc);
+               BlockState blockState = NbtUtils.readBlockState(world.holderLookup(Registries.BLOCK),stateTag);
+               BlockPlaceContext ipc = new BlockPlaceContext(player,context.getHand(),context.getItemInHand(),new BlockHitResult(context.getClickLocation(),context.getClickedFace(),context.getClickedPos(),context.isInside()));
+               if(blockState.is(Blocks.CHEST)){
+                  blockState = Blocks.CHEST.getStateForPlacement(ipc);
+               }else if(blockState.is(Blocks.TRAPPED_CHEST)){
+                  blockState = Blocks.TRAPPED_CHEST.getStateForPlacement(ipc);
+               }else if(blockState.is(Blocks.BARREL)){
+                  blockState = Blocks.BARREL.getStateForPlacement(ipc);
                }
-               world.setBlockState(placePos,blockState,Block.NOTIFY_ALL);
-               BlockEntity blockEntity = BlockEntity.createFromNbt(placePos,blockState,contents,world.getRegistryManager());
+               world.setBlock(placePos,blockState, Block.UPDATE_ALL);
+               BlockEntity blockEntity = BlockEntity.loadStatic(placePos,blockState,contents,world.registryAccess());
                if(blockEntity != null){
-                  world.addBlockEntity(blockEntity);
-                  if(blockEntity instanceof LootableContainerBlockEntity container){
-                     int size = container.size();
+                  world.setBlockEntity(blockEntity);
+                  if(blockEntity instanceof RandomizableContainerBlockEntity container){
+                     int size = container.getContainerSize();
                      int filled = 0;
                      for(int i = 0; i < size; i++){
-                        filled += container.getStack(i).isEmpty() ? 0 : 1;
+                        filled += container.getItem(i).isEmpty() ? 0 : 1;
                      }
                      if(filled == size){
                         ArcanaAchievements.progress(player,ArcanaAchievements.STORAGE_RELOCATION.id, 1);
@@ -289,45 +293,45 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                   }
                }
                
-               putProperty(stack,CONTENTS_TAG,new NbtCompound());
-               putProperty(stack,STATE_TAG,new NbtCompound());
+               putProperty(stack,CONTENTS_TAG,new CompoundTag());
+               putProperty(stack,STATE_TAG,new CompoundTag());
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CHEST_TRANSLOCATOR_USE)); // Add xp
-               SoundUtils.playSound(world,placePos,SoundEvents.BLOCK_WOOD_PLACE, SoundCategory.BLOCKS, 1,1);
+               SoundUtils.playSound(world,placePos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1,1);
             }else{
-               player.sendMessage(Text.literal("The chest cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+               player.displayClientMessage(Component.literal("The chest cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
             }
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
-         NbtCompound contents = getCompoundProperty(stack,CONTENTS_TAG);
+         if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
+         CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
          
          if(!contents.isEmpty()){
-            StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, 20, 2, false, false, true);
-            StatusEffectInstance fatigue = new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, 0, false, false, true);
-            player.addStatusEffect(slow);
-            player.addStatusEffect(fatigue);
+            MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, 20, 2, false, false, true);
+            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, 20, 0, false, false, true);
+            player.addEffect(slow);
+            player.addEffect(fatigue);
          }
          
-         if(world.getServer().getTicks() % 20 == 0){
+         if(world.getServer().getTickCount() % 20 == 0){
             addEnergy(stack, -1); // Recharge
          }
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
       public Item getPolymerItem(ItemStack itemStack, PacketContext context){
          if(!ArcanaItemUtils.isArcane(itemStack)) return vanillaItem;
-         NbtCompound contents = getCompoundProperty(itemStack,CONTENTS_TAG);
+         CompoundTag contents = getCompoundProperty(itemStack,CONTENTS_TAG);
          
          return !contents.isEmpty() ? Items.SPRUCE_CHEST_BOAT : vanillaItem;
       }

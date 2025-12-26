@@ -1,30 +1,30 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.data.TrackedData;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(WitherEntity.class)
-public interface WitherEntityAccessor {
+@Mixin(WitherBoss.class)
+public interface WitherBossAccessor {
    
    @Accessor
-   static TrackedData<Integer> getTRACKED_ENTITY_ID_1(){
+   static EntityDataAccessor<Integer> getDATA_TARGET_A(){
       throw new UnsupportedOperationException();
    }
    
    @Accessor
-   static TrackedData<Integer> getTRACKED_ENTITY_ID_2(){
+   static EntityDataAccessor<Integer> getDATA_TARGET_B(){
       throw new UnsupportedOperationException();
    }
    
    @Accessor
-   static TrackedData<Integer> getTRACKED_ENTITY_ID_3(){
+   static EntityDataAccessor<Integer> getDATA_TARGET_C(){
       throw new UnsupportedOperationException();
    }
    
    @Accessor
-   static TrackedData<Integer> getINVUL_TIMER(){
+   static EntityDataAccessor<Integer> getDATA_ID_INV(){
       throw new UnsupportedOperationException();
    }
 }

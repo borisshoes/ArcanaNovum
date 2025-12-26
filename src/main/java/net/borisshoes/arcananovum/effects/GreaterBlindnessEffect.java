@@ -7,40 +7,40 @@ import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.tracker.PlayerMovementEntry;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatusEffect {
+public class GreaterBlindnessEffect extends MobEffect implements PolymerStatusEffect {
    
    public GreaterBlindnessEffect(){
-      super(StatusEffectCategory.HARMFUL,0x13181a);
+      super(MobEffectCategory.HARMFUL,0x13181a);
    }
    
    @Override
-   public @Nullable StatusEffect getPolymerReplacement(StatusEffect potion, PacketContext context){
-      return StatusEffects.BLINDNESS.value();
+   public @Nullable MobEffect getPolymerReplacement(MobEffect potion, PacketContext context){
+      return MobEffects.BLINDNESS.value();
    }
    
    @Override
-   public boolean canApplyUpdateEffect(int duration, int amplifier){
+   public boolean shouldApplyEffectTickThisTick(int duration, int amplifier){
       return true;
    }
    
    @Override
-   public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier){
-      MinecraftServer server = entity.getEntityWorld().getServer();
+   public boolean applyEffectTick(ServerLevel world, LivingEntity entity, int amplifier){
+      MinecraftServer server = entity.level().getServer();
       
-      if(entity instanceof ServerPlayerEntity player && server != null && server.getTicks() % 10 == 0){
+      if(entity instanceof ServerPlayer player && server != null && server.getTickCount() % 10 == 0){
          ElementHolder holder = new ElementHolder(){
             int lifeTime = 15;
             
@@ -50,7 +50,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
                
                if(lifeTime % 5 == 0){
                   PlayerMovementEntry tracker = BorisLib.PLAYER_MOVEMENT_TRACKER.get(player);
-                  Vec3d vel = tracker == null ? new Vec3d(0,0,0) : tracker.velocity();
+                  Vec3 vel = tracker == null ? new Vec3(0,0,0) : tracker.velocity();
                   for(VirtualElement e : getElements()){
                      if(e instanceof BlockDisplayElement element){
                         element.setTranslation(vel.toVector3f().mul(1));
@@ -61,7 +61,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
                   }
                }
 
-               if(lifeTime-- <= 0 || player.isDead() || player.isDisconnected()){
+               if(lifeTime-- <= 0 || player.isDeadOrDying() || player.hasDisconnected()){
                   setAttachment(null);
                   destroy(); // Time expired, remove
                }
@@ -71,12 +71,12 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
          final float size = 1.5F + 1F*amplifier;
          for(Direction value : Direction.values()){
             BlockDisplayElement element = new BlockDisplayElement();
-            Vec3d directionOffset = Vec3d.of(value.getVector()).multiply(value.getDirection().offset());
-            Vec3d scale = directionOffset.multiply(-size + 0.25f).add(new Vec3d(size, size, size));
+            Vec3 directionOffset = Vec3.atLowerCornerOf(value.getUnitVec3i()).scale(value.getAxisDirection().getStep());
+            Vec3 scale = directionOffset.scale(-size + 0.25f).add(new Vec3(size, size, size));
             element.setScale(scale.toVector3f());
-            element.setBlockState(Blocks.BLACK_CONCRETE.getDefaultState());
-            Vec3d centerOff = scale.multiply(-0.5).add(0,entity.getEyeHeight(entity.getPose()),0);
-            element.setOffset(centerOff.add(Vec3d.of(value.getVector()).multiply(size/2)));
+            element.setBlockState(Blocks.BLACK_CONCRETE.defaultBlockState());
+            Vec3 centerOff = scale.scale(-0.5).add(0,entity.getEyeHeight(entity.getPose()),0);
+            element.setOffset(centerOff.add(Vec3.atLowerCornerOf(value.getUnitVec3i()).scale(size/2)));
             
             holder.addElement(element);
          }
@@ -85,13 +85,13 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
          EntityAttachment attachment = new EntityAttachment(holder,player,true);
          attachment.startWatching(player);
          
-         for(ServerPlayerEntity serverPlayer : server.getPlayerManager().getPlayerList()){
+         for(ServerPlayer serverPlayer : server.getPlayerList().getPlayers()){
             if(serverPlayer != player){
                holder.stopWatching(serverPlayer);
                attachment.stopWatching(serverPlayer);
             }
          }
       }
-      return super.applyUpdateEffect(world, entity,amplifier);
+      return super.applyEffectTick(world, entity,amplifier);
    }
 }

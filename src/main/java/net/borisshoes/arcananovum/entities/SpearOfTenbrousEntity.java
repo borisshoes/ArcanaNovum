@@ -6,86 +6,94 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.mixins.TridentEntityAccessor;
+import net.borisshoes.arcananovum.mixins.ThrownTridentAccessor;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.*;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.DustColorTransitionParticleEffect;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.*;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.DustColorTransitionOptions;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.minecraft.item.Item.BASE_ATTACK_DAMAGE_MODIFIER_ID;
+import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID;
 
-public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements PolymerEntity {
+public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntity {
    
    private long chunkTicketExpiryTicks = 0L;
    private float damage;
    private int slot = -1;
-   private ArrayList<Vec3d> oldPos = new ArrayList<>();
+   private ArrayList<Vec3> oldPos = new ArrayList<>();
    
-   public SpearOfTenbrousEntity(EntityType<? extends SpearOfTenbrousEntity> entityType, World world) {
+   public SpearOfTenbrousEntity(EntityType<? extends SpearOfTenbrousEntity> entityType, Level world) {
       super(entityType, world);
-      this.pickupType = PickupPermission.CREATIVE_ONLY;
+      this.pickup = Pickup.CREATIVE_ONLY;
       this.damage = 11.0f;
    }
    
-   public SpearOfTenbrousEntity(World world, LivingEntity owner, ItemStack stack) {
+   public SpearOfTenbrousEntity(Level world, LivingEntity owner, ItemStack stack) {
       super(ArcanaRegistry.SPEAR_OF_TENBROUS_ENTITY, owner, world, stack, null);
-      this.pickupType = PickupPermission.CREATIVE_ONLY;
+      this.pickup = Pickup.CREATIVE_ONLY;
       float dmg = 11.0f;
-      for(AttributeModifiersComponent.Entry modifier : stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT).modifiers()){
-         if(modifier.attribute().equals(EntityAttributes.ATTACK_DAMAGE) && modifier.modifier().idMatches(BASE_ATTACK_DAMAGE_MODIFIER_ID)){
-            dmg = (float) modifier.modifier().value() + 1.0f;
+      for(ItemAttributeModifiers.Entry modifier : stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY).modifiers()){
+         if(modifier.attribute().equals(Attributes.ATTACK_DAMAGE) && modifier.modifier().is(BASE_ATTACK_DAMAGE_ID)){
+            dmg = (float) modifier.modifier().amount() + 1.0f;
          }
       }
       this.damage = dmg;
    }
    
    @Override
-   protected void writeCustomData(WriteView view){
-      super.writeCustomData(view);
+   protected void addAdditionalSaveData(ValueOutput view){
+      super.addAdditionalSaveData(view);
       view.putFloat("spearDamage",damage);
       view.putInt("prefSlot",slot);
    }
    
    @Override
-   protected void readCustomData(ReadView view){
-      super.readCustomData(view);
-      this.damage = view.getFloat("spearDamage", 0.0f);
-      this.slot = view.getInt("prefSlot",-1);
+   protected void readAdditionalSaveData(ValueInput view){
+      super.readAdditionalSaveData(view);
+      this.damage = view.getFloatOr("spearDamage", 0.0f);
+      this.slot = view.getIntOr("prefSlot",-1);
    }
    
    public int getSlot(){
@@ -102,8 +110,8 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    }
    
    @Override
-   public void modifyRawTrackedData(List<DataTracker.SerializedEntry<?>> data, ServerPlayerEntity player, boolean initial){
-      data.add(new DataTracker.SerializedEntry<>(TridentEntityAccessor.getENCHANTED().id(), TridentEntityAccessor.getENCHANTED().dataType(), true));
+   public void modifyRawTrackedData(List<SynchedEntityData.DataValue<?>> data, ServerPlayer player, boolean initial){
+      data.add(new SynchedEntityData.DataValue<>(ThrownTridentAccessor.getID_FOIL().id(), ThrownTridentAccessor.getID_FOIL().serializer(), true));
    }
    
    @Override
@@ -112,88 +120,88 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
          this.discard();
          return;
       }
-      int chunkX = ChunkSectionPos.getSectionCoordFloored(this.getEntityPos().getX());
-      int chunkZ = ChunkSectionPos.getSectionCoordFloored(this.getEntityPos().getZ());
+      int chunkX = SectionPos.blockToSectionCoord(this.position().x());
+      int chunkZ = SectionPos.blockToSectionCoord(this.position().z());
       super.tick();
       
       if (this.isAlive()) {
-         if(getEntityWorld() instanceof ServerWorld serverWorld){
-            ArcanaEffectUtils.spawnLongParticle(serverWorld,new DustColorTransitionParticleEffect(0x001c08,0x000000,1.25f),getX(),getY(),getZ(),0.125,0.125,0.125,0.02, 6);
+         if(level() instanceof ServerLevel serverWorld){
+            ArcanaEffectUtils.spawnLongParticle(serverWorld,new DustColorTransitionOptions(0x001c08,0x000000,1.25f),getX(),getY(),getZ(),0.125,0.125,0.125,0.02, 6);
             
             int trailSize = 3;
-            if(this.age % 3 == 0 && !oldPos.isEmpty()){
-               Vec3d endPos = MathUtils.randomSpherePoint(oldPos.getLast(),1.25, 0.4);
-               ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePos, () -> endPos, (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+            if(this.tickCount % 3 == 0 && !oldPos.isEmpty()){
+               Vec3 endPos = MathUtils.randomSpherePoint(oldPos.getLast(),1.25, 0.4);
+               ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePosition, () -> endPos, (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
                      12, 1, 0, 1, true, 5, 5);
             }
-            oldPos.add(getEntityPos());
+            oldPos.add(position());
             if(oldPos.size() > trailSize){
                oldPos.removeFirst();
             }
          }
          
-         BlockPos blockPos = BlockPos.ofFloored(this.getEntityPos());
-         ChunkPos chunkPos = this.getChunkPos();
-         if ((--this.chunkTicketExpiryTicks <= 0L || chunkX != ChunkSectionPos.getSectionCoord(blockPos.getX()) || chunkZ != ChunkSectionPos.getSectionCoord(blockPos.getZ())) && getEntityWorld() instanceof ServerWorld serverWorld) {
-            serverWorld.resetIdleTimeout();
-            this.chunkTicketExpiryTicks = ServerPlayerEntity.addEnderPearlTicket(serverWorld, chunkPos) - 1L;
+         BlockPos blockPos = BlockPos.containing(this.position());
+         ChunkPos chunkPos = this.chunkPosition();
+         if ((--this.chunkTicketExpiryTicks <= 0L || chunkX != SectionPos.blockToSectionCoord(blockPos.getX()) || chunkZ != SectionPos.blockToSectionCoord(blockPos.getZ())) && level() instanceof ServerLevel serverWorld) {
+            serverWorld.resetEmptyTime();
+            this.chunkTicketExpiryTicks = ServerPlayer.placeEnderPearlTicket(serverWorld, chunkPos) - 1L;
          }
       }
    }
    
    @Nullable
    @Override
-   public Entity teleportTo(TeleportTarget teleportTarget) {
-      Entity entity = super.teleportTo(teleportTarget);
+   public Entity teleport(TeleportTransition teleportTarget) {
+      Entity entity = super.teleport(teleportTarget);
       if (entity != null) {
-         entity.addPortalChunkTicketAt(BlockPos.ofFloored(entity.getEntityPos()));
+         entity.placePortalTicket(BlockPos.containing(entity.position()));
       }
       return entity;
    }
    
    private void applyImpactEffects(Entity hitEntity, List<LivingEntity> affectedEntities){
-      StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS,25,9,false,false,true);
-      StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT,25,5,false,false,true);
-      boolean blindRage = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.BLINDING_RAGE) > 0;
-      boolean voidStorm = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.VOID_STORM) > 0;
+      MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS,25,9,false,false,true);
+      MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT,25,5,false,false,true);
+      boolean blindRage = ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.BLINDING_RAGE) > 0;
+      boolean voidStorm = ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.VOID_STORM) > 0;
       
       if(hitEntity instanceof LivingEntity living){
-         living.addStatusEffect(slow);
+         living.addEffect(slow);
          if(blindRage){
-            living.addStatusEffect(blind);
+            living.addEffect(blind);
          }
       }
       
-      if(voidStorm && getEntityWorld() instanceof ServerWorld serverWorld){
-         SoundUtils.playSound(serverWorld,BlockPos.ofFloored(getEntityPos()), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.1f,2f);
-         ParticleEffect dust = new DustColorTransitionParticleEffect(0x001c08,0x000000,2f);
-         serverWorld.spawnParticles(dust,getX(),getY(),getZ(),150,1,1,1,0.02);
+      if(voidStorm && level() instanceof ServerLevel serverWorld){
+         SoundUtils.playSound(serverWorld, BlockPos.containing(position()), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS,.1f,2f);
+         ParticleOptions dust = new DustColorTransitionOptions(0x001c08,0x000000,2f);
+         serverWorld.sendParticles(dust,getX(),getY(),getZ(),150,1,1,1,0.02);
          for(int i = 0; i < 18; i++){
-            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePos(), MathUtils.randomSpherePoint(getEyePos(),5,2), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), MathUtils.randomSpherePoint(getEyePosition(),5,2), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
                   8, 1, 0, 1, false, 0, 5);
          }
          
          for(LivingEntity affectedEntity : affectedEntities){ // Void Storm
-            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePos(), affectedEntity.getEyePos(), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), affectedEntity.getEyePosition(), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
                   8, 1, 0, 1, false, 4, 5);
             DamageSource source = ArcanaDamageTypes.of(serverWorld,ArcanaDamageTypes.ARCANE_LIGHTNING,this,getOwner() == null ? this : getOwner());
             float damage = 6.0f;
-            if(affectedEntity.getType().isIn(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) damage *= 1.25f;
-            affectedEntity.damage(serverWorld,source,damage);
+            if(affectedEntity.getType().is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) damage *= 1.25f;
+            affectedEntity.hurtServer(serverWorld,source,damage);
             
             if(blindRage){
-               affectedEntity.addStatusEffect(blind);
+               affectedEntity.addEffect(blind);
             }
          }
       }
    }
    
-   private List<LivingEntity> getSurroundingEntities(World world, Vec3d pos){
+   private List<LivingEntity> getSurroundingEntities(Level world, Vec3 pos){
       ArrayList<LivingEntity> entities = new ArrayList<>();
-      boolean voidStorm = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.VOID_STORM) > 0;
+      boolean voidStorm = ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.VOID_STORM) > 0;
       if(!voidStorm) return entities;
       
-      world.getOtherEntities(this.getOwner(), new Box(BlockPos.ofFloored(pos)).expand(6), entity -> entity.squaredDistanceTo(pos) < (4.5*4.5)).forEach(e -> {
+      world.getEntities(this.getOwner(), new AABB(BlockPos.containing(pos)).inflate(6), entity -> entity.distanceToSqr(pos) < (4.5*4.5)).forEach(e -> {
          if(e instanceof LivingEntity living) entities.add(living);
       });
       
@@ -201,66 +209,66 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    }
    
    @Override
-   protected void onEntityHit(EntityHitResult entityHitResult) {
+   protected void onHitEntity(EntityHitResult entityHitResult) {
       Entity target = entityHitResult.getEntity();
       float baseDamage = this.damage;
       Entity owner = this.getOwner();
-      DamageSource damageSource = ArcanaDamageTypes.of(getEntityWorld(),ArcanaDamageTypes.ARCANE_LIGHTNING,this,owner == null ? this : owner);
-      if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
-         baseDamage = EnchantmentHelper.getDamage(serverWorld, this.getWeaponStack(), target, damageSource, baseDamage);
+      DamageSource damageSource = ArcanaDamageTypes.of(level(),ArcanaDamageTypes.ARCANE_LIGHTNING,this,owner == null ? this : owner);
+      if (this.level() instanceof ServerLevel serverWorld) {
+         baseDamage = EnchantmentHelper.modifyDamage(serverWorld, this.getWeaponItem(), target, damageSource, baseDamage);
       }
       
-      int fireAspect = this.getWeaponStack().getEnchantments().getLevel(MinecraftUtils.getEnchantment(Enchantments.FIRE_ASPECT));
-      if(!target.isFireImmune() && fireAspect > 0){
-         target.setOnFireFor(fireAspect*4.0f);
+      int fireAspect = this.getWeaponItem().getEnchantments().getLevel(MinecraftUtils.getEnchantment(Enchantments.FIRE_ASPECT));
+      if(!target.fireImmune() && fireAspect > 0){
+         target.igniteForSeconds(fireAspect*4.0f);
       }
-      applyImpactEffects(target, getSurroundingEntities(getEntityWorld(),getEntityPos()));
+      applyImpactEffects(target, getSurroundingEntities(level(), position()));
       
-      if(target.getType().isIn(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) baseDamage *= 1.25f;
+      if(target.getType().is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) baseDamage *= 1.25f;
       
-      if (target.sidedDamage(damageSource, baseDamage)) {
-         if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
-            EnchantmentHelper.onTargetDamaged(serverWorld, target, damageSource, this.getWeaponStack(), item -> this.kill(serverWorld));
+      if (target.hurtOrSimulate(damageSource, baseDamage)) {
+         if (this.level() instanceof ServerLevel serverWorld) {
+            EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak(serverWorld, target, damageSource, this.getWeaponItem(), item -> this.kill(serverWorld));
          }
          
          if (target instanceof LivingEntity livingEntity) {
-            this.knockback(livingEntity, damageSource);
-            this.onHit(livingEntity);
+            this.doKnockback(livingEntity, damageSource);
+            this.doPostHurtEffects(livingEntity);
             
-            if(owner instanceof ServerPlayerEntity player) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SPEAR_OF_TENBROUS_IMPALE));
+            if(owner instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SPEAR_OF_TENBROUS_IMPALE));
          }
       }
       
-      this.deflect(ProjectileDeflection.SIMPLE, target, LazyEntityReference.of(this.getOwner()), false);
-      this.setVelocity(this.getVelocity().multiply(0.02, 0.2, 0.02));
-      this.playSound(SoundEvents.ITEM_TRIDENT_HIT, 1.0F, 1.0F);
+      this.deflect(ProjectileDeflection.REVERSE, target, EntityReference.of(this.getOwner()), false);
+      this.setDeltaMovement(this.getDeltaMovement().multiply(0.02, 0.2, 0.02));
+      this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
       this.discard();
    }
    
    @Override
    public void remove(RemovalReason reason){
       super.remove(reason);
-      if(this.getOwner() != null && this.getOwner() instanceof ServerPlayerEntity player && getEntityWorld() instanceof ServerWorld serverWorld){
-         int cooldownTime = 20 * (9 - 2*Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.UNENDING_HATRED)));
-         if(!player.isInCreativeMode()) BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(stack,player,0, slot));
-         player.getItemCooldownManager().set(stack,cooldownTime);
+      if(this.getOwner() != null && this.getOwner() instanceof ServerPlayer player && level() instanceof ServerLevel serverWorld){
+         int cooldownTime = 20 * (9 - 2*Math.max(0, ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.UNENDING_HATRED)));
+         if(!player.hasInfiniteMaterials()) BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(pickupItemStack,player,0, slot));
+         player.getCooldowns().addCooldown(pickupItemStack,cooldownTime);
          
-         this.playSound(SoundEvents.ENTITY_PLAYER_TELEPORT, 1.0F, 1.0F);
-         SoundUtils.playSongToPlayer(player,SoundEvents.ENTITY_PLAYER_TELEPORT, 0.3F, 1.0F);
+         this.playSound(SoundEvents.PLAYER_TELEPORT, 1.0F, 1.0F);
+         SoundUtils.playSongToPlayer(player, SoundEvents.PLAYER_TELEPORT, 0.3F, 1.0F);
          
-         serverWorld.spawnParticles(ParticleTypes.REVERSE_PORTAL,getX(),getY(),getZ(),30,.2,0.2,.2,0.03);
-         serverWorld.spawnParticles(ParticleTypes.PORTAL,getX(),getY(),getZ(),30,.2,0.2,.2,1);
+         serverWorld.sendParticles(ParticleTypes.REVERSE_PORTAL,getX(),getY(),getZ(),30,.2,0.2,.2,0.03);
+         serverWorld.sendParticles(ParticleTypes.PORTAL,getX(),getY(),getZ(),30,.2,0.2,.2,1);
       }
    }
    
    @Override
-   protected ItemStack getDefaultItemStack(){
+   protected ItemStack getDefaultPickupItem(){
       return ArcanaRegistry.SPEAR_OF_TENBROUS.getNewItem();
    }
    
    @Override
-   protected void onBlockHitEnchantmentEffects(ServerWorld world, BlockHitResult blockHitResult, ItemStack weaponStack) {
-      Vec3d vec3d = blockHitResult.getBlockPos().clampToWithin(blockHitResult.getPos());
+   protected void hitBlockEnchantmentEffects(ServerLevel world, BlockHitResult blockHitResult, ItemStack weaponStack) {
+      Vec3 vec3d = blockHitResult.getBlockPos().clampLocationWithin(blockHitResult.getLocation());
       EnchantmentHelper.onHitBlock(
             world,
             weaponStack,
@@ -272,33 +280,33 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
             item -> this.kill(world)
       );
       
-      applyImpactEffects(null, getSurroundingEntities(getEntityWorld(),getEntityPos()));
+      applyImpactEffects(null, getSurroundingEntities(level(), position()));
    }
    
    @Override
-   public ItemStack getWeaponStack() {
-      return this.getItemStack();
+   public ItemStack getWeaponItem() {
+      return this.getPickupItemStackOrigin();
    }
    
    @Override
-   protected boolean tryPickup(PlayerEntity player) {
-      return super.tryPickup(player) || this.isNoClip() && this.isOwner(player) && player.getInventory().insertStack(this.asItemStack());
+   protected boolean tryPickup(Player player) {
+      return super.tryPickup(player) || this.isNoPhysics() && this.ownedBy(player) && player.getInventory().add(this.getPickupItem());
    }
    
    @Override
-   protected SoundEvent getHitSound() {
-      return SoundEvents.ITEM_TRIDENT_HIT_GROUND;
+   protected SoundEvent getDefaultHitGroundSoundEvent() {
+      return SoundEvents.TRIDENT_HIT_GROUND;
    }
    
    @Override
-   public void onPlayerCollision(PlayerEntity player) {
-      if (this.isOwner(player) || this.getOwner() == null) {
-         super.onPlayerCollision(player);
+   public void playerTouch(Player player) {
+      if (this.ownedBy(player) || this.getOwner() == null) {
+         super.playerTouch(player);
       }
    }
    
    @Override
-   protected float getDragInWater() {
+   protected float getWaterInertia() {
       return 0.99F;
    }
    

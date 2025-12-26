@@ -2,9 +2,9 @@ package net.borisshoes.arcananovum.gui;
 
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -14,7 +14,7 @@ public class SoulstoneSlot extends Slot {
    public final boolean souls;
    public final String type;
    
-   public SoulstoneSlot(Inventory inventory, int index, int x, int y, boolean requireAttuned, boolean requireSouls, @Nullable String type){
+   public SoulstoneSlot(Container inventory, int index, int x, int y, boolean requireAttuned, boolean requireSouls, @Nullable String type){
       super(inventory, index, x, y);
       this.attuned = requireAttuned;
       this.souls = requireSouls;
@@ -22,7 +22,7 @@ public class SoulstoneSlot extends Slot {
    }
    
    @Override
-   public boolean canInsert(ItemStack stack){
+   public boolean mayPlace(ItemStack stack){
       if(ArcanaItemUtils.identifyItem(stack) instanceof Soulstone){
          if(attuned){
             String attunedType = Soulstone.getType(stack);

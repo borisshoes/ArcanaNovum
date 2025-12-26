@@ -1,43 +1,43 @@
 accessWidener	v2	named
 
-accessible field net/minecraft/entity/Entity random Lnet/minecraft/util/math/random/Random;
-accessible field net/minecraft/entity/ai/control/MoveControl entity Lnet/minecraft/entity/mob/MobEntity;
-accessible field net/minecraft/entity/ai/control/MoveControl state Lnet/minecraft/entity/ai/control/MoveControl$State;
-accessible field net/minecraft/entity/projectile/PersistentProjectileEntity stack Lnet/minecraft/item/ItemStack;
-accessible field net/minecraft/entity/projectile/PersistentProjectileEntity weapon Lnet/minecraft/item/ItemStack;
-accessible field net/minecraft/entity/mob/PhantomEntity circlingCenter Lnet/minecraft/util/math/BlockPos;
-accessible field net/minecraft/entity/mob/PhantomEntity targetPosition Lnet/minecraft/util/math/Vec3d;
-accessible field net/minecraft/server/world/ServerChunkLoadingManager watchDistance I
-accessible field net/minecraft/server/world/ServerChunkLoadingManager entityTrackers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
-accessible field net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker entry Lnet/minecraft/server/network/EntityTrackerEntry;
-accessible field net/minecraft/entity/damage/DamageTracker recentDamage Ljava/util/List;
-accessible field net/minecraft/item/Item components Lnet/minecraft/component/ComponentMap;
-accessible field net/minecraft/server/network/ServerPlayNetworkHandler floatingTicks I
-accessible field net/minecraft/recipe/ShapedRecipe result Lnet/minecraft/item/ItemStack;
-accessible field net/minecraft/recipe/ShapelessRecipe result Lnet/minecraft/item/ItemStack;
-accessible field net/minecraft/recipe/ShapelessRecipe ingredients Ljava/util/List;
-accessible field net/minecraft/recipe/SmithingTransformRecipe result Lnet/minecraft/recipe/TransmuteRecipeResult;
+accessible field net/minecraft/world/entity/Entity random Lnet/minecraft/util/RandomSource;
+accessible field net/minecraft/world/entity/ai/control/MoveControl mob Lnet/minecraft/world/entity/Mob;
+accessible field net/minecraft/world/entity/ai/control/MoveControl operation Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+accessible field net/minecraft/world/entity/projectile/arrow/AbstractArrow pickupItemStack Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/entity/projectile/arrow/AbstractArrow firedFromWeapon Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/entity/monster/Phantom anchorPoint Lnet/minecraft/core/BlockPos;
+accessible field net/minecraft/world/entity/monster/Phantom moveTargetPoint Lnet/minecraft/world/phys/Vec3;
+accessible field net/minecraft/server/level/ChunkMap serverViewDistance I
+accessible field net/minecraft/server/level/ChunkMap entityMap Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+accessible field net/minecraft/server/level/ChunkMap$TrackedEntity serverEntity Lnet/minecraft/server/level/ServerEntity;
+accessible field net/minecraft/world/damagesource/CombatTracker entries Ljava/util/List;
+accessible field net/minecraft/world/item/Item components Lnet/minecraft/core/component/DataComponentMap;
+accessible field net/minecraft/server/network/ServerGamePacketListenerImpl aboveGroundTickCount I
+accessible field net/minecraft/world/item/crafting/ShapedRecipe result Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/item/crafting/ShapelessRecipe ingredients Ljava/util/List;
+accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/crafting/TransmuteResult;
 
-accessible method net/minecraft/entity/LivingEntity getEquipmentChanges ()Ljava/util/Map;
-accessible method net/minecraft/entity/passive/TadpoleEntity increaseAge (I)V
-accessible method net/minecraft/entity/passive/TadpoleEntity getTicksUntilGrowth ()I
-accessible method net/minecraft/block/CropBlock canPlaceAt (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;)Z
-accessible method net/minecraft/block/PlantBlock canPlaceAt (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;)Z
-accessible method net/minecraft/block/ExperienceDroppingBlock onStacksDropped (Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;Z)V
-accessible method net/minecraft/block/RedstoneOreBlock onStacksDropped (Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;Z)V
-accessible method net/minecraft/entity/projectile/PersistentProjectileEntity setPierceLevel (B)V
-accessible method net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker getMaxTrackDistance ()I
-accessible method net/minecraft/util/UserCache load ()Ljava/util/List;
+accessible method net/minecraft/world/entity/LivingEntity collectEquipmentChanges ()Ljava/util/Map;
+accessible method net/minecraft/world/entity/animal/frog/Tadpole ageUp (I)V
+accessible method net/minecraft/world/entity/animal/frog/Tadpole getTicksLeftUntilAdult ()I
+accessible method net/minecraft/world/entity/projectile/arrow/AbstractArrow setPierceLevel (B)V
+accessible method net/minecraft/server/level/ChunkMap$TrackedEntity getEffectiveRange ()I
+accessible method net/minecraft/server/players/CachedUserNameToIdResolver load ()Ljava/util/List;
+accessible method net/minecraft/world/level/block/CropBlock canSurvive (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z
+accessible method net/minecraft/world/level/block/VegetationBlock canSurvive (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z
+accessible method net/minecraft/world/level/block/DropExperienceBlock spawnAfterBreak (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;Z)V
+accessible method net/minecraft/world/level/block/RedStoneOreBlock spawnAfterBreak (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;Z)V
 
-accessible class net/minecraft/entity/ai/control/MoveControl$State
-accessible class net/minecraft/entity/mob/DrownedEntity$DrownedMoveControl
-accessible class net/minecraft/entity/mob/SlimeEntity$SlimeMoveControl
-accessible class net/minecraft/entity/passive/FishEntity$FishMoveControl
-accessible class net/minecraft/entity/passive/TurtleEntity$TurtleMoveControl
-accessible class net/minecraft/entity/passive/RabbitEntity$RabbitMoveControl
-accessible class net/minecraft/entity/mob/GhastEntity$GhastMoveControl
-accessible class net/minecraft/entity/mob/GuardianEntity$GuardianMoveControl
-accessible class net/minecraft/entity/mob/PhantomEntity$PhantomMoveControl
-accessible class net/minecraft/entity/mob/VexEntity$VexMoveControl
-accessible class net/minecraft/util/UserCache$Entry
-accessible class net/minecraft/block/entity/BellBlockEntity$Effect
+accessible class net/minecraft/world/entity/ai/control/MoveControl$Operation
+accessible class net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl
+accessible class net/minecraft/world/entity/monster/Slime$SlimeMoveControl
+accessible class net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl
+accessible class net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl
+accessible class net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl
+accessible class net/minecraft/world/entity/monster/Ghast$GhastMoveControl
+accessible class net/minecraft/world/entity/monster/Guardian$GuardianMoveControl
+accessible class net/minecraft/world/entity/monster/Phantom$PhantomMoveControl
+accessible class net/minecraft/world/entity/monster/Vex$VexMoveControl
+accessible class net/minecraft/server/players/CachedUserNameToIdResolver$GameProfileInfo
+accessible class net/minecraft/world/level/block/entity/BellBlockEntity$ResonationEndAction

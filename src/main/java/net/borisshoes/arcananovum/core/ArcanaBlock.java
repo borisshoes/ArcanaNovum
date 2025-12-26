@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.core;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 public abstract class ArcanaBlock extends ArcanaItem {
    

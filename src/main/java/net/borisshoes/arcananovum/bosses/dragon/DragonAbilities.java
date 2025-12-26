@@ -3,36 +3,36 @@ package net.borisshoes.arcananovum.bosses.dragon;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LazyEntityReference;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.boss.dragon.phase.ChargingPlayerPhase;
-import net.minecraft.entity.boss.dragon.phase.PhaseManager;
-import net.minecraft.entity.boss.dragon.phase.PhaseType;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.decoration.EndCrystalEntity;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.player.ItemCooldownManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.projectile.DragonFireballEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.phases.DragonChargePlayerPhase;
+import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
+import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhaseManager;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball;
+import net.minecraft.world.item.ItemCooldowns;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -61,12 +61,12 @@ public class DragonAbilities {
    private int corruptArcanaTicks;
    
    private final MinecraftServer server;
-   private final ServerWorld endWorld;
-   private final EnderDragonEntity dragon;
-   private final PhaseManager manager;
-   private final List<EndCrystalEntity> crystals;
+   private final ServerLevel endWorld;
+   private final EnderDragon dragon;
+   private final EnderDragonPhaseManager manager;
+   private final List<EndCrystal> crystals;
    
-   public DragonAbilities(MinecraftServer server, ServerWorld endWorld, EnderDragonEntity dragon, List<EndCrystalEntity> crystals){
+   public DragonAbilities(MinecraftServer server, ServerLevel endWorld, EnderDragon dragon, List<EndCrystal> crystals){
       this.server = server;
       this.endWorld = endWorld;
       this.dragon = dragon;
@@ -84,29 +84,29 @@ public class DragonAbilities {
       corruptArcanaTicks = corruptArcanaCD;
    }
    
-   public ArrayList<Pair<DragonAbilityTypes,Integer>> getCooldowns(int phase){
-      ArrayList<Pair<DragonAbilityTypes,Integer>> cooldowns = new ArrayList<>();
+   public ArrayList<Tuple<DragonAbilityTypes,Integer>> getCooldowns(int phase){
+      ArrayList<Tuple<DragonAbilityTypes,Integer>> cooldowns = new ArrayList<>();
       
       if(phase == 1){
-         cooldowns.add(new Pair<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }else if(phase == 2){
-         cooldowns.add(new Pair<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.OVERLOAD_CRYSTALS,overloadCD-overloadTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.GRAVITY_AMP,ampCD-ampTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.OVERLOAD_CRYSTALS,overloadCD-overloadTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.GRAVITY_AMP,ampCD-ampTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }else if(phase == 3){
-         cooldowns.add(new Pair<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.CONSCRIPT_ARMY,conscriptCD-conscriptTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.OBLITERATE_TOWER,obliterateCD-obliterateTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.DRACONIC_RESILIENCE,resilienceCD-resilienceTicks));
-         cooldowns.add(new Pair<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.CONSCRIPT_ARMY,conscriptCD-conscriptTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.OBLITERATE_TOWER,obliterateCD-obliterateTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.DRACONIC_RESILIENCE,resilienceCD-resilienceTicks));
+         cooldowns.add(new Tuple<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }
       return cooldowns;
    }
@@ -124,19 +124,19 @@ public class DragonAbilities {
       
       if(overloadTicks < 400){
          if(overloadTicks % 2 == 0){
-            for(EndCrystalEntity crystal : crystals){
+            for(EndCrystal crystal : crystals){
                if(crystal != null && crystal.isAlive()){
-                  endWorld.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME,crystal.getX(),crystal.getY(),crystal.getZ(),25,5,5,5,0);
+                  endWorld.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,crystal.getX(),crystal.getY(),crystal.getZ(),25,5,5,5,0);
                }
             }
          }
          if(overloadTicks % 10 == 0){
-            for(EndCrystalEntity crystal : crystals){
+            for(EndCrystal crystal : crystals){
                if(crystal != null && crystal.isAlive()){
-                  List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(crystal.getEntityPos()) <= 5*5);
-                  for(ServerPlayerEntity player : nearbyPlayers){
+                  List<ServerPlayer> nearbyPlayers = endWorld.getPlayers(p -> p.distanceToSqr(crystal.position()) <= 5*5);
+                  for(ServerPlayer player : nearbyPlayers){
                      if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
-                     player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),2f);
+                     player.hurtServer(endWorld, new DamageSource(endWorld.damageSources().magic().typeHolder(), this.dragon,this.dragon),2f);
                   }
                }
             }
@@ -148,41 +148,41 @@ public class DragonAbilities {
       }
       
       if(bombardTicks < 12 * 5 && bombardTicks % 5 == 0){
-         ServerPlayerEntity randomPlayer;
+         ServerPlayer randomPlayer;
          int attempts = 0;
          do{
-            randomPlayer = endWorld.getRandomAlivePlayer();
+            randomPlayer = endWorld.getRandomPlayer();
             if(randomPlayer == null){ break; }
             attempts++;
-         }while((randomPlayer.squaredDistanceTo(dragon) > 75*75 || randomPlayer.isCreative() || randomPlayer.isSpectator()) && attempts < 25);
+         }while((randomPlayer.distanceToSqr(dragon) > 75*75 || randomPlayer.isCreative() || randomPlayer.isSpectator()) && attempts < 25);
          
          if(randomPlayer != null){
-            Vec3d vec3d3 = this.dragon.getRotationVec(1.0F);
+            Vec3 vec3d3 = this.dragon.getViewVector(1.0F);
             double l = this.dragon.head.getX() - vec3d3.x * 1.0;
-            double m = this.dragon.head.getBodyY(0.5) + 0.5;
+            double m = this.dragon.head.getY(0.5) + 0.5;
             double n = this.dragon.head.getZ() - vec3d3.z * 1.0;
             double o = randomPlayer.getX() - l;
-            double p = randomPlayer.getBodyY(0.5) - m;
+            double p = randomPlayer.getY(0.5) - m;
             double q = randomPlayer.getZ() - n;
             if(!this.dragon.isSilent()){
-               this.dragon.getEntityWorld().syncWorldEvent((PlayerEntity)null, 1017, this.dragon.getBlockPos(), 0);
+               this.dragon.level().levelEvent((Player)null, 1017, this.dragon.blockPosition(), 0);
             }
             
-            DragonFireballEntity dragonFireballEntity = new DragonFireballEntity(this.dragon.getEntityWorld(), this.dragon, new Vec3d(o,p,q));
-            dragonFireballEntity.refreshPositionAndAngles(l, m, n, 0.0F, 0.0F);
-            this.dragon.getEntityWorld().spawnEntity(dragonFireballEntity);
+            DragonFireball dragonFireballEntity = new DragonFireball(this.dragon.level(), this.dragon, new Vec3(o,p,q));
+            dragonFireballEntity.snapTo(l, m, n, 0.0F, 0.0F);
+            this.dragon.level().addFreshEntity(dragonFireballEntity);
          }
       }
       
       if(corruptArcanaTicks < 200 && corruptArcanaTicks % 20 == 0){
-         List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
-         for(ServerPlayerEntity player : nearbyPlayers300){
+         List<ServerPlayer> nearbyPlayers300 = endWorld.getPlayers(p -> p.distanceToSqr(new Vec3(0,100,0)) <= 300*300);
+         for(ServerPlayer player : nearbyPlayers300){
             float damage = ArcanaItemUtils.getUsedConcentration(player)/12f * (player.getMaxHealth()/20f);
             if(player.isCreative() || player.isSpectator() || damage < 0.1) continue; // Skip creative and spectator players
             
-            player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),damage);
-            player.sendMessage(Text.literal("Your Arcana Items surge with corrupted Arcana!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
+            player.hurtServer(endWorld, new DamageSource(endWorld.damageSources().magic().typeHolder(), this.dragon,this.dragon),damage);
+            player.displayClientMessage(Component.literal("Your Arcana Items surge with corrupted Arcana!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC),true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL,2,.1f);
          }
          
       }
@@ -201,51 +201,51 @@ public class DragonAbilities {
    }
    
    public boolean doAbility(int phase){
-      PhaseType phaseType = manager.getCurrent().getType();
+      EnderDragonPhase phaseType = manager.getCurrentPhase().getPhase();
       HashMap<DragonAbilityTypes,Integer> actions = new HashMap<>(); // Action, weight
-      List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
+      List<ServerPlayer> nearbyPlayers300 = endWorld.getPlayers(p -> p.distanceToSqr(new Vec3(0,100,0)) <= 300*300);
    
       if(phase == 1){
-         if(phaseType == PhaseType.HOLDING_PATTERN){
+         if(phaseType == EnderDragonPhase.HOLDING_PATTERN){
             actions.put(DragonAbilityTypes.SWOOPING_CHARGE,2);
          }
-         if(phaseType == PhaseType.SITTING_ATTACKING || phaseType == PhaseType.SITTING_SCANNING){
+         if(phaseType == EnderDragonPhase.SITTING_ATTACKING || phaseType == EnderDragonPhase.SITTING_SCANNING){
             actions.put(DragonAbilityTypes.WING_GUST,5);
          }
          actions.put(DragonAbilityTypes.BOMBARDMENT,5);
          actions.put(DragonAbilityTypes.CORRUPT_ARCANA,5);
       }else if(phase == 2){
-         if(phaseType == PhaseType.HOLDING_PATTERN){
+         if(phaseType == EnderDragonPhase.HOLDING_PATTERN){
             actions.put(DragonAbilityTypes.SWOOPING_CHARGE,2);
          }
-         if(phaseType == PhaseType.SITTING_ATTACKING || phaseType == PhaseType.SITTING_SCANNING){
+         if(phaseType == EnderDragonPhase.SITTING_ATTACKING || phaseType == EnderDragonPhase.SITTING_SCANNING){
             actions.put(DragonAbilityTypes.WING_GUST,5);
          }
          actions.put(DragonAbilityTypes.BOMBARDMENT,8);
          actions.put(DragonAbilityTypes.CORRUPT_ARCANA,5);
       
          int aerialCount = 0;
-         for(ServerPlayerEntity player : nearbyPlayers300){
+         for(ServerPlayer player : nearbyPlayers300){
             if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
-            if(player.getStatusEffect(StatusEffects.LEVITATION) != null || player.getStatusEffect(StatusEffects.JUMP_BOOST) != null){
+            if(player.getEffect(MobEffects.LEVITATION) != null || player.getEffect(MobEffects.JUMP_BOOST) != null){
                aerialCount++;
             }
          }
          if(aerialCount != 0) actions.put(DragonAbilityTypes.GRAVITY_AMP,aerialCount*5);
       
          int crystalPlayerCount = 0;
-         for(EndCrystalEntity crystal : crystals){
+         for(EndCrystal crystal : crystals){
             if(crystal != null && crystal.isAlive()){
-               List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(crystal.getEntityPos()) <= 6*6);
+               List<ServerPlayer> nearbyPlayers = endWorld.getPlayers(p -> p.distanceToSqr(crystal.position()) <= 6*6);
                crystalPlayerCount += nearbyPlayers.size();
             }
          }
          if(crystalPlayerCount != 0) actions.put(DragonAbilityTypes.OVERLOAD_CRYSTALS,crystalPlayerCount*3);
       }else if(phase == 3){
-         if(phaseType == PhaseType.HOLDING_PATTERN){
+         if(phaseType == EnderDragonPhase.HOLDING_PATTERN){
             actions.put(DragonAbilityTypes.SWOOPING_CHARGE,2);
          }
-         if(phaseType == PhaseType.SITTING_ATTACKING || phaseType == PhaseType.SITTING_SCANNING){
+         if(phaseType == EnderDragonPhase.SITTING_ATTACKING || phaseType == EnderDragonPhase.SITTING_SCANNING){
             actions.put(DragonAbilityTypes.WING_GUST,5);
          }
          actions.put(DragonAbilityTypes.BOMBARDMENT,8);
@@ -269,80 +269,80 @@ public class DragonAbilities {
       if(ability == null){
          return false;
       }else if(ability == DragonAbilityTypes.SWOOPING_CHARGE){
-         manager.setPhase(PhaseType.CHARGING_PLAYER);
-         PlayerEntity player = endWorld.getClosestPlayer(dragon,75);
-         if(player != null && manager.getCurrent() instanceof ChargingPlayerPhase charge){
-            charge.setPathTarget(player.getEntityPos());
+         manager.setPhase(EnderDragonPhase.CHARGING_PLAYER);
+         Player player = endWorld.getNearestPlayer(dragon,75);
+         if(player != null && manager.getCurrentPhase() instanceof DragonChargePlayerPhase charge){
+            charge.setTarget(player.position());
             swoopTicks = 0;
             return true;
          }
          swoopTicks = swoopCD/2;
          return false;
       }else if(ability == DragonAbilityTypes.WING_GUST){
-         Vec3d pos = dragon.getEntityPos();
-         SoundUtils.playSound(endWorld,dragon.getBlockPos(), SoundEvents.ENTITY_ENDER_DRAGON_FLAP, SoundCategory.HOSTILE,1f,0.5f);
-         List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(pos) <= 10*10);
-         for(ServerPlayerEntity player : nearbyPlayers){
+         Vec3 pos = dragon.position();
+         SoundUtils.playSound(endWorld,dragon.blockPosition(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE,1f,0.5f);
+         List<ServerPlayer> nearbyPlayers = endWorld.getPlayers(p -> p.distanceToSqr(pos) <= 10*10);
+         for(ServerPlayer player : nearbyPlayers){
             if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
-            BlockPos target = BlockPos.ofFloored(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5);
-            BlockPos playerPos = player.getBlockPos();
-            Vec3d vec = new Vec3d(target.getX()-playerPos.getX(),0,target.getZ()-playerPos.getZ());
-            vec = vec.normalize().multiply(3);
+            BlockPos target = BlockPos.containing(pos.x()+.5,pos.y()-1,pos.z()+.5);
+            BlockPos playerPos = player.blockPosition();
+            Vec3 vec = new Vec3(target.getX()-playerPos.getX(),0,target.getZ()-playerPos.getZ());
+            vec = vec.normalize().scale(3);
    
-            player.setVelocity(-vec.x,1,-vec.z);
-            player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+            player.setDeltaMovement(-vec.x,1,-vec.z);
+            player.connection.send(new ClientboundSetEntityMotionPacket(player));
    
-            player.sendMessage(Text.literal("The Dragon's Wings Knock You Away!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),true);
+            player.displayClientMessage(Component.literal("The Dragon's Wings Knock You Away!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
          }
          gustTicks = 0;
       }else if(ability == DragonAbilityTypes.OVERLOAD_CRYSTALS){
          overloadTicks = 0;
          DragonDialog.announce(DragonDialog.Announcements.ABILITY_OVERLOAD_CRYSTALS,server,null);
       }else if(ability == DragonAbilityTypes.GRAVITY_AMP){
-         for(ServerPlayerEntity player : nearbyPlayers300){
+         for(ServerPlayer player : nearbyPlayers300){
             if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
-            Vec3d vec = player.getVelocity();
+            Vec3 vec = player.getDeltaMovement();
       
-            player.setVelocity(vec.x,-3,vec.z);
-            player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+            player.setDeltaMovement(vec.x,-3,vec.z);
+            player.connection.send(new ClientboundSetEntityMotionPacket(player));
             int dist = player.getBlockY()-SpawnPile.getSurfaceY(endWorld,player.getBlockY(),player.getBlockX(),player.getBlockZ());
-            player.damage(endWorld, endWorld.getDamageSources().fall(),(dist*0.25f));
+            player.hurtServer(endWorld, endWorld.damageSources().fall(),(dist*0.25f));
          }
          
          ampTicks = 0;
          DragonDialog.announce(DragonDialog.Announcements.ABILITY_GRAVITY_AMP,server,null);
       }else if(ability == DragonAbilityTypes.CONSCRIPT_ARMY){
-         EndermanEntity[] goons = new EndermanEntity[25];
+         EnderMan[] goons = new EnderMan[25];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
-            goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
-            goons[i].setHealth(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
-            goons[i].getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
+            goons[i] = new EnderMan(EntityType.ENDERMAN, endWorld);
+            goons[i].getAttribute(Attributes.MAX_HEALTH).setBaseValue(Mth.clamp(20 + 4*nearbyPlayers300.size(),40,100));
+            goons[i].setHealth(Mth.clamp(20 + 4*nearbyPlayers300.size(),40,100));
+            goons[i].getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
-            goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
+            goons[i].setPosRaw(pos.getX(),pos.getY(),pos.getZ());
       
-            endWorld.spawnEntityAndPassengers(goons[i]);
+            endWorld.addFreshEntityWithPassengers(goons[i]);
          }
          
-         List<EndermanEntity> endermen = endWorld.getEntitiesByType(EntityType.ENDERMAN, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,115,300).toCenterPos()), e -> true);
+         List<EnderMan> endermen = endWorld.getEntities(EntityType.ENDERMAN, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,115,300).getCenter()), e -> true);
    
-         for(EndermanEntity enderman : endermen){
-            PlayerEntity closestPlayer = endWorld.getClosestPlayer(enderman,30);
+         for(EnderMan enderman : endermen){
+            Player closestPlayer = endWorld.getNearestPlayer(enderman,30);
             if(closestPlayer != null){
                if(closestPlayer.isCreative() || closestPlayer.isSpectator()) continue; // Skip creative and spectator players
-               enderman.setProvoked();
+               enderman.setBeingStaredAt();
                enderman.setTarget(closestPlayer);
-               enderman.setAngryAt(LazyEntityReference.of(closestPlayer));
-               enderman.setAngerEndTime(enderman.age + 1200);
+               enderman.setPersistentAngerTarget(EntityReference.of(closestPlayer));
+               enderman.setPersistentAngerEndTime(enderman.tickCount + 1200);
             }else{
-               PlayerEntity randomPlayer = endWorld.getRandomAlivePlayer();
+               Player randomPlayer = endWorld.getRandomPlayer();
                if(randomPlayer != null){
                   if(randomPlayer.isCreative() || randomPlayer.isSpectator()) continue; // Skip creative and spectator players
-                  enderman.setProvoked();
+                  enderman.setBeingStaredAt();
                   enderman.setTarget(randomPlayer);
-                  enderman.setAngryAt(LazyEntityReference.of(randomPlayer));
-                  enderman.setAngerEndTime(enderman.age + 1200);
+                  enderman.setPersistentAngerTarget(EntityReference.of(randomPlayer));
+                  enderman.setPersistentAngerEndTime(enderman.tickCount + 1200);
                }
             }
          }
@@ -354,18 +354,18 @@ public class DragonAbilities {
       }else if(ability == DragonAbilityTypes.CORRUPT_ARCANA){
          corruptArcanaTicks = 0;
          DragonDialog.announce(DragonDialog.Announcements.ABILITY_CORRUPT_ARCANA,server,null);
-         for(ServerPlayerEntity player : nearbyPlayers300){
+         for(ServerPlayer player : nearbyPlayers300){
             if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
             
-            PlayerInventory playerInv = player.getInventory();
-            ItemCooldownManager manager = player.getItemCooldownManager();
-            for(int i=0; i<playerInv.size();i++){
-               ItemStack item = playerInv.getStack(i);
+            Inventory playerInv = player.getInventory();
+            ItemCooldowns manager = player.getCooldowns();
+            for(int i = 0; i<playerInv.getContainerSize(); i++){
+               ItemStack item = playerInv.getItem(i);
                if(item.isEmpty()){
                   continue;
                }
-               if(ArcanaItemUtils.isArcane(item) && !manager.isCoolingDown(item)){
-                  manager.set(item,200);
+               if(ArcanaItemUtils.isArcane(item) && !manager.isOnCooldown(item)){
+                  manager.addCooldown(item,200);
                }
             }
          }

@@ -3,12 +3,12 @@ package net.borisshoes.arcananovum.achievements;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +42,12 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    }
    
    @Override
-   public NbtCompound toNbt(){
-      NbtCompound nbt = new NbtCompound();
+   public CompoundTag toNbt(){
+      CompoundTag nbt = new CompoundTag();
       nbt.putBoolean("acquired",isAcquired());
       nbt.putString("name",name);
       nbt.putInt("type",type);
-      NbtCompound condsTag = new NbtCompound();
+      CompoundTag condsTag = new CompoundTag();
       for(Map.Entry<String, Boolean> entry : conditions.entrySet()){
          condsTag.putBoolean(entry.getKey(),entry.getValue());
       }
@@ -56,41 +56,41 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    }
    
    @Override
-   public ConditionalsAchievement fromNbt(String id, NbtCompound nbt){
+   public ConditionalsAchievement fromNbt(String id, CompoundTag nbt){
       ConditionalsAchievement ach = (ConditionalsAchievement) ArcanaAchievements.registry.get(id).makeNew();
       ach.conditions.clear();
-      ach.setAcquired(nbt.getBoolean("acquired", false));
-      NbtCompound condsTag = nbt.getCompoundOrEmpty("conditions");
-      for(String key : condsTag.getKeys()){
-         ach.conditions.put(key, condsTag.getBoolean(key, false));
+      ach.setAcquired(nbt.getBooleanOr("acquired", false));
+      CompoundTag condsTag = nbt.getCompoundOrEmpty("conditions");
+      for(String key : condsTag.keySet()){
+         ach.conditions.put(key, condsTag.getBooleanOr(key, false));
       }
       return ach;
    }
    
    @Override
-   public MutableText[] getStatusDisplay(ServerPlayerEntity player){
+   public MutableComponent[] getStatusDisplay(ServerPlayer player){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       
       if(achievement != null && achievement.isAcquired()){
-         return new MutableText[]{Text.literal("Achieved!").formatted(Formatting.AQUA)};
+         return new MutableComponent[]{Component.literal("Achieved!").withStyle(ChatFormatting.AQUA)};
       }
       
-      List<MutableText> missing = new ArrayList<>();
-      missing.add(Text.literal("Missing:").formatted(Formatting.DARK_AQUA));
+      List<MutableComponent> missing = new ArrayList<>();
+      missing.add(Component.literal("Missing:").withStyle(ChatFormatting.DARK_AQUA));
       
       if(achievement == null){
          for(String cond : conditions.keySet()){
-            missing.add(Text.literal(cond).formatted(Formatting.AQUA));
+            missing.add(Component.literal(cond).withStyle(ChatFormatting.AQUA));
          }
       }else{
          for(String cond : conditions.keySet()){
             if(achievement.getConditions().get(cond)) continue;
-            missing.add(Text.literal(cond).formatted(Formatting.AQUA));
+            missing.add(Component.literal(cond).withStyle(ChatFormatting.AQUA));
          }
       }
       
-      return missing.toArray(new MutableText[0]);
+      return missing.toArray(new MutableComponent[0]);
    }
    
    @Override

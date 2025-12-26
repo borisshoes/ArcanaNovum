@@ -1,11 +1,11 @@
 package net.borisshoes.arcananovum.core;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 public interface LeftClickItem {
-   public boolean attackBlock(PlayerEntity playerEntity, World world, Hand hand, BlockPos blockPos, Direction direction);
+   public boolean attackBlock(Player playerEntity, Level world, InteractionHand hand, BlockPos blockPos, Direction direction);
 }

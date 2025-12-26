@@ -2,11 +2,11 @@ package net.borisshoes.arcananovum.gui.twilightanvil;
 
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.InventoryChangedListener;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerListener;
+import net.minecraft.world.item.ItemStack;
 
-public class TinkerInventoryListener implements InventoryChangedListener {
+public class TinkerInventoryListener implements ContainerListener {
    private final SimpleGui gui;
    private final TwilightAnvilBlockEntity blockEntity;
    private boolean updating = false;
@@ -20,11 +20,11 @@ public class TinkerInventoryListener implements InventoryChangedListener {
    }
    
    @Override
-   public void onInventoryChanged(Inventory inv){
+   public void containerChanged(Container inv){
       if(!updating){
          setUpdating();
-         for(int i = 0; i < inv.size(); i++){
-            ItemStack stack = inv.getStack(i);
+         for(int i = 0; i < inv.getContainerSize(); i++){
+            ItemStack stack = inv.getItem(i);
             if(stack.getCount() != 0){
                if(mode == 1 && i == 0 && gui instanceof RenameGui renameGui){
                   renameGui.setItem(stack);
@@ -36,9 +36,9 @@ public class TinkerInventoryListener implements InventoryChangedListener {
             tgui.redrawGui(inv);
          }else{
             if(mode == 1){
-               ItemStack item = inv.getStack(0);
+               ItemStack item = inv.getItem(0);
                if(item.isEmpty()){
-                  gui.setSlot(2,ItemStack.EMPTY);
+                  gui.setSlot(2, ItemStack.EMPTY);
                }
             }
          }

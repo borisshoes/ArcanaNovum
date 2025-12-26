@@ -13,18 +13,18 @@ import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
 import net.borisshoes.borislib.utils.AlgoUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.*;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.GeneratorOptions;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.*;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -62,25 +62,25 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       return this.seedUses;
    }
    
-   public void openGui(int screen, ServerPlayerEntity player, String data, @Nullable TomeGui.CompendiumSettings settings){ // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - Compendium (9x6), 5 - Skilled Selection (9x5)
+   public void openGui(int screen, ServerPlayer player, String data, @Nullable TomeGui.CompendiumSettings settings){ // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - Compendium (9x6), 5 - Skilled Selection (9x5)
       StarlightForgeGui gui = null;
       if(screen == 0){
-         gui = new StarlightForgeGui(ScreenHandlerType.HOPPER,player,this,world,screen,settings);
+         gui = new StarlightForgeGui(MenuType.HOPPER,player,this, level,screen,settings);
          gui.buildMenuGui();
       }else if(screen == 1){
-         gui = new StarlightForgeGui(ScreenHandlerType.GENERIC_9X5,player,this,world,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this, level,screen,settings);
          gui.buildCraftingGui(data);
       }else if(screen == 2){
-         gui = new StarlightForgeGui(ScreenHandlerType.GENERIC_9X3,player,this,world,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x3,player,this, level,screen,settings);
          gui.buildForgeGui();
       }else if(screen == 3){
-         gui = new StarlightForgeGui(ScreenHandlerType.GENERIC_9X5,player,this,world,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this, level,screen,settings);
          gui.buildRecipeGui(data);
       }else if(screen == 4){
-         gui = new StarlightForgeGui(ScreenHandlerType.GENERIC_9X6,player,this,world,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x6,player,this, level,screen,settings);
          TomeGui.buildCompendiumGui(gui,player,settings);
       }else if(screen == 5){
-         gui = new StarlightForgeGui(ScreenHandlerType.GENERIC_9X5,player,this,world,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this, level,screen,settings);
          gui.buildSkilledGui(data);
       }
       if(gui != null){
@@ -88,22 +88,22 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       }
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof StarlightForgeBlockEntity forge){
          forge.tick();
       }
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
       
-      if(serverWorld.getServer().getTicks() % 10 == 0){
+      if(serverWorld.getServer().getTickCount() % 10 == 0){
          this.assembled = multiblock.matches(getMultiblockCheck());
       }
       
-      if(serverWorld.getServer().getTicks() % 100 == 0){
+      if(serverWorld.getServer().getTickCount() % 100 == 0){
          boolean hasAll = true;
          if(getForgeAddition(serverWorld, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY) == null) hasAll = false;
          if(getForgeAddition(serverWorld, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY) == null) hasAll = false;
@@ -112,7 +112,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
          if(getForgeAddition(serverWorld, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null) hasAll = false;
          if(hasAll){
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(crafterId));
+               ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player != null){
                   ArcanaAchievements.grant(player,ArcanaAchievements.NIDAVELLIR.id);
                }
@@ -120,8 +120,8 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
          }
       }
       
-      if(serverWorld.getServer().getTicks() % 20 == 0 && this.assembled){
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled){
+         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
    }
    
@@ -129,10 +129,10 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       return ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STELLAR_RANGE.id) >= 1 ? new BlockPos(15, 8, 15) : new BlockPos(8, 5, 8);
    }
    
-   public ArcanaBlockEntity getForgeAddition(ServerWorld world, BlockEntityType<? extends BlockEntity> additionBlockEntity){
+   public ArcanaBlockEntity getForgeAddition(ServerLevel world, BlockEntityType<? extends BlockEntity> additionBlockEntity){
       BlockPos range = this.getForgeRange();
-      for(BlockPos blockPos : BlockPos.iterate(pos.add(range), pos.subtract(range))){
-         BlockEntity be = additionBlockEntity.get(world,blockPos);
+      for(BlockPos blockPos : BlockPos.betweenClosed(worldPosition.offset(range), worldPosition.subtract(range))){
+         BlockEntity be = additionBlockEntity.getBlockEntity(world,blockPos);
          if(be instanceof ArcanaBlockEntity arcanaBlock && arcanaBlock.isAssembled()){
             return arcanaBlock;
          }
@@ -140,11 +140,11 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       return null;
    }
    
-   public ArrayList<Inventory> getIngredientInventories(){
-      ArrayList<Inventory> invs = new ArrayList<>();
+   public ArrayList<Container> getIngredientInventories(){
+      ArrayList<Container> invs = new ArrayList<>();
       BlockPos range = this.getForgeRange();
-      if(!(world instanceof ServerWorld serverWorld)) return invs;
-      for(BlockPos blockPos : BlockPos.iterate(pos.add(range), pos.subtract(range))){
+      if(!(level instanceof ServerLevel serverWorld)) return invs;
+      for(BlockPos blockPos : BlockPos.betweenClosed(worldPosition.offset(range), worldPosition.subtract(range))){
          BlockEntity be = serverWorld.getBlockEntity(blockPos);
          BlockState state = serverWorld.getBlockState(blockPos);
          if(be instanceof ChestBlockEntity chestBe){
@@ -173,10 +173,10 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getCheckOffset()),null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -210,7 +210,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    public int getPlanetCount(){
       int planetCount = 2;
       if(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOONLIT_FORGE.id) >= 1){
-         long timeOfDay = world.getTimeOfDay();
+         long timeOfDay = level.getDayTime();
          int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
          int influence = Math.abs(-curPhase+4);
@@ -233,7 +233,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    public int getStarCount(){
       int starCount = 2;
       if(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOONLIT_FORGE.id) >= 1){
-         long timeOfDay = world.getTimeOfDay();
+         long timeOfDay = level.getDayTime();
          int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
          int influence = Math.abs(-curPhase+4);
@@ -254,7 +254,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public long getSeed(){
-      return GeneratorOptions.parseSeed(uuid+this.seedUses).orElse(GeneratorOptions.getRandomSeed());
+      return WorldOptions.parseSeed(uuid+this.seedUses).orElse(WorldOptions.randomSeed());
    }
    
    public void addSeedUse(){
@@ -262,13 +262,13 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.seedUses = view.getInt("seedUses", 0);
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.seedUses = view.getIntOr("seedUses", 0);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
@@ -276,9 +276,9 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);

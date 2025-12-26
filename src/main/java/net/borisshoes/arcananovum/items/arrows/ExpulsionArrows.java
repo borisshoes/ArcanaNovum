@@ -17,26 +17,26 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -55,46 +55,46 @@ public class ExpulsionArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new ExpulsionArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SLIME,ResearchTasks.OBTAIN_AMETHYST_SHARD,ResearchTasks.USE_ENDER_PEARL};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SLIME,ResearchTasks.OBTAIN_AMETHYST_SHARD,ResearchTasks.USE_ENDER_PEARL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Expulsion Arrows:").formatted(Formatting.BOLD,Formatting.BLUE));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" repulse ").formatted(Formatting.BLUE))
-            .append(Text.literal("entities").formatted(Formatting.AQUA))
-            .append(Text.literal(" near the area of ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("impact").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("A hit ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("entity ").formatted(Formatting.AQUA))
-            .append(Text.literal("is ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("not affected").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
+      lore.add(Component.literal("Expulsion Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" repulse ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("entities").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" near the area of ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("impact").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("A hit ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("entity ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("is ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("not affected").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
+      if(arrow.level() instanceof ServerLevel serverWorld){
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
          if(evict){
-            double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
-            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,entityHitResult.getPos(),range)));
+            double range = Mth.clamp(arrow.getDeltaMovement().length()*2,1,5);
+            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,entityHitResult.getLocation(),range)));
          }else{
-            int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
+            int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20); // Measured in quarter seconds
             double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
             expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
          }
@@ -103,62 +103,62 @@ public class ExpulsionArrows extends RunicArrow {
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
+      if(arrow.level() instanceof ServerLevel serverWorld){
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
          if(evict){
-            double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
-            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,blockHitResult.getPos(),range)));
+            double range = Mth.clamp(arrow.getDeltaMovement().length()*2,1,5);
+            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,blockHitResult.getLocation(),range)));
          }else{
-            int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
+            int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20); // Measured in quarter seconds
             double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
-            expulsionPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,range,0);
+            expulsionPulse(arrow, serverWorld,blockHitResult.getLocation(),null,duration,range,0);
          }
       }
    }
    
-   private void evictionPulse(PersistentProjectileEntity arrow, ServerWorld world, Vec3d pos, double range){
-      Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
-      List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && !(e instanceof PersistentProjectileEntity) && !(e instanceof EnderDragonEntity));
+   private void evictionPulse(AbstractArrow arrow, ServerLevel world, Vec3 pos, double range){
+      AABB rangeBox = new AABB(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
+      List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 1.5*range*range && !(e instanceof AbstractArrow) && !(e instanceof EnderDragon));
       for(Entity entity1 : entities){
-         Vec3d diff = entity1.getEntityPos().subtract(pos);
-         double multiplier = MathHelper.clamp(3-diff.length()*.5,.1,7.5);
-         Vec3d motion = diff.add(0,0,0).normalize().multiply(multiplier);
-         entity1.setVelocity(motion.x,motion.y,motion.z);
-         if(entity1 instanceof ServerPlayerEntity player){
-            player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+         Vec3 diff = entity1.position().subtract(pos);
+         double multiplier = Mth.clamp(3-diff.length()*.5,.1,7.5);
+         Vec3 motion = diff.add(0,0,0).normalize().scale(multiplier);
+         entity1.setDeltaMovement(motion.x,motion.y,motion.z);
+         if(entity1 instanceof ServerPlayer player){
+            player.connection.send(new ClientboundSetEntityMotionPacket(player));
             
-            if(arrow.getOwner() != null && arrow.getOwner().getUuid().equals(player.getUuid()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD.id);
+            if(arrow.getOwner() != null && arrow.getOwner().getUUID().equals(player.getUUID()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD.id);
          }
       }
       
       ArcanaEffectUtils.expulsionArrowEmit(world,pos,range,0);
-      SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.PLAYERS,.5f,.5f);
+      SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.ALLAY_ITEM_TAKEN, SoundSource.PLAYERS,.5f,.5f);
    }
    
-   private void expulsionPulse(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, double range, int calls){
+   private void expulsionPulse(AbstractArrow arrow, ServerLevel world, @Nullable Vec3 start, @Nullable Entity entity, int duration, double range, int calls){
       if(start == null && entity == null) return;
-      Vec3d pos = entity == null ? start : entity.getEntityPos();
+      Vec3 pos = entity == null ? start : entity.position();
       
-      Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
-      List<Entity> entities = world.getOtherEntities(entity,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && !(e instanceof PersistentProjectileEntity) && !(e instanceof EnderDragonEntity));
+      AABB rangeBox = new AABB(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
+      List<Entity> entities = world.getEntities(entity,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 1.5*range*range && !(e instanceof AbstractArrow) && !(e instanceof EnderDragon));
       for(Entity entity1 : entities){
-         Vec3d diff = entity1.getEntityPos().subtract(pos);
-         double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,5);
-         Vec3d motion = diff.add(0,0,0).normalize().multiply(multiplier);
-         entity1.setVelocity(motion.x,motion.y,motion.z);
-         if(entity1 instanceof ServerPlayerEntity player){
-            player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+         Vec3 diff = entity1.position().subtract(pos);
+         double multiplier = Mth.clamp(range*.75-diff.length()*.5,.1,5);
+         Vec3 motion = diff.add(0,0,0).normalize().scale(multiplier);
+         entity1.setDeltaMovement(motion.x,motion.y,motion.z);
+         if(entity1 instanceof ServerPlayer player){
+            player.connection.send(new ClientboundSetEntityMotionPacket(player));
             
-            if(arrow.getOwner() != null && arrow.getOwner().getUuid().equals(player.getUuid()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD.id);
+            if(arrow.getOwner() != null && arrow.getOwner().getUUID().equals(player.getUUID()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD.id);
          }
       }
       
       if(calls % 5 == 0){
          ArcanaEffectUtils.expulsionArrowEmit(world,pos,range,0);
-         SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.PLAYERS,.5f,.5f);
+         SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.ALLAY_ITEM_TAKEN, SoundSource.PLAYERS,.5f,.5f);
       }
       if(calls % 10 == 1){
-         SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM, SoundCategory.PLAYERS,.5f,.9f);
+         SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, SoundSource.PLAYERS,.5f,.9f);
       }
       
       if(calls < duration){
@@ -185,9 +185,9 @@ public class ExpulsionArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Expulsion Arrows").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Runic Matrix is configured to repulse anything nearby like bouncing on a slime block. Great for jump pads, zoning off monsters, or sending foes off a steep cliff.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal(" Expulsion Arrows").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis Runic Matrix is configured to repulse anything nearby like bouncing on a slime block. Great for jump pads, zoning off monsters, or sending foes off a steep cliff.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -197,7 +197,7 @@ public class ExpulsionArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

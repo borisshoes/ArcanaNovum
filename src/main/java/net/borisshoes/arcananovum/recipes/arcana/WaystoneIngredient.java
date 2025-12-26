@@ -3,20 +3,20 @@ package net.borisshoes.arcananovum.recipes.arcana;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class WaystoneIngredient extends ArcanaIngredient {
    
    private boolean consumed;
    private boolean requireUnattuned;
    private boolean requireAttuned;
-   private RegistryKey<World> worldKey;
+   private ResourceKey<Level> worldKey;
    
-   private WaystoneIngredient(int count, boolean consumed, boolean requireUnattuned, boolean requireAttuned, RegistryKey<World> worldKey){
+   private WaystoneIngredient(int count, boolean consumed, boolean requireUnattuned, boolean requireAttuned, ResourceKey<Level> worldKey){
       super(ArcanaRegistry.WAYSTONE.getPrefItem().getItem(), count, true);
       this.requireAttuned = requireAttuned;
       this.requireUnattuned = requireUnattuned;
@@ -43,7 +43,7 @@ public class WaystoneIngredient extends ArcanaIngredient {
       return this;
    }
    
-   public WaystoneIngredient requireAttuned(RegistryKey<World> world){
+   public WaystoneIngredient requireAttuned(ResourceKey<Level> world){
       this.requireUnattuned = false;
       this.requireAttuned = true;
       this.worldKey = world;
@@ -52,12 +52,12 @@ public class WaystoneIngredient extends ArcanaIngredient {
    
    @Override
    public boolean validStack(ItemStack stack){
-      if(!stack.isOf(ArcanaRegistry.WAYSTONE.getItem())) return false;
+      if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return false;
       if(requireUnattuned){
          return Waystone.isUnattuned(stack);
       }else if(requireAttuned){
          if(Waystone.isUnattuned(stack) || Waystone.getTarget(stack) == null) return false;
-         if(this.worldKey != null && !Waystone.getTarget(stack).world().getValue().equals(this.worldKey.getValue())) return false;
+         if(this.worldKey != null && !Waystone.getTarget(stack).world().identifier().equals(this.worldKey.identifier())) return false;
       }
       return true;
    }
@@ -105,7 +105,7 @@ public class WaystoneIngredient extends ArcanaIngredient {
    public ItemStack ingredientAsStack(){
       if(requireAttuned){
          ItemStack waystone = ArcanaRegistry.WAYSTONE.getPrefItem().copy();
-         Waystone.saveTarget(waystone,new Waystone.WaystoneTarget(worldKey != null ? worldKey : ServerWorld.OVERWORLD,new Vec3d(0,0,0),0,0));
+         Waystone.saveTarget(waystone,new Waystone.WaystoneTarget(worldKey != null ? worldKey : ServerLevel.OVERWORLD,new Vec3(0,0,0),0,0));
          return waystone;
       }else{
          return ArcanaRegistry.WAYSTONE.getPrefItem().copy();

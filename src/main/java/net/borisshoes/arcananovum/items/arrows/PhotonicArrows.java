@@ -16,22 +16,22 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -50,71 +50,71 @@ public class PhotonicArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new PhotonicArrowsItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON,ResearchTasks.OBTAIN_AMETHYST_CLUSTER,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON,ResearchTasks.OBTAIN_AMETHYST_CLUSTER,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Photonic Arrows:").formatted(Formatting.BOLD,Formatting.AQUA));
-      lore.add(Text.literal("")
-            .append(Text.literal("These ").formatted(Formatting.WHITE))
-            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" fly perfectly ").formatted(Formatting.WHITE))
-            .append(Text.literal("straight ").formatted(Formatting.AQUA))
-            .append(Text.literal("through the air.").formatted(Formatting.WHITE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.WHITE))
-            .append(Text.literal("arrows ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("pierce ").formatted(Formatting.AQUA))
-            .append(Text.literal("all ").formatted(Formatting.WHITE))
-            .append(Text.literal("entities ").formatted(Formatting.AQUA))
-            .append(Text.literal("before hitting a ").formatted(Formatting.WHITE))
-            .append(Text.literal("block").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.WHITE)));
+      lore.add(Component.literal("Photonic Arrows:").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA));
+      lore.add(Component.literal("")
+            .append(Component.literal("These ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("Runic Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" fly perfectly ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("straight ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("through the air.").withStyle(ChatFormatting.WHITE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("arrows ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("pierce ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("all ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("entities ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("before hitting a ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("block").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.WHITE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   public void shoot(World world, LivingEntity entity, ProjectileEntity proj, int alignmentLvl){
-      if(!(world instanceof ServerWorld serverWorld)) return;
-      MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, entity.getEyePos(), entity.getRotationVecClient(), 100, true, entity);
+   public void shoot(Level world, LivingEntity entity, Projectile proj, int alignmentLvl){
+      if(!(world instanceof ServerLevel serverWorld)) return;
+      MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, entity.getEyePosition(), entity.getForward(), 100, true, entity);
       
-      float damage = (float)MathHelper.clamp(proj.getVelocity().length()*5,1,20);
+      float damage = (float) Mth.clamp(proj.getDeltaMovement().length()*5,1,20);
       if(alignmentLvl == 5) damage += (float) (4 + damage*0.2);
       float bonusDmg = 0;
       
       int killCount = 0;
       for(Entity hit : lasercast.sortedHits()){
-         float finalDmg = (float) ((damage+bonusDmg) * Math.min(1,-0.01*(hit.getEntityPos().distanceTo(lasercast.startPos())-100)+0.25)) * (hit instanceof ServerPlayerEntity ? 0.5f : 1f);
-         if(hit instanceof ServerPlayerEntity hitPlayer && hitPlayer.isBlocking()){
-            double dp = hitPlayer.getRotationVecClient().normalize().dotProduct(lasercast.direction().normalize());
+         float finalDmg = (float) ((damage+bonusDmg) * Math.min(1,-0.01*(hit.position().distanceTo(lasercast.startPos())-100)+0.25)) * (hit instanceof ServerPlayer ? 0.5f : 1f);
+         if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
+            double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
             if(dp < -0.6){
                ArcanaUtils.blockWithShield(hitPlayer,finalDmg);
                continue;
             }
          }
-         hit.damage(serverWorld, ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,proj,entity), finalDmg);
+         hit.hurtServer(serverWorld, ArcanaDamageTypes.of(entity.level(),ArcanaDamageTypes.PHOTONIC,proj,entity), finalDmg);
          
-         if(hit instanceof MobEntity mob && mob.isDead()){
+         if(hit instanceof Mob mob && mob.isDeadOrDying()){
             killCount++;
          }
          bonusDmg = Math.min(25,bonusDmg + alignmentLvl);
       }
       
-      if(proj.getOwner() instanceof ServerPlayerEntity player && killCount >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.X.id);
+      if(proj.getOwner() instanceof ServerPlayer player && killCount >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.X.id);
       
-      if(proj.getOwner() instanceof ServerPlayerEntity player && !lasercast.sortedHits().isEmpty() && proj instanceof RunicArrowEntity runicArrowEntity){
+      if(proj.getOwner() instanceof ServerPlayer player && !lasercast.sortedHits().isEmpty() && proj instanceof RunicArrowEntity runicArrowEntity){
          runicArrowEntity.incArrowForEveryFoe(player);
       }
       
-      ArcanaEffectUtils.photonArrowShot(serverWorld,entity.getEyePos().subtract(0,entity.getHeight()/4,0),lasercast.endPos(), MathHelper.clamp(damage/15,.4f,1f),0);
+      ArcanaEffectUtils.photonArrowShot(serverWorld,entity.getEyePosition().subtract(0,entity.getBbHeight()/4,0),lasercast.endPos(), Mth.clamp(damage/15,.4f,1f),0);
    }
    
    @Override
@@ -142,9 +142,9 @@ public class PhotonicArrows extends RunicArrow {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Photonic Arrows").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\n‘Straight as an arrow’. What a joke of a saying, I’ll show them what straight looks like. Some solar runes coupled with a focusing prism makes quite the combo. This brings a new meaning to ‘Shooting Lazers’.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal(" Photonic Arrows").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\n‘Straight as an arrow’. What a joke of a saying, I’ll show them what straight looks like. Some solar runes coupled with a focusing prism makes quite the combo. This brings a new meaning to ‘Shooting Lazers’.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -154,7 +154,7 @@ public class PhotonicArrows extends RunicArrow {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

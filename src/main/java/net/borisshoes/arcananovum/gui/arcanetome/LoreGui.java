@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public class LoreGui extends BookGui {
@@ -13,7 +13,7 @@ public class LoreGui extends BookGui {
    private final String returnItem;
    private final TomeGui.CompendiumSettings settings;
    
-   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, TomeGui.TomeMode returnMode, TomeGui.CompendiumSettings settings){
+   public LoreGui(ServerPlayer player, BookElementBuilder book, @Nullable ArcaneTome tome, TomeGui.TomeMode returnMode, TomeGui.CompendiumSettings settings){
       super(player, book);
       this.tome = tome;
       this.returnMode = returnMode;
@@ -21,7 +21,7 @@ public class LoreGui extends BookGui {
       this.settings = settings;
    }
    
-   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, TomeGui.TomeMode returnMode, TomeGui.CompendiumSettings settings, String returnItem){
+   public LoreGui(ServerPlayer player, BookElementBuilder book, @Nullable ArcaneTome tome, TomeGui.TomeMode returnMode, TomeGui.CompendiumSettings settings, String returnItem){
       super(player, book);
       this.tome = tome;
       this.returnMode = returnMode;

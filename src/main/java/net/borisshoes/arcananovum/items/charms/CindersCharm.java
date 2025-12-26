@@ -18,48 +18,49 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.*;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.particle.SimpleParticleType;
-import net.minecraft.recipe.AbstractCookingRecipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.ServerRecipeManager;
-import net.minecraft.recipe.input.SingleStackRecipeInput;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.*;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -91,49 +92,49 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       itemVersion = 1;
       vanillaItem = Items.BLAZE_POWDER;
       item = new CindersCharmItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.KILL_BLAZE,ResearchTasks.KILL_MAGMA_CUBE,ResearchTasks.EFFECT_FIRE_RESISTANCE,ResearchTasks.USE_FLINT_AND_STEEL,ResearchTasks.UNLOCK_STELLAR_CORE};
-      attributions = new Pair[]{new Pair<>(Text.translatable("credits_and_attribution.arcananovum.inspired_by"),Text.literal("sarhecker"))};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.KILL_BLAZE,ResearchTasks.KILL_MAGMA_CUBE,ResearchTasks.EFFECT_FIRE_RESISTANCE,ResearchTasks.USE_FLINT_AND_STEEL,ResearchTasks.UNLOCK_STELLAR_CORE};
+      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("sarhecker"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,ACTIVE_TAG, false);
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.RED))
-            .append(Text.literal("charm ").formatted(Formatting.GOLD))
-            .append(Text.literal("burns ").formatted(Formatting.DARK_RED))
-            .append(Text.literal("with ").formatted(Formatting.RED))
-            .append(Text.literal("focused intensity").formatted(Formatting.DARK_RED))
-            .append(Text.literal(".").formatted(Formatting.RED)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Flames ").formatted(Formatting.GOLD))
-            .append(Text.literal("welcome you with a ").formatted(Formatting.RED))
-            .append(Text.literal("warm embrace").formatted(Formatting.GOLD))
-            .append(Text.literal(".").formatted(Formatting.RED)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Left Click").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" a block or creature to set it ").formatted(Formatting.RED))
-            .append(Text.literal("ablaze").formatted(Formatting.GOLD))
-            .append(Text.literal(".").formatted(Formatting.RED)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Hold Right Click").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" to ").formatted(Formatting.RED))
-            .append(Text.literal("breathe ").formatted(Formatting.GOLD))
-            .append(Text.literal("a ").formatted(Formatting.RED))
-            .append(Text.literal("cone of fire").formatted(Formatting.GOLD))
-            .append(Text.literal(" in front of you.").formatted(Formatting.RED)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right Click").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" to toggle ").formatted(Formatting.RED))
-            .append(Text.literal("auto-smelting").formatted(Formatting.GOLD))
-            .append(Text.literal(" of picked up items.").formatted(Formatting.RED)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("charm ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("burns ").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("with ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("focused intensity").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(".").withStyle(ChatFormatting.RED)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Flames ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("welcome you with a ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("warm embrace").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(".").withStyle(ChatFormatting.RED)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Left Click").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" a block or creature to set it ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("ablaze").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(".").withStyle(ChatFormatting.RED)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Hold Right Click").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("breathe ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("a ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("cone of fire").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(" in front of you.").withStyle(ChatFormatting.RED)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right Click").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" to toggle ").withStyle(ChatFormatting.RED))
+            .append(Component.literal("auto-smelting").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal(" of picked up items.").withStyle(ChatFormatting.RED)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -143,56 +144,56 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
    }
    
    @Override
-   public boolean attackBlock(PlayerEntity playerEntity, World world, Hand hand, BlockPos blockPos, Direction direction){
-      ItemStack itemStack = playerEntity.getStackInHand(hand);
+   public boolean attackBlock(Player playerEntity, Level world, InteractionHand hand, BlockPos blockPos, Direction direction){
+      ItemStack itemStack = playerEntity.getItemInHand(hand);
       BlockState blockState = world.getBlockState(blockPos);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
-      Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
+      ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
       
-      if(blockState.isOf(Blocks.FIRE) || blockState.isOf(Blocks.SOUL_FIRE)){
-         if(playerEntity instanceof ServerPlayerEntity player){
-            player.networkHandler.sendPacket(new BlockUpdateS2CPacket(blockPos,blockState));
+      if(blockState.is(Blocks.FIRE) || blockState.is(Blocks.SOUL_FIRE)){
+         if(playerEntity instanceof ServerPlayer player){
+            player.connection.send(new ClientboundBlockUpdatePacket(blockPos,blockState));
          }
          return false;
       }
       int cinderConsumption = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.FIRESTARTER.id) >= 1 ? 0 : 5;
       if(getEnergy(itemStack) < cinderConsumption){
-         playerEntity.sendMessage(Text.literal("The Charm has no Cinders").formatted(color), true);
+         playerEntity.displayClientMessage(Component.literal("The Charm has no Cinders").withStyle(color), true);
          return true;
       }
       
-      if(!CampfireBlock.canBeLit(blockState) && !CandleBlock.canBeLit(blockState) && !CandleCakeBlock.canBeLit(blockState)){
-         BlockPos blockPos2 = blockPos.offset(direction);
-         if(blockState.isOf(Blocks.TNT)){
-            TntBlock.primeTnt(world,blockPos);
-            world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 11);
+      if(!CampfireBlock.canLight(blockState) && !CandleBlock.canLight(blockState) && !CandleCakeBlock.canLight(blockState)){
+         BlockPos blockPos2 = blockPos.relative(direction);
+         if(blockState.is(Blocks.TNT)){
+            TntBlock.prime(world,blockPos);
+            world.setBlock(blockPos, Blocks.AIR.defaultBlockState(), 11);
             
             addEnergy(itemStack, -cinderConsumption);
             String message = "Cinders: ";
             for(int i=1; i<=getMaxEnergy(itemStack)/20; i++){
                message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
             }
-            playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
+            playerEntity.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
             
-            if(playerEntity instanceof ServerPlayerEntity player){
+            if(playerEntity instanceof ServerPlayer player){
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_TNT)*cinderConsumption); // Add xp
             }
             
             return !playerEntity.isCreative();
-         }else if(AbstractFireBlock.canPlaceAt(world, blockPos2, direction)){
-            SoundUtils.playSound(world,blockPos,SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
-            BlockState blockState2 = AbstractFireBlock.getState(world, blockPos2);
-            world.setBlockState(blockPos2, blockState2, 11);
-            world.emitGameEvent(playerEntity, GameEvent.BLOCK_PLACE, blockPos);
+         }else if(BaseFireBlock.canBePlacedAt(world, blockPos2, direction)){
+            SoundUtils.playSound(world,blockPos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
+            BlockState blockState2 = BaseFireBlock.getState(world, blockPos2);
+            world.setBlock(blockPos2, blockState2, 11);
+            world.gameEvent(playerEntity, GameEvent.BLOCK_PLACE, blockPos);
             
             addEnergy(itemStack, -cinderConsumption);
             String message = "Cinders: ";
             for(int i=1; i<=getMaxEnergy(itemStack)/20; i++){
                message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
             }
-            playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
+            playerEntity.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
             
-            if(playerEntity instanceof ServerPlayerEntity player){
+            if(playerEntity instanceof ServerPlayer player){
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_BLOCK)*cinderConsumption); // Add xp
             }
             
@@ -201,19 +202,19 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             return !playerEntity.isCreative();
          }
       }else{
-         if(CandleCakeBlock.canBeLit(blockState) && playerEntity instanceof ServerPlayerEntity player) ArcanaAchievements.grant(player,ArcanaAchievements.CAKE_DAY.id);
-         SoundUtils.playSound(world,blockPos,SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
-         world.setBlockState(blockPos, (BlockState)blockState.with(Properties.LIT, true), 11);
-         world.emitGameEvent(playerEntity, GameEvent.BLOCK_CHANGE, blockPos);
+         if(CandleCakeBlock.canLight(blockState) && playerEntity instanceof ServerPlayer player) ArcanaAchievements.grant(player,ArcanaAchievements.CAKE_DAY.id);
+         SoundUtils.playSound(world,blockPos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
+         world.setBlock(blockPos, (BlockState)blockState.setValue(BlockStateProperties.LIT, true), 11);
+         world.gameEvent(playerEntity, GameEvent.BLOCK_CHANGE, blockPos);
          
          addEnergy(itemStack, -cinderConsumption);
          String message = "Cinders: ";
          for(int i=1; i<=getMaxEnergy(itemStack)/20; i++){
             message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
          }
-         playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
+         playerEntity.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
          
-         if(playerEntity instanceof ServerPlayerEntity player){
+         if(playerEntity instanceof ServerPlayer player){
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_LIGHT_BLOCK)*cinderConsumption); // Add xp
          }
          
@@ -221,32 +222,32 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
    }
    
-   public ItemStack smelt(ItemStack charm, PlayerEntity player, ItemStack stack){
-      if(!(player.getEntityWorld() instanceof ServerWorld serverWorld)) return null;
+   public ItemStack smelt(ItemStack charm, Player player, ItemStack stack){
+      if(!(player.level() instanceof ServerLevel serverWorld)) return null;
       try{
          boolean active = getBooleanProperty(charm,ACTIVE_TAG);
          boolean cremation = ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.CREMATION.id) >= 1;
          boolean smelter = ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.SUPERSMELTER.id) >= 1;
-         Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
+         ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
          int energyToConsume = (int)Math.ceil(stack.getCount() / (smelter ? 8.0 : 2.0));
          if(active && getEnergy(charm) >= energyToConsume){
             // Smelting registry and auto smelt
             
-            ServerRecipeManager.MatchGetter<SingleStackRecipeInput, ? extends AbstractCookingRecipe> matchGetter = ServerRecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
-            RecipeEntry<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getFirstMatch(new SingleStackRecipeInput(stack),serverWorld).orElse(null);
+            RecipeManager.CachedCheck<SingleRecipeInput, ? extends AbstractCookingRecipe> matchGetter = RecipeManager.createCheck(RecipeType.SMELTING);
+            RecipeHolder<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getRecipeFor(new SingleRecipeInput(stack),serverWorld).orElse(null);
             if(recipeEntry == null) return null;
             AbstractCookingRecipe recipe = recipeEntry.value();
             if(recipe == null) return null;
-            ItemStack recipeOutput = recipe.craft(new SingleStackRecipeInput(stack),serverWorld.getRegistryManager());
+            ItemStack recipeOutput = recipe.assemble(new SingleRecipeInput(stack),serverWorld.registryAccess());
             if(recipeOutput.isEmpty()) return null;
-            PlayerInventory inv = player.getInventory();
+            Inventory inv = player.getInventory();
             ItemStack result = recipeOutput.copy();
             
-            if(recipeOutput.getCount()*stack.getCount() <= recipeOutput.getItem().getMaxCount()){
+            if(recipeOutput.getCount()*stack.getCount() <= recipeOutput.getItem().getDefaultMaxStackSize()){
                result.setCount(recipeOutput.getCount()*stack.getCount());
-               if(inv.getOccupiedSlotWithRoomForStack(result) == -1 && inv.getEmptySlot() == -1) return null;
+               if(inv.getSlotWithRemainingSpace(result) == -1 && inv.getFreeSlot() == -1) return null;
                
-               player.addExperience(MathHelper.floor(recipe.getExperience()*stack.getCount()));
+               player.giveExperiencePoints(Mth.floor(recipe.experience()*stack.getCount()));
                
                int oldEnergy = getEnergy(charm);
                addEnergy(charm, -energyToConsume);
@@ -256,13 +257,13 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
                   for(int i=1; i<=getMaxEnergy(charm)/20; i++){
                      message += newEnergy >= i*20 ? "✦ " : "✧ ";
                   }
-                  player.sendMessage(Text.literal(message.toString()).formatted(color), true);
+                  player.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
                }
                stack = result;
                
-               if(player instanceof ServerPlayerEntity serverPlayer){
+               if(player instanceof ServerPlayer serverPlayer){
                   ArcanaNovum.data(serverPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_SMELT_PER_CINDER)*energyToConsume); // Add xp
-                  if(recipeOutput.isOf(Items.GLASS)) ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.GLASSBLOWER.id,stack.getCount());
+                  if(recipeOutput.is(Items.GLASS)) ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.GLASSBLOWER.id,stack.getCount());
                }
                return stack;
             }
@@ -273,18 +274,18 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       return null;
    }
    
-   private ActionResult coneOfFlame(PlayerEntity playerEntity, World world, Hand hand){
-      ItemStack itemStack = playerEntity.getStackInHand(hand);
-      if(!(world instanceof ServerWorld serverWorld)) return ActionResult.PASS;
+   private InteractionResult coneOfFlame(Player playerEntity, Level world, InteractionHand hand){
+      ItemStack itemStack = playerEntity.getItemInHand(hand);
+      if(!(world instanceof ServerLevel serverWorld)) return InteractionResult.PASS;
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
       SimpleParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
-      Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
+      ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
       
       if(energy < 12){
-         playerEntity.sendMessage(Text.literal("The Charm has no Cinders").formatted(color), true);
-         return ActionResult.PASS;
+         playerEntity.displayClientMessage(Component.literal("The Charm has no Cinders").withStyle(color), true);
+         return InteractionResult.PASS;
       }
       addEnergy(itemStack,-3);
       
@@ -294,52 +295,52 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          for(int i = 1; i <= getMaxEnergy(itemStack)/20; i++){
             message.append(energy >= i * 20 ? "✦ " : "✧ ");
          }
-         playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
+         playerEntity.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
       }
       
       double mul = 1.5*range;
-      Vec3d boxStart = playerEntity.getEntityPos().subtract(mul,mul,mul);
-      Vec3d boxEnd = playerEntity.getEntityPos().add(mul,mul,mul);
-      Box rangeBox = new Box(boxStart,boxEnd);
+      Vec3 boxStart = playerEntity.position().subtract(mul,mul,mul);
+      Vec3 boxEnd = playerEntity.position().add(mul,mul,mul);
+      AABB rangeBox = new AABB(boxStart,boxEnd);
       
-      SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.PLAYERS, 0.6f, (float) (Math.random() * .5 + .5));
+      SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.6f, (float) (Math.random() * .5 + .5));
       
-      List<Entity> entities = serverWorld.getOtherEntities(playerEntity,rangeBox, e -> e instanceof LivingEntity);
+      List<Entity> entities = serverWorld.getEntities(playerEntity,rangeBox, e -> e instanceof LivingEntity);
       int ignited = 0;
       for(Entity e : entities){
          if(!(e instanceof LivingEntity entity)) continue;
-         if(inCone(playerEntity,e.getEyePos())){
-            if(!entity.isFireImmune()){
-               entity.setOnFireFor((2*energy+60)/20);
-               entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 5f : 2.5f);
-               if(entity instanceof MobEntity) ignited++;
+         if(inCone(playerEntity,e.getEyePosition())){
+            if(!entity.fireImmune()){
+               entity.igniteForSeconds((2*energy+60)/20);
+               entity.hurtServer(serverWorld, new DamageSource(entity.damageSources().onFire().typeHolder(),playerEntity),cremation ? 5f : 2.5f);
+               if(entity instanceof Mob) ignited++;
                
-               if(playerEntity instanceof ServerPlayerEntity serverPlayer){
+               if(playerEntity instanceof ServerPlayer serverPlayer){
                   ArcanaNovum.data(serverPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_CONE_PER_TARGET)); // Add xp
                }
             }
          }
       }
-      if(playerEntity instanceof ServerPlayerEntity serverPlayer && ignited >= 12){
+      if(playerEntity instanceof ServerPlayer serverPlayer && ignited >= 12){
          ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.PYROMANIAC.id);
       }
       
       
       double angle = 2*Math.atan2((.5*(farW-closeW)),range);
-      float yaw = playerEntity.getRotationClient().y;
-      Vec3d rot = Vec3d.fromPolar(0,yaw);
+      float yaw = playerEntity.getRotationVector().y;
+      Vec3 rot = Vec3.directionFromRotation(0,yaw);
       double pC = Math.atan2(rot.z,rot.x);
-      Vec3d rotVec = Vec3d.fromPolar(60,yaw).crossProduct(Vec3d.fromPolar(0,yaw)).normalize();
-      Vec3d origin = playerEntity.getEyePos().add(playerEntity.getRotationVecClient().multiply(-ri*Math.cos(ha)));
+      Vec3 rotVec = Vec3.directionFromRotation(60,yaw).cross(Vec3.directionFromRotation(0,yaw)).normalize();
+      Vec3 origin = playerEntity.getEyePosition().add(playerEntity.getForward().scale(-ri*Math.cos(ha)));
       
       for(int i = 0; i < 40; i++){
          int tries = 0;
-         Vec3d pos;
+         Vec3 pos;
          do{
             double pD = (Math.random()*angle - angle/2);
-            Vec3d offset = new Vec3d(Math.cos(pC+pD),0,Math.sin(pC+pD)).multiply(Math.random()*ro);
+            Vec3 offset = new Vec3(Math.cos(pC+pD),0,Math.sin(pC+pD)).scale(Math.random()*ro);
             
-            float dT = (float) (Math.toRadians(-playerEntity.getRotationClient().x)+ (Math.random()*angle - angle/2));
+            float dT = (float) (Math.toRadians(-playerEntity.getRotationVector().x)+ (Math.random()*angle - angle/2));
             float a = (float) Math.cos(dT/2.0);
             float b = (float) (-rotVec.x * Math.sin(dT/2.0));
             float c = (float) (-rotVec.y * Math.sin(dT/2.0));
@@ -358,28 +359,28 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             double nY = (2*(bc-ad))*offset.x+(aa+cc-bb-dd)*offset.y+(2*(cd+ab))*offset.z;
             double nZ = (2*(bd+ac))*offset.x+(2*(cd-ab))*offset.y+(aa+dd-bb-cc)*offset.z;
             
-            offset = new Vec3d(nX,nY,nZ);
+            offset = new Vec3(nX,nY,nZ);
             pos = offset.add(origin);
             
             tries++;
          }while(!inCone(playerEntity,pos) && tries < 12);
          
-         serverWorld.spawnParticles(particleType,pos.getX(),pos.getY(),pos.getZ(),1,0.1,0.1,0.1,0);
+         serverWorld.sendParticles(particleType,pos.x(),pos.y(),pos.z(),1,0.1,0.1,0.1,0);
       }
-      return ActionResult.SUCCESS_SERVER;
+      return InteractionResult.SUCCESS_SERVER;
    }
    
-   private ActionResult pyroblast(PlayerEntity playerEntity, World world, ItemStack itemStack, int lvl){
-      if(!(world instanceof ServerWorld serverWorld && playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+   private InteractionResult pyroblast(Player playerEntity, Level world, ItemStack itemStack, int lvl){
+      if(!(world instanceof ServerLevel serverWorld && playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
       SimpleParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
-      Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
+      ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
       
       if(energy < 50){
-         player.sendMessage(Text.literal("Not Enough Cinders").formatted(color), true);
-         return ActionResult.PASS;
+         player.displayClientMessage(Component.literal("Not Enough Cinders").withStyle(color), true);
+         return InteractionResult.PASS;
       }
       int consumedEnergy = energy;
       addEnergy(itemStack,-energy);
@@ -390,27 +391,27 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          for(int i = 1; i <= getMaxEnergy(itemStack)/20; i++){
             message.append(energy >= i * 20 ? "✦ " : "✧ ");
          }
-         player.sendMessage(Text.literal(message.toString()).formatted(color), true);
+         player.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
       }
       
-      Vec3d startPos = player.getEyePos();
-      Vec3d view = player.getRotationVecClient();
-      Vec3d rayEnd = startPos.add(view.multiply(35));
-      BlockHitResult raycast = world.raycast(new RaycastContext(startPos,rayEnd, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY,player));
-      Vec3d center = raycast.getPos();
+      Vec3 startPos = player.getEyePosition();
+      Vec3 view = player.getForward();
+      Vec3 rayEnd = startPos.add(view.scale(35));
+      BlockHitResult raycast = world.clip(new ClipContext(startPos,rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY,player));
+      Vec3 center = raycast.getLocation();
       double explosionRange = 3+lvl;
-      Box rangeBox = new Box(center.x+12,center.y+12,center.z+12,center.x-12,center.y-12,center.z-12);
-      List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(center) < 1.25*explosionRange*explosionRange && e instanceof LivingEntity);
+      AABB rangeBox = new AABB(center.x+12,center.y+12,center.z+12,center.x-12,center.y-12,center.z-12);
+      List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(center) < 1.25*explosionRange*explosionRange && e instanceof LivingEntity);
       
-      SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.6f, 1.7f);
+      SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.6f, 1.7f);
       
       int ignited = 0;
       for(Entity e : entities){
          if(!(e instanceof LivingEntity entity)) continue;
-         if(!entity.isFireImmune()){
-            float dmg = (float) (Math.max(0,(1.2 - (entity.getEntityPos().distanceTo(center)/explosionRange))) * (consumedEnergy/10.0) * (.8+lvl*.2));
-            entity.setOnFireFor((float) consumedEnergy /20);
-            entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
+         if(!entity.fireImmune()){
+            float dmg = (float) (Math.max(0,(1.2 - (entity.position().distanceTo(center)/explosionRange))) * (consumedEnergy/10.0) * (.8+lvl*.2));
+            entity.igniteForSeconds((float) consumedEnergy /20);
+            entity.hurtServer(serverWorld, new DamageSource(entity.damageSources().onFire().typeHolder(),playerEntity),cremation ? 2*dmg : dmg);
             ignited++;
             
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_PYROBLAST_PER_TARGET)); // Add xp
@@ -423,47 +424,47 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       
       ArcanaEffectUtils.pyroblastExplosion(serverWorld,particleType,center,explosionRange,0);
       ArcanaEffectUtils.line(serverWorld,null,startPos.subtract(0,.3,0),center,particleType,(int)(center.distanceTo(startPos)*4),1,0,0);
-      serverWorld.spawnParticles(particleType,center.getX(),center.getY(),center.getZ(),100,0.1,0.1,0.1,0.4);
+      serverWorld.sendParticles(particleType,center.x(),center.y(),center.z(),100,0.1,0.1,0.1,0.4);
       
-      return ActionResult.SUCCESS_SERVER;
+      return InteractionResult.SUCCESS_SERVER;
    }
    
-   private ActionResult fireweb(PlayerEntity playerEntity, World world, ItemStack itemStack, int lvl){
-      if(!(world instanceof ServerWorld serverWorld && playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+   private InteractionResult fireweb(Player playerEntity, Level world, ItemStack itemStack, int lvl){
+      if(!(world instanceof ServerLevel serverWorld && playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
       SimpleParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
-      Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
+      ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
       
       if(energy < 50){
-         player.sendMessage(Text.literal("Not Enough Cinders").formatted(color), true);
-         return ActionResult.PASS;
+         player.displayClientMessage(Component.literal("Not Enough Cinders").withStyle(color), true);
+         return InteractionResult.PASS;
       }
       int consumedEnergy = energy;
       
-      Vec3d center = player.getEntityPos();
+      Vec3 center = player.position();
       double effectRange = 2+lvl*2;
       int numTargets = 5*lvl;
-      Box rangeBox = new Box(center.x+12,center.y+12,center.z+12,center.x-12,center.y-12,center.z-12);
-      List<Entity> entities = world.getOtherEntities(player,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(center) < 1.25*effectRange*effectRange && e instanceof LivingEntity);
+      AABB rangeBox = new AABB(center.x+12,center.y+12,center.z+12,center.x-12,center.y-12,center.z-12);
+      List<Entity> entities = world.getEntities(player,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(center) < 1.25*effectRange*effectRange && e instanceof LivingEntity);
       entities.sort(Comparator.comparingDouble(e->e.distanceTo(player)));
       
       if(entities.isEmpty()){
-         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, .3f,.8f);
-         player.sendMessage(Text.literal("No Targets in Range").formatted(color), true);
-         return ActionResult.PASS;
+         SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, .3f,.8f);
+         player.displayClientMessage(Component.literal("No Targets in Range").withStyle(color), true);
+         return InteractionResult.PASS;
       }
       
-      SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, 0.5f);
+      SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1f, 0.5f);
       
       List<LivingEntity> hits = new ArrayList<>();
       for(Entity e : entities){
          if(!(e instanceof LivingEntity entity)) continue;
-         if(!entity.isFireImmune()){
+         if(!entity.fireImmune()){
             float dmg = (float) ((consumedEnergy/15.0) * (.8+lvl*.2));
-            entity.setOnFireFor((float) consumedEnergy /20);
-            entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
+            entity.igniteForSeconds((float) consumedEnergy /20);
+            entity.hurtServer(serverWorld, new DamageSource(entity.damageSources().onFire().typeHolder(),playerEntity),cremation ? 2*dmg : dmg);
             
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_WEB_PER_TARGET)); // Add xp
             hits.add(entity);
@@ -485,35 +486,35 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          for(int i = 1; i <= getMaxEnergy(itemStack)/20; i++){
             message.append(energy >= i * 20 ? "✦ " : "✧ ");
          }
-         player.sendMessage(Text.literal(message.toString()).formatted(color), true);
+         player.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
       }
       
-      return ActionResult.SUCCESS_SERVER;
+      return InteractionResult.SUCCESS_SERVER;
    }
    
-   private ActionResult toggleActive(ServerPlayerEntity player, ItemStack item){
+   private InteractionResult toggleActive(ServerPlayer player, ItemStack item){
       boolean active = !getBooleanProperty(item,ACTIVE_TAG);
       boolean cremation = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CREMATION.id) >= 1;
-      Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
+      ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
       putProperty(item,ACTIVE_TAG, active);
       if(active){
-         player.sendMessage(Text.literal("The Charm's Heat Intensifies").formatted(color,Formatting.ITALIC),true);
-         SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_BLAZE_AMBIENT, .5f,1f);
+         player.displayClientMessage(Component.literal("The Charm's Heat Intensifies").withStyle(color, ChatFormatting.ITALIC),true);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLAZE_AMBIENT, .5f,1f);
       }else{
-         player.sendMessage(Text.literal("The Charm's Heat Calms").formatted(color,Formatting.ITALIC),true);
-         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, .3f,.8f);
+         player.displayClientMessage(Component.literal("The Charm's Heat Calms").withStyle(color, ChatFormatting.ITALIC),true);
+         SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, .3f,.8f);
       }
-      return ActionResult.SUCCESS_SERVER;
+      return InteractionResult.SUCCESS_SERVER;
    }
    
-   private boolean inCone(PlayerEntity user, Vec3d targetPos){
+   private boolean inCone(Player user, Vec3 targetPos){
       // Delicious trigonometry and linear algebra at its finest
-      Vec3d origin = user.getEyePos().add(user.getRotationVecClient().multiply(-ri*Math.cos(ha)));
-      Vec3d u = user.getEyePos().subtract(origin).normalize(); // Linear algebra black magic stuff which
-      Vec3d uvr = targetPos.subtract(origin).normalize();      // finds the angle between cone axis and target
-      double targetAngle = Math.acos(uvr.dotProduct(u));
+      Vec3 origin = user.getEyePosition().add(user.getForward().scale(-ri*Math.cos(ha)));
+      Vec3 u = user.getEyePosition().subtract(origin).normalize(); // Linear algebra black magic stuff which
+      Vec3 uvr = targetPos.subtract(origin).normalize();      // finds the angle between cone axis and target
+      double targetAngle = Math.acos(uvr.dot(u));
       double dist = targetPos.distanceTo(origin);
-      double scalProj = targetPos.subtract(user.getEyePos()).dotProduct(user.getRotationVecClient().normalize()); // Scalar projection to see if target is in front of player
+      double scalProj = targetPos.subtract(user.getEyePosition()).dot(user.getForward().normalize()); // Scalar projection to see if target is in front of player
       boolean inAngle = targetAngle <= ha;
       boolean inRadius = dist <= ro;
       boolean inFront = scalProj > 0;
@@ -554,11 +555,11 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Charm of Cinders").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nHaving spent much time in the Nether has given me ample opportunity to study the fire dwelling creatures. I believe I can replicate many of their abilities and make them my own.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Charm of Cinders").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nThis Charm grants a variety of skills from base fire immunity to a simple flint and steel, to flaming breath and even the precise heat to smelt items as I pick them up.\n\nPunching mimics a flint and steel and can ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Charm of Cinders").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\neven set creatures ablaze.\n\nUsing the Charm sends a cone of flame out in a wide area, igniting creatures.\n\nSneak Using it toggles the auto-smelt ability for gathered items.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal(" Charm of Cinders").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nHaving spent much time in the Nether has given me ample opportunity to study the fire dwelling creatures. I believe I can replicate many of their abilities and make them my own.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Charm of Cinders").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nThis Charm grants a variety of skills from base fire immunity to a simple flint and steel, to flaming breath and even the precise heat to smelt items as I pick them up.\n\nPunching mimics a flint and steel and can ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Charm of Cinders").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\neven set creatures ablaze.\n\nUsing the Charm sends a cone of flame out in a wide area, igniting creatures.\n\nSneak Using it toggles the auto-smelt ability for gathered items.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -568,7 +569,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
@@ -588,21 +589,21 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
                stringList.add("off");
             }
          }
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         if(playerEntity.isSneaking()){
-            return toggleActive((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         if(playerEntity.isShiftKeyDown()){
+            return toggleActive((ServerPlayer) playerEntity,playerEntity.getItemInHand(hand));
          }else{
-            ItemStack itemStack = playerEntity.getStackInHand(hand);
+            ItemStack itemStack = playerEntity.getItemInHand(hand);
             int pyroblast = Math.max(0,ArcanaAugments.getAugmentOnItem(itemStack,"pyroblast"));
             int fireweb = Math.max(0,ArcanaAugments.getAugmentOnItem(itemStack,"web_of_fire"));
             if(pyroblast > 0){
@@ -616,43 +617,43 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
       
       @Override
-      public void postHit(ItemStack stack, LivingEntity target, LivingEntity attacker){
-         if(!(attacker instanceof ServerPlayerEntity player)) return;
+      public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker){
+         if(!(attacker instanceof ServerPlayer player)) return;
          
          boolean cremation = ArcanaAugments.getAugmentOnItem(stack,"cremation") >= 1;
-         Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
+         ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
          
          if(getEnergy(stack) < 5){
-            player.sendMessage(Text.literal("The Charm has no Cinders").formatted(color), true);
+            player.displayClientMessage(Component.literal("The Charm has no Cinders").withStyle(color), true);
             return;
          }
          
-         if(target instanceof CreeperEntity creeper){
+         if(target instanceof Creeper creeper){
             creeper.ignite();
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_CREEPER)); // Add xp
          }else{
-            target.setOnFireFor(5);
+            target.igniteForSeconds(5);
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_ENTITY)); // Add xp
          }
          
-         SoundUtils.playSound(player.getEntityWorld(),target.getBlockPos(),SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, player.getEntityWorld().getRandom().nextFloat() * 0.4F + 0.8F);
+         SoundUtils.playSound(player.level(),target.blockPosition(), SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, player.level().getRandom().nextFloat() * 0.4F + 0.8F);
          addEnergy(stack, -5);
          String message = "Cinders: ";
          for(int i=1; i<=getMaxEnergy(stack)/20; i++){
             message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
          }
-         player.sendMessage(Text.literal(message.toString()).formatted(color), true);
+         player.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
          return;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
          boolean cremation = ArcanaAugments.getAugmentOnItem(stack,"cremation") >= 1;
-         Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
+         ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
          int oldEnergy = getEnergy(stack);
-         if(oldEnergy < getMaxEnergy(stack) && world.getServer().getTicks() % 15 == 0){
+         if(oldEnergy < getMaxEnergy(stack) && world.getServer().getTickCount() % 15 == 0){
             int bonusEnergy = ArcanaAugments.getAugmentOnItem(stack,"wildfire") == 5 ? 7 : 0;
             addEnergy(stack,3 + bonusEnergy);
             int newEnergy = getEnergy(stack);
@@ -662,14 +663,14 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
                for(int i=1; i<=getMaxEnergy(stack)/20; i++){
                   message.append(newEnergy >= i * 20 ? "✦ " : "✧ ");
                }
-               player.sendMessage(Text.literal(message.toString().toString()).formatted(color), true);
+               player.displayClientMessage(Component.literal(message.toString().toString()).withStyle(color), true);
             }
          }
-         if(world.getServer().getTicks() % 20 == 0 && !cremation){
-            StatusEffectInstance fireRes = new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 100, 0, false, false, false);
-            player.addStatusEffect(fireRes);
+         if(world.getServer().getTickCount() % 20 == 0 && !cremation){
+            MobEffectInstance fireRes = new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 100, 0, false, false, false);
+            player.addEffect(fireRes);
             if(player.isOnFire()){
-               player.extinguish();
+               player.clearFire();
             }
          }
       }

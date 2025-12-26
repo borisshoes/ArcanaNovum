@@ -7,14 +7,14 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
-import net.minecraft.entity.EntityType;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.InventoryChangedListener;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerListener;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
 
-public class ShulkerCoreInventoryListener implements InventoryChangedListener {
+public class ShulkerCoreInventoryListener implements ContainerListener {
    private final ShulkerCore core;
    private final ShulkerCoreGui gui;
    private final ItemStack item;
@@ -27,7 +27,7 @@ public class ShulkerCoreInventoryListener implements InventoryChangedListener {
    }
    
    @Override
-   public void onInventoryChanged(Inventory inv){
+   public void containerChanged(Container inv){
       if(!updating){
          updating = true;
 
@@ -36,12 +36,12 @@ public class ShulkerCoreInventoryListener implements InventoryChangedListener {
          
          GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
          String paneText = hasStone ? LevelUtils.readableInt(core.getEnergy(item)) + " Shulker Souls" : "No Soulstone Inserted";
-         Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
+         ChatFormatting textColor = hasStone ? ChatFormatting.YELLOW : ChatFormatting.RED;
    
-         gui.setSlot(0,pane.setName(Text.literal(paneText).formatted(textColor)));
-         gui.setSlot(1,pane.setName(Text.literal(paneText).formatted(textColor)));
-         gui.setSlot(3,pane.setName(Text.literal(paneText).formatted(textColor)));
-         gui.setSlot(4,pane.setName(Text.literal(paneText).formatted(textColor)));
+         gui.setSlot(0,pane.setName(Component.literal(paneText).withStyle(textColor)));
+         gui.setSlot(1,pane.setName(Component.literal(paneText).withStyle(textColor)));
+         gui.setSlot(3,pane.setName(Component.literal(paneText).withStyle(textColor)));
+         gui.setSlot(4,pane.setName(Component.literal(paneText).withStyle(textColor)));
          
          finishUpdate();
       }
@@ -54,12 +54,12 @@ public class ShulkerCoreInventoryListener implements InventoryChangedListener {
       updating = true;
    }
    
-   public boolean validSoulstone(Inventory inv){
-      ItemStack item = inv.getStack(0);
+   public boolean validSoulstone(Container inv){
+      ItemStack item = inv.getItem(0);
       
       if(ArcanaItemUtils.isArcane(item)){
          if(ArcanaItemUtils.identifyItem(item) instanceof Soulstone stone){
-            if(Soulstone.getType(item).equals(EntityType.getId(EntityType.SHULKER).toString())){
+            if(Soulstone.getType(item).equals(EntityType.getKey(EntityType.SHULKER).toString())){
                gui.validStone(item);
                return true;
             }

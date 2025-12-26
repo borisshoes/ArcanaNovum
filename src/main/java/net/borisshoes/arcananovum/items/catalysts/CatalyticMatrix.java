@@ -12,12 +12,12 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -37,44 +37,44 @@ public class CatalyticMatrix extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.NETHER_STAR;
       item = new CatalyticMatrixItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("A fragment of a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Runic Matrix").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" specialized").formatted(Formatting.BLUE))
-            .append(Text.literal(" in ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("augmenting ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Arcana").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("On its own, this ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("new matrix").formatted(Formatting.YELLOW))
-            .append(Text.literal(" is ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("useless").formatted(Formatting.DARK_RED))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("matrix ").formatted(Formatting.YELLOW))
-            .append(Text.literal("must be ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("built upon").formatted(Formatting.BLUE))
-            .append(Text.literal(" to ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("unlock ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("full potential").formatted(Formatting.AQUA))
-            .append(Text.literal(" of ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Arcana").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("A fragment of a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Runic Matrix").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" specialized").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" in ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("augmenting ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("Arcana").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("On its own, this ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("new matrix").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(" is ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("useless").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("matrix ").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal("must be ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("built upon").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("unlock ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("the ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("full potential").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" of ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Arcana").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -97,19 +97,19 @@ public class CatalyticMatrix extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Catalytic Matrix").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe full power of a Runic Matrix shouldn’t be necessary to further unlock abilities within the items I’ve made. Breaking one into self-contained fragments should be more efficient.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("  Catalytic Matrix").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe full power of a Runic Matrix shouldn’t be necessary to further unlock abilities within the items I’ve made. Breaking one into self-contained fragments should be more efficient.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class CatalyticMatrixItem extends ArcanaPolymerItem {
       public CatalyticMatrixItem(){
-         super(getThis(),getArcanaItemComponents().maxCount(4));
+         super(getThis(),getArcanaItemComponents().stacksTo(4));
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }

@@ -2,23 +2,23 @@ package net.borisshoes.arcananovum.effects;
 
 import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.LivingEntity;
 
-public class EnsnarementEffect extends StatusEffect implements PolymerStatusEffect {
+public class EnsnarementEffect extends MobEffect implements PolymerStatusEffect {
    public EnsnarementEffect(){
-      super(StatusEffectCategory.HARMFUL,0x320b75);
+      super(MobEffectCategory.HARMFUL,0x320b75);
    }
    
    @Override
-   public void onApplied(LivingEntity entity, int amplifier){
-      super.onApplied(entity, amplifier);
+   public void onEffectStarted(LivingEntity entity, int amplifier){
+      super.onEffectStarted(entity, amplifier);
       ArcanaEffectUtils.ensnaredEffect(entity,amplifier,0);
    }
    
    @Override
-   public boolean canApplyUpdateEffect(int duration, int amplifier){
+   public boolean shouldApplyEffectTickThisTick(int duration, int amplifier){
       return true;
    }
 }

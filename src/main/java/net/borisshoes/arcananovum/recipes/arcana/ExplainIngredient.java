@@ -1,11 +1,11 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemLore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +15,8 @@ public class ExplainIngredient extends ArcanaIngredient {
    
    private final String ingredientName;
    public final boolean show;
-   private Text displayName;
-   private List<Text> lore;
+   private Component displayName;
+   private List<Component> lore;
    private final ItemStack displayOverride;
    
    public ExplainIngredient(ItemStack itemStack, int count, String ingredientName, boolean show){
@@ -40,20 +40,20 @@ public class ExplainIngredient extends ArcanaIngredient {
       this.displayOverride = null;
    }
    
-   public ExplainIngredient withName(Text name){
-      this.exampleStack.set(DataComponentTypes.ITEM_NAME,name);
+   public ExplainIngredient withName(Component name){
+      this.exampleStack.set(DataComponents.ITEM_NAME,name);
       if(displayOverride != null){
-         this.displayOverride.set(DataComponentTypes.ITEM_NAME,name);
+         this.displayOverride.set(DataComponents.ITEM_NAME,name);
       }
       this.displayName = name;
       return this;
    }
    
-   public ExplainIngredient withLore(List<Text> lore){
+   public ExplainIngredient withLore(List<Component> lore){
       this.lore = lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-      this.exampleStack.set(DataComponentTypes.LORE,new LoreComponent(this.lore));
+      this.exampleStack.set(DataComponents.LORE,new ItemLore(this.lore));
       if(displayOverride != null){
-         this.displayOverride.set(DataComponentTypes.LORE,new LoreComponent(this.lore));
+         this.displayOverride.set(DataComponents.LORE,new ItemLore(this.lore));
       }
       return this;
    }

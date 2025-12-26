@@ -2,13 +2,13 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 
 public abstract class RunicArrow extends ArcanaItem {
    public abstract void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult);
@@ -16,13 +16,13 @@ public abstract class RunicArrow extends ArcanaItem {
    
    public static final String TXT = "runic_arrow";
    
-   public Text getArrowName(ItemStack arrow){
-      TextColor textColor = getPrefItem().getName().getStyle().getColor();
+   public Component getArrowName(ItemStack arrow){
+      TextColor textColor = getPrefItem().getHoverName().getStyle().getColor();
 
-      if(arrow.contains(DataComponentTypes.CUSTOM_NAME)){
-         return Text.literal(arrow.getName().getString()).formatted(Formatting.BOLD).withColor(textColor.getRgb());
+      if(arrow.has(DataComponents.CUSTOM_NAME)){
+         return Component.literal(arrow.getHoverName().getString()).withStyle(ChatFormatting.BOLD).withColor(textColor.getValue());
       }else{
-         return getTranslatedName().formatted(Formatting.BOLD).withColor(textColor.getRgb());
+         return getTranslatedName().withStyle(ChatFormatting.BOLD).withColor(textColor.getValue());
       }
    }
 }

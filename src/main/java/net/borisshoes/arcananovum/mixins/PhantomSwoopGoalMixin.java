@@ -11,14 +11,14 @@ import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.mob.PhantomEntity;
-import net.minecraft.entity.passive.CatEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,19 +26,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(targets = "net.minecraft.entity.mob.PhantomEntity$SwoopMovementGoal")
+@Mixin(targets = "net.minecraft.world.entity.monster.Phantom$PhantomSweepAttackGoal")
 public abstract class PhantomSwoopGoalMixin extends Goal {
    
    @Final
    @Shadow
-   PhantomEntity field_7333; // Outer class synthetic field
+   Phantom field_7333; // Outer class synthetic field
    
-   @ModifyReturnValue(method = "shouldContinue", at = @At(value = "RETURN"))
+   @ModifyReturnValue(method = "canContinueToUse", at = @At(value = "RETURN"))
    private boolean arcananovum$shouldContinue(boolean original){
-      if(original && field_7333.getTarget() instanceof ServerPlayerEntity player){
-         PlayerInventory inv = player.getInventory();
-         for(int i=0; i<inv.size();i++){
-            ItemStack item = inv.getStack(i);
+      if(original && field_7333.getTarget() instanceof ServerPlayer player){
+         Inventory inv = player.getInventory();
+         for(int i = 0; i<inv.getContainerSize(); i++){
+            ItemStack item = inv.getItem(i);
             if(item.isEmpty()){
                continue;
             }
@@ -52,7 +52,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
                   return true; // Guardian Phantoms immune to Felidae Charm
                }
                
-               SoundUtils.playSongToPlayer(player,SoundEvents.ENTITY_CAT_HISS, .1f, 1);
+               SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
                return false;
             }
@@ -61,10 +61,10 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
       return original;
    }
    
-   @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/CatEntity;hiss()V"))
-   private void arcananovum$phantomScare(CallbackInfoReturnable<Boolean> cir, @Local CatEntity catEntity){
-      if(catEntity.getEntityWorld() instanceof ServerWorld serverWorld){
-         for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(catEntity.getBlockPos(), 10.0))){
+   @Inject(method = "canContinueToUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/feline/Cat;hiss()V"))
+   private void arcananovum$phantomScare(CallbackInfoReturnable<Boolean> cir, @Local Cat catEntity){
+      if(catEntity.level() instanceof ServerLevel serverWorld){
+         for(ServerPlayer player : serverWorld.getPlayers(player -> player.blockPosition().closerThan(catEntity.blockPosition(), 10.0))){
             ArcanaNovum.data(player).setResearchTask(ResearchTasks.CAT_SCARE, true);
          }
       }

@@ -3,17 +3,17 @@ package net.borisshoes.arcananovum.recipes.transmutation;
 import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.minecraft.block.Block;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Pair;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,27 +44,27 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
       return this;
    }
    
-   public CommutativeTransmutationRecipe with(Either<TagKey<Item>,TagKey<Block>> tag){
+   public CommutativeTransmutationRecipe with(Either<TagKey<Item>, TagKey<Block>> tag){
       if(tag.left().isPresent()){
-         for(RegistryEntry<Item> itemEntry : Registries.ITEM.getIndexedEntries()){
+         for(Holder<Item> itemEntry : BuiltInRegistries.ITEM.asHolderIdMap()){
             try{
-               if(itemEntry.isIn(tag.left().get())){
+               if(itemEntry.is(tag.left().get())){
                   addItem(itemEntry.value());
                }
             }catch(Exception e){
-               log(2,"Error getting tags for "+itemEntry.getIdAsString());
+               log(2,"Error getting tags for "+itemEntry.getRegisteredName());
             }
          }
       }else if(tag.right().isPresent()){
-         for(RegistryEntry<Item> itemEntry : Registries.ITEM.getIndexedEntries()){
+         for(Holder<Item> itemEntry : BuiltInRegistries.ITEM.asHolderIdMap()){
             try{
                if(itemEntry.value() instanceof BlockItem blockItem){
-                  if(blockItem.getBlock() != null && blockItem.getBlock().getRegistryEntry().isIn(tag.right().get())){
+                  if(blockItem.getBlock() != null && blockItem.getBlock().builtInRegistryHolder().is(tag.right().get())){
                      addItem(itemEntry.value());
                   }
                }
             }catch(Exception e){
-               log(2,"Error getting tags for "+itemEntry.getIdAsString());
+               log(2,"Error getting tags for "+itemEntry.getRegisteredName());
             }
          }
       }
@@ -82,26 +82,26 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    
    private void addItemStack(ItemStack stack){
       for(ItemStack communalInput : this.communalInputs){
-         if(ItemStack.areItemsAndComponentsEqual(stack,communalInput)) return;
+         if(ItemStack.isSameItemSameComponents(stack,communalInput)) return;
       }
       this.communalInputs.add(stack);
    }
    
    @Override
-   public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayerEntity player){
+   public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayer player){
       return List.of(negativeInput.copyWithCount(positiveInput.getCount()),negativeInput,aequalisInput);
    }
    
    @Override
-   public List<Pair<ItemStack,String>> doTransmutation(ItemEntity sourceEntity, ItemEntity focusEntity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayerEntity player){
+   public List<Tuple<ItemStack,String>> doTransmutation(ItemEntity sourceEntity, ItemEntity focusEntity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
       ItemStack re1 = getBargainReagent(reagent1,bargainLvl);
       ItemStack re2 = getBargainReagent(reagent2,bargainLvl);
-      ItemStack sourceStack = sourceEntity != null ? sourceEntity.getStack() : ItemStack.EMPTY;
-      ItemStack focusStack = focusEntity != null ? focusEntity.getStack() : ItemStack.EMPTY;
-      ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getStack() : ItemStack.EMPTY;
-      ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getStack() : ItemStack.EMPTY;
-      if(!canTransmute(sourceStack,focusStack,reagent1Stack,reagent2Stack,ItemStack.EMPTY,altar)) return new ArrayList<>();
+      ItemStack sourceStack = sourceEntity != null ? sourceEntity.getItem() : ItemStack.EMPTY;
+      ItemStack focusStack = focusEntity != null ? focusEntity.getItem() : ItemStack.EMPTY;
+      ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
+      ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getItem() : ItemStack.EMPTY;
+      if(!canTransmute(sourceStack,focusStack,reagent1Stack,reagent2Stack, ItemStack.EMPTY,altar)) return new ArrayList<>();
       
       ItemStack outputStack = focusStack.copyWithCount(sourceStack.getCount());
       if(sourceEntity != null) sourceEntity.discard();
@@ -119,8 +119,8 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
             if(reagent1Stack.getCount() == take){
                reagent1Entity.discard();
             }else{
-               reagent1Stack.decrement(take);
-               reagent1Entity.setStack(reagent1Stack);
+               reagent1Stack.shrink(take);
+               reagent1Entity.setItem(reagent1Stack);
             }
          }
       }
@@ -131,14 +131,14 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
             if(reagent2Stack.getCount() == take){
                reagent2Entity.discard();
             }else{
-               reagent2Stack.decrement(take);
-               reagent2Entity.setStack(reagent2Stack);
+               reagent2Stack.shrink(take);
+               reagent2Entity.setItem(reagent2Stack);
             }
          }
       }
       
-      List<Pair<ItemStack,String>> outputs = new ArrayList<>();
-      outputs.add(new Pair<>(outputStack,"negative"));
+      List<Tuple<ItemStack,String>> outputs = new ArrayList<>();
+      outputs.add(new Tuple<>(outputStack,"negative"));
       return outputs;
    }
    
@@ -152,7 +152,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
       if (!(reagentCheck1 || reagentCheck2)) return false;
       if(!validCommunalInput(sourceInput)) return false;
       if(!validCommunalInput(focusInput)) return false;
-      if(sourceInput.isOf(focusInput.getItem())) return false;
+      if(sourceInput.is(focusInput.getItem())) return false;
       return true;
    }
    

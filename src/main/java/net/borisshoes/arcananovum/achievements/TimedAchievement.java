@@ -5,13 +5,13 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 
 public class TimedAchievement extends ArcanaAchievement{
    
@@ -19,7 +19,7 @@ public class TimedAchievement extends ArcanaAchievement{
    private int progress;
    private int timeFrame; // In ticks
    private boolean active;
-   private NbtCompound data;
+   private CompoundTag data;
    
    public TimedAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description, int goal, int timeFrame){
       super(name, id, 1, displayItem, arcanaItem, xpReward, pointsReward, description);
@@ -27,7 +27,7 @@ public class TimedAchievement extends ArcanaAchievement{
       this.goal = goal;
       this.timeFrame = timeFrame;
       this.active = false;
-      this.data = new NbtCompound();
+      this.data = new CompoundTag();
       setAcquired(false);
    }
    
@@ -47,18 +47,18 @@ public class TimedAchievement extends ArcanaAchievement{
       return active;
    }
    
-   public void setData(NbtCompound data){
+   public void setData(CompoundTag data){
       this.data = data;
    }
    
-   public NbtCompound getData(){
+   public CompoundTag getData(){
       return data;
    }
    
    // Bypasses timer restriction
    private boolean setProgress(int progress){
       boolean had = isAcquired();
-      this.progress = MathHelper.clamp(progress,0,goal);
+      this.progress = Mth.clamp(progress,0,goal);
       setAcquired(this.progress >= goal);
       return isAcquired() && !had;
    }
@@ -72,7 +72,7 @@ public class TimedAchievement extends ArcanaAchievement{
       }
       
       if(active){
-         this.progress = MathHelper.clamp(this.progress+progress,0,goal);
+         this.progress = Mth.clamp(this.progress+progress,0,goal);
          setAcquired(this.progress >= goal);
       }
       return isAcquired() && !had;
@@ -82,7 +82,7 @@ public class TimedAchievement extends ArcanaAchievement{
       if(!isAcquired()){
          this.progress = 0;
          this.active = false;
-         this.data = new NbtCompound();
+         this.data = new CompoundTag();
       }
    }
    
@@ -91,8 +91,8 @@ public class TimedAchievement extends ArcanaAchievement{
    }
    
    @Override
-   public NbtCompound toNbt(){
-      NbtCompound nbt = new NbtCompound();
+   public CompoundTag toNbt(){
+      CompoundTag nbt = new CompoundTag();
       nbt.putBoolean("acquired",isAcquired());
       nbt.putString("name",name);
       nbt.putInt("type",type);
@@ -105,24 +105,24 @@ public class TimedAchievement extends ArcanaAchievement{
    }
    
    @Override
-   public TimedAchievement fromNbt(String id, NbtCompound nbt){
+   public TimedAchievement fromNbt(String id, CompoundTag nbt){
       TimedAchievement ach = (TimedAchievement) ArcanaAchievements.registry.get(id).makeNew();
-      ach.setProgress(nbt.getInt("progress", 0));
-      ach.setActive(nbt.getBoolean("active", false));
-      ach.setAcquired(nbt.getBoolean("acquired", false));
+      ach.setProgress(nbt.getIntOr("progress", 0));
+      ach.setActive(nbt.getBooleanOr("active", false));
+      ach.setAcquired(nbt.getBooleanOr("acquired", false));
       ach.setData(nbt.getCompoundOrEmpty("data"));
       return ach;
    }
    
    @Override
-   public MutableText[] getStatusDisplay(ServerPlayerEntity player){
+   public MutableComponent[] getStatusDisplay(ServerPlayer player){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       TimedAchievement achievement = (TimedAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       if(achievement == null) return null;
    
       if(achievement.isAcquired()){
-         return new MutableText[]{Text.literal("")
-               .append(Text.literal("Achieved!").formatted(Formatting.AQUA))};
+         return new MutableComponent[]{Component.literal("")
+               .append(Component.literal("Achieved!").withStyle(ChatFormatting.AQUA))};
       }else{
          return null;
       }

@@ -20,29 +20,29 @@ import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -76,18 +76,18 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       resetCooldown();
    }
    
-   public void openGui(ServerPlayerEntity player){
+   public void openGui(ServerPlayer player){
       if(active){
-         player.sendMessage(Text.literal("You cannot access an active Altar").formatted(Formatting.RED));
+         player.sendSystemMessage(Component.literal("You cannot access an active Altar").withStyle(ChatFormatting.RED));
          return;
       }
-      TransmutationAltarGui gui = new TransmutationAltarGui(ScreenHandlerType.HOPPER,player,this);
+      TransmutationAltarGui gui = new TransmutationAltarGui(MenuType.HOPPER,player,this);
       gui.buildMenuGui();
       gui.open();
    }
    
-   public boolean startTransmute(@Nullable ServerPlayerEntity player){
-      if(this.getCooldown() > 0 || this.checkTransmute() == null || !(this.getWorld() instanceof ServerWorld serverWorld)) return false;
+   public boolean startTransmute(@Nullable ServerPlayer player){
+      if(this.getCooldown() > 0 || this.checkTransmute() == null || !(this.getLevel() instanceof ServerLevel serverWorld)) return false;
       this.resetCooldown();
       boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.HASTY_BARGAIN.id) > 0;
       double speedMod = hastyBargain ? 2 : 1;
@@ -95,67 +95,67 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       this.setActive(true);
       
       if(player == null && getCrafterId() != null){
-         PlayerEntity crafter = serverWorld.getPlayerByUuid(AlgoUtils.getUUID(getCrafterId()));
-         if(crafter instanceof ServerPlayerEntity){
-            player = (ServerPlayerEntity) crafter;
+         Player crafter = serverWorld.getPlayerByUUID(AlgoUtils.getUUID(getCrafterId()));
+         if(crafter instanceof ServerPlayer){
+            player = (ServerPlayer) crafter;
          }
       }
-      @Nullable ServerPlayerEntity finalPlayer = player;
+      @Nullable ServerPlayer finalPlayer = player;
       
-      ArcanaEffectUtils.transmutationAltarAnim(serverWorld,this.getPos().toCenterPos(), 0, this.getWorld().getBlockState(this.getPos()).get(CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING), speedMod);
+      ArcanaEffectUtils.transmutationAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING), speedMod);
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> this.transmute(finalPlayer,false)));
       return true;
    }
    
    public TransmutationRecipe checkTransmute(){
-      HashMap<String,ItemEntity> stacks = this.getTransmutingStacks();
-      ItemEntity positiveEntity = stacks.get("positive");
-      ItemEntity negativeEntity = stacks.get("negative");
-      ItemEntity reagent1Entity = stacks.get("reagent1");
-      ItemEntity reagent2Entity = stacks.get("reagent2");
-      ItemEntity aequalisEntity = stacks.get("aequalis");
-      ItemStack positiveStack = positiveEntity == null ? ItemStack.EMPTY : positiveEntity.getStack();
-      ItemStack negativeStack = negativeEntity == null ? ItemStack.EMPTY : negativeEntity.getStack();
-      ItemStack reagent1Stack = reagent1Entity == null ? ItemStack.EMPTY : reagent1Entity.getStack();
-      ItemStack reagent2Stack = reagent2Entity == null ? ItemStack.EMPTY : reagent2Entity.getStack();
-      ItemStack aequalisStack = aequalisEntity == null ? ItemStack.EMPTY : aequalisEntity.getStack();
-      
-      return TransmutationRecipes.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
-   }
-   
-   public void transmute(@Nullable ServerPlayerEntity player, boolean recursed){
       HashMap<String, ItemEntity> stacks = this.getTransmutingStacks();
       ItemEntity positiveEntity = stacks.get("positive");
       ItemEntity negativeEntity = stacks.get("negative");
       ItemEntity reagent1Entity = stacks.get("reagent1");
       ItemEntity reagent2Entity = stacks.get("reagent2");
       ItemEntity aequalisEntity = stacks.get("aequalis");
-      ItemStack positiveStack = positiveEntity == null ? ItemStack.EMPTY : positiveEntity.getStack();
-      ItemStack negativeStack = negativeEntity == null ? ItemStack.EMPTY : negativeEntity.getStack();
-      ItemStack reagent1Stack = reagent1Entity == null ? ItemStack.EMPTY : reagent1Entity.getStack();
-      ItemStack reagent2Stack = reagent2Entity == null ? ItemStack.EMPTY : reagent2Entity.getStack();
-      ItemStack aequalisStack = aequalisEntity == null ? ItemStack.EMPTY : aequalisEntity.getStack();
+      ItemStack positiveStack = positiveEntity == null ? ItemStack.EMPTY : positiveEntity.getItem();
+      ItemStack negativeStack = negativeEntity == null ? ItemStack.EMPTY : negativeEntity.getItem();
+      ItemStack reagent1Stack = reagent1Entity == null ? ItemStack.EMPTY : reagent1Entity.getItem();
+      ItemStack reagent2Stack = reagent2Entity == null ? ItemStack.EMPTY : reagent2Entity.getItem();
+      ItemStack aequalisStack = aequalisEntity == null ? ItemStack.EMPTY : aequalisEntity.getItem();
+      
+      return TransmutationRecipes.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
+   }
+   
+   public void transmute(@Nullable ServerPlayer player, boolean recursed){
+      HashMap<String, ItemEntity> stacks = this.getTransmutingStacks();
+      ItemEntity positiveEntity = stacks.get("positive");
+      ItemEntity negativeEntity = stacks.get("negative");
+      ItemEntity reagent1Entity = stacks.get("reagent1");
+      ItemEntity reagent2Entity = stacks.get("reagent2");
+      ItemEntity aequalisEntity = stacks.get("aequalis");
+      ItemStack positiveStack = positiveEntity == null ? ItemStack.EMPTY : positiveEntity.getItem();
+      ItemStack negativeStack = negativeEntity == null ? ItemStack.EMPTY : negativeEntity.getItem();
+      ItemStack reagent1Stack = reagent1Entity == null ? ItemStack.EMPTY : reagent1Entity.getItem();
+      ItemStack reagent2Stack = reagent2Entity == null ? ItemStack.EMPTY : reagent2Entity.getItem();
+      ItemStack aequalisStack = aequalisEntity == null ? ItemStack.EMPTY : aequalisEntity.getItem();
       
       TransmutationRecipe recipe = TransmutationRecipes.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
       this.setActive(false);
       if(recipe != null){
-         List<Pair<ItemStack,String>> outputs = recipe.doTransmutation(positiveEntity,negativeEntity,reagent1Entity,reagent2Entity,aequalisEntity,this,player);
+         List<Tuple<ItemStack,String>> outputs = recipe.doTransmutation(positiveEntity,negativeEntity,reagent1Entity,reagent2Entity,aequalisEntity,this,player);
          
          int transmuteCount = 0;
-         for(Pair<ItemStack,String> outputPair : outputs){
-            ItemStack output = outputPair.getLeft();
-            Vec3d outputPos = this.getOutputPos(outputPair.getRight());
+         for(Tuple<ItemStack,String> outputPair : outputs){
+            ItemStack output = outputPair.getA();
+            Vec3 outputPos = this.getOutputPos(outputPair.getB());
             transmuteCount += output.getCount();
-            if(output.isOf(ArcanaRegistry.DIVINE_CATALYST.getItem()) && player != null){
+            if(output.is(ArcanaRegistry.DIVINE_CATALYST.getItem()) && player != null){
                ArcanaNovum.data(player).addCraftedSilent(output);
                ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_TRANSMUTATION.id);
             }
-            if(output.isOf(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()) && player != null){
+            if(output.is(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()) && player != null){
                ArcanaNovum.data(player).addCraftedSilent(output);
                ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE.id);
             }
             
-            this.getWorld().spawnEntity(new ItemEntity(this.getWorld(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
+            this.getLevel().addFreshEntity(new ItemEntity(this.getLevel(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
          }
          if(transmuteCount > 0 && player != null){
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaConfig.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE));
@@ -163,41 +163,41 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
          }
          
          boolean canRecurse = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.TRADE_AGREEMENT.id) > 0;
-         if(canRecurse && checkTransmute() == recipe && this.getWorld() instanceof ServerWorld serverWorld){
+         if(canRecurse && checkTransmute() == recipe && this.getLevel() instanceof ServerLevel serverWorld){
             this.resetCooldown();
             boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.HASTY_BARGAIN.id) > 0;
             double speedMod = hastyBargain ? 2 : 1;
             int castTime = (int) (500.0 / speedMod);
             this.setActive(true);
-            ArcanaEffectUtils.transmutationAltarAnim(serverWorld,this.getPos().toCenterPos(), 0, this.getWorld().getBlockState(this.getPos()).get(HORIZONTAL_FACING), speedMod);
+            ArcanaEffectUtils.transmutationAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING), speedMod);
             BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> transmute(player,true)));
          }
          
-         SoundUtils.playSound(this.getWorld(), this.getPos(), SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS,1,0.8f);
-         world.emitGameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Emitter.of(getCachedState()));
+         SoundUtils.playSound(this.getLevel(), this.getBlockPos(), SoundEvents.ALLAY_AMBIENT_WITH_ITEM, SoundSource.BLOCKS,1,0.8f);
+         level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
       }else{
          if(!recursed) this.refundCooldown();
-         SoundUtils.playSound(this.getWorld(), this.getPos(), SoundEvents.ENTITY_ALLAY_HURT, SoundCategory.BLOCKS,1,0.7f);
-         world.emitGameEvent(GameEvent.BLOCK_DEACTIVATE, pos, GameEvent.Emitter.of(getCachedState()));
+         SoundUtils.playSound(this.getLevel(), this.getBlockPos(), SoundEvents.ALLAY_HURT, SoundSource.BLOCKS,1,0.7f);
+         level.gameEvent(GameEvent.BLOCK_DEACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
       }
    }
    
    public HashMap<String, ItemEntity> getTransmutingStacks(){
       HashMap<String, ItemEntity> stacks = new HashMap<>();
-      if(this.world == null || this.pos == null) return stacks;
-      Direction direction = world.getBlockState(pos).get(HORIZONTAL_FACING);
-      Vec3d centerPos = getPos().toCenterPos();
-      Vec3d aequalisPos = centerPos.add(new Vec3d(0,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
-      Vec3d negativePos = centerPos.add(new Vec3d(3,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
-      Vec3d positivePos = centerPos.add(new Vec3d(-3,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
-      Vec3d reagent1Pos = centerPos.add(new Vec3d(0,0.6,-3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
-      Vec3d reagent2Pos = centerPos.add(new Vec3d(0,0.6,3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      if(this.level == null || this.worldPosition == null) return stacks;
+      Direction direction = level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING);
+      Vec3 centerPos = getBlockPos().getCenter();
+      Vec3 aequalisPos = centerPos.add(new Vec3(0,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 negativePos = centerPos.add(new Vec3(3,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 positivePos = centerPos.add(new Vec3(-3,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 reagent1Pos = centerPos.add(new Vec3(0,0.6,-3).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 reagent2Pos = centerPos.add(new Vec3(0,0.6,3).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
       
-      ItemEntity aequalisEntity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(aequalisPos)), e -> true));
-      ItemEntity positiveEntity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(positivePos)), e -> true));
-      ItemEntity negativeEntity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(negativePos)), e -> true));
-      ItemEntity reagent1Entity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent1Pos)), e -> true));
-      ItemEntity reagent2Entity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent2Pos)), e -> true));
+      ItemEntity aequalisEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(aequalisPos)), e -> true));
+      ItemEntity positiveEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(positivePos)), e -> true));
+      ItemEntity negativeEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(negativePos)), e -> true));
+      ItemEntity reagent1Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(reagent1Pos)), e -> true));
+      ItemEntity reagent2Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(reagent2Pos)), e -> true));
       
       stacks.put("aequalis",aequalisEntity);
       stacks.put("positive",positiveEntity);
@@ -208,15 +208,15 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       return stacks;
    }
    
-   public Vec3d getOutputPos(String outputString){
-      if(this.world == null || this.pos == null) return null;
-      Direction direction = world.getBlockState(pos).get(HORIZONTAL_FACING);
-      Vec3d centerPos = getPos().toCenterPos();
-      Vec3d aequalisPos = centerPos.add(new Vec3d(0,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
-      Vec3d negativePos = centerPos.add(new Vec3d(3,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
-      Vec3d positivePos = centerPos.add(new Vec3d(-3,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
-      Vec3d reagent1Pos = centerPos.add(new Vec3d(0,0.6,-3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
-      Vec3d reagent2Pos = centerPos.add(new Vec3d(0,0.6,3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+   public Vec3 getOutputPos(String outputString){
+      if(this.level == null || this.worldPosition == null) return null;
+      Direction direction = level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING);
+      Vec3 centerPos = getBlockPos().getCenter();
+      Vec3 aequalisPos = centerPos.add(new Vec3(0,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 negativePos = centerPos.add(new Vec3(3,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 positivePos = centerPos.add(new Vec3(-3,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 reagent1Pos = centerPos.add(new Vec3(0,0.6,-3).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 reagent2Pos = centerPos.add(new Vec3(0,0.6,3).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
       
       if(outputString.equals("positive")){
          return positivePos;
@@ -231,7 +231,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       }
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof TransmutationAltarBlockEntity altar){
          altar.tick();
       }
@@ -243,30 +243,30 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getCheckOffset()),world.getBlockState(pos).get(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getCheckOffset()), level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
       
       if(isAssembled() && cooldown > 0){
          cooldown--;
-         this.markDirty();
+         this.setChanged();
       }
       
-      if(serverWorld.getServer().getTicks() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
+         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
       
-      boolean activatable = serverWorld.getBlockState(pos).getOrEmpty(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE).orElse(false);
+      boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE).orElse(false);
       boolean shouldBeActivatable = this.cooldown <= 0 && this.isAssembled() && !this.isActive();
       if(activatable ^ shouldBeActivatable){
-         serverWorld.setBlockState(pos, serverWorld.getBlockState(pos).with(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.NOTIFY_LISTENERS);
+         serverWorld.setBlock(worldPosition, serverWorld.getBlockState(worldPosition).setValue(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.UPDATE_CLIENTS);
       }
    }
    
@@ -277,11 +277,11 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    public void setActive(boolean active){
       this.active = active;
       
-      if(this.world instanceof ServerWorld serverWorld){
-         boolean activatable = serverWorld.getBlockState(pos).getOrEmpty(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE).orElse(false);
+      if(this.level instanceof ServerLevel serverWorld){
+         boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE).orElse(false);
          boolean shouldBeActivatable = this.cooldown <= 0 && this.isAssembled() && !this.isActive();
          if(activatable ^ shouldBeActivatable){
-            serverWorld.setBlockState(pos, serverWorld.getBlockState(pos).with(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.NOTIFY_LISTENERS);
+            serverWorld.setBlock(worldPosition, serverWorld.getBlockState(worldPosition).setValue(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.UPDATE_CLIENTS);
          }
       }
    }
@@ -323,13 +323,13 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.cooldown = view.getInt("cooldown", 0);
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.cooldown = view.getIntOr("cooldown", 0);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
@@ -337,9 +337,9 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);

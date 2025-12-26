@@ -16,34 +16,34 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.*;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.*;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
 
-public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, SidedInventory, InventoryChangedListener {
+public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, WorldlyContainer, ContainerListener {
    private static final double[] anchorEfficiency = {0,.05,.1,.15,.2,.5};
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
@@ -52,7 +52,7 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
    private String customName;
    private int fuel;
    private boolean active;
-   private SimpleInventory inventory = new SimpleInventory(size());
+   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
    
    public ContinuumAnchorBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.CONTINUUM_ANCHOR_BLOCK_ENTITY, pos, state);
@@ -90,7 +90,7 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
    }
    
    public ItemStack getFuelStack(){
-      return inventory.getStack(0);
+      return inventory.getItem(0);
    }
    
    public int getFuel(){
@@ -101,17 +101,17 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
       return ArcanaRegistry.CONTINUUM_ANCHOR;
    }
    
-   public boolean interact(PlayerEntity player, ItemStack stack){
+   public boolean interact(Player player, ItemStack stack){
       if(!inventory.isEmpty() && stack.isEmpty()){ // Remove fuel
          fuel = 0;
          ItemStack returnStack = getFuelStack().copy();
-         inventory.setStack(0,ItemStack.EMPTY);
-         markDirty();
-         if(!player.giveItemStack(returnStack)){
-            ItemEntity itemEntity = player.dropItem(returnStack, false);
+         inventory.setItem(0, ItemStack.EMPTY);
+         setChanged();
+         if(!player.addItem(returnStack)){
+            ItemEntity itemEntity = player.drop(returnStack, false);
             if(itemEntity == null) return true;
-            itemEntity.resetPickupDelay();
-            itemEntity.setOwner(player.getUuid());
+            itemEntity.setNoPickUpDelay();
+            itemEntity.setTarget(player.getUUID());
          }
          return true;
       }
@@ -120,168 +120,168 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(inventory.isEmpty() && arcanaItem instanceof ExoticMatter matter){
          fuel = matter.getEnergy(stack);
-         inventory.addStack(stack.copy());
-         player.getInventory().removeOne(stack);
-         markDirty();
+         inventory.addItem(stack.copy());
+         player.getInventory().removeItem(stack);
+         setChanged();
          return true;
       }
       return false;
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof ContinuumAnchorBlockEntity anchor){
          anchor.tick();
       }
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
       
-      if(serverWorld.getServer().getTicks() % 5 == 0){ // Anchor only ticks redstone and load update every quarter second
+      if(serverWorld.getServer().getTickCount() % 5 == 0){ // Anchor only ticks redstone and load update every quarter second
          boolean prevActive = active;
-         active = !serverWorld.isReceivingRedstonePower(pos) && fuel > 0;
+         active = !serverWorld.hasNeighborSignal(worldPosition) && fuel > 0;
          
          if(fuel <= 0 && !inventory.isEmpty()){
-            inventory.clear();
+            inventory.clearContent();
          }
          
-         if(active && serverWorld.getServer().getTicks() % 20 == 0){
+         if(active && serverWorld.getServer().getTickCount() % 20 == 0){
             int lvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.TEMPORAL_RELATIVITY.id);
             if(Math.random() >= anchorEfficiency[lvl]){
                fuel = Math.max(0, fuel - 1);
                
                if(ArcanaItemUtils.identifyItem(getFuelStack()) instanceof ExoticMatter matter){
                   matter.setFuel(getFuelStack(), fuel);
-                  markDirty();
+                  setChanged();
                }
             }
             
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(crafterId));
+               ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player == null){
                   BorisLib.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
-                  if(serverWorld.getServer().getTicks() % 1200 == 0) BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE)));
+                  if(serverWorld.getServer().getTickCount() % 1200 == 0) BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE)));
                }else{
                   ArcanaAchievements.progress(player,ArcanaAchievements.TIMEY_WIMEY.id, 1);
-                  if(serverWorld.getServer().getTicks() % 1200 == 0) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE));
+                  if(serverWorld.getServer().getTickCount() % 1200 == 0) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE));
                }
             }
          }
          int fuelMarks = (int)Math.min(Math.ceil(4.0*fuel/600000.0),4);
-         BlockState blockState = world.getBlockState(pos).with(ContinuumAnchor.ContinuumAnchorBlock.ACTIVE,active).with(ContinuumAnchor.ContinuumAnchorBlock.CHARGES,fuelMarks);
-         world.setBlockState(pos, blockState, Block.NOTIFY_ALL);
+         BlockState blockState = level.getBlockState(worldPosition).setValue(ContinuumAnchor.ContinuumAnchorBlock.ACTIVE,active).setValue(ContinuumAnchor.ContinuumAnchorBlock.CHARGES,fuelMarks);
+         level.setBlock(worldPosition, blockState, Block.UPDATE_ALL);
          
          if(prevActive && !active){ // Power Down
-            ArcanaNovum.removeActiveAnchor(serverWorld,pos);
-            SoundUtils.playSound(serverWorld,pos,SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.BLOCKS,1,1.5f);
+            ArcanaNovum.removeActiveAnchor(serverWorld, worldPosition);
+            SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS,1,1.5f);
          }else if(!prevActive && active){ // Power Up
-            ArcanaNovum.addActiveAnchor(serverWorld,pos);
-            SoundUtils.playSound(serverWorld,pos,SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS,1,0.7f);
-            ContinuumAnchor.loadChunks(serverWorld,new ChunkPos(pos));
+            ArcanaNovum.addActiveAnchor(serverWorld, worldPosition);
+            SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS,1,0.7f);
+            ContinuumAnchor.loadChunks(serverWorld,new ChunkPos(worldPosition));
          }
          
-         this.markDirty();
+         this.setChanged();
       }
       
-      if(serverWorld.getServer().getTicks() % 20 == 0 && this.active){
-         ContinuumAnchor.loadChunks(serverWorld,new ChunkPos(pos));
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0 && this.active){
+         ContinuumAnchor.loadChunks(serverWorld,new ChunkPos(worldPosition));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
    }
    
    @Override
-   public void onBlockReplaced(BlockPos pos, BlockState oldState){
-      super.onBlockReplaced(pos, oldState);
+   public void preRemoveSideEffects(BlockPos pos, BlockState oldState){
+      super.preRemoveSideEffects(pos, oldState);
       
-      if(!(this.world instanceof ServerWorld serverWorld)) return;
+      if(!(this.level instanceof ServerLevel serverWorld)) return;
       ArcanaNovum.removeActiveAnchor(serverWorld, pos);
    }
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.fuel = view.getInt("fuel", 0);
-      this.active = view.getBoolean("active", false);
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.fuel = view.getIntOr("fuel", 0);
+      this.active = view.getBooleanOr("active", false);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
-      this.inventory = new SimpleInventory(size());
+      this.inventory = new SimpleContainer(getContainerSize());
       this.inventory.addListener(this);
-      if (!this.readLootTable(view)) {
-         Inventories.readData(view, this.inventory.getHeldStacks());
+      if (!this.tryLoadLootTable(view)) {
+         ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
    }
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
       view.putInt("fuel",this.fuel);
       view.putBoolean("active",this.active);
-      if (!this.writeLootTable(view)) {
-         Inventories.writeData(view, this.inventory.getHeldStacks());
+      if (!this.trySaveLootTable(view)) {
+         ContainerHelper.saveAllItems(view, this.inventory.getItems());
       }
    }
    
-   public Inventory getInventory(){
+   public Container getInventory(){
       return this.inventory;
    }
    
    @Override
-   protected Text getContainerName(){
-      return Text.literal("Continuum Anchor");
+   protected Component getDefaultName(){
+      return Component.literal("Continuum Anchor");
    }
    
    @Override
-   protected DefaultedList<ItemStack> getHeldStacks(){
-      return this.inventory.getHeldStacks();
+   protected NonNullList<ItemStack> getItems(){
+      return this.inventory.getItems();
    }
    
    @Override
-   protected void setHeldStacks(DefaultedList<ItemStack> list){
+   protected void setItems(NonNullList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
-         this.inventory.setStack(i,list.get(i));
+         this.inventory.setItem(i,list.get(i));
       }
    }
    
    @Override
-   protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory){
+   protected AbstractContainerMenu createMenu(int syncId, Inventory playerInventory){
       return null;
    }
    
    @Override
-   public int[] getAvailableSlots(Direction side){
+   public int[] getSlotsForFace(Direction side){
       return new int[0];
    }
    
    @Override
-   public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir){
+   public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction dir){
       return false;
    }
    
    @Override
-   public boolean canExtract(int slot, ItemStack stack, Direction dir){
+   public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction dir){
       return false;
    }
    
    @Override
-   public int size(){
+   public int getContainerSize(){
       return 1;
    }
    
    @Override
-   public void onInventoryChanged(Inventory sender){
+   public void containerChanged(Container sender){
    
    }
 }

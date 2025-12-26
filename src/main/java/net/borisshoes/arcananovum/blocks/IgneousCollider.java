@@ -12,25 +12,25 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -51,53 +51,53 @@ public class IgneousCollider extends ArcanaBlock {
       rarity = ArcanaRarity.EMPOWERED;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.LODESTONE;
-      block = new IgneousColliderBlock(AbstractBlock.Settings.create().requiresTool().strength(3.5f, 1200.0f).sounds(BlockSoundGroup.LODESTONE));
+      block = new IgneousColliderBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(3.5f, 1200.0f).sound(SoundType.LODESTONE));
       item = new IgneousColliderItem(this.block);
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_PICKAXE,ResearchTasks.BREAK_OBSIDIAN,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_PICKAXE,ResearchTasks.BREAK_OBSIDIAN,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Mining ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("obsidian ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("is a pain, now this ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("device ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("can make it ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("automatically").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Place ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("lava ").formatted(Formatting.GOLD))
-            .append(Text.literal("and ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("water ").formatted(Formatting.BLUE))
-            .append(Text.literal("sources or cauldrons adjacent to the ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("Collider").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Obsidian ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("will be ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("spat out").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" or into a ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("chest ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("above it ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("periodically").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("If a ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("netherite block").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" is below the ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("Collider").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(", ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("crying obsidian").withColor(0x660066))
-            .append(Text.literal(" will be made.").formatted(Formatting.LIGHT_PURPLE)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Mining ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("obsidian ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("is a pain, now this ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("device ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("can make it ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("automatically").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.LIGHT_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Place ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("lava ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("and ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("water ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("sources or cauldrons adjacent to the ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("Collider").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.LIGHT_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Obsidian ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("will be ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("spat out").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" or into a ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("chest ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("above it ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("periodically").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.LIGHT_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("If a ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("netherite block").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" is below the ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("Collider").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(", ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("crying obsidian").withColor(0x660066))
+            .append(Component.literal(" will be made.").withStyle(ChatFormatting.LIGHT_PURPLE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -108,7 +108,7 @@ public class IgneousCollider extends ArcanaBlock {
       ArcanaIngredient g = new ArcanaIngredient(Items.MAGMA_BLOCK,32);
       ArcanaIngredient h = new ArcanaIngredient(Items.CAULDRON,24);
       ArcanaIngredient i = new ArcanaIngredient(Items.BLUE_ICE,32);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_PICKAXE,1, true).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.EFFICIENCY),5), new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),3));
+      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_PICKAXE,1, true).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.EFFICIENCY),5), new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),3));
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       
       ArcanaIngredient[][] ingredients = {
@@ -121,10 +121,10 @@ public class IgneousCollider extends ArcanaBlock {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Igneous Collider").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nMining Obsidian sucks. It's time intensive and mindlessly boring. Making a contraption to do it for me would be of great benefit. Some ductwork and enchanted pickaxes should work nicely.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Igneous Collider").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nThe Igneous Collider takes water and lava from either a source block or a cauldron that is adjacent to its side and spits out an Obsidian above it every minute. A Netherite block below the Collider produces Crying Obsidian.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal(" Igneous Collider").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nMining Obsidian sucks. It's time intensive and mindlessly boring. Making a contraption to do it for me would be of great benefit. Some ductwork and enchanted pickaxes should work nicely.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Igneous Collider").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nThe Igneous Collider takes water and lava from either a source block or a cauldron that is adjacent to its side and spits out an Obsidian above it every minute. A Netherite block below the Collider produces Crying Obsidian.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -134,23 +134,23 @@ public class IgneousCollider extends ArcanaBlock {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }
    
    public class IgneousColliderBlock extends ArcanaPolymerBlockEntity {
-      public IgneousColliderBlock(AbstractBlock.Settings settings){
+      public IgneousColliderBlock(BlockBehaviour.Properties settings){
          super(getThis(), settings);
       }
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.LODESTONE.getDefaultState();
+         return Blocks.LODESTONE.defaultBlockState();
       }
       
       @Nullable
-      public static IgneousColliderBlockEntity getEntity(World world, BlockPos pos){
+      public static IgneousColliderBlockEntity getEntity(Level world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
          if(!(state.getBlock() instanceof IgneousColliderBlock)){
             return null;
@@ -159,18 +159,18 @@ public class IgneousCollider extends ArcanaBlock {
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
+      public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new IgneousColliderBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
-         return validateTicker(type, ArcanaRegistry.IGNEOUS_COLLIDER_BLOCK_ENTITY, IgneousColliderBlockEntity::ticker);
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
+         return createTickerHelper(type, ArcanaRegistry.IGNEOUS_COLLIDER_BLOCK_ENTITY, IgneousColliderBlockEntity::ticker);
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
+      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof IgneousColliderBlockEntity collider){
             initializeArcanaBlock(stack,collider);

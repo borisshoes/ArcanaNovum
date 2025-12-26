@@ -20,36 +20,32 @@ import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.Spawner;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.Spawner;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -71,36 +67,36 @@ public class EssenceEgg extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.GHAST_SPAWN_EGG;
       item = new EssenceEggItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.FIND_SPAWNER,ResearchTasks.OBTAIN_EGG};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.FIND_SPAWNER,ResearchTasks.OBTAIN_EGG};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,Soulstone.TYPE_TAG,"unattuned");
       putProperty(stack,USES_TAG,0);
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("Harness the power of a filled ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("Soulstone").formatted(Formatting.DARK_RED))
-            .append(Text.literal("...").formatted(Formatting.LIGHT_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("With enough ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("souls").formatted(Formatting.DARK_RED))
-            .append(Text.literal(" a new form can be ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("spawned").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Spawns").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" a mob of the ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("attuned type").formatted(Formatting.YELLOW))
-            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
-      lore.add(Text.literal(""));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("Harness the power of a filled ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("Soulstone").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("...").withStyle(ChatFormatting.LIGHT_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("With enough ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("souls").withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal(" a new form can be ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("spawned").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.LIGHT_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Spawns").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" a mob of the ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("attuned type").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(".").withStyle(ChatFormatting.LIGHT_PURPLE)));
+      lore.add(Component.literal(""));
       
       String attunedString = "Unattuned";
       int uses = 0;
@@ -108,15 +104,15 @@ public class EssenceEgg extends ArcanaItem {
       if(itemStack != null){
          String type = getType(itemStack);
          uses = getUses(itemStack);
-         Optional<EntityType<?>> opt = EntityType.get(type);
+         Optional<EntityType<?>> opt = EntityType.byString(type);
          if(!type.equals("unattuned") && opt.isPresent()){
-            String entityTypeName = opt.get().getName().getString();
+            String entityTypeName = opt.get().getDescription().getString();
             attunedString = "Attuned - "+entityTypeName;
          }
       }
       
-      lore.add(Text.literal(attunedString).formatted(Formatting.LIGHT_PURPLE));
-      lore.add(Text.literal(LevelUtils.readableInt(uses)+" Uses Left").formatted(Formatting.GRAY));
+      lore.add(Component.literal(attunedString).withStyle(ChatFormatting.LIGHT_PURPLE));
+      lore.add(Component.literal(LevelUtils.readableInt(uses)+" Uses Left").withStyle(ChatFormatting.GRAY));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -149,10 +145,10 @@ public class EssenceEgg extends ArcanaItem {
    }
    
    public static void setUses(ItemStack stack, int uses){
-      uses = MathHelper.clamp(uses,0,1000000);
+      uses = Mth.clamp(uses,0,1000000);
       
       if(uses <= 0){
-         stack.decrement(stack.getCount());
+         stack.shrink(stack.getCount());
       }else{
          putProperty(stack,USES_TAG,uses);
          ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,BorisLib.SERVER);
@@ -161,9 +157,9 @@ public class EssenceEgg extends ArcanaItem {
    
    public static void addUses(ItemStack stack, int uses){
       int curUses = getIntProperty(stack,USES_TAG);
-      int newUses = MathHelper.clamp(uses+curUses,0,1000000);
+      int newUses = Mth.clamp(uses+curUses,0,1000000);
       if(newUses <= 0){
-         stack.decrement(stack.getCount());
+         stack.shrink(stack.getCount());
       }else{
          putProperty(stack,USES_TAG,newUses);
          ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,BorisLib.SERVER);
@@ -171,9 +167,9 @@ public class EssenceEgg extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
+   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
       // Souls n stuff
-      ItemStack soulstoneStack = inv.getStack(12); // Should be the Soulstone
+      ItemStack soulstoneStack = inv.getItem(12); // Should be the Soulstone
       ItemStack newArcanaItem = null;
       if(ArcanaItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
          int uses = (Soulstone.getSouls(soulstoneStack) / Soulstone.tiers[0]);
@@ -187,11 +183,11 @@ public class EssenceEgg extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Essence Egg").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nAs making Soulstones has taught me, keeping souls imprisoned is hard. Making them so they can be released controllably is even harder. Thankfully, I can build off of a Soulstone’s solid foundation.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Essence Egg").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nThis ‘Egg’ should take the souls from a Soulstone and keep them captive just long enough for me to release them into a new form. Although, it takes 25 souls to form an entirely new creature.\n\nThe Essence Egg can ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Essence Egg").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nbe used one at a time to spawn a mob, or 5 uses (125 souls) can be used on a spawner to change its attunement to the type of essence contained within the Egg.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("    Essence Egg").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nAs making Soulstones has taught me, keeping souls imprisoned is hard. Making them so they can be released controllably is even harder. Thankfully, I can build off of a Soulstone’s solid foundation.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Essence Egg").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nThis ‘Egg’ should take the souls from a Soulstone and keep them captive just long enough for me to release them into a new form. Although, it takes 25 souls to form an entirely new creature.\n\nThe Essence Egg can ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Essence Egg").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nbe used one at a time to spawn a mob, or 5 uses (125 souls) can be used on a spawner to change its attunement to the type of essence contained within the Egg.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -218,33 +214,33 @@ public class EssenceEgg extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public ActionResult useOnBlock(ItemUsageContext context){
-         ItemStack stack = context.getStack();
+      public InteractionResult useOn(UseOnContext context){
+         ItemStack stack = context.getItemInHand();
          try{
-            World world = context.getWorld();
-            PlayerEntity playerEntity = context.getPlayer();
+            Level world = context.getLevel();
+            Player playerEntity = context.getPlayer();
             
             if(!getType(stack).equals("unattuned")){
                // Check for use on spawner
-               BlockPos blockPos = context.getBlockPos();
+               BlockPos blockPos = context.getClickedPos();
                BlockEntity blockEntity;
                BlockState blockState = world.getBlockState(blockPos);
-               if(blockState.isOf(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof Spawner spawner){
+               if(blockState.is(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof Spawner spawner){
                   int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WILLING_CAPTIVE.id));
                   if(getUses(stack) >= 5-captiveLevel){
-                     EntityType<?> entityType = EntityType.get(getType(stack)).get();
-                     spawner.setEntityType(entityType, world.getRandom());
-                     world.updateListeners(blockPos, blockState, blockState, Block.NOTIFY_ALL);
-                     blockEntity.markDirty();
+                     EntityType<?> entityType = EntityType.byString(getType(stack)).get();
+                     spawner.setEntityId(entityType, world.getRandom());
+                     world.sendBlockUpdated(blockPos, blockState, blockState, Block.UPDATE_ALL);
+                     blockEntity.setChanged();
                      
-                     if(playerEntity instanceof ServerPlayerEntity player){
-                        player.sendMessage(Text.literal("The Spawner Assumes the Essence of "+EntityType.get(getType(stack)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
-                        SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
+                     if(playerEntity instanceof ServerPlayer player){
+                        player.displayClientMessage(Component.literal("The Spawner Assumes the Essence of "+ EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                        SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
                         int xp = ArcanaConfig.getInt(ArcanaRegistry.ESSENCE_EGG_CONVERT);
                         ArcanaNovum.data(playerEntity).addXP(Math.min(0,xp-(xp/5)*captiveLevel)); // Add xp
                         ArcanaAchievements.grant(player,ArcanaAchievements.SOUL_CONVERSION.id);
@@ -255,29 +251,29 @@ public class EssenceEgg extends ArcanaItem {
                   int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT.id));
                   int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT.id));
                   if(getUses(stack) > 0){
-                     ServerWorld serverWorld = world.getServer().getWorld(world.getRegistryKey());
-                     Vec3d summonPos = context.getHitPos().add(0,0.5,0);
+                     ServerLevel serverWorld = world.getServer().getLevel(world.dimension());
+                     Vec3 summonPos = context.getClickLocation().add(0,0.5,0);
                      
-                     NbtCompound nbtCompound = new NbtCompound();
+                     CompoundTag nbtCompound = new CompoundTag();
                      nbtCompound.putString("id", getType(stack));
                      int spawns = Math.random() >= 0.1*splitLevel ? 1 : 2;
                      
                      for(int i = 0; i < spawns; i++){
-                        Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, SpawnReason.SPAWN_ITEM_USE, entity -> {
-                           entity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), entity.getYaw(), entity.getPitch());
+                        Entity newEntity = EntityType.loadEntityRecursive(nbtCompound, serverWorld, EntitySpawnReason.SPAWN_ITEM_USE, entity -> {
+                           entity.snapTo(summonPos.x(), summonPos.y(), summonPos.z(), entity.getYRot(), entity.getXRot());
                            return entity;
                         });
-                        if(newEntity instanceof MobEntity mobEntity){
-                           mobEntity.initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_ITEM_USE, null);
+                        if(newEntity instanceof Mob mobEntity){
+                           mobEntity.finalizeSpawn(serverWorld, serverWorld.getCurrentDifficultyAt(newEntity.blockPosition()), EntitySpawnReason.SPAWN_ITEM_USE, null);
                         }
-                        serverWorld.spawnNewEntityAndPassengers(newEntity);
+                        serverWorld.tryAddFreshEntityWithPassengers(newEntity);
                      }
                      
                      if(Math.random() >= 0.1*efficiencyLevel){
                         addUses(stack,-1);
                      }
-                     if(playerEntity instanceof ServerPlayerEntity player){
-                        SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
+                     if(playerEntity instanceof ServerPlayer player){
+                        SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
                         ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.ESSENCE_EGG_SPAWN)); // Add xp
                         ArcanaAchievements.progress(player,ArcanaAchievements.SOUL_FOR_SOUL.id,1);
                      }
@@ -285,41 +281,41 @@ public class EssenceEgg extends ArcanaItem {
                }
             }
             
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }catch(Exception e){
             e.printStackTrace();
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
          }
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack item = playerEntity.getStackInHand(hand);
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack item = playerEntity.getItemInHand(hand);
          if(playerEntity.isCreative()){
             if(!getType(item).equals("unattuned"))
                addUses(item,1);
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
       
       @Override
-      public void postHit(ItemStack stack, LivingEntity entity, LivingEntity attacker){
-         if(!(attacker instanceof PlayerEntity playerEntity)) return;
+      public void hurtEnemy(ItemStack stack, LivingEntity entity, LivingEntity attacker){
+         if(!(attacker instanceof Player playerEntity)) return;
          
          if(playerEntity.isCreative()){
             String type = getType(stack);
             
-            if(type.equals("unattuned") && entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player){
-               if(entity.getType().isIn(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)){
-                  player.sendMessage(Text.literal("The Essence Egg cannot attune to this creature.").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
+            if(type.equals("unattuned") && entity instanceof Mob attackedEntity && playerEntity instanceof ServerPlayer player){
+               if(entity.getType().is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)){
+                  player.displayClientMessage(Component.literal("The Essence Egg cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
                }else{
-                  String entityTypeId = EntityType.getId(attackedEntity.getType()).toString();
-                  String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
+                  String entityTypeId = EntityType.getKey(attackedEntity.getType()).toString();
+                  String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
                   
                   setType(stack,entityTypeId);
-                  player.sendMessage(Text.literal("The Essence Egg attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
+                  player.displayClientMessage(Component.literal("The Essence Egg attunes to the essence of "+entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
                }
             }
          }

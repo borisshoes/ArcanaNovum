@@ -2,43 +2,42 @@ package net.borisshoes.arcananovum.callbacks.login;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.borislib.callbacks.LoginCallback;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class VengeanceTotemLoginCallback extends LoginCallback {
    
    public VengeanceTotemLoginCallback(){
-      super(Identifier.of(MOD_ID,"totem_of_vengeance"));
+      super(Identifier.fromNamespaceAndPath(MOD_ID,"totem_of_vengeance"));
    }
    
-   public VengeanceTotemLoginCallback(ServerPlayerEntity player){
+   public VengeanceTotemLoginCallback(ServerPlayer player){
       this();
-      this.playerUUID = player.getUuidAsString();
+      this.playerUUID = player.getStringUUID();
    }
    
    @Override
-   public void onLogin(ServerPlayNetworkHandler netHandler, MinecraftServer server){
+   public void onLogin(ServerGamePacketListenerImpl netHandler, MinecraftServer server){
       // Double check that this is the correct player before running timer
-      ServerPlayerEntity player = netHandler.player;
-      if(player.getUuidAsString().equals(playerUUID)){
-         ArcanaNovum.TOTEM_KILL_LIST.add(player.getUuid());
+      ServerPlayer player = netHandler.player;
+      if(player.getStringUUID().equals(playerUUID)){
+         ArcanaNovum.TOTEM_KILL_LIST.add(player.getUUID());
       }
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(CompoundTag data){
       this.data = data;
    }
    
    @Override
-   public NbtCompound getData(){
-      this.data = new NbtCompound();
+   public CompoundTag getData(){
+      this.data = new CompoundTag();
       return this.data;
    }
    

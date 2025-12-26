@@ -1,24 +1,24 @@
 package net.borisshoes.arcananovum.effects;
 
 import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.LivingEntity;
 
-public class DeathWardEffect extends StatusEffect implements PolymerStatusEffect {
+public class DeathWardEffect extends MobEffect implements PolymerStatusEffect {
    public DeathWardEffect(){
-      super(StatusEffectCategory.BENEFICIAL,0x270000, ParticleTypes.TRIAL_OMEN);
+      super(MobEffectCategory.BENEFICIAL,0x270000, ParticleTypes.TRIAL_OMEN);
    }
    
    @Override
-   public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier){
-      return super.applyUpdateEffect(world, entity, amplifier);
+   public boolean applyEffectTick(ServerLevel world, LivingEntity entity, int amplifier){
+      return super.applyEffectTick(world, entity, amplifier);
    }
    
    @Override
-   public boolean canApplyUpdateEffect(int duration, int amplifier){
+   public boolean shouldApplyEffectTickThisTick(int duration, int amplifier){
       return true;
    }
    

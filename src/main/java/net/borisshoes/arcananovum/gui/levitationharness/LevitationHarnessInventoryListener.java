@@ -3,13 +3,13 @@ package net.borisshoes.arcananovum.gui.levitationharness;
 import net.borisshoes.arcananovum.items.LevitationHarness;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.minecraft.entity.EntityType;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.InventoryChangedListener;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerListener;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
-public class LevitationHarnessInventoryListener implements InventoryChangedListener {
+public class LevitationHarnessInventoryListener implements ContainerListener {
    private final LevitationHarness harness;
    private final LevitationHarnessGui gui;
    private final ItemStack item;
@@ -22,19 +22,19 @@ public class LevitationHarnessInventoryListener implements InventoryChangedListe
    }
    
    @Override
-   public void onInventoryChanged(Inventory inv){
+   public void containerChanged(Container inv){
       if(!updating){
          updating = true;
          
          //Check Soulstone, glowstone, and update item
          validSoulstone(inv);
-         ItemStack glowSlot = inv.getStack(1);
-         if(glowSlot.isOf(Items.GLOWSTONE)){
+         ItemStack glowSlot = inv.getItem(1);
+         if(glowSlot.is(Items.GLOWSTONE)){
             harness.addGlow(item,glowSlot.getCount()*4);
-            inv.setStack(1,ItemStack.EMPTY);
-         }else if(glowSlot.isOf(Items.GLOWSTONE_DUST)){
+            inv.setItem(1, ItemStack.EMPTY);
+         }else if(glowSlot.is(Items.GLOWSTONE_DUST)){
             harness.addGlow(item,glowSlot.getCount());
-            inv.setStack(1,ItemStack.EMPTY);
+            inv.setItem(1, ItemStack.EMPTY);
          }
          
          harness.recalculateEnergy(item);
@@ -51,12 +51,12 @@ public class LevitationHarnessInventoryListener implements InventoryChangedListe
       updating = true;
    }
    
-   public boolean validSoulstone(Inventory inv){
-      ItemStack item = inv.getStack(0);
+   public boolean validSoulstone(Container inv){
+      ItemStack item = inv.getItem(0);
       
       if(ArcanaItemUtils.isArcane(item)){
          if(ArcanaItemUtils.identifyItem(item) instanceof Soulstone stone){
-            if(Soulstone.getType(item).equals(EntityType.getId(EntityType.SHULKER).toString())){
+            if(Soulstone.getType(item).equals(EntityType.getKey(EntityType.SHULKER).toString())){
                gui.validStone(item);
                return true;
             }

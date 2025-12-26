@@ -18,20 +18,20 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -42,7 +42,7 @@ import java.util.List;
 @Mixin(ItemEntity.class)
 public class ItemEntityMixin {
    
-   @Inject(method="setStack",at=@At("HEAD"))
+   @Inject(method= "setItem",at=@At("HEAD"))
    private void arcananovum$destroyFake(ItemStack stack, CallbackInfo ci){
       ItemEntity itemEntity = (ItemEntity) (Object) this;
       if(BinaryBlades.isFakeBlade(stack)){
@@ -53,24 +53,24 @@ public class ItemEntityMixin {
       }
    }
    
-   @Inject(method="tick",at=@At("TAIL"))
+   @Inject(method= "tick",at=@At("TAIL"))
    private void arcananovum$worldDetection(CallbackInfo ci){
       ItemEntity itemEntity = (ItemEntity) (Object) this;
-      ItemStack stack = itemEntity.getStack();
-      World world = itemEntity.getEntityWorld();
+      ItemStack stack = itemEntity.getItem();
+      Level world = itemEntity.level();
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
-      if(!(itemEntity.getEntityWorld() instanceof ServerWorld serverWorld)) return;
+      if(!(itemEntity.level() instanceof ServerLevel serverWorld)) return;
       
       if(arcanaItem instanceof Soulstone){
          boolean hasAnnihilation = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_ANNIHILATION.id) > 0;
          if(hasAnnihilation){
-            BlockState state = world.getBlockState(itemEntity.getBlockPos());
-            if(state.isOf(Blocks.SOUL_FIRE)){
+            BlockState state = world.getBlockState(itemEntity.blockPosition());
+            if(state.is(Blocks.SOUL_FIRE)){
                if(!Soulstone.getType(stack).equals("unattuned")){
-                  itemEntity.setStack(Soulstone.setUnattuned(stack));
+                  itemEntity.setItem(Soulstone.setUnattuned(stack));
                   
-                  SoundUtils.soulSounds(serverWorld,itemEntity.getBlockPos(),30,20);
-                  serverWorld.spawnParticles(ParticleTypes.SOUL, itemEntity.getX(), itemEntity.getY()+0.125, itemEntity.getZ(), 100,0.25,0.25,0.25,0.07);
+                  SoundUtils.soulSounds(serverWorld,itemEntity.blockPosition(),30,20);
+                  serverWorld.sendParticles(ParticleTypes.SOUL, itemEntity.getX(), itemEntity.getY()+0.125, itemEntity.getZ(), 100,0.25,0.25,0.25,0.07);
                }
             }
          }
@@ -79,31 +79,31 @@ public class ItemEntityMixin {
          if(ArcanaItem.hasProperty(stack,ArcaneTome.FORGE_TAG)){
             craftTick = ArcanaItem.getIntProperty(stack,ArcaneTome.FORGE_TAG);
          }
-         List<ItemEntity> otherEntities = world.getEntitiesByType(EntityType.ITEM,itemEntity.getBoundingBox().expand(1.25),e -> (!e.getUuid().equals(itemEntity.getUuid()) && !ArcanaItemUtils.isArcane(e.getStack())));
+         List<ItemEntity> otherEntities = world.getEntities(EntityType.ITEM,itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && !ArcanaItemUtils.isArcane(e.getItem())));
          
          boolean proceed = false;
          ItemEntity gappleEntity = null;
          for(ItemEntity other : otherEntities){
-            ItemStack otherStack = other.getStack();
-            if(otherStack.isOf(Items.ENCHANTED_GOLDEN_APPLE)){
+            ItemStack otherStack = other.getItem();
+            if(otherStack.is(Items.ENCHANTED_GOLDEN_APPLE)){
                proceed = true;
                gappleEntity = other;
                break;
             }
          }
          
-         long timeOfDay = serverWorld.getTimeOfDay();
+         long timeOfDay = serverWorld.getDayTime();
          int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
          int curTime = (int) (timeOfDay % 24000L);
          int curPhase = day % 8;
          if(!(curPhase == 4 && curTime >= 14000 && curTime <= 22000)) proceed = false;
          
-         BlockPos smithPos = BlockPos.ofFloored(itemEntity.getEntityPos().add(0,-0.25,0));
+         BlockPos smithPos = BlockPos.containing(itemEntity.position().add(0,-0.25,0));
          BlockState state = world.getBlockState(smithPos);
-         if(!state.isOf(Blocks.SMITHING_TABLE)) proceed = false;
+         if(!state.is(Blocks.SMITHING_TABLE)) proceed = false;
          ArcanaItem forgeItem = ArcanaRegistry.STARLIGHT_FORGE;
          String playerId = forgeItem.getCrafter(stack);
-         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(playerId));
+         ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(playerId));
          
          if(player != null && !ArcanaNovum.data(player).hasResearched(forgeItem)){
             proceed = false;
@@ -112,7 +112,7 @@ public class ItemEntityMixin {
          if(proceed){
             craftTick++;
             if(craftTick == 100){
-               serverWorld.setBlockState(smithPos, ((ArcanaBlock)ArcanaRegistry.STARLIGHT_FORGE).getBlock().getDefaultState(),3);
+               serverWorld.setBlock(smithPos, ((ArcanaBlock)ArcanaRegistry.STARLIGHT_FORGE).getBlock().defaultBlockState(),3);
                BlockEntity blockEntity = serverWorld.getBlockEntity(smithPos);
                if(blockEntity instanceof StarlightForgeBlockEntity forge){
                   ItemStack newForgeStack = forgeItem.addCrafter(forgeItem.getNewItem(),playerId,0,serverWorld.getServer());
@@ -124,12 +124,12 @@ public class ItemEntityMixin {
                      }
                   }
                   
-                  ItemStack gappleStack = gappleEntity.getStack();
+                  ItemStack gappleStack = gappleEntity.getItem();
                   if(gappleStack.getCount() == 1){
                      gappleEntity.discard();
                   }else{
-                     gappleStack.decrement(1);
-                     gappleEntity.setStack(gappleStack);
+                     gappleStack.shrink(1);
+                     gappleEntity.setItem(gappleStack);
                   }
                }
                ArcanaItem.removeProperty(stack,ArcaneTome.FORGE_TAG);
@@ -140,21 +140,21 @@ public class ItemEntityMixin {
          }else{
             ArcanaItem.removeProperty(stack,ArcaneTome.FORGE_TAG);
          }
-         itemEntity.setStack(stack);
+         itemEntity.setItem(stack);
       }
       
       
-      if(!ArcanaItemUtils.isArcane(stack) && stack.isOf(ArcanaRegistry.MUNDANE_ARCANE_PAPER)){ // Crafting an Arcane Tome
+      if(!ArcanaItemUtils.isArcane(stack) && stack.is(ArcanaRegistry.MUNDANE_ARCANE_PAPER)){ // Crafting an Arcane Tome
          boolean proceed = false;
          ItemEntity eyeEntity = null;
          
-         BlockPos enchantPos = BlockPos.ofFloored(itemEntity.getEntityPos().add(0,-0.25,0));
+         BlockPos enchantPos = BlockPos.containing(itemEntity.position().add(0,-0.25,0));
          BlockState state = world.getBlockState(enchantPos);
-         if(state.isOf(Blocks.ENCHANTING_TABLE)){
-            List<ItemEntity> otherEntities = world.getEntitiesByType(EntityType.ITEM,itemEntity.getBoundingBox().expand(1.25),e -> (!e.getUuid().equals(itemEntity.getUuid()) && !ArcanaItemUtils.isArcane(e.getStack())));
+         if(state.is(Blocks.ENCHANTING_TABLE)){
+            List<ItemEntity> otherEntities = world.getEntities(EntityType.ITEM,itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && !ArcanaItemUtils.isArcane(e.getItem())));
             for(ItemEntity other : otherEntities){
-               ItemStack otherStack = other.getStack();
-               if(otherStack.isOf(Items.ENDER_EYE)){
+               ItemStack otherStack = other.getItem();
+               if(otherStack.is(Items.ENDER_EYE)){
                   proceed = true;
                   eyeEntity = other;
                   break;
@@ -172,44 +172,44 @@ public class ItemEntityMixin {
             craftTick++;
             if(craftTick == 100){
                ItemStack tomeStack = ArcanaRegistry.ARCANE_TOME.getNewItem();
-               PlayerEntity tomeCrafter = serverWorld.getClosestPlayer(itemEntity.getX(),itemEntity.getY(),itemEntity.getZ(),50,false);
-               if(itemEntity.getOwner() instanceof PlayerEntity stackOwner){
+               Player tomeCrafter = serverWorld.getNearestPlayer(itemEntity.getX(),itemEntity.getY(),itemEntity.getZ(),50,false);
+               if(itemEntity.getOwner() instanceof Player stackOwner){
                   tomeCrafter = stackOwner;
                }
                if(tomeCrafter != null){
                   IArcanaProfileComponent profile = ArcanaNovum.data(tomeCrafter);
-                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getUuidAsString(),0,itemEntity.getEntityWorld().getServer());
+                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getStringUUID(),0,itemEntity.level().getServer());
                   if(!profile.addCrafted(tomeStack)){
                      profile.addXP(ArcanaRarity.getFirstCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));
                   }
                   profile.addResearchedItem(ArcanaRegistry.ARCANE_TOME.getId());
                }
                
-               ItemStack eyeStack = eyeEntity.getStack();
+               ItemStack eyeStack = eyeEntity.getItem();
                if(eyeStack.getCount() == 1){
                   eyeEntity.discard();
                }else{
-                  eyeStack.decrement(1);
-                  eyeEntity.setStack(eyeStack);
+                  eyeStack.shrink(1);
+                  eyeEntity.setItem(eyeStack);
                }
                
                if(stack.getCount() <= 4){
                   itemEntity.discard();
                }else{
-                  stack.decrement(4);
-                  itemEntity.setStack(stack);
+                  stack.shrink(4);
+                  itemEntity.setItem(stack);
                }
                
                ItemEntity tomeEntity = new ItemEntity(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), tomeStack);
-               tomeEntity.setPickupDelay(40);
+               tomeEntity.setPickUpDelay(40);
                if(tomeCrafter != null){
-                  tomeEntity.setOwner(tomeCrafter.getUuid());
+                  tomeEntity.setTarget(tomeCrafter.getUUID());
                }
                
                float f = world.random.nextFloat() * 0.1F;
                float g = world.random.nextFloat() * 6.2831855F;
-               tomeEntity.setVelocity((double)(-MathHelper.sin(g) * f), 0.20000000298023224, (double)(MathHelper.cos(g) * f));
-               world.spawnEntity(tomeEntity);
+               tomeEntity.setDeltaMovement((double)(-Mth.sin(g) * f), 0.20000000298023224, (double)(Mth.cos(g) * f));
+               world.addFreshEntity(tomeEntity);
                
                ArcanaItem.removeProperty(stack,ArcaneTome.TOME_TAG);
             }else{
@@ -219,32 +219,32 @@ public class ItemEntityMixin {
          }else{
             ArcanaItem.removeProperty(stack,ArcaneTome.TOME_TAG);
          }
-         itemEntity.setStack(stack);
+         itemEntity.setItem(stack);
       }
       
-      if(!ArcanaItemUtils.isArcane(stack) && stack.isOf(Items.OBSIDIAN) && itemEntity.isTouchingWater()){
-         List<ItemEntity> otherEntities = world.getEntitiesByType(EntityType.ITEM,itemEntity.getBoundingBox().expand(1.25),e -> (!e.getUuid().equals(itemEntity.getUuid()) && e.isTouchingWater() && !ArcanaItemUtils.isArcane(e.getStack())));
+      if(!ArcanaItemUtils.isArcane(stack) && stack.is(Items.OBSIDIAN) && itemEntity.isInWater()){
+         List<ItemEntity> otherEntities = world.getEntities(EntityType.ITEM,itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && e.isInWater() && !ArcanaItemUtils.isArcane(e.getItem())));
    
          boolean create = false;
          for(ItemEntity other : otherEntities){
-            ItemStack otherStack = other.getStack();
+            ItemStack otherStack = other.getItem();
             int count = otherStack.getCount();
-            if(otherStack.isOf(Items.GLOWSTONE_DUST) && count >= 4){
+            if(otherStack.is(Items.GLOWSTONE_DUST) && count >= 4){
                if(count == 4){
                   other.discard();
                }else{
-                  otherStack.decrement(4);
-                  other.setStack(otherStack);
+                  otherStack.shrink(4);
+                  other.setItem(otherStack);
                }
                
                create = true;
                break;
-            }else if(otherStack.isOf(Items.REDSTONE) && count >= 16){
+            }else if(otherStack.is(Items.REDSTONE) && count >= 16){
                if(count == 16){
                   other.discard();
                }else{
-                  otherStack.decrement(16);
-                  other.setStack(otherStack);
+                  otherStack.shrink(16);
+                  other.setItem(otherStack);
                }
                
                create = true;
@@ -256,32 +256,32 @@ public class ItemEntityMixin {
             ItemStack cObby = new ItemStack(Items.CRYING_OBSIDIAN);
             cObby.setCount(1);
             ItemEntity cryingObby = new ItemEntity(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), cObby);
-            cryingObby.setPickupDelay(40);
+            cryingObby.setPickUpDelay(40);
    
             float f = world.random.nextFloat() * 0.1F;
             float g = world.random.nextFloat() * 6.2831855F;
-            cryingObby.setVelocity((double)(-MathHelper.sin(g) * f), 0.20000000298023224, (double)(MathHelper.cos(g) * f));
-            world.spawnEntity(cryingObby);
+            cryingObby.setDeltaMovement((double)(-Mth.sin(g) * f), 0.20000000298023224, (double)(Mth.cos(g) * f));
+            world.addFreshEntity(cryingObby);
             
             if(stack.getCount() == 1){
                itemEntity.discard();
             }else{
-               stack.decrement(1);
-               itemEntity.setStack(stack);
+               stack.shrink(1);
+               itemEntity.setItem(stack);
             }
          }
          
       }
    }
    
-   @Inject(method="onPlayerCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;insertStack(Lnet/minecraft/item/ItemStack;)Z",shift = At.Shift.BEFORE))
-   private void arcananovum$removeCraftData(PlayerEntity player, CallbackInfo ci, @Local LocalRef<ItemStack> itemStackRef){
+   @Inject(method= "playerTouch", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z",shift = At.Shift.BEFORE))
+   private void arcananovum$removeCraftData(Player player, CallbackInfo ci, @Local LocalRef<ItemStack> itemStackRef){
       ItemStack stack = itemStackRef.get();
-      if(stack.isOf(ArcanaRegistry.MUNDANE_ARCANE_PAPER)){
+      if(stack.is(ArcanaRegistry.MUNDANE_ARCANE_PAPER)){
          ArcanaItem.removeProperty(stack,ArcaneTome.TOME_TAG);
          itemStackRef.set(stack);
       }
-      if(stack.isOf(ArcanaRegistry.ARCANE_TOME.getItem())){
+      if(stack.is(ArcanaRegistry.ARCANE_TOME.getItem())){
          ArcanaItem.removeProperty(stack,ArcaneTome.FORGE_TAG);
          itemStackRef.set(stack);
       }

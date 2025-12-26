@@ -5,62 +5,61 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
-import net.minecraft.block.Block;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.object.AtlasTextObjectContents;
-import net.minecraft.util.Atlases;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.objects.AtlasSprite;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ArcanaUtils {
    
-   public static MutableText getAtlasedTexture(Item item){
-      Identifier id = Registries.ITEM.getKey(item).get().getValue();
-      Identifier newId = Identifier.of(id.getNamespace(),"item/"+id.getPath());
-      return Text.object(new AtlasTextObjectContents(Atlases.ITEMS, newId));
+   public static MutableComponent getAtlasedTexture(Item item){
+      Identifier id = BuiltInRegistries.ITEM.getResourceKey(item).get().identifier();
+      Identifier newId = Identifier.fromNamespaceAndPath(id.getNamespace(),"item/"+id.getPath());
+      return Component.object(new AtlasSprite(AtlasIds.ITEMS, newId));
    }
    
-   public static MutableText getAtlasedTexture(Block block){
-      Identifier id = Registries.BLOCK.getKey(block).get().getValue();
-      Identifier newId = Identifier.of(id.getNamespace(),"block/"+id.getPath());
-      return Text.object(new AtlasTextObjectContents(Atlases.BLOCKS, newId));
+   public static MutableComponent getAtlasedTexture(Block block){
+      Identifier id = BuiltInRegistries.BLOCK.getResourceKey(block).get().identifier();
+      Identifier newId = Identifier.fromNamespaceAndPath(id.getNamespace(),"block/"+id.getPath());
+      return Component.object(new AtlasSprite(AtlasIds.BLOCKS, newId));
    }
    
-   public static MutableText getAtlasedTexture(Identifier atlas, Identifier rawId){
-      return Text.object(new AtlasTextObjectContents(atlas, rawId));
+   public static MutableComponent getAtlasedTexture(Identifier atlas, Identifier rawId){
+      return Component.object(new AtlasSprite(atlas, rawId));
    }
    
-   public static MutableText getFormattedDimName(RegistryKey<World> worldKey){
-      if(worldKey.getValue().toString().equals(ServerWorld.OVERWORLD.getValue().toString())){
-         return Text.literal("Overworld").formatted(Formatting.GREEN);
-      }else if(worldKey.getValue().toString().equals(ServerWorld.NETHER.getValue().toString())){
-         return Text.literal("The Nether").formatted(Formatting.RED);
-      }else if(worldKey.getValue().toString().equals(ServerWorld.END.getValue().toString())){
-         return Text.literal("The End").formatted(Formatting.DARK_PURPLE);
+   public static MutableComponent getFormattedDimName(ResourceKey<Level> worldKey){
+      if(worldKey.identifier().toString().equals(ServerLevel.OVERWORLD.identifier().toString())){
+         return Component.literal("Overworld").withStyle(ChatFormatting.GREEN);
+      }else if(worldKey.identifier().toString().equals(ServerLevel.NETHER.identifier().toString())){
+         return Component.literal("The Nether").withStyle(ChatFormatting.RED);
+      }else if(worldKey.identifier().toString().equals(ServerLevel.END.identifier().toString())){
+         return Component.literal("The End").withStyle(ChatFormatting.DARK_PURPLE);
       }else{
-         return Text.literal(worldKey.getValue().toString()).formatted(Formatting.YELLOW);
+         return Component.literal(worldKey.identifier().toString()).withStyle(ChatFormatting.YELLOW);
       }
    }
    
@@ -70,18 +69,18 @@ public class ArcanaUtils {
          //SoundUtils.playSound(entity.getWorld(),entity.getBlockPos(), SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS,1f,1f);
          
          // Activate Shield of Fortitude
-         ItemStack activeItem = entity.getActiveItem();
+         ItemStack activeItem = entity.getUseItem();
          if(ArcanaItemUtils.identifyItem(activeItem) instanceof ShieldOfFortitude shield){
             shield.shieldBlock(entity, activeItem, damage);
          }
       }
    }
    
-   public static List<ItemStack> getArcanaItems(PlayerEntity player, ArcanaItem arcanaItem){
+   public static List<ItemStack> getArcanaItems(Player player, ArcanaItem arcanaItem){
       List<ItemStack> stacks = new ArrayList<>();
-      PlayerInventory inv = player.getInventory();
-      for(int i=0; i<inv.size();i++){
-         ItemStack item = inv.getStack(i);
+      Inventory inv = player.getInventory();
+      for(int i = 0; i<inv.getContainerSize(); i++){
+         ItemStack item = inv.getItem(i);
          if(item.isEmpty()){
             continue;
          }
@@ -91,8 +90,8 @@ public class ArcanaUtils {
             stacks.add(item);
          }
          if(arcItem instanceof ArcanistsBelt){
-            ContainerComponent containerItems = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-            for(ItemStack stack : containerItems.iterateNonEmpty()){
+            ItemContainerContents containerItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+            for(ItemStack stack : containerItems.nonEmptyItems()){
                ArcanaItem aItem = ArcanaItemUtils.identifyItem(stack);
                if(aItem != null && aItem.getId().equals(arcanaItem.getId())){
                   stacks.add(stack);
@@ -103,11 +102,11 @@ public class ArcanaUtils {
       return stacks;
    }
    
-   public static List<ItemStack> getArcanaItemsWithAug(PlayerEntity player, ArcanaItem arcanaItem, ArcanaAugment augment, int level){
+   public static List<ItemStack> getArcanaItemsWithAug(Player player, ArcanaItem arcanaItem, ArcanaAugment augment, int level){
       List<ItemStack> stacks = new ArrayList<>();
-      PlayerInventory inv = player.getInventory();
-      for(int i=0; i<inv.size();i++){
-         ItemStack item = inv.getStack(i);
+      Inventory inv = player.getInventory();
+      for(int i = 0; i<inv.getContainerSize(); i++){
+         ItemStack item = inv.getItem(i);
          if(item.isEmpty()){
             continue;
          }
@@ -119,8 +118,8 @@ public class ArcanaUtils {
             }
          }
          if(arcItem instanceof ArcanistsBelt){
-            ContainerComponent containerItems = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-            for(ItemStack stack : containerItems.iterateNonEmpty()){
+            ItemContainerContents containerItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+            for(ItemStack stack : containerItems.nonEmptyItems()){
                ArcanaItem aItem = ArcanaItemUtils.identifyItem(stack);
                if(aItem != null && aItem.getId().equals(arcanaItem.getId())){
                   if(augment == null || ArcanaAugments.getAugmentOnItem(stack,augment) >= level){
@@ -133,13 +132,13 @@ public class ArcanaUtils {
       return stacks;
    }
    
-   public static List<Pair<List<ItemStack>,ItemStack>> getAllItems(PlayerEntity player){
-      List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
-      PlayerInventory playerInv = player.getInventory();
+   public static List<Tuple<List<ItemStack>, ItemStack>> getAllItems(Player player){
+      List<Tuple<List<ItemStack>, ItemStack>> allItems = new ArrayList<>();
+      Inventory playerInv = player.getInventory();
       
       List<ItemStack> invItems = new ArrayList<>();
-      for(int i=0; i<playerInv.size();i++){
-         ItemStack item = playerInv.getStack(i);
+      for(int i = 0; i<playerInv.getContainerSize(); i++){
+         ItemStack item = playerInv.getItem(i);
          if(item.isEmpty()){
             continue;
          }
@@ -147,31 +146,31 @@ public class ArcanaUtils {
          invItems.add(item);
          ArcanaItem mitem = ArcanaItemUtils.identifyItem(item);
          if(mitem instanceof ArcanistsBelt belt){
-            ContainerComponent beltItems = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+            ItemContainerContents beltItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
             ArrayList<ItemStack> beltList = new ArrayList<>();
-            beltItems.iterateNonEmpty().forEach(beltList::add);
-            allItems.add(new Pair<>(beltList,item));
+            beltItems.nonEmptyItems().forEach(beltList::add);
+            allItems.add(new Tuple<>(beltList,item));
          }
       }
-      allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
+      allItems.add(new Tuple<>(invItems, ItemStack.EMPTY));
       return allItems;
    }
    
    public static int calcEssenceFromEnchants(ItemStack itemStack){
-      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(itemStack);
+      ItemEnchantments comp = EnchantmentHelper.getEnchantmentsForCrafting(itemStack);
       int count = 0;
-      for(RegistryEntry<Enchantment> entry : comp.getEnchantments()){
+      for(Holder<Enchantment> entry : comp.keySet()){
          int lvl = comp.getLevel(entry);
          count += (int)(calcEssenceValue(entry,lvl)/2.0);
       }
       return count;
    }
    
-   public static int calcEssenceValue(RegistryEntry<Enchantment> enchant, int lvl){
-      int essence = (int) (0.25 * lvl * enchant.value().getMaxPower(1));
-      if(enchant.isIn(EnchantmentTags.CURSE)){
+   public static int calcEssenceValue(Holder<Enchantment> enchant, int lvl){
+      int essence = (int) (0.25 * lvl * enchant.value().getMaxCost(1));
+      if(enchant.is(EnchantmentTags.CURSE)){
          essence = 0;
-      }else if(enchant.isIn(EnchantmentTags.TREASURE)){
+      }else if(enchant.is(EnchantmentTags.TREASURE)){
          essence *= 2;
       }
       return essence;

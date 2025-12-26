@@ -14,26 +14,30 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -55,59 +59,59 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.ENCHANTING_TABLE;
-      block = new MidnightEnchanterBlock(AbstractBlock.Settings.create().mapColor(MapColor.RED).strength(5.0f, 1200.0f).requiresTool().luminance(state -> 7));
+      block = new MidnightEnchanterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(5.0f, 1200.0f).requiresCorrectToolForDrops().lightLevel(state -> 7));
       item = new MidnightEnchanterItem(this.block);
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING,ResearchTasks.ADVANCEMENT_READ_POWER_OF_CHISELED_BOOKSHELF,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.UNLOCK_STARLIGHT_FORGE};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING,ResearchTasks.ADVANCEMENT_READ_POWER_OF_CHISELED_BOOKSHELF,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.UNLOCK_STARLIGHT_FORGE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("A ").formatted(Formatting.BLUE))
-            .append(Text.literal("Forge Structure").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" addon to the ").formatted(Formatting.BLUE))
-            .append(Text.literal("Starlight Forge").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.BLUE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Normal ").formatted(Formatting.BLUE))
-            .append(Text.literal("Enchanting Tables").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" are ").formatted(Formatting.BLUE))
-            .append(Text.literal("unpredictable ").formatted(Formatting.AQUA))
-            .append(Text.literal("and ").formatted(Formatting.BLUE))
-            .append(Text.literal("inconsistent").formatted(Formatting.AQUA))
-            .append(Text.literal(".").formatted(Formatting.BLUE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("This ").formatted(Formatting.BLUE))
-            .append(Text.literal("Table ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("not only enables ").formatted(Formatting.BLUE))
-            .append(Text.literal("precise control ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("of ").formatted(Formatting.BLUE))
-            .append(Text.literal("enchantments").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("...").formatted(Formatting.BLUE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("It also allows for ").formatted(Formatting.BLUE))
-            .append(Text.literal("enchantments ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("to be ").formatted(Formatting.BLUE))
-            .append(Text.literal("removed ").formatted(Formatting.AQUA))
-            .append(Text.literal("and ").formatted(Formatting.BLUE))
-            .append(Text.literal("placed ").formatted(Formatting.AQUA))
-            .append(Text.literal("onto ").formatted(Formatting.BLUE))
-            .append(Text.literal("books").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.BLUE)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Enchantments ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("can also be ").formatted(Formatting.BLUE))
-            .append(Text.literal("broken down").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" into ").formatted(Formatting.BLUE))
-            .append(Text.literal("Nebulous Essence").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.BLUE)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("A ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("Forge Structure").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" addon to the ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("Starlight Forge").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.BLUE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Normal ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("Enchanting Tables").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" are ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("unpredictable ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("inconsistent").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.BLUE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("This ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("Table ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("not only enables ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("precise control ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("of ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("enchantments").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("...").withStyle(ChatFormatting.BLUE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("It also allows for ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("enchantments ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("to be ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("removed ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("placed ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("onto ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("books").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.BLUE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Enchantments ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("can also be ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("broken down").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" into ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("Nebulous Essence").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.BLUE)));
       addForgeLore(lore);
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
@@ -130,21 +134,21 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,24);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),4));
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.THORNS),3));
-      ArcanaIngredient d = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.BINDING_CURSE),1));
-      ArcanaIngredient f = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.EFFICIENCY),5));
+      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),4));
+      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.THORNS),3));
+      ArcanaIngredient d = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.BINDING_CURSE),1));
+      ArcanaIngredient f = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.EFFICIENCY),5));
       ArcanaIngredient g = new ArcanaIngredient(Items.EXPERIENCE_BOTTLE,16);
       ArcanaIngredient h = new ArcanaIngredient(Items.LAPIS_BLOCK,12);
-      ArcanaIngredient j = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.SWIFT_SNEAK),3));
-      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),3));
+      ArcanaIngredient j = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.SWIFT_SNEAK),3));
+      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),3));
       ArcanaIngredient m = new ArcanaIngredient(Items.ENCHANTING_TABLE,16);
-      ArcanaIngredient o = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.SOUL_SPEED),3));
-      ArcanaIngredient p = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.MENDING),1));
-      ArcanaIngredient t = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING),4));
-      ArcanaIngredient v = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.SHARPNESS),5));
-      ArcanaIngredient w = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.LOOTING),3));
-      ArcanaIngredient x = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.VANISHING_CURSE),1));
+      ArcanaIngredient o = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.SOUL_SPEED),3));
+      ArcanaIngredient p = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.MENDING),1));
+      ArcanaIngredient t = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING),4));
+      ArcanaIngredient v = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.SHARPNESS),5));
+      ArcanaIngredient w = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.LOOTING),3));
+      ArcanaIngredient x = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.VANISHING_CURSE),1));
       
       ArcanaIngredient[][] ingredients = {
             {a,b,c,d,a},
@@ -156,11 +160,11 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Midnight Enchanter").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nEnchanting tables are an old design. It only scratches the surface of how Arcana can be bound to equipment, and relies too much on random environmental fluctuations. If my predictive equations ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Midnight Enchanter").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nare correct, I should be able to cancel out the noise in the enchantment matrix and reduce Enchantment Arcana to a pure form, after which it can take any shape of my choosing.\n\nThe Enchanter allows").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Midnight Enchanter").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\ndisenchanting of items to gain Nebulous Essence, which can be spent to choose exact enchantments to place on items. The Enchanter also gives access to normally unavailable enchantments.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nEnchanting tables are an old design. It only scratches the surface of how Arcana can be bound to equipment, and relies too much on random environmental fluctuations. If my predictive equations ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nare correct, I should be able to cancel out the noise in the enchantment matrix and reduce Enchantment Arcana to a pure form, after which it can take any shape of my choosing.\n\nThe Enchanter allows").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\ndisenchanting of items to gain Nebulous Essence, which can be spent to choose exact enchantments to place on items. The Enchanter also gives access to normally unavailable enchantments.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -170,23 +174,23 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }
    
    public class MidnightEnchanterBlock extends ArcanaPolymerBlockEntity {
-      public MidnightEnchanterBlock(AbstractBlock.Settings settings){
+      public MidnightEnchanterBlock(BlockBehaviour.Properties settings){
          super(getThis(), settings);
       }
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.ENCHANTING_TABLE.getDefaultState();
+         return Blocks.ENCHANTING_TABLE.defaultBlockState();
       }
       
       @Nullable
-      public static MidnightEnchanterBlockEntity getEntity(World world, BlockPos pos){
+      public static MidnightEnchanterBlockEntity getEntity(Level world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
          if(!(state.getBlock() instanceof MidnightEnchanterBlock)){
             return null;
@@ -195,42 +199,42 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
+      public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new MidnightEnchanterBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
-         return validateTicker(type, ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY, MidnightEnchanterBlockEntity::ticker);
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
+         return createTickerHelper(type, ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY, MidnightEnchanterBlockEntity::ticker);
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, BlockHitResult hit){
+      public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult hit){
          MidnightEnchanterBlockEntity enchanter = (MidnightEnchanterBlockEntity) world.getBlockEntity(pos);
          if(enchanter != null){
-            if(playerEntity instanceof ServerPlayerEntity player){
+            if(playerEntity instanceof ServerPlayer player){
                if(enchanter.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.getEntityWorld(),pos) == null){
-                     player.sendMessage(Text.literal("The Enchanter must be within the range of an active Starlight Forge"));
+                  if(StarlightForge.findActiveForge(player.level(),pos) == null){
+                     player.sendSystemMessage(Component.literal("The Enchanter must be within the range of an active Starlight Forge"));
                   }else{
                      if(enchanter.hasBooks()){
                         enchanter.openGui(player);
                      }else{
-                        player.sendMessage(Text.literal("The Enchanter needs at least 20 bookshelves nearby"));
+                        player.sendSystemMessage(Component.literal("The Enchanter needs at least 20 bookshelves nearby"));
                      }
                   }
                }else{
-                  player.sendMessage(Text.literal("Multiblock not constructed."));
+                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
                   multiblock.displayStructure(enchanter.getMultiblockCheck(),player);
                }
             }
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
+      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof MidnightEnchanterBlockEntity enchanter){
             initializeArcanaBlock(stack,enchanter);

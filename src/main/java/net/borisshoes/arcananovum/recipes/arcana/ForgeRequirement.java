@@ -2,10 +2,10 @@ package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 
 public class ForgeRequirement {
    
@@ -13,8 +13,8 @@ public class ForgeRequirement {
    
    public ForgeRequirement(){}
    
-   public boolean forgeMeetsRequirement(StarlightForgeBlockEntity forge, boolean message, ServerPlayerEntity player){
-      if(!(forge.getWorld() instanceof ServerWorld world)) return false;
+   public boolean forgeMeetsRequirement(StarlightForgeBlockEntity forge, boolean message, ServerPlayer player){
+      if(!(forge.getLevel() instanceof ServerLevel world)) return false;
       boolean ret = true;
       if(fletchery && forge.getForgeAddition(world, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY) == null) ret = false;
       if(anvil && forge.getForgeAddition(world, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY) == null) ret = false;
@@ -22,7 +22,7 @@ public class ForgeRequirement {
       if(core && forge.getForgeAddition(world, ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY) == null) ret = false;
       if(singularity && forge.getForgeAddition(world, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null) ret = false;
       if(!ret && message){
-         player.sendMessage(Text.literal("This Forge does not have the necessary additions nearby").formatted(Formatting.RED));
+         player.sendSystemMessage(Component.literal("This Forge does not have the necessary additions nearby").withStyle(ChatFormatting.RED));
       }
       return ret;
    }

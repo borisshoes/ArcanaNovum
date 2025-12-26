@@ -9,13 +9,12 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class BrainJarGui extends SimpleGui {
    private BrainJar jar;
@@ -26,7 +25,7 @@ public class BrainJarGui extends SimpleGui {
     * @param type                        the screen handler that the client should display
     * @param player                      the player to server this gui to
     */
-   public BrainJarGui(ScreenHandlerType<?> type, ServerPlayerEntity player, BrainJar jar, ItemStack stack){
+   public BrainJarGui(MenuType<?> type, ServerPlayer player, BrainJar jar, ItemStack stack){
       super(type, player, false);
       this.jar = jar;
       this.stack = stack;
@@ -36,61 +35,61 @@ public class BrainJarGui extends SimpleGui {
       boolean active = ArcanaItem.getBooleanProperty(stack, ArcanaItem.ACTIVE_TAG);
       
       // Try to fix the wierd xp give shenanigans
-      player.totalExperience = (LevelUtils.vanillaLevelToTotalXp(player.experienceLevel) + (int)(player.experienceProgress*player.getNextLevelExperience()));
-      player.experienceProgress = (float)(player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel)) / (float)player.getNextLevelExperience();
+      player.totalExperience = (LevelUtils.vanillaLevelToTotalXp(player.experienceLevel) + (int)(player.experienceProgress*player.getXpNeededForNextLevel()));
+      player.experienceProgress = (float)(player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel)) / (float)player.getXpNeededForNextLevel();
       
       GuiElementBuilder echest = new GuiElementBuilder(Items.ENDER_CHEST);
-      echest.setName(Text.literal("Store Levels").formatted(Formatting.DARK_AQUA));
-      echest.addLoreLine(TextUtils.removeItalics(Text.literal("")
-            .append(Text.literal("Click to store ").formatted(Formatting.GREEN))
-            .append(Text.literal("1").formatted(Formatting.AQUA))
-            .append(Text.literal(" level").formatted(Formatting.DARK_AQUA))));
-      echest.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-      echest.addLoreLine(TextUtils.removeItalics(Text.literal("")
-            .append(Text.literal("Right click to store all (").formatted(Formatting.GREEN))
-            .append(Text.literal(""+player.experienceLevel).formatted(Formatting.AQUA))
-            .append(Text.literal(")").formatted(Formatting.GREEN))
-            .append(Text.literal(" levels").formatted(Formatting.DARK_AQUA))));
+      echest.setName(Component.literal("Store Levels").withStyle(ChatFormatting.DARK_AQUA));
+      echest.addLoreLine(TextUtils.removeItalics(Component.literal("")
+            .append(Component.literal("Click to store ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("1").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" level").withStyle(ChatFormatting.DARK_AQUA))));
+      echest.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+      echest.addLoreLine(TextUtils.removeItalics(Component.literal("")
+            .append(Component.literal("Right click to store all (").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(""+player.experienceLevel).withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(")").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(" levels").withStyle(ChatFormatting.DARK_AQUA))));
       setSlot(0,echest);
       
       GuiElementBuilder bottle = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE);
-      bottle.setName(Text.literal("Withdraw Levels").formatted(Formatting.DARK_AQUA));
-      bottle.addLoreLine(TextUtils.removeItalics(Text.literal("")
-            .append(Text.literal("Click to gain ").formatted(Formatting.GREEN))
-            .append(Text.literal("1").formatted(Formatting.AQUA))
-            .append(Text.literal(" level").formatted(Formatting.DARK_AQUA))));
-      bottle.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-      bottle.addLoreLine(TextUtils.removeItalics(Text.literal("")
-            .append(Text.literal("Right click to take all (").formatted(Formatting.GREEN))
-            .append(Text.literal(""+jar.getEnergy(stack)).formatted(Formatting.AQUA))
-            .append(Text.literal(")").formatted(Formatting.GREEN))
-            .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))));
+      bottle.setName(Component.literal("Withdraw Levels").withStyle(ChatFormatting.DARK_AQUA));
+      bottle.addLoreLine(TextUtils.removeItalics(Component.literal("")
+            .append(Component.literal("Click to gain ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("1").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" level").withStyle(ChatFormatting.DARK_AQUA))));
+      bottle.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+      bottle.addLoreLine(TextUtils.removeItalics(Component.literal("")
+            .append(Component.literal("Right click to take all (").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(""+jar.getEnergy(stack)).withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(")").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))));
       setSlot(4,bottle);
       
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Text.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").formatted(Formatting.GREEN)));
-      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Text.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").formatted(Formatting.GREEN)));
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Component.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
+      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Component.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
       
       if(!active){
          GuiElementBuilder notmending = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL));
-         notmending.setName(Text.literal("Not Mending Items").formatted(Formatting.DARK_AQUA));
-         notmending.addLoreLine(TextUtils.removeItalics(Text.literal("Currently Not Mending Items").formatted(Formatting.RED)));
-         notmending.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-         notmending.addLoreLine(TextUtils.removeItalics(Text.literal("Click to toggle ON").formatted(Formatting.GREEN)));
+         notmending.setName(Component.literal("Not Mending Items").withStyle(ChatFormatting.DARK_AQUA));
+         notmending.addLoreLine(TextUtils.removeItalics(Component.literal("Currently Not Mending Items").withStyle(ChatFormatting.RED)));
+         notmending.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+         notmending.addLoreLine(TextUtils.removeItalics(Component.literal("Click to toggle ON").withStyle(ChatFormatting.GREEN)));
          setSlot(2,notmending);
       }else{
          GuiElementBuilder mending = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM));
-         mending.setName(Text.literal("Mending Items").formatted(Formatting.DARK_AQUA));
-         mending.addLoreLine(TextUtils.removeItalics(Text.literal("Currently Mending Items").formatted(Formatting.GREEN)));
-         mending.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-         mending.addLoreLine(TextUtils.removeItalics(Text.literal("Click to toggle OFF").formatted(Formatting.RED)));
+         mending.setName(Component.literal("Mending Items").withStyle(ChatFormatting.DARK_AQUA));
+         mending.addLoreLine(TextUtils.removeItalics(Component.literal("Currently Mending Items").withStyle(ChatFormatting.GREEN)));
+         mending.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+         mending.addLoreLine(TextUtils.removeItalics(Component.literal("Click to toggle OFF").withStyle(ChatFormatting.RED)));
          setSlot(2,mending);
       }
       
-      setTitle(Text.literal("Brain in a Jar"));
+      setTitle(Component.literal("Brain in a Jar"));
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       if(index == 0){
          jar.depositXP(player, stack, type != ClickType.MOUSE_RIGHT,this);
       }else if(index == 2){

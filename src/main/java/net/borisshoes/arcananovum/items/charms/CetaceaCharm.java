@@ -15,29 +15,29 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.potion.Potions;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -58,13 +58,13 @@ public class CetaceaCharm extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.COD;
       item = new CetaceaCharmItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BLUE,Formatting.BOLD);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_CONDUIT, ResearchTasks.CATCH_FISH, ResearchTasks.EFFECT_DOLPHINS_GRACE, ResearchTasks.DROWNING_DAMAGE};
-      attributions = new Pair[]{new Pair<>(Text.translatable("credits_and_attribution.arcananovum.texture_by"),Text.literal("Rookodzol"))};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CONDUIT, ResearchTasks.CATCH_FISH, ResearchTasks.EFFECT_DOLPHINS_GRACE, ResearchTasks.DROWNING_DAMAGE};
+      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Rookodzol"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,ACTIVE_TAG, true);
       setPrefStack(stack);
    }
@@ -78,33 +78,33 @@ public class CetaceaCharm extends ArcanaItem {
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.AQUA))
-            .append(Text.literal("charm ").formatted(Formatting.BLUE))
-            .append(Text.literal("is ").formatted(Formatting.AQUA))
-            .append(Text.literal("slippery ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("and ").formatted(Formatting.AQUA))
-            .append(Text.literal("wet ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("like it just went for a ").formatted(Formatting.AQUA))
-            .append(Text.literal("swim").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Wearing the ").formatted(Formatting.AQUA))
-            .append(Text.literal("charm ").formatted(Formatting.BLUE))
-            .append(Text.literal("gives you the grace of a ").formatted(Formatting.AQUA))
-            .append(Text.literal("dolphin ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("when in the ").formatted(Formatting.AQUA))
-            .append(Text.literal("water").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right Click").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" to ").formatted(Formatting.AQUA))
-            .append(Text.literal("disable ").formatted(Formatting.BLUE))
-            .append(Text.literal("the ").formatted(Formatting.AQUA))
-            .append(Text.literal("charm's").formatted(Formatting.BLUE))
-            .append(Text.literal(" effect.").formatted(Formatting.AQUA)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("charm ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("is ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("slippery ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("and ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("wet ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("like it just went for a ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("swim").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Wearing the ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("charm ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("gives you the grace of a ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("dolphin ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("when in the ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("water").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right Click").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" to ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("disable ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("the ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("charm's").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" effect.").withStyle(ChatFormatting.AQUA)));
       
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
@@ -132,10 +132,10 @@ public class CetaceaCharm extends ArcanaItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Charm of Cetacea").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nDolphins are such graceful creatures, and this conduit that I have reconstructed opens up some possibilities. I believe I can miniaturize the conduit such that it gives me similar aquatic  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Charm of Cetacea").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nmaneuverability as dolphins.\n\nSneak Using the Charm toggles the aquatic buffs.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal(" Charm of Cetacea").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nDolphins are such graceful creatures, and this conduit that I have reconstructed opens up some possibilities. I believe I can miniaturize the conduit such that it gives me similar aquatic  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Charm of Cetacea").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nmaneuverability as dolphins.\n\nSneak Using the Charm toggles the aquatic buffs.\n").withStyle(ChatFormatting.BLACK)));
       
       return list;
    }
@@ -146,7 +146,7 @@ public class CetaceaCharm extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
@@ -166,61 +166,61 @@ public class CetaceaCharm extends ArcanaItem {
                stringList.add("off");
             }
          }
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
          
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);
          boolean delphinidae = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.DELPHINIDAE) > 0;
          boolean gills = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.GILLS) > 0;
          
          if(active){
-            if(player.isTouchingWater()){
-               StatusEffectInstance grace = new StatusEffectInstance(StatusEffects.DOLPHINS_GRACE, 110, delphinidae ? 1 : 0, false, false, true);
-               player.addStatusEffect(grace);
+            if(player.isInWater()){
+               MobEffectInstance grace = new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 110, delphinidae ? 1 : 0, false, false, true);
+               player.addEffect(grace);
                
-               if(world.getServer().getTicks() % 20 == 0){
+               if(world.getServer().getTickCount() % 20 == 0){
                   ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CETACEA_CHARM_PER_SECOND));
                }
             }
-            if(player.isSubmergedInWater() && gills){
-               StatusEffectInstance waterBreath = new StatusEffectInstance(StatusEffects.WATER_BREATHING, 110, 0, false, false, true);
-               player.addStatusEffect(waterBreath);
+            if(player.isUnderWater() && gills){
+               MobEffectInstance waterBreath = new MobEffectInstance(MobEffects.WATER_BREATHING, 110, 0, false, false, true);
+               player.addEffect(waterBreath);
             }
          }
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          
-         if(player.isSneaking()){
+         if(player.isShiftKeyDown()){
             boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
             putProperty(stack,ACTIVE_TAG,active);
             
             if(active){
-               player.sendMessage(Text.literal("The Charm moistens").formatted(Formatting.BLUE,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PUFFER_FISH_DEATH, 0.5f,0.8f);
+               player.displayClientMessage(Component.literal("The Charm moistens").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.PUFFER_FISH_DEATH, 0.5f,0.8f);
             }else{
-               player.sendMessage(Text.literal("The Charm dries out").formatted(Formatting.BLUE,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PUFFER_FISH_BLOW_OUT, 0.5f,0.7f);
+               player.displayClientMessage(Component.literal("The Charm dries out").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.PUFFER_FISH_BLOW_OUT, 0.5f,0.7f);
             }
             
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
          
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
    }
 }

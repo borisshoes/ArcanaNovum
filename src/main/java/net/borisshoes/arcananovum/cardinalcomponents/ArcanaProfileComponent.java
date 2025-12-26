@@ -16,22 +16,22 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.utils.CodecUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.*;
 
@@ -39,23 +39,23 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    public static final String ADMIN_SKILL_POINTS_TAG = "adminSkillPoints";
    public static final String CONCENTRATION_TICK_TAG = "concentration";
    
-   private final PlayerEntity player;
+   private final Player player;
    private final List<String> crafted = new ArrayList<>();
    private final List<String> researchedItems = new ArrayList<>();
    private final List<String> researchTasks = new ArrayList<>();
-   private final HashMap<String, NbtElement> miscData = new HashMap<>();
+   private final HashMap<String, Tag> miscData = new HashMap<>();
    private final HashMap<ArcanaAugment, Integer> augments = new HashMap<>();
    private final HashMap<String,List<ArcanaAchievement>> achievements = new HashMap<>();
    private int level;
    private int xp;
    private ItemStack storedOffhand = ItemStack.EMPTY;
    
-   public ArcanaProfileComponent(PlayerEntity player){
+   public ArcanaProfileComponent(Player player){
       this.player = player;
    }
    
    @Override
-   public void readData(ReadView readView){
+   public void readData(ValueInput readView){
       crafted.clear();
       miscData.clear();
       achievements.clear();
@@ -65,22 +65,22 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       readView.read("crafted", CodecUtils.STRING_LIST).ifPresent(crafted::addAll);
       readView.read("researchedItems", CodecUtils.STRING_LIST).ifPresent(researchedItems::addAll);
       readView.read("researchTasks", CodecUtils.STRING_LIST).ifPresent(researchTasks::addAll);
-      NbtCompound miscDataTag = readView.read("miscData",NbtCompound.CODEC).orElse(new NbtCompound());
-      Set<String> keys = miscDataTag.getKeys();
+      CompoundTag miscDataTag = readView.read("miscData", CompoundTag.CODEC).orElse(new CompoundTag());
+      Set<String> keys = miscDataTag.keySet();
       keys.forEach(key ->{
          miscData.put(key,miscDataTag.get(key));
       });
-      level = readView.getInt("level", 0);
-      xp = readView.getInt("xp", 0);
+      level = readView.getIntOr("level", 0);
+      xp = readView.getIntOr("xp", 0);
       
-      NbtCompound achievementsTag = readView.read("achievements",NbtCompound.CODEC).orElse(new NbtCompound());
-      Set<String> achieveItemKeys = achievementsTag.getKeys();
+      CompoundTag achievementsTag = readView.read("achievements", CompoundTag.CODEC).orElse(new CompoundTag());
+      Set<String> achieveItemKeys = achievementsTag.keySet();
       for(String itemKey : achieveItemKeys){
          List<ArcanaAchievement> itemAchs = new ArrayList<>();
-         NbtCompound itemAchsTag = achievementsTag.getCompoundOrEmpty(itemKey);
+         CompoundTag itemAchsTag = achievementsTag.getCompoundOrEmpty(itemKey);
    
-         for(String achieveKey : itemAchsTag.getKeys()){
-            NbtCompound achTag = itemAchsTag.getCompoundOrEmpty(achieveKey);
+         for(String achieveKey : itemAchsTag.keySet()){
+            CompoundTag achTag = itemAchsTag.getCompoundOrEmpty(achieveKey);
             ArcanaAchievement ach = ArcanaAchievements.registry.get(achieveKey);
             if(ach == null) continue;
             itemAchs.add(ach.makeNew().fromNbt(achieveKey,achTag));
@@ -88,10 +88,10 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          achievements.put(itemKey,itemAchs);
       }
       
-      NbtCompound augmentsTag = readView.read("augments",NbtCompound.CODEC).orElse(new NbtCompound());
-      Set<String> augmentKeys = augmentsTag.getKeys();
+      CompoundTag augmentsTag = readView.read("augments", CompoundTag.CODEC).orElse(new CompoundTag());
+      Set<String> augmentKeys = augmentsTag.keySet();
       for(String augmentKey : augmentKeys){
-         int augmentLvl = augmentsTag.getInt(augmentKey, 0);
+         int augmentLvl = augmentsTag.getIntOr(augmentKey, 0);
          if(augmentLvl > 0){
             ArcanaAugment aug = ArcanaAugments.registry.get(augmentKey);
             if(aug == null) continue;
@@ -99,40 +99,40 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          }
       }
       
-      storedOffhand = readView.read("storedOffhand",ItemStack.CODEC).orElse(ItemStack.EMPTY);
+      storedOffhand = readView.read("storedOffhand", ItemStack.CODEC).orElse(ItemStack.EMPTY);
    }
    
    @Override
-   public void writeData(WriteView writeView){
-      NbtCompound miscDataTag = new NbtCompound();
+   public void writeData(ValueOutput writeView){
+      CompoundTag miscDataTag = new CompoundTag();
       miscData.forEach(miscDataTag::put);
-      writeView.put("crafted",CodecUtils.STRING_LIST,crafted);
-      writeView.put("researchedItems",CodecUtils.STRING_LIST,researchedItems);
-      writeView.put("researchTasks",CodecUtils.STRING_LIST,researchTasks);
-      writeView.put("miscData",NbtCompound.CODEC,miscDataTag);
+      writeView.store("crafted",CodecUtils.STRING_LIST,crafted);
+      writeView.store("researchedItems",CodecUtils.STRING_LIST,researchedItems);
+      writeView.store("researchTasks",CodecUtils.STRING_LIST,researchTasks);
+      writeView.store("miscData", CompoundTag.CODEC,miscDataTag);
       writeView.putInt("level",level);
       writeView.putInt("xp",xp);
       
-      NbtCompound achievementsTag = new NbtCompound();
+      CompoundTag achievementsTag = new CompoundTag();
       for(Map.Entry<String, List<ArcanaAchievement>> entry : achievements.entrySet()){
          String item = entry.getKey();
          List<ArcanaAchievement> itemAchs = entry.getValue();
-         NbtCompound itemAchsTag = new NbtCompound();
+         CompoundTag itemAchsTag = new CompoundTag();
          for(ArcanaAchievement itemAch : itemAchs){
             itemAchsTag.put(itemAch.id,itemAch.toNbt());
          }
          achievementsTag.put(item,itemAchsTag);
       }
-      writeView.put("achievements",NbtCompound.CODEC,achievementsTag);
+      writeView.store("achievements", CompoundTag.CODEC,achievementsTag);
    
-      NbtCompound augmentsTag = new NbtCompound();
+      CompoundTag augmentsTag = new CompoundTag();
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
          augmentsTag.putInt(entry.getKey().id, entry.getValue());
       }
-      writeView.put("augments",NbtCompound.CODEC,augmentsTag);
+      writeView.store("augments", CompoundTag.CODEC,augmentsTag);
       if(this.storedOffhand == null) storedOffhand = ItemStack.EMPTY;
       if(!storedOffhand.isEmpty())
-         writeView.put("storedOffhand",ItemStack.CODEC,storedOffhand);
+         writeView.store("storedOffhand", ItemStack.CODEC,storedOffhand);
    }
    
    @Override
@@ -161,8 +161,8 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public void setResearchTask(RegistryKey<ResearchTask> key, boolean acquired){
-      ResearchTask task = ResearchTasks.RESEARCH_TASKS.get(key);
+   public void setResearchTask(ResourceKey<ResearchTask> key, boolean acquired){
+      ResearchTask task = ResearchTasks.RESEARCH_TASKS.getValue(key);
       if(task == null) return;
       String id = task.getId();
       
@@ -175,7 +175,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public NbtElement getMiscData(String id){
+   public Tag getMiscData(String id){
       return miscData.get(id);
    }
    
@@ -213,7 +213,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
    @Override
    public int getBonusSkillPoints(){
-      NbtInt pointsEle = (NbtInt) getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
+      IntTag pointsEle = (IntTag) getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
       return pointsEle == null ? 0 : pointsEle.intValue();
    }
    
@@ -243,48 +243,48 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
    @Override
    public boolean addXP(int xp){
-      if(!(player instanceof ServerPlayerEntity serverPlayer)) return false;
+      if(!(player instanceof ServerPlayer serverPlayer)) return false;
       if(getLevel() == 100 && this.xp + xp < 1000000000){
          this.xp += xp;
-         ArcanaNovum.PLAYER_XP_TRACKER.put(serverPlayer.getUuid(),this.xp);
+         ArcanaNovum.PLAYER_XP_TRACKER.put(serverPlayer.getUUID(),this.xp);
          return true;
       }
       
       int newLevel = LevelUtils.levelFromXp(this.xp+xp);
       if(getLevel() != newLevel){
          if(getLevel()/5 < newLevel/5){
-            MinecraftServer server = player.getEntityWorld().getServer();
-            List<MutableText> msgs = new ArrayList<>();
+            MinecraftServer server = player.level().getServer();
+            List<MutableComponent> msgs = new ArrayList<>();
             
             if(server != null){
                if(newLevel/5 * 5 == 100){
-                  MutableText playerName = Text.literal("").append(player.getDisplayName()).formatted(Formatting.BOLD, Formatting.UNDERLINE);
+                  MutableComponent playerName = Component.literal("").append(player.getDisplayName()).withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
                   
-                  msgs.add(Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.DARK_PURPLE));
-                  msgs.add(Text.literal("")
-                        .append(Text.literal("=== ").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK))
+                  msgs.add(Component.literal("=============================================").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE));
+                  msgs.add(Component.literal("")
+                        .append(Component.literal("=== ").withStyle(ChatFormatting.OBFUSCATED, ChatFormatting.BOLD, ChatFormatting.BLACK))
                         .append(playerName)
-                        .append(Text.literal(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
-                        .append(Text.literal(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
-                        .append(Text.literal("!!!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
-                        .append(Text.literal(" ===").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK)));
-                  msgs.add(Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.DARK_PURPLE));
+                        .append(Component.literal(" has reached Arcana Level ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.UNDERLINE))
+                        .append(Component.literal(Integer.toString(newLevel/5 * 5)).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD, ChatFormatting.UNDERLINE))
+                        .append(Component.literal("!!!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.UNDERLINE))
+                        .append(Component.literal(" ===").withStyle(ChatFormatting.OBFUSCATED, ChatFormatting.BOLD, ChatFormatting.BLACK)));
+                  msgs.add(Component.literal("=============================================").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE));
                }else{
-                  MutableText lvlUpMsg = Text.literal("")
-                        .append(player.getDisplayName()).formatted(Formatting.ITALIC)
-                        .append(Text.literal(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
-                        .append(Text.literal(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD,Formatting.ITALIC, Formatting.UNDERLINE))
-                        .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC));
-                  server.getPlayerManager().broadcast(lvlUpMsg, false);
+                  MutableComponent lvlUpMsg = Component.literal("")
+                        .append(player.getDisplayName()).withStyle(ChatFormatting.ITALIC)
+                        .append(Component.literal(" has reached Arcana Level ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC))
+                        .append(Component.literal(Integer.toString(newLevel/5 * 5)).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC, ChatFormatting.UNDERLINE))
+                        .append(Component.literal("!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC));
+                  server.getPlayerList().broadcastSystemMessage(lvlUpMsg, false);
                }
                
                if(ArcanaConfig.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
-                  for(MutableText msg : msgs){
-                     server.getPlayerManager().broadcast(msg, false);
+                  for(MutableComponent msg : msgs){
+                     server.getPlayerList().broadcastSystemMessage(msg, false);
                   }
                }else{
-                  for(MutableText msg : msgs){
-                     player.sendMessage(msg, false);
+                  for(MutableComponent msg : msgs){
+                     player.displayClientMessage(msg, false);
                   }
                }
             }
@@ -292,14 +292,14 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          
          SoundUtils.playSongToPlayer(serverPlayer, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
          int resolve = getAugmentLevel(ArcanaAugments.RESOLVE.id);
-         player.sendMessage(Text.literal(""),false);
-         player.sendMessage(Text.literal("Your Arcana has levelled up to level "+newLevel+"!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),false);
-         player.sendMessage(Text.literal("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel,resolve)+"!").formatted(Formatting.AQUA,Formatting.ITALIC),false);
-         player.sendMessage(Text.literal(""),false);
+         player.displayClientMessage(Component.literal(""),false);
+         player.displayClientMessage(Component.literal("Your Arcana has levelled up to level "+newLevel+"!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD),false);
+         player.displayClientMessage(Component.literal("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel,resolve)+"!").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC),false);
+         player.displayClientMessage(Component.literal(""),false);
       }
       this.xp += xp;
       this.level = newLevel;
-      ArcanaNovum.PLAYER_XP_TRACKER.put(serverPlayer.getUuid(),this.xp);
+      ArcanaNovum.PLAYER_XP_TRACKER.put(serverPlayer.getUUID(),this.xp);
       return true;
    }
    
@@ -332,15 +332,15 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(arcanaItem == null) return false;
       String itemId = arcanaItem.getId();
       if(crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
-      if(player instanceof ServerPlayerEntity){
-         MinecraftServer server = player.getEntityWorld().getServer();
+      if(player instanceof ServerPlayer){
+         MinecraftServer server = player.level().getServer();
          if(server != null){
-            MutableText newCraftMsg = Text.literal("")
-                  .append(player.getDisplayName()).formatted(Formatting.ITALIC)
-                  .append(Text.literal(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
-                  .append(arcanaItem.getTranslatedName().formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
-                  .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
-            server.getPlayerManager().broadcast(newCraftMsg.styled(s -> s.withHoverEvent(new HoverEvent.ShowItem(stack))), false);
+            MutableComponent newCraftMsg = Component.literal("")
+                  .append(player.getDisplayName()).withStyle(ChatFormatting.ITALIC)
+                  .append(Component.literal(" has crafted their first ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC))
+                  .append(arcanaItem.getTranslatedName().withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC, ChatFormatting.UNDERLINE))
+                  .append(Component.literal("!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC));
+            server.getPlayerList().broadcastSystemMessage(newCraftMsg.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowItem(stack))), false);
          }
       }
       addXP(ArcanaRarity.getFirstCraftXp(arcanaItem.getRarity()));
@@ -356,9 +356,9 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             // Update data and return
             itemAchs.add(achievement);
             List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
-            curList.removeIf(uuid -> uuid.equals(player.getUuid()));
+            curList.removeIf(uuid -> uuid.equals(player.getUUID()));
             if(achievement.isAcquired()){
-               curList.add(player.getUuid());
+               curList.add(player.getUUID());
             }
             ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.put(achievement.id,curList);
             return false;
@@ -373,9 +373,9 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       }
       
       List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
-      curList.removeIf(uuid -> uuid.equals(player.getUuid()));
+      curList.removeIf(uuid -> uuid.equals(player.getUUID()));
       if(achievement.isAcquired()){
-         curList.add(player.getUuid());
+         curList.add(player.getUUID());
       }
       ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.put(achievement.id,curList);
       
@@ -409,7 +409,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       }
       
       List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievementId);
-      curList.removeIf(uuid -> uuid.equals(player.getUuid()));
+      curList.removeIf(uuid -> uuid.equals(player.getUUID()));
       ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.put(achievementId,curList);
       
       return found;
@@ -422,7 +422,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public void addMiscData(String id, NbtElement data){
+   public void addMiscData(String id, Tag data){
       miscData.put(id,data);
    }
    
@@ -550,10 +550,10 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    public boolean restoreOffhand(){
       if(storedOffhand == null) storedOffhand = ItemStack.EMPTY;
       if(storedOffhand.isEmpty()) return false;
-      ItemStack offHand = player.getOffHandStack().copy();
-      player.getInventory().setStack(PlayerInventory.OFF_HAND_SLOT,storedOffhand.copyAndEmpty());
+      ItemStack offHand = player.getOffhandItem().copy();
+      player.getInventory().setItem(Inventory.SLOT_OFFHAND,storedOffhand.copyAndClear());
       if(!offHand.isEmpty() && !BinaryBlades.isFakeBlade(offHand)) {
-         player.getInventory().offerOrDrop(offHand);
+         player.getInventory().placeItemBackInInventory(offHand);
       }
       return true;
    }
@@ -562,8 +562,8 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    public boolean storeOffhand(ItemStack replacement){
       if(storedOffhand == null) storedOffhand = ItemStack.EMPTY;
       if(!storedOffhand.isEmpty()) return false;
-      storedOffhand = player.getOffHandStack();
-      player.getInventory().setStack(PlayerInventory.OFF_HAND_SLOT,replacement);
+      storedOffhand = player.getOffhandItem();
+      player.getInventory().setItem(Inventory.SLOT_OFFHAND,replacement);
       return true;
    }
    

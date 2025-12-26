@@ -7,9 +7,9 @@ import net.borisshoes.arcananovum.callbacks.login.VengeanceTotemLoginCallback;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.TickTimerCallback;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public class VengeanceTotemTimerCallback extends TickTimerCallback {
@@ -17,7 +17,7 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback {
    private final Entity attacker;
    private boolean avenged;
    
-   public VengeanceTotemTimerCallback(int time, ItemStack item, ServerPlayerEntity player, @Nullable Entity attacker){
+   public VengeanceTotemTimerCallback(int time, ItemStack item, ServerPlayer player, @Nullable Entity attacker){
       super(time, item, player);
       this.attacker = attacker;
    }
@@ -25,11 +25,11 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback {
    @Override
    public void onTimer(){
       try{
-         ServerPlayerEntity player1 = player.getEntityWorld().getServer().getPlayerManager().getPlayer(player.getUuid());
+         ServerPlayer player1 = player.level().getServer().getPlayerList().getPlayer(player.getUUID());
          if(player1 == null){
             if(attacker != null){
                if(avenged){
-                  BorisLib.addLoginCallback(new XPLoginCallback(player.getEntityWorld().getServer(),player.getUuidAsString(),ArcanaConfig.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE))); // Give XP
+                  BorisLib.addLoginCallback(new XPLoginCallback(player.level().getServer(),player.getStringUUID(),ArcanaConfig.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE))); // Give XP
                }else{
                   BorisLib.addLoginCallback(new VengeanceTotemLoginCallback(player));
                }
@@ -39,7 +39,7 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback {
                if(avenged){
                   ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE)); // Give XP
                }else{
-                  player1.damage(player.getEntityWorld(), ArcanaDamageTypes.of(player1.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,attacker), player1.getMaxHealth()*10);
+                  player1.hurtServer(player.level(), ArcanaDamageTypes.of(player1.level(),ArcanaDamageTypes.VENGEANCE_TOTEM,attacker), player1.getMaxHealth()*10);
                }
             }
          }

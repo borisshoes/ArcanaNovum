@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.core;
 
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.ItemStack;
 
 public abstract class EnergyItem extends ArcanaItem {
    public static final String ENERGY_TAG = "energy";

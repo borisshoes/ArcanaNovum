@@ -18,36 +18,36 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
-import net.minecraft.world.block.WireOrientation;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -68,48 +68,48 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       rarity = ArcanaRarity.SOVEREIGN;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.BLOCKS,TomeGui.TomeFilter.ALTARS};
       vanillaItem = Items.DIAMOND_BLOCK;
-      block = new TransmutationAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.DIAMOND_BLUE).strength(5.0f,1200.0f).requiresTool().sounds(BlockSoundGroup.AMETHYST_BLOCK));
+      block = new TransmutationAltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIAMOND).strength(5.0f,1200.0f).requiresCorrectToolForDrops().sound(SoundType.AMETHYST));
       item = new TransmutationAltarItem(this.block);
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_TRADE,ResearchTasks.OBTAIN_AMETHYST_SHARD,ResearchTasks.OBTAIN_DIAMOND,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TRADE,ResearchTasks.OBTAIN_AMETHYST_SHARD,ResearchTasks.OBTAIN_DIAMOND,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       addAltarLore(lore);
-      lore.add(Text.literal("Transmutation Altar:").formatted(Formatting.BOLD,Formatting.AQUA));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("Altar").formatted(Formatting.AQUA))
-            .append(Text.literal(" beckons to an ").formatted(Formatting.GRAY))
-            .append(Text.literal("ancient entity").formatted(Formatting.AQUA))
-            .append(Text.literal(" of ").formatted(Formatting.GRAY))
-            .append(Text.literal("balance").formatted(Formatting.BLUE))
-            .append(Text.literal(" and ").formatted(Formatting.GRAY))
-            .append(Text.literal("trades").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("Altar").formatted(Formatting.AQUA))
-            .append(Text.literal(" can be called upon to").formatted(Formatting.GRAY))
-            .append(Text.literal(" exchange ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("equivalent materials").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Every ").formatted(Formatting.GRAY))
-            .append(Text.literal("barter").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(" comes with its own ").formatted(Formatting.GRAY))
-            .append(Text.literal("price.").formatted(Formatting.BLUE)));
+      lore.add(Component.literal("Transmutation Altar:").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Altar").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" beckons to an ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("ancient entity").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" of ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("balance").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(" and ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("trades").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("Altar").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" can be called upon to").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(" exchange ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("equivalent materials").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Every ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("barter").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(" comes with its own ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("price.").withStyle(ChatFormatting.BLUE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   public static List<TransmutationRecipe> getUnlockedRecipes(ServerPlayerEntity player){
+   public static List<TransmutationRecipe> getUnlockedRecipes(ServerPlayer player){
       return TransmutationRecipes.TRANSMUTATION_RECIPES.stream().filter(recipe -> {
          if(recipe instanceof InfusionTransmutationRecipe r && ArcanaItemUtils.isArcane(r.getOutput()) && !ArcanaNovum.data(player).hasResearched(ArcanaItemUtils.identifyItem(r.getOutput()))){
             return false;
@@ -162,15 +162,15 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Transmutation\n        Altar").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThrough my research into leylines, I have discovered the essence of a living entity entwined within the leylines of the Overworld. From what I can tell, the entity is old, very old, and most ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Transmutation\n        Altar").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nlikely of divine nature.\nIt is both singular and plural, like raindrops that become an ocean.\nI believe I can construct an altar that taps into the energy of this entity that rides the leylines. I wonder what capabilities this ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Transmutation\n        Altar").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nstructure could yield.\n\nThe Altar I have created seems to mutate items when I drop them in specific configurations. The mutations are mostly consistent and follow some rule of conservation, but ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Transmutation\n        Altar").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nconsumes reagents in the process.\nI will catalog all of the mutations I can find and document them in my Tome.\n\nThe points of interest are that there are 5 placement locations for items: \n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Transmutation\n        Altar").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nA positive input, marked by quartz.\n\nA negative input marked by blackstone.\n\nTwo reagent inputs, marked by amethyst.\n\nAnd the Altar keystone itself seems  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Transmutation\n        Altar").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nlike it can channel energy, however I  haven’t found an Item that works yet.\nWhen activated, the Altar will charge up and perform the transmutation.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Transmutation\n        Altar").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nA gentle voice can be heard with each activation. The entity reminds me of the fae creatures that Illagers keep.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThrough my research into leylines, I have discovered the essence of a living entity entwined within the leylines of the Overworld. From what I can tell, the entity is old, very old, and most ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nlikely of divine nature.\nIt is both singular and plural, like raindrops that become an ocean.\nI believe I can construct an altar that taps into the energy of this entity that rides the leylines. I wonder what capabilities this ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nstructure could yield.\n\nThe Altar I have created seems to mutate items when I drop them in specific configurations. The mutations are mostly consistent and follow some rule of conservation, but ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nconsumes reagents in the process.\nI will catalog all of the mutations I can find and document them in my Tome.\n\nThe points of interest are that there are 5 placement locations for items: \n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nA positive input, marked by quartz.\n\nA negative input marked by blackstone.\n\nTwo reagent inputs, marked by amethyst.\n\nAnd the Altar keystone itself seems  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nlike it can channel energy, however I  haven’t found an Item that works yet.\nWhen activated, the Altar will charge up and perform the transmutation.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nA gentle voice can be heard with each activation. The entity reminds me of the fae creatures that Illagers keep.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -180,27 +180,27 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
    }
    
    public class TransmutationAltarBlock extends ArcanaPolymerBlockEntity {
-      public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
-      public static final BooleanProperty ACTIVATABLE = BooleanProperty.of("activatable");
+      public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
+      public static final BooleanProperty ACTIVATABLE = BooleanProperty.create("activatable");
       
-      public TransmutationAltarBlock(AbstractBlock.Settings settings){
+      public TransmutationAltarBlock(BlockBehaviour.Properties settings){
          super(getThis(), settings);
       }
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.DIAMOND_BLOCK.getDefaultState();
+         return Blocks.DIAMOND_BLOCK.defaultBlockState();
       }
       
       @Nullable
-      public static TransmutationAltarBlockEntity getEntity(World world, BlockPos pos){
+      public static TransmutationAltarBlockEntity getEntity(Level world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
          if(!(state.getBlock() instanceof TransmutationAltarBlock)){
             return null;
@@ -210,79 +210,79 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx){
-         return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite()).with(ACTIVATABLE,false);
+      public BlockState getStateForPlacement(BlockPlaceContext ctx){
+         return this.defaultBlockState().setValue(HORIZONTAL_FACING,ctx.getHorizontalDirection().getOpposite()).setValue(ACTIVATABLE,false);
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
+      protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager){
          stateManager.add(HORIZONTAL_FACING, ACTIVATABLE);
       }
       
       @Override
-      public BlockState rotate(BlockState state, BlockRotation rotation){
-         return state.with(HORIZONTAL_FACING, rotation.rotate(state.get(HORIZONTAL_FACING)));
+      public BlockState rotate(BlockState state, Rotation rotation){
+         return state.setValue(HORIZONTAL_FACING, rotation.rotate(state.getValue(HORIZONTAL_FACING)));
       }
       
       @Override
-      public BlockState mirror(BlockState state, BlockMirror mirror){
-         return state.rotate(mirror.getRotation(state.get(HORIZONTAL_FACING)));
+      public BlockState mirror(BlockState state, Mirror mirror){
+         return state.rotate(mirror.getRotation(state.getValue(HORIZONTAL_FACING)));
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
+      public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new TransmutationAltarBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
-         return validateTicker(type, ArcanaRegistry.TRANSMUTATION_ALTAR_BLOCK_ENTITY, TransmutationAltarBlockEntity::ticker);
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
+         return createTickerHelper(type, ArcanaRegistry.TRANSMUTATION_ALTAR_BLOCK_ENTITY, TransmutationAltarBlockEntity::ticker);
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, BlockHitResult hit){
+      public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult hit){
          TransmutationAltarBlockEntity altar = (TransmutationAltarBlockEntity) world.getBlockEntity(pos);
          if(altar != null){
-            if(playerEntity instanceof ServerPlayerEntity player){
+            if(playerEntity instanceof ServerPlayer player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
-                  player.getItemCooldownManager().set(playerEntity.getOffHandStack(),1);
+                  player.getCooldowns().addCooldown(playerEntity.getMainHandItem(),1);
+                  player.getCooldowns().addCooldown(playerEntity.getOffhandItem(),1);
                }else{
-                  player.sendMessage(Text.literal("Multiblock not constructed."));
+                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
                }
             }
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
+      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof TransmutationAltarBlockEntity altar){
+         if(placer instanceof ServerPlayer player && entity instanceof TransmutationAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
          }
       }
       
-      private void tryActivate(BlockState state, World world, BlockPos pos){
+      private void tryActivate(BlockState state, Level world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof TransmutationAltarBlockEntity altar){
             boolean started = altar.startTransmute(null);
             if(!started){
-               SoundUtils.playSound(world, pos, SoundEvents.ENTITY_ALLAY_HURT, SoundCategory.BLOCKS,0.5f,0.7f);
+               SoundUtils.playSound(world, pos, SoundEvents.ALLAY_HURT, SoundSource.BLOCKS,0.5f,0.7f);
             }
          }
       }
       
       @Override
-      protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
-         boolean bl = world.isReceivingRedstonePower(pos);
-         boolean bl2 = state.getOrEmpty(ACTIVATABLE).orElse(false);
+      protected void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify) {
+         boolean bl = world.hasNeighborSignal(pos);
+         boolean bl2 = state.getOptionalValue(ACTIVATABLE).orElse(false);
          if (bl && bl2) {
             this.tryActivate(state, world, pos);
-            world.setBlockState(pos, state.with(ACTIVATABLE, false), Block.NOTIFY_LISTENERS);
+            world.setBlock(pos, state.setValue(ACTIVATABLE, false), Block.UPDATE_CLIENTS);
          }
       }
    }

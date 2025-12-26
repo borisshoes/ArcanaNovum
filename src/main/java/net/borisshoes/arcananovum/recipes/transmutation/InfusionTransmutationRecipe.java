@@ -8,11 +8,11 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Pair;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +29,14 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
    }
    
    @Override
-   public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayerEntity player){
+   public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayer player){
       List<ItemStack> returnItems = new ArrayList<>();
       int iterations = positiveInput.getCount() / getInput().getCount();
       for(int i = 0; i < iterations; i++){
          ItemStack outputStack = output.copy();
          if(ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),0,player.getEntityWorld().getServer());
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getStringUUID(),0,player.level().getServer());
          }
          returnItems.add(outputStack);
       }
@@ -45,29 +45,29 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
    }
    
    @Override
-   public List<Pair<ItemStack,String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayerEntity player){
+   public List<Tuple<ItemStack,String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
       ItemStack re1 = getBargainReagent(reagent1,bargainLvl);
       ItemStack re2 = getBargainReagent(reagent2,bargainLvl);
-      ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getStack() : ItemStack.EMPTY;
-      ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getStack() : ItemStack.EMPTY;
+      ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
+      ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getItem() : ItemStack.EMPTY;
       ItemStack inputStack;
       ItemEntity inputEntity;
       String outputPos;
-      if(input1Entity != null && validStack(input,input1Entity.getStack())){
-         inputStack = input1Entity.getStack();
+      if(input1Entity != null && validStack(input,input1Entity.getItem())){
+         inputStack = input1Entity.getItem();
          inputEntity = input1Entity;
          outputPos = "negative";
-      }else if(input2Entity != null && validStack(input,input2Entity.getStack())){
-         inputStack = input2Entity.getStack();
+      }else if(input2Entity != null && validStack(input,input2Entity.getItem())){
+         inputStack = input2Entity.getItem();
          inputEntity = input2Entity;
          outputPos = "positive";
       }else{
          return new ArrayList<>();
       }
-      if(!canTransmute(inputStack,ItemStack.EMPTY,reagent1Stack,reagent2Stack,ItemStack.EMPTY,altar)) return new ArrayList<>();
+      if(!canTransmute(inputStack, ItemStack.EMPTY,reagent1Stack,reagent2Stack, ItemStack.EMPTY,altar)) return new ArrayList<>();
       
-      List<Pair<ItemStack,String>> outputs = new ArrayList<>();
+      List<Tuple<ItemStack,String>> outputs = new ArrayList<>();
       int iterations = inputStack.getCount() / getInput().getCount();
       int consumedInput = iterations * getInput().getCount();
       
@@ -75,17 +75,17 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
          ItemStack outputStack = output.copy();
          if(ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player == null ? null : player.getUuidAsString(),0, BorisLib.SERVER);
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player == null ? null : player.getStringUUID(),0, BorisLib.SERVER);
          }
          
-         outputs.add(new Pair<>(outputStack,outputPos));
+         outputs.add(new Tuple<>(outputStack,outputPos));
       }
       
       if(inputStack.getCount() == consumedInput){
          inputEntity.discard();
       }else{
-         inputStack.decrement(consumedInput);
-         inputEntity.setStack(inputStack);
+         inputStack.shrink(consumedInput);
+         inputEntity.setItem(inputStack);
       }
       
       boolean m11 = validStack(re1, reagent1Stack), m22 = validStack(re2, reagent2Stack), m12 = validStack(re1, reagent2Stack), m21 = validStack(re2, reagent1Stack);
@@ -102,8 +102,8 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
             if(reagent1Stack.getCount() == take){
                reagent1Entity.discard();
             }else{
-               reagent1Stack.decrement(take);
-               reagent1Entity.setStack(reagent1Stack);
+               reagent1Stack.shrink(take);
+               reagent1Entity.setItem(reagent1Stack);
             }
          }
       }
@@ -114,8 +114,8 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
             if(reagent2Stack.getCount() == take){
                reagent2Entity.discard();
             }else{
-               reagent2Stack.decrement(take);
-               reagent2Entity.setStack(reagent2Stack);
+               reagent2Stack.shrink(take);
+               reagent2Entity.setItem(reagent2Stack);
             }
          }
       }
@@ -141,10 +141,10 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
          return false;
       }
       
-      if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(output) && altar.getWorld() instanceof ServerWorld serverWorld){
+      if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(output) && altar.getLevel() instanceof ServerLevel serverWorld){
          ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
          ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(output);
-         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
+         ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
          return player == null || ArcanaNovum.data(player).hasResearched(arcanaOutputItem);
       }
       

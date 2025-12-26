@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.gui.arcanetome;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.MutableText;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
 
 public abstract class CompendiumEntry {
    
@@ -21,7 +21,7 @@ public abstract class CompendiumEntry {
       return displayStack;
    }
    
-   public abstract MutableText getName();
+   public abstract MutableComponent getName();
    
    public abstract int getRarityValue();
 }

@@ -2,26 +2,26 @@ package net.borisshoes.arcananovum.core.polymer;
 
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public abstract class ArcanaPolymerBlock extends Block implements PolymerBlock {
    protected final ArcanaItem arcanaItem;
-   public ArcanaPolymerBlock(ArcanaItem arcanaItem, Settings settings){
-      super(settings.registryKey(RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID,arcanaItem.getId()))));
+   public ArcanaPolymerBlock(ArcanaItem arcanaItem, Properties settings){
+      super(settings.setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    
@@ -29,7 +29,7 @@ public abstract class ArcanaPolymerBlock extends Block implements PolymerBlock {
    public abstract BlockState getPolymerBlockState(BlockState state, PacketContext context);
    
    @Override
-   public void onPolymerBlockSend(BlockState blockState, BlockPos.Mutable pos, PacketContext.NotNullWithPlayer contexts){
+   public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, PacketContext.NotNullWithPlayer contexts){
       PolymerBlock.super.onPolymerBlockSend(blockState, pos, contexts);
    }
    
@@ -49,7 +49,7 @@ public abstract class ArcanaPolymerBlock extends Block implements PolymerBlock {
    }
    
    @Override
-   public boolean isPolymerBlockInteraction(BlockState state, ServerPlayerEntity player, Hand hand, ItemStack stack, ServerWorld world, BlockHitResult blockHitResult, ActionResult actionResult){
+   public boolean isPolymerBlockInteraction(BlockState state, ServerPlayer player, InteractionHand hand, ItemStack stack, ServerLevel world, BlockHitResult blockHitResult, InteractionResult actionResult){
       return PolymerBlock.super.isPolymerBlockInteraction(state, player, hand, stack, world, blockHitResult, actionResult);
    }
    
@@ -64,7 +64,7 @@ public abstract class ArcanaPolymerBlock extends Block implements PolymerBlock {
    }
    
    @Override
-   public boolean handleMiningOnServer(ItemStack tool, BlockState state, BlockPos pos, ServerPlayerEntity player){
+   public boolean handleMiningOnServer(ItemStack tool, BlockState state, BlockPos pos, ServerPlayer player){
       return PolymerBlock.super.handleMiningOnServer(tool, state, pos, player);
    }
 }

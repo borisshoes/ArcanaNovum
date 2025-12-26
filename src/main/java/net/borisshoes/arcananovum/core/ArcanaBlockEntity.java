@@ -7,11 +7,11 @@ import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularity;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -43,14 +43,14 @@ public interface ArcanaBlockEntity {
       return true;
    }
    
-   static ItemStack getBlockEntityAsItem(ArcanaBlockEntity arcanaBlockEntity, World world){
+   static ItemStack getBlockEntityAsItem(ArcanaBlockEntity arcanaBlockEntity, Level world){
       return getBlockEntityAsItem(arcanaBlockEntity,world,null);
    }
    
-   static ItemStack getBlockEntityAsItem(ArcanaBlockEntity arcanaBlockEntity, World world, @Nullable ItemStack stack){
+   static ItemStack getBlockEntityAsItem(ArcanaBlockEntity arcanaBlockEntity, Level world, @Nullable ItemStack stack){
       String uuid = arcanaBlockEntity.getUuid();
       if(uuid == null) uuid = UUID.randomUUID().toString();
-      NbtCompound augmentsTag = new NbtCompound();
+      CompoundTag augmentsTag = new CompoundTag();
       if(arcanaBlockEntity.getAugments() != null){
          for(Map.Entry<ArcanaAugment, Integer> entry : arcanaBlockEntity.getAugments().entrySet()){
             augmentsTag.putInt(entry.getKey().id, entry.getValue());
@@ -76,11 +76,11 @@ public interface ArcanaBlockEntity {
       ArcanaItem.putProperty(stack, ArcanaItem.UUID_TAG,uuid);
       
       if(arcanaBlockEntity.getCustomArcanaName() != null && !arcanaBlockEntity.getCustomArcanaName().isEmpty()){
-         stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(arcanaBlockEntity.getCustomArcanaName()));
+         stack.set(DataComponents.CUSTOM_NAME, Component.literal(arcanaBlockEntity.getCustomArcanaName()));
       }
       
       if(arcanaBlockEntity instanceof ArcaneSingularityBlockEntity singularity){
-         ArcanaItem.putProperty(stack, ArcaneSingularity.BOOKS_TAG,singularity.saveBooks(world.getRegistryManager()));
+         ArcanaItem.putProperty(stack, ArcaneSingularity.BOOKS_TAG,singularity.saveBooks(world.registryAccess()));
       }
       if(arcanaBlockEntity instanceof StarpathAltarBlockEntity altar){
          ArcanaItem.putProperty(stack, StarpathAltar.TARGETS_TAG,altar.writeTargets());

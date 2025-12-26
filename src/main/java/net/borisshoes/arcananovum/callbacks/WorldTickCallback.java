@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 
 public class WorldTickCallback {
    
-   public static void onWorldTick(ServerWorld serverWorld){
+   public static void onWorldTick(ServerLevel serverWorld){
       try{
       
       }catch(Exception e){

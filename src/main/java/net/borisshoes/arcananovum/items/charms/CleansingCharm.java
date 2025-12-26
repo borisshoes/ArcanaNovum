@@ -18,30 +18,30 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -64,12 +64,12 @@ public class CleansingCharm extends EnergyItem {
       itemVersion = 0;
       vanillaItem = Items.PRISMARINE_CRYSTALS;
       item = new CleansingCharmItem();
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.AQUA,Formatting.BOLD);
-      researchTasks = new RegistryKey[]{ResearchTasks.MILK_CLEANSE, ResearchTasks.HONEY_CLEANSE, ResearchTasks.EFFECT_POISON, ResearchTasks.EFFECT_NAUSEA, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.ADVANCEMENT_FURIOUS_COCKTAIL};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.MILK_CLEANSE, ResearchTasks.HONEY_CLEANSE, ResearchTasks.EFFECT_POISON, ResearchTasks.EFFECT_NAUSEA, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.ADVANCEMENT_FURIOUS_COCKTAIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,ACTIVE_TAG, true);
       setPrefStack(stack);
    }
@@ -88,12 +88,12 @@ public class CleansingCharm extends EnergyItem {
       return 30 - 5*cdLvl;
    }
    
-   public void cleanseEffect(ServerPlayerEntity player, ItemStack stack){
+   public void cleanseEffect(ServerPlayer player, ItemStack stack){
       if(!(ArcanaItemUtils.identifyItem(stack) instanceof CleansingCharm)) return;
       if(getEnergy(stack) > 0) return;
       
-      List<Map.Entry<RegistryEntry<StatusEffect>, StatusEffectInstance>> canCleanse = new ArrayList<>(player.getActiveStatusEffects().entrySet().stream().filter(entry ->
-            entry.getKey().value().getCategory() == StatusEffectCategory.HARMFUL && !entry.getKey().equals(ArcanaRegistry.GREATER_BLINDNESS_EFFECT)
+      List<Map.Entry<Holder<MobEffect>, MobEffectInstance>> canCleanse = new ArrayList<>(player.getActiveEffectsMap().entrySet().stream().filter(entry ->
+            entry.getKey().value().getCategory() == MobEffectCategory.HARMFUL && !entry.getKey().equals(ArcanaRegistry.GREATER_BLINDNESS_EFFECT)
       ).toList());
       Collections.shuffle(canCleanse);
       
@@ -104,16 +104,16 @@ public class CleansingCharm extends EnergyItem {
       int toRemove = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ANTIDOTE) > 0 ? 2 : 1;
       for(int i = 0; i < toRemove; i++){
          if(canCleanse.isEmpty()) break;
-         RegistryEntry<StatusEffect> effect = canCleanse.removeFirst().getKey();
-         player.removeStatusEffect(effect);
+         Holder<MobEffect> effect = canCleanse.removeFirst().getKey();
+         player.removeEffect(effect);
          Event.addEvent(new CleansingCharmEvent(player,effect));
          
          if(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REJUVENATION) > 0){
-            StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 100, 1, false, false, true);
-            player.addStatusEffect(regen);
+            MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 100, 1, false, false, true);
+            player.addEffect(regen);
          }
          
-         if(effect.equals(StatusEffects.HUNGER)){
+         if(effect.equals(MobEffects.HUNGER)){
             ArcanaAchievements.grant(player,ArcanaAchievements.FOOD_POISONT);
          }
          
@@ -123,30 +123,30 @@ public class CleansingCharm extends EnergyItem {
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("charm ").formatted(Formatting.AQUA))
-            .append(Text.literal("emanates ").formatted(Formatting.WHITE))
-            .append(Text.literal("a smell of ").formatted(Formatting.GRAY))
-            .append(Text.literal("freshly washed clothes").formatted(Formatting.WHITE))
-            .append(Text.literal(" and ").formatted(Formatting.GRAY))
-            .append(Text.literal("clean air").formatted(Formatting.WHITE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(Text.literal("charm ").formatted(Formatting.AQUA))
-            .append(Text.literal("will periodically ").formatted(Formatting.GRAY))
-            .append(Text.literal("remove ").formatted(Formatting.WHITE))
-            .append(Text.literal("one ").formatted(Formatting.GRAY))
-            .append(Text.literal("negative effect").formatted(Formatting.WHITE))
-            .append(Text.literal(".").formatted(Formatting.GRAY)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Sneak Right Click").formatted(Formatting.WHITE))
-            .append(Text.literal(" to toggle the ").formatted(Formatting.GRAY))
-            .append(Text.literal("charm's").formatted(Formatting.AQUA))
-            .append(Text.literal(" ability.").formatted(Formatting.GRAY)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("charm ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("emanates ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("a smell of ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("freshly washed clothes").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal(" and ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("clean air").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("The ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("charm ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("will periodically ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("remove ").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal("one ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("negative effect").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Sneak Right Click").withStyle(ChatFormatting.WHITE))
+            .append(Component.literal(" to toggle the ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal("charm's").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" ability.").withStyle(ChatFormatting.GRAY)));
       
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
@@ -170,10 +170,10 @@ public class CleansingCharm extends EnergyItem {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Charm of Cleansing").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nBy coalescing the cleansing effects of milk and honey into a pure carbon and silica matrix, I have made their effects renewable. \n\nWhile active, the Charm will cleanse a negative  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Charm of Cleansing").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\neffect when it is applied, or a currently active effect. \n\nThis ability takes about a minute to recharge.\n\nSneak Use the Charm to toggle its effect.\n").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("Charm of Cleansing").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nBy coalescing the cleansing effects of milk and honey into a pure carbon and silica matrix, I have made their effects renewable. \n\nWhile active, the Charm will cleanse a negative  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Charm of Cleansing").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\neffect when it is applied, or a currently active effect. \n\nThis ability takes about a minute to recharge.\n\nSneak Use the Charm to toggle its effect.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -183,7 +183,7 @@ public class CleansingCharm extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
@@ -194,48 +194,48 @@ public class CleansingCharm extends EnergyItem {
          }else{
             stringList.add("off");
          }
-         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
          
          if(getBooleanProperty(stack,ACTIVE_TAG)) cleanseEffect(player,stack);
          
-         if(world.getServer().getTicks() % 20 == 0){
+         if(world.getServer().getTickCount() % 20 == 0){
             addEnergy(stack, -1); // Recharge
          }
       }
       
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          
-         if(player.isSneaking()){
+         if(player.isShiftKeyDown()){
             boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
             putProperty(stack,ACTIVE_TAG,active);
             
             if(active){
-               player.sendMessage(Text.literal("The Charm glows with iridescence").formatted(Formatting.AQUA,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_POWER_SELECT, 0.5f,2f);
+               player.displayClientMessage(Component.literal("The Charm glows with iridescence").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_POWER_SELECT, 0.5f,2f);
             }else{
-               player.sendMessage(Text.literal("The Charm's glow fades").formatted(Formatting.AQUA,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 0.5f,.8f);
+               player.displayClientMessage(Component.literal("The Charm's glow fades").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_DEACTIVATE, 0.5f,.8f);
             }
             
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
          }
          
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
    }
 }

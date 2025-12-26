@@ -18,24 +18,28 @@ import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.Container;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
@@ -63,30 +67,30 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
       this.cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
    }
    
-   public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
+   public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof IgneousColliderBlockEntity collider){
          collider.tick();
       }
    }
    
    private void tick(){
-      if(!(this.world instanceof ServerWorld serverWorld)){
+      if(!(this.level instanceof ServerLevel serverWorld)){
          return;
       }
       
       if(cooldown > 0) cooldown--;
       
-      if(serverWorld.getServer().getTicks() % 20 == 0){ // Block is active
-         ArcanaNovum.addActiveBlock(new Pair<>(this, this));
+      if(serverWorld.getServer().getTickCount() % 20 == 0){ // Block is active
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
       
-      if(cooldown <= 0 && serverWorld.getServer().getTicks() % 2 == 0){
+      if(cooldown <= 0 && serverWorld.getServer().getTickCount() % 2 == 0){
          // Do the check
          BlockPos hasLava = null;
          BlockPos hasWater = null;
          BlockPos hasInventory = null;
          BlockPos hasNetherite = null;
-         Inventory output = null;
+         Container output = null;
          boolean canUseIce = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CRYOGENIC_COOLING.id) >= 1;
          
          Direction[] dirs = Direction.values();
@@ -94,14 +98,14 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
          
          for(int side = 0; side < numDirs; ++side){
             Direction direction = dirs[side];
-            BlockPos pos2 = pos.offset(direction);
+            BlockPos pos2 = worldPosition.relative(direction);
             BlockState state2 = serverWorld.getBlockState(pos2);
             Block block2 = state2.getBlock();
             
             if(direction.getAxis() != Direction.Axis.Y){ // Check for fluid
-               if(block2 == Blocks.LAVA && state2.getFluidState().isStill()){
+               if(block2 == Blocks.LAVA && state2.getFluidState().isSource()){
                   hasLava = pos2;
-               }else if(block2 == Blocks.WATER  && state2.getFluidState().isStill()){
+               }else if(block2 == Blocks.WATER  && state2.getFluidState().isSource()){
                   hasWater = pos2;
                }else if(block2 == Blocks.LAVA_CAULDRON){
                   hasLava = pos2;
@@ -111,14 +115,14 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                   hasWater = pos2;
                }
             }else if(direction == Direction.UP){ // Check for chest
-               if(block2 instanceof InventoryProvider){
-                  output = ((InventoryProvider)block2).getInventory(state2, serverWorld, pos2);
+               if(block2 instanceof WorldlyContainerHolder){
+                  output = ((WorldlyContainerHolder)block2).getContainer(state2, serverWorld, pos2);
                } else if(state2.hasBlockEntity()){
                   BlockEntity blockEntity = serverWorld.getBlockEntity(pos2);
-                  if(blockEntity instanceof Inventory){
-                     output = (Inventory)blockEntity;
+                  if(blockEntity instanceof Container){
+                     output = (Container)blockEntity;
                      if(output instanceof ChestBlockEntity && block2 instanceof ChestBlock){
-                        output = ChestBlock.getInventory((ChestBlock)block2, state2, serverWorld, pos2, true);
+                        output = ChestBlock.getContainer((ChestBlock)block2, state2, serverWorld, pos2, true);
                      }
                   }
                }
@@ -140,23 +144,23 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
             }
             
             if(hasInventory == null){ // Drop above collider
-               serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+1.25,pos.getZ()+0.5,obby, 0, 0.2, 0));
+               serverWorld.addFreshEntity(new ItemEntity(serverWorld, worldPosition.getX()+0.5, worldPosition.getY()+1.25, worldPosition.getZ()+0.5,obby, 0, 0.2, 0));
             }else{ // Put in inventory
                
                try{
                   Transaction transaction = Transaction.openOuter();
-                  int inserted = (int) StorageUtil.tryInsertStacking(InventoryStorage.of(output,Direction.DOWN), ItemVariant.of(obby),obby.getCount(), transaction);
+                  int inserted = (int) StorageUtil.tryInsertStacking(InventoryStorage.of(output, Direction.DOWN), ItemVariant.of(obby),obby.getCount(), transaction);
                   if(inserted < obby.getCount()){
                      obby.setCount(obby.getCount() - inserted);
-                     serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+2.5,pos.getZ()+0.5,obby, 0, 0.2, 0));
+                     serverWorld.addFreshEntity(new ItemEntity(serverWorld, worldPosition.getX()+0.5, worldPosition.getY()+2.5, worldPosition.getZ()+0.5,obby, 0, 0.2, 0));
                   }
                   if(inserted > 0){
-                     output.markDirty();
+                     output.setChanged();
                   }
                   transaction.commit();
                   
                }catch(Exception e){
-                  ArcanaNovum.log(2,"Exception in Igneous Collider inventory insertion at "+this.pos.toShortString());
+                  ArcanaNovum.log(2,"Exception in Igneous Collider inventory insertion at "+this.worldPosition.toShortString());
                   e.printStackTrace();
                }
             }
@@ -165,31 +169,31 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
             int efficiencyLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.THERMAL_EXPANSION.id);
             if(Math.random() >= .1*efficiencyLvl){
                if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
-                  serverWorld.setBlockState(hasLava, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+                  serverWorld.setBlock(hasLava, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                }else if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA_CAULDRON){
-                  serverWorld.setBlockState(hasLava, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+                  serverWorld.setBlock(hasLava, Blocks.CAULDRON.defaultBlockState(), Block.UPDATE_ALL);
                }
                if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER){
-                  serverWorld.setBlockState(hasWater, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+                  serverWorld.setBlock(hasWater, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                }else if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER_CAULDRON){
-                  serverWorld.setBlockState(hasWater, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+                  serverWorld.setBlock(hasWater, Blocks.CAULDRON.defaultBlockState(), Block.UPDATE_ALL);
                }
             }
             
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(crafterId));
+               ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player == null){
                   BorisLib.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
                   BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
                }else{
                   ArcanaAchievements.progress(player,ArcanaAchievements.ENDLESS_EXTRUSION.id,1);
                   ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE));
-                  if(obby.isOf(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(player,ArcanaAchievements.EXPENSIVE_INFUSION.id);
+                  if(obby.is(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(player,ArcanaAchievements.EXPENSIVE_INFUSION.id);
                }
             }
             
-            SoundUtils.playSound(serverWorld,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1, .6f);
-            world.emitGameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Emitter.of(getCachedState()));
+            SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.ZOMBIE_VILLAGER_CURE, SoundSource.BLOCKS, 1, .6f);
+            level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
             int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION.id);
             cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
          }
@@ -221,13 +225,13 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    }
    
    @Override
-   public void readData(ReadView view){
-      super.readData(view);
-      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
-      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
-      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.cooldown = view.getInt("cooldown", 0);
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.cooldown = view.getIntOr("cooldown", 0);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
@@ -235,9 +239,9 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    }
    
    @Override
-   protected void writeData(WriteView view){
-      super.writeData(view);
-      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);

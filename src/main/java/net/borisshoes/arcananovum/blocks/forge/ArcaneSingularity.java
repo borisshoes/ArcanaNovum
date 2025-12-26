@@ -13,37 +13,33 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -68,63 +64,63 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.LECTERN;
-      block = new ArcaneSingularityBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
+      block = new ArcaneSingularityBlock(BlockBehaviour.Properties.of().strength(2.5f,1200.0f).sound(SoundType.WOOD));
       item = new ArcaneSingularityItem(this.block);
-      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NEBULOUS_ESSENCE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NEBULOUS_ESSENCE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
-      putProperty(stack,BOOKS_TAG,new NbtList());
+      stack.setCount(item.getDefaultMaxStackSize());
+      putProperty(stack,BOOKS_TAG,new ListTag());
       setPrefStack(stack);
    }
    
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
-      lore.add(Text.literal("")
-            .append(Text.literal("A ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Forge Structure").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" addon to the ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Starlight Forge").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Storing ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("enchantments").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" on books is ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("crude").formatted(Formatting.GREEN))
-            .append(Text.literal(" and ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("primitive.").formatted(Formatting.GREEN)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Condensing ").formatted(Formatting.GREEN))
-            .append(Text.literal("their ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("essence ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("into a ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("singularity ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("is much more ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("modern").formatted(Formatting.GREEN))
-            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Allows for the ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("storing of ").formatted(Formatting.GREEN))
-            .append(Text.literal("enchantments").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" in a ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("virtual library.").formatted(Formatting.GREEN)));
-      lore.add(Text.literal("")
-            .append(Text.literal("Works well").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" with the ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Midnight Enchanter").formatted(Formatting.BLUE))
-            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
+      lore.add(Component.literal("")
+            .append(Component.literal("A ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("Forge Structure").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" addon to the ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("Starlight Forge").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Storing ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("enchantments").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" on books is ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("crude").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(" and ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("primitive.").withStyle(ChatFormatting.GREEN)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Condensing ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("their ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("essence ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("into a ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("singularity ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("is much more ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("modern").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Allows for the ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("storing of ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal("enchantments").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" in a ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("virtual library.").withStyle(ChatFormatting.GREEN)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Works well").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" with the ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal("Midnight Enchanter").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
       
       if(itemStack != null){
          int size = getListProperty(itemStack,BOOKS_TAG).size();
          if(size > 0){
-            lore.add(Text.literal(""));
-            lore.add(Text.literal("")
-                  .append(Text.literal("Contains ").formatted(Formatting.DARK_AQUA))
-                  .append(Text.literal(""+size).formatted(Formatting.GREEN))
-                  .append(Text.literal(" Enchanted Books").formatted(Formatting.LIGHT_PURPLE)));
+            lore.add(Component.literal(""));
+            lore.add(Component.literal("")
+                  .append(Component.literal("Contains ").withStyle(ChatFormatting.DARK_AQUA))
+                  .append(Component.literal(""+size).withStyle(ChatFormatting.GREEN))
+                  .append(Component.literal(" Enchanted Books").withStyle(ChatFormatting.LIGHT_PURPLE)));
          }
       }
       
@@ -134,7 +130,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtList targetsList = getListProperty(stack,BOOKS_TAG);
+      ListTag targetsList = getListProperty(stack,BOOKS_TAG);
       ItemStack newStack = super.updateItem(stack,server);
       putProperty(newStack,BOOKS_TAG,targetsList);
       return buildItemLore(newStack,server);
@@ -175,11 +171,11 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    }
    
    @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Arcane Singularity").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe Midnight Enchanter has proven more useful than I imagined. Now I have more Enchanted Books than I can possibly store in a library. I need a new method of book-keeping.\nBy condensing raw ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Arcane Singularity").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nNebulous Essence down over and over, it forms a self-sustaining singularity. An Arcane black hole. Containing it was no easy feat, but now I have a massive storage space for my books…\n\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Arcane Singularity").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nThe Singularity is a single purpose, high density storage unit for Enchanted Books. Books can be sorted and filtered, and can be extracted at any time. \nBooks are bound to the Singularity, so they are kept with the block when moved.").formatted(Formatting.BLACK)));
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("Arcane Singularity").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe Midnight Enchanter has proven more useful than I imagined. Now I have more Enchanted Books than I can possibly store in a library. I need a new method of book-keeping.\nBy condensing raw ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Arcane Singularity").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nNebulous Essence down over and over, it forms a self-sustaining singularity. An Arcane black hole. Containing it was no easy feat, but now I have a massive storage space for my books…\n\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Arcane Singularity").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nThe Singularity is a single purpose, high density storage unit for Enchanted Books. Books can be sorted and filtered, and can be extracted at any time. \nBooks are bound to the Singularity, so they are kept with the block when moved.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -190,72 +186,72 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public ItemStack getDefaultStack(){
+      public ItemStack getDefaultInstance(){
          return prefItem;
       }
    }
    
    public class ArcaneSingularityBlock extends ArcanaPolymerBlockEntity {
-      public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+      public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
       
-      public ArcaneSingularityBlock(AbstractBlock.Settings settings){
+      public ArcaneSingularityBlock(BlockBehaviour.Properties settings){
          super(getThis(), settings);
       }
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.LECTERN.getDefaultState().with(HORIZONTAL_FACING,state.get(HORIZONTAL_FACING));
+         return Blocks.LECTERN.defaultBlockState().setValue(HORIZONTAL_FACING,state.getValue(HORIZONTAL_FACING));
       }
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx){
-         return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite());
+      public BlockState getStateForPlacement(BlockPlaceContext ctx){
+         return this.defaultBlockState().setValue(HORIZONTAL_FACING,ctx.getHorizontalDirection().getOpposite());
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
+      protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager){
          stateManager.add(HORIZONTAL_FACING);
       }
       
       @Override
-      public BlockState rotate(BlockState state, BlockRotation rotation){
-         return state.with(HORIZONTAL_FACING, rotation.rotate(state.get(HORIZONTAL_FACING)));
+      public BlockState rotate(BlockState state, Rotation rotation){
+         return state.setValue(HORIZONTAL_FACING, rotation.rotate(state.getValue(HORIZONTAL_FACING)));
       }
       
       @Override
-      public BlockState mirror(BlockState state, BlockMirror mirror){
-         return state.rotate(mirror.getRotation(state.get(HORIZONTAL_FACING)));
+      public BlockState mirror(BlockState state, Mirror mirror){
+         return state.rotate(mirror.getRotation(state.getValue(HORIZONTAL_FACING)));
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
-         return validateTicker(type, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY, ArcaneSingularityBlockEntity::ticker);
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
+         return createTickerHelper(type, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY, ArcaneSingularityBlockEntity::ticker);
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, BlockHitResult hit){
+      public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult hit){
          ArcaneSingularityBlockEntity singularity = (ArcaneSingularityBlockEntity) world.getBlockEntity(pos);
          if(singularity != null){
-            if(playerEntity instanceof ServerPlayerEntity player){
+            if(playerEntity instanceof ServerPlayer player){
                if(singularity.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.getEntityWorld(),pos) == null){
-                     player.sendMessage(Text.literal("The Enchanter must be within the range of an active Starlight Forge"));
+                  if(StarlightForge.findActiveForge(player.level(),pos) == null){
+                     player.sendSystemMessage(Component.literal("The Enchanter must be within the range of an active Starlight Forge"));
                   }else{
                      singularity.openGui(player);
                   }
                }else{
-                  player.sendMessage(Text.literal("Multiblock not constructed."));
+                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
                   multiblock.displayStructure(singularity.getMultiblockCheck(),player);
                }
             }
          }
-         return ActionResult.SUCCESS_SERVER;
+         return InteractionResult.SUCCESS_SERVER;
       }
       
       @Nullable
-      public static ArcaneSingularityBlockEntity getEntity(World world, BlockPos pos){
+      public static ArcaneSingularityBlockEntity getEntity(Level world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
          if(!(state.getBlock() instanceof ArcaneSingularityBlock)){
             return null;
@@ -264,16 +260,16 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
+      public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new ArcaneSingularityBlockEntity(pos, state);
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
+      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof ArcaneSingularityBlockEntity singularity){
             initializeArcanaBlock(stack,singularity);
-            singularity.initializeBooks(getListProperty(stack,BOOKS_TAG),world.getRegistryManager());
+            singularity.initializeBooks(getListProperty(stack,BOOKS_TAG),world.registryAccess());
          }
       }
    }
