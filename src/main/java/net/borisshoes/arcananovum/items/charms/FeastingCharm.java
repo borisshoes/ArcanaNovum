@@ -139,7 +139,7 @@ public class FeastingCharm extends ArcanaItem {
             {k,h,m,h,o},
             {p,g,h,g,t},
             {u,v,w,x,y}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    public class FeastingCharmItem extends ArcanaPolymerItem {
@@ -219,7 +219,7 @@ public class FeastingCharm extends ArcanaItem {
                   Consumable consumableComponent = selectedFood.get(DataComponents.CONSUMABLE);
                   consumableComponent.onConsume(world, player, selectedFood); // Handles effects, nutrition, and stack decrease
                   
-                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FEASTING_CHARM_PER_FOOD_VALUE)*foodValue); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FEASTING_CHARM_PER_FOOD_VALUE)*foodValue); // Add xp
                }
             }
          }

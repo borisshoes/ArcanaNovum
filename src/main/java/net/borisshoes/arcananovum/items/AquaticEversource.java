@@ -139,7 +139,7 @@ public class AquaticEversource extends ArcanaItem {
             {c,h,m,h,c},
             {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -241,12 +241,12 @@ public class AquaticEversource extends ArcanaItem {
                   for(BlockPos floodPos : BlockPos.betweenClosed(blockPos3.offset(-1, 0, -1), blockPos3.offset(1, 0, 1))){
                      if(floodPos.equals(blockPos3)) continue;
                      if(placeFluid(fluid,playerEntity, world, floodPos, null, true) > 0){
-                        ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
+                        ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
                         ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
                      }
                   }
                }
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
                playerEntity.awardStat(Stats.ITEM_USED.get(this));
                playerEntity.getCooldowns().addCooldown(stack,5);

@@ -10,6 +10,7 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -95,6 +96,6 @@ public class NebulousEssenceItem extends NormalPolymerItem {
             {a,a,m,a,a},
             {a,a,a,a,a}};
       
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()), new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()), new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE), new ExplainRecipe(BuiltInRegistries.ITEM.getKey(ArcanaRegistry.NEBULOUS_ESSENCE),ingredients));
    }
 }

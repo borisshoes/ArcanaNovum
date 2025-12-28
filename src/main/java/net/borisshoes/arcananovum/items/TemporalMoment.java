@@ -89,7 +89,7 @@ public class TemporalMoment extends ArcanaItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

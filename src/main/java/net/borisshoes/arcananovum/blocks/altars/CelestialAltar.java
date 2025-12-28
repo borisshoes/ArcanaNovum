@@ -147,7 +147,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
             {k,l,m,l,k},
             {p,p,r,g,r},
             {p,p,r,r,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

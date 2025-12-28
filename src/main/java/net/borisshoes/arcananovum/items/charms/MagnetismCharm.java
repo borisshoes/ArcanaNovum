@@ -147,7 +147,7 @@ public class MagnetismCharm extends ArcanaItem {
          double heightMod = .08;
          item.setDeltaMovement(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
       }
-      ArcanaNovum.data(player).addXP(Math.min(ArcanaConfig.getInt(ArcanaRegistry.MAGNETISM_CHARM_CAP),ArcanaConfig.getInt(ArcanaRegistry.MAGNETISM_CHARM_PER_ITEM)*items.size())); // Add xp
+      ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.MAGNETISM_CHARM_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.MAGNETISM_CHARM_PER_ITEM)*items.size())); // Add xp
       if(items.size() >= 25) ArcanaAchievements.grant(player,ArcanaAchievements.MAGNETS.id);
       
       if(ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.NEODYMIUM.id) >= 1){
@@ -278,7 +278,7 @@ public class MagnetismCharm extends ArcanaItem {
             {c,h,m,h,c},
             {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

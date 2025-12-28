@@ -29,7 +29,7 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback {
          if(player1 == null){
             if(attacker != null){
                if(avenged){
-                  BorisLib.addLoginCallback(new XPLoginCallback(player.level().getServer(),player.getStringUUID(),ArcanaConfig.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE))); // Give XP
+                  BorisLib.addLoginCallback(new XPLoginCallback(player.level().getServer(),player.getStringUUID(),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE))); // Give XP
                }else{
                   BorisLib.addLoginCallback(new VengeanceTotemLoginCallback(player));
                }
@@ -37,7 +37,7 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback {
          }else{
             if(attacker != null){
                if(avenged){
-                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE)); // Give XP
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE)); // Give XP
                }else{
                   player1.hurtServer(player.level(), ArcanaDamageTypes.of(player1.level(),ArcanaDamageTypes.VENGEANCE_TOTEM,attacker), player1.getMaxHealth()*10);
                }

@@ -53,7 +53,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
                }
                
                SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
                return false;
             }
          }

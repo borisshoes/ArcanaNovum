@@ -228,7 +228,7 @@ public class Waystone extends ArcanaItem {
             {c,b,t,w,d},
             {b,w,w,w,w},
             {w,w,w,w,w}};
-      return new ExplainRecipe(ingredients);
+      return new ExplainRecipe(this, ingredients);
    }
    
    public class WaystoneItem extends ArcanaPolymerItem {

@@ -192,7 +192,7 @@ public class ArcaneTome extends ArcanaItem {
             {a,a,p,a,a},
             {a,a,t,a,a},
             {a,a,a,a,a}};
-      return new ExplainRecipe(ingredients);
+      return new ExplainRecipe(this, ingredients);
    }
    
    public class ArcaneTomeItem extends ArcanaPolymerItem {

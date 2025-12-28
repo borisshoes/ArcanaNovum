@@ -217,7 +217,7 @@ public class LightCharm extends ArcanaItem {
          }
       }
       
-      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LIGHT_CHARM_NOVA_PER_LIGHT)*placedCount); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.LIGHT_CHARM_NOVA_PER_LIGHT)*placedCount); // Add xp
       SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1f,0.5f);
    }
    
@@ -348,7 +348,7 @@ public class LightCharm extends ArcanaItem {
             {k,h,m,h,o},
             {p,g,h,g,t},
             {a,v,w,x,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    public class LightCharmItem extends ArcanaPolymerItem {
@@ -395,7 +395,7 @@ public class LightCharm extends ArcanaItem {
                   world.setBlock(pos, Blocks.LIGHT.defaultBlockState().setValue(LEVEL,brightness), Block.UPDATE_ALL);
                   world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
                   SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, .3f,2f);
-                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LIGHT_CHARM_AUTOMATIC)); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.LIGHT_CHARM_AUTOMATIC)); // Add xp
                   ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
                }
             }
@@ -434,7 +434,7 @@ public class LightCharm extends ArcanaItem {
             world.setBlock(pos, Blocks.LIGHT.defaultBlockState().setValue(LEVEL,brightness), Block.UPDATE_ALL);
             world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
             SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, .3f,2f);
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LIGHT_CHARM_MANUAL)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.LIGHT_CHARM_MANUAL)); // Add xp
             ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
             return InteractionResult.SUCCESS_SERVER;
          }

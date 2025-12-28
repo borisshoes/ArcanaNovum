@@ -158,7 +158,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
             {c,h,m,h,c},
             {d,g,h,g,a},
             {d,d,c,a,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

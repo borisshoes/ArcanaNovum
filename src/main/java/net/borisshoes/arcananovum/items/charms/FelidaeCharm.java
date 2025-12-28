@@ -104,7 +104,7 @@ public class FelidaeCharm extends ArcanaItem {
       ArcanaIngredient c = new ArcanaIngredient(Items.PUFFERFISH,16);
       ArcanaIngredient g = new ArcanaIngredient(Items.PHANTOM_MEMBRANE,4);
       ArcanaIngredient w = new ArcanaIngredient(Items.SALMON,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING),4));
+      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.FEATHER_FALLING,4));
       ArcanaIngredient k = new ArcanaIngredient(Items.COD,16);
       ArcanaIngredient m = new ArcanaIngredient(Items.CREEPER_HEAD,1, true);
       ArcanaIngredient o = new ArcanaIngredient(Items.TROPICAL_FISH,16);
@@ -115,7 +115,7 @@ public class FelidaeCharm extends ArcanaItem {
             {k,h,m,h,o},
             {b,g,h,g,b},
             {a,b,w,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter());
       
    }
    

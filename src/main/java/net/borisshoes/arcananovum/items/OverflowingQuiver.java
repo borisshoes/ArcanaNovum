@@ -167,7 +167,7 @@ public class OverflowingQuiver extends QuiverItem{
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.INFINITY),1));
+      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.INFINITY,1));
       ArcanaIngredient c = new ArcanaIngredient(Items.RABBIT_HIDE,12);
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,32);
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
@@ -178,7 +178,7 @@ public class OverflowingQuiver extends QuiverItem{
             {c,h,m,h,c},
             {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withFletchery().withCore().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withFletchery().withCore().withEnchanter());
    }
    
    @Override

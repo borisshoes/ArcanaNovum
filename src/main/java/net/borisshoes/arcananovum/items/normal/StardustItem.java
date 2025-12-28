@@ -9,6 +9,7 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -97,6 +98,6 @@ public class StardustItem extends NormalPolymerItem {
             {a,m,b,m,a},
             {a,a,a,a,a}};
 
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.STARDUST.getDescriptionId()), new ItemStack(ArcanaRegistry.STARDUST), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.STARDUST.getDescriptionId()), new ItemStack(ArcanaRegistry.STARDUST), new ExplainRecipe(BuiltInRegistries.ITEM.getKey(ArcanaRegistry.STARDUST),ingredients));
    }
 }

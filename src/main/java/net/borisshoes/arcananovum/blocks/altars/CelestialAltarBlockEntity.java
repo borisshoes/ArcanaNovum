@@ -122,7 +122,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       ArcanaEffectUtils.celestialAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0, serverWorld.getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING));
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(400, () -> {
          changeTime(finalPlayer);
-         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.CELESTIAL_ALTAR_ACTIVATE));
+         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CELESTIAL_ALTAR_ACTIVATE));
       }));
       return true;
    }

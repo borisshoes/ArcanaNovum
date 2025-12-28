@@ -1,15 +1,14 @@
-package net.borisshoes.arcananovum.recipes;
+package net.borisshoes.arcananovum.recipes.vanilla;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.items.AquaticEversource;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.items.MagmaticEversource;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
@@ -20,15 +19,13 @@ import java.util.Map;
 
 import static java.util.Map.entry;
 
-public class AquaticEversourceFillRecipe extends CustomRecipe {
+public class MagmaticEversourceFillRecipe extends CustomRecipe {
    
    private static final Map<Item, ItemStack> FILLABLE = Map.ofEntries(
-         entry(Items.DIRT, Items.MUD.getDefaultInstance()),
-         entry(Items.GLASS_BOTTLE, PotionContents.createItemStack(Items.POTION, Potions.WATER)),
-         entry(Items.BUCKET, Items.WATER_BUCKET.getDefaultInstance())
+         entry(Items.BUCKET, Items.LAVA_BUCKET.getDefaultInstance())
    );
    
-   public AquaticEversourceFillRecipe(CraftingBookCategory craftingRecipeCategory){
+   public MagmaticEversourceFillRecipe(CraftingBookCategory craftingRecipeCategory){
       super(CraftingBookCategory.MISC);
    }
    
@@ -36,13 +33,15 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
    public boolean matches(CraftingInput input, Level world){
       boolean hasEversource = false;
       boolean hasFillable = false;
+      int eversourceSlot = -1;
       
       for (int i = 0; i < input.size(); ++i){
          ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
-         if(!hasEversource && rStack.getItem() instanceof AquaticEversource.AquaticEversourceItem){
+         if(!hasEversource && rStack.getItem() instanceof MagmaticEversource.MagmaticEversourceItem){
             hasEversource = true;
+            eversourceSlot = i;
             continue;
          }else if(!hasFillable && FILLABLE.containsKey(rStack.getItem())){
             hasFillable = true;
@@ -50,8 +49,11 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
          }
          return false;
       }
+      if(!hasEversource || !hasFillable) return false;
       
-      return hasEversource && hasFillable;
+      ItemStack eversource = input.getItem(eversourceSlot);
+      int charges = ArcanaItem.getIntProperty(eversource,MagmaticEversource.USES_TAG);
+      return charges >= 1;
    }
    
    @Override
@@ -73,8 +75,10 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
          ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
-         if(rStack.getItem() instanceof AquaticEversource.AquaticEversourceItem){
-            stacks.set(i, rStack.copy());
+         if(rStack.getItem() instanceof MagmaticEversource.MagmaticEversourceItem){
+            ItemStack source = rStack.copy();
+            ArcanaItem.putProperty(source,MagmaticEversource.USES_TAG,ArcanaItem.getIntProperty(source,MagmaticEversource.USES_TAG)-1);
+            stacks.set(i, source);
          }
       }
       return stacks;
@@ -82,11 +86,11 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
    
    @Override
    public RecipeSerializer<? extends CustomRecipe> getSerializer(){
-      return ArcanaRegistry.AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
+      return ArcanaRegistry.MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
    }
    
-   public static class AquaticEversourceRecipeSerializer extends Serializer implements PolymerObject {
-      public AquaticEversourceRecipeSerializer(Factory factory){
+   public static class MagmaticEversourceRecipeSerializer extends Serializer implements PolymerObject {
+      public MagmaticEversourceRecipeSerializer(Factory factory){
          super(factory);
       }
    }

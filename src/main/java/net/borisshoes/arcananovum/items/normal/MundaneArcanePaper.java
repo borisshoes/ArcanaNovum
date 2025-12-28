@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -44,7 +45,7 @@ public class MundaneArcanePaper extends NormalPolymerItem {
             {c,a,p,a,c},
             {c,c,c,c,c}};
       
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.MUNDANE_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.MUNDANE_ARCANE_PAPER,4), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.MUNDANE_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.MUNDANE_ARCANE_PAPER,4), new ExplainRecipe(BuiltInRegistries.ITEM.getKey(ArcanaRegistry.MUNDANE_ARCANE_PAPER),ingredients));
    }
 }
 

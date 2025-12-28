@@ -77,7 +77,6 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    protected String id;
    protected ArcanaRarity rarity;
    protected ItemStack prefItem;
-   protected ArcanaRecipe recipe;
    protected TomeGui.TomeFilter[] categories;
    public static final int VERSION = 12;
    public int itemVersion;
@@ -114,8 +113,6 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    }
    
    public abstract List<List<Component>> getBookLore();
-   
-   public ArcanaRecipe getRecipe(){ return recipe; }
    
    public TomeGui.TomeFilter[] getCategories(){ return categories; }
    
@@ -266,7 +263,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    
    // Override to apply any default enchantments
    public void finalizePrefItem(MinecraftServer server){
-      setRecipe(makeRecipe());
+   
    }
    
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
@@ -642,15 +639,6 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       
       item.set(DataComponents.LORE, new ItemLore(loreList,loreList));
       return item;
-   }
-   
-   protected void setRecipe(ArcanaRecipe recipe){
-      this.recipe = recipe;
-   }
-   
-   // Override to create a recipe
-   protected ArcanaRecipe makeRecipe(){
-      return null;
    }
    
    public static TooltipDisplay getTooltipDisplayComponent(){

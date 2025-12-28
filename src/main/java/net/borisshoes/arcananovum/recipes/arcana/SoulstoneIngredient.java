@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
+import com.google.gson.JsonObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -87,5 +88,26 @@ public class SoulstoneIngredient extends ArcanaIngredient {
    @Override
    public ItemStack ingredientAsStack(){
       return Soulstone.getShowcaseItem(souls,type);
+   }
+   
+   public JsonObject toJson(){
+      JsonObject json = new JsonObject();
+      json.addProperty("type", "arcananovum:soulstone_ingredient");
+      json.addProperty("souls", souls);
+      json.addProperty("mob_type", type);
+      json.addProperty("consumed", consume);
+      json.addProperty("repeatable", repeatable);
+      json.addProperty("ignore_essence_egg_types", ignoreEssenceEggTypes);
+      return json;
+   }
+   
+   public static SoulstoneIngredient fromJson(JsonObject json){
+      if(!json.get("type").getAsString().equals("arcananovum:soulstone_ingredient")) return null;
+      int souls = json.get("souls").getAsInt();
+      String mobType = json.has("mob_type") && !json.get("mob_type").isJsonNull() ? json.get("mob_type").getAsString() : null;
+      boolean consumed = json.get("consumed").getAsBoolean();
+      boolean repeatable = json.get("repeatable").getAsBoolean();
+      boolean ignoreEssenceEggTypes = json.get("ignore_essence_egg_types").getAsBoolean();
+      return new SoulstoneIngredient(souls, repeatable, consumed, ignoreEssenceEggTypes, mobType);
    }
 }

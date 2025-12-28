@@ -192,7 +192,7 @@ public class ContainmentCirclet extends ArcanaItem {
             entity.discard();
             user.displayClientMessage(Component.literal("The Circlet contains the creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
             SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
-            ArcanaNovum.data(user).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTAINMENT_CIRCLET_USE)); // Add xp
+            ArcanaNovum.data(user).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CONTAINMENT_CIRCLET_USE)); // Add xp
             buildItemLore(stack,user.level().getServer());
          }
       }
@@ -215,7 +215,7 @@ public class ContainmentCirclet extends ArcanaItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

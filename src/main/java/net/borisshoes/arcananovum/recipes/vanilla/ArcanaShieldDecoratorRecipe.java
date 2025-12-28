@@ -1,4 +1,4 @@
-package net.borisshoes.arcananovum.recipes;
+package net.borisshoes.arcananovum.recipes.vanilla;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;

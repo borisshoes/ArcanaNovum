@@ -235,7 +235,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
             this.doKnockback(livingEntity, damageSource);
             this.doPostHurtEffects(livingEntity);
             
-            if(owner instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SPEAR_OF_TENBROUS_IMPALE));
+            if(owner instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SPEAR_OF_TENBROUS_IMPALE));
          }
       }
       

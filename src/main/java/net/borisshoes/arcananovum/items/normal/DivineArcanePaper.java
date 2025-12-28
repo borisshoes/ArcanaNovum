@@ -8,6 +8,8 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -55,6 +57,6 @@ public class DivineArcanePaper extends NormalPolymerItem {
             {b,w,w,w,w},
             {w,w,w,w,w}};
       
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.DIVINE_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,1), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.DIVINE_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,1), new ExplainRecipe(BuiltInRegistries.ITEM.getKey(ArcanaRegistry.DIVINE_ARCANE_PAPER),ingredients));
    }
 }

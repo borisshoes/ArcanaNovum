@@ -279,7 +279,7 @@ public class BinaryBlades extends EnergyItem {
             {c,h,m,h,c},
             {b,a,h,g,b},
             {e,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore()).addCenterpiece(6).addCenterpiece(18);
    }
    
    @Override
@@ -412,7 +412,7 @@ public class BinaryBlades extends EnergyItem {
                ArcanaAchievements.grant(player,ArcanaAchievements.STARBURST_STREAM);
             }
             if(world.getServer().getTickCount() % 20 == 0){
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.BINARY_BLADES_MAX_ENERGY_PER_SECOND));
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.BINARY_BLADES_MAX_ENERGY_PER_SECOND));
             }
          }
          

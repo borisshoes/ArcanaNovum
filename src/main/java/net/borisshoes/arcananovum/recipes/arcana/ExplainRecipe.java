@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
 
@@ -10,8 +12,13 @@ public class ExplainRecipe extends ArcanaRecipe {
    
    private final ExplainIngredient[][] explainIngredients;
    
-   public ExplainRecipe(ExplainIngredient[][] ingredients){
-      super(ingredients);
+   public ExplainRecipe(ArcanaItem item, ExplainIngredient[][] ingredients){
+      super(item, ingredients);
+      this.explainIngredients = ingredients;
+   }
+   
+   public ExplainRecipe(Identifier item, ExplainIngredient[][] ingredients){
+      super(item, ingredients);
       this.explainIngredients = ingredients;
    }
    

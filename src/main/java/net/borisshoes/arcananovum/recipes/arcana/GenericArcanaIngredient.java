@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
+import com.google.gson.JsonObject;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.world.item.ItemStack;
@@ -45,5 +47,24 @@ public class GenericArcanaIngredient extends ArcanaIngredient {
       if(other == this) return true;
       if(!(other instanceof GenericArcanaIngredient o)) return false;
       return (o.item.getId().equals(item.getId()) && o.getCount() == count);
+   }
+   
+   public JsonObject toJson(){
+      JsonObject json = new JsonObject();
+      json.addProperty("type", "arcananovum:arcane_ingredient");
+      json.addProperty("item", item.getId());
+      json.addProperty("count", count);
+      return json;
+   }
+   
+   public static GenericArcanaIngredient fromJson(JsonObject json){
+      if(!json.get("type").getAsString().equals("arcananovum:arcane_ingredient")) return null;
+      String itemId = json.get("item").getAsString();
+      int count = json.get("count").getAsInt();
+      ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(itemId);
+      if(arcanaItem == null){
+         throw new IllegalArgumentException("Unknown Arcana item: " + itemId);
+      }
+      return new GenericArcanaIngredient(arcanaItem, count);
    }
 }

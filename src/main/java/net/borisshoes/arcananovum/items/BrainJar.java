@@ -200,7 +200,7 @@ public class BrainJar extends EnergyItem {
       ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_CHEST,4);
       ArcanaIngredient b = new ArcanaIngredient(Items.EXPERIENCE_BOTTLE,8);
       ArcanaIngredient c = new ArcanaIngredient(Items.SCULK,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.MENDING),1));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.MENDING,1));
       ArcanaIngredient h = new ArcanaIngredient(Items.SCULK_CATALYST,8);
       ArcanaIngredient m = new ArcanaIngredient(Items.ZOMBIE_HEAD,1, true);
       
@@ -210,7 +210,7 @@ public class BrainJar extends EnergyItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withEnchanter());
    }
    
    public class BrainJarItem extends ArcanaPolymerItem {
@@ -273,7 +273,7 @@ public class BrainJar extends EnergyItem {
                   int newDura = Mth.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
                   ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR.id,durability-newDura);
                   addEnergy(stack,-1);
-                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.BRAIN_JAR_MEND_PER_XP));
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.BRAIN_JAR_MEND_PER_XP));
                   buildItemLore(stack,player.level().getServer());
                   tool.setDamageValue(newDura);
                }

@@ -107,7 +107,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       ArcanaEffectUtils.stormcallerAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0);
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
          changeWeather(finalPlayer);
-         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.STORMCALLER_ALTAR_ACTIVATE));
+         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STORMCALLER_ALTAR_ACTIVATE));
       }));
       return true;
    }

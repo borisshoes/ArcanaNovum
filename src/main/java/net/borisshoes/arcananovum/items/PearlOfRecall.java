@@ -223,7 +223,7 @@ public class PearlOfRecall extends EnergyItem {
             {c,l,m,l,c},
             {b,g,l,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement()).addCenterpiece(7);
       
    }
    
@@ -291,7 +291,7 @@ public class PearlOfRecall extends EnergyItem {
          if(heat == 100){
             teleport(stack,player);
             putProperty(stack,HEAT_TAG, 0);
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PEARL_OF_RECALL_USE)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.PEARL_OF_RECALL_USE)); // Add xp
          }else if(heat > 0){
             putProperty(stack,HEAT_TAG, heat+1);
             ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.position());

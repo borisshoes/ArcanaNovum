@@ -184,7 +184,7 @@ public class FractalSponge extends ArcanaBlock {
       if(absorbed > 0){
          SoundUtils.playSound(world,pos, SoundEvents.ELDER_GUARDIAN_HURT, SoundSource.BLOCKS,1,.8f);
          if(placer instanceof ServerPlayer player){
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
             ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_CLEANUP.id, absorbed);
          }
       }
@@ -206,7 +206,7 @@ public class FractalSponge extends ArcanaBlock {
             {c,c,m,c,c},
             {d,g,c,g,b},
             {a,d,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

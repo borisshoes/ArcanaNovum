@@ -151,7 +151,7 @@ public class ExoticMatter extends EnergyItem {
             {c,d,m,d,c},
             {b,a,d,a,d},
             {a,d,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    public class ExoticMatterItem extends ArcanaPolymerItem {

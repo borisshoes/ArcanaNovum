@@ -172,7 +172,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          if(type instanceof RedStoneOreBlock ore){
             ore.spawnAfterBreak(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
          }
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
       }
       for(ItemStack stack : drops){
          Block.popResource(world, pos, stack);

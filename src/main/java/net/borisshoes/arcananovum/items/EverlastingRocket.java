@@ -169,7 +169,7 @@ public class EverlastingRocket extends EnergyItem {
             rocket.addEnergy(item,-1);
             rocket.buildItemLore(stack,player.level().getServer());
             ArcanaAchievements.progress(player,ArcanaAchievements.MISSILE_LAUNCHER.id, 1);
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
             return;
          }
       }
@@ -180,9 +180,9 @@ public class EverlastingRocket extends EnergyItem {
       ArcanaIngredient a = new ArcanaIngredient(Items.FIREWORK_ROCKET,16);
       ArcanaIngredient b = new ArcanaIngredient(Items.GUNPOWDER,8);
       ArcanaIngredient c = new ArcanaIngredient(Items.PAPER,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.MENDING),1));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.MENDING,1));
       ArcanaIngredient h = new ArcanaIngredient(Items.FIREWORK_STAR,8);
-      ArcanaIngredient i = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),3));
+      ArcanaIngredient i = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.UNBREAKING,3));
       
       ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
@@ -190,7 +190,7 @@ public class EverlastingRocket extends EnergyItem {
             {c,h,a,h,c},
             {b,i,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter()).addCenterpiece(12);
    }
    
    @Override
@@ -276,7 +276,7 @@ public class EverlastingRocket extends EnergyItem {
                world.addFreshEntity(fireworkRocketEntity);
                ((EnergyItem)getThis()).addEnergy(context.getItemInHand(),-1);
                buildItemLore(itemStack,player.level().getServer());
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
             }else{
                player.displayClientMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
@@ -303,7 +303,7 @@ public class EverlastingRocket extends EnergyItem {
                   if(!user.isCreative()){
                      ((EnergyItem)getThis()).addEnergy(itemStack,-1);
                      buildItemLore(itemStack,player.level().getServer());
-                     ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
+                     ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
                   }
                   user.awardStat(Stats.ITEM_USED.get(this));
                   if(player.position().y() > 500){

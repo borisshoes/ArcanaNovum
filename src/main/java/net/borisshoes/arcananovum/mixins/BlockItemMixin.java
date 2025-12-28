@@ -46,7 +46,7 @@ public class BlockItemMixin {
             ArcanaAchievements.progress(player,ArcanaAchievements.TERRAFORMER,amtToRefill);
          }
          
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.GREAVES_OF_GAIALTUS_REFILL_BLOCK_PER_10) * amtToRefill / 10);
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.GREAVES_OF_GAIALTUS_REFILL_BLOCK_PER_10) * amtToRefill / 10);
       }
    }
 }

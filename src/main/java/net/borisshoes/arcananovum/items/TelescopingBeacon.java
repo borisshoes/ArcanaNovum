@@ -275,7 +275,7 @@ public class TelescopingBeacon extends ArcanaItem {
          
          
          player.teleportTo(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TELESCOPING_BEACON_PER_BLOCK)*index); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TELESCOPING_BEACON_PER_BLOCK)*index); // Add xp
          
          
          for(int i = 0; i <= tier; i++){
@@ -324,7 +324,7 @@ public class TelescopingBeacon extends ArcanaItem {
             {c,h,m,h,c},
             {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

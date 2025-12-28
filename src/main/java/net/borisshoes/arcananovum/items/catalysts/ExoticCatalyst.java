@@ -85,7 +85,7 @@ public class ExoticCatalyst extends ArcanaItem {
             {c,h,m,h,c},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil());
    }
    
    @Override

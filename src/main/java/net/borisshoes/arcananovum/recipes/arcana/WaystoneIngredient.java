@@ -1,8 +1,12 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
+import com.google.gson.JsonObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -110,5 +114,27 @@ public class WaystoneIngredient extends ArcanaIngredient {
       }else{
          return ArcanaRegistry.WAYSTONE.getPrefItem().copy();
       }
+   }
+   
+   public JsonObject toJson(){
+      JsonObject json = new JsonObject();
+      json.addProperty("type", "arcananovum:waystone_ingredient");
+      json.addProperty("consumed", consumed);
+      json.addProperty("require_unattuned", requireUnattuned);
+      json.addProperty("require_attuned", requireAttuned);
+      json.addProperty("world_key", worldKey != null ? worldKey.identifier().toString() : null);
+      return json;
+   }
+   
+   public static WaystoneIngredient fromJson(JsonObject json){
+      if(!json.get("type").getAsString().equals("arcananovum:waystone_ingredient")) return null;
+      boolean consumed = json.get("consumed").getAsBoolean();
+      boolean requireUnattuned = json.get("require_unattuned").getAsBoolean();
+      boolean requireAttuned = json.get("require_attuned").getAsBoolean();
+      ResourceKey<Level> worldKey = null;
+      if(json.has("world_key") && !json.get("world_key").isJsonNull()){
+         worldKey = ResourceKey.create(Registries.DIMENSION, Identifier.parse(json.get("world_key").getAsString()));
+      }
+      return new WaystoneIngredient(1, consumed, requireUnattuned, requireAttuned, worldKey);
    }
 }

@@ -166,7 +166,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withEnchanter().withCore().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter().withCore().withAnvil());
       
    }
    

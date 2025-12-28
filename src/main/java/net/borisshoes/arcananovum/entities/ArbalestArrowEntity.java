@@ -55,7 +55,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
       initFromStack(arrowStack, weaponStack);
       
       if(owner instanceof ServerPlayer player){
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.ALCHEMICAL_ARBALEST_SHOOT)); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ALCHEMICAL_ARBALEST_SHOOT)); // Add xp
       }
    }
    

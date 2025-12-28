@@ -317,7 +317,7 @@ public class LevitationHarness extends EnergyItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withEnchanter().withCore().withAnvil().withSingularity());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter().withCore().withAnvil().withSingularity()).addCenterpiece(12);
       
    }
    
@@ -415,7 +415,7 @@ public class LevitationHarness extends EnergyItem {
                }
                
                ArcanaEffectUtils.harnessFly(serverWorld,player,10);
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LEVITATION_HARNESS_PER_SECOND));
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.LEVITATION_HARNESS_PER_SECOND));
                
                if(world.getServer().getTickCount() % 120 == 0){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_AMBIENT,1f,0.8f);

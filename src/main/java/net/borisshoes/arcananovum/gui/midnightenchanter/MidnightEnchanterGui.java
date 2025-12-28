@@ -179,7 +179,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
          if(enchanted){
             int essence = (int) (ArcanaUtils.calcEssenceFromEnchants(getStack()) * (1 + .15*ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA.id)));
             SimpleContainer sinv = new SimpleContainer(essence / 64 + 1);
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE)*essence);
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE)*essence);
             if(essence > 0){
                while(essence > 64){
                   sinv.addItem(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance().copyWithCount(64));

@@ -278,7 +278,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
                   server.getPlayerList().broadcastSystemMessage(lvlUpMsg, false);
                }
                
-               if(ArcanaConfig.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
+               if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
                   for(MutableComponent msg : msgs){
                      server.getPlayerList().broadcastSystemMessage(msg, false);
                   }

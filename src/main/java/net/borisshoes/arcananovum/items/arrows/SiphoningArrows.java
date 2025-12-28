@@ -132,7 +132,7 @@ public class SiphoningArrows extends RunicArrow {
             {k,h,m,h,k},
             {a,i,h,g,a},
             {a,a,c,a,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withFletchery());
    }
    
    @Override

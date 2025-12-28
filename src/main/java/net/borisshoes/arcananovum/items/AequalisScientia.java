@@ -566,7 +566,7 @@ public class AequalisScientia extends ArcanaItem {
             {a,b,t,w,d},
             {b,w,w,w,w},
             {w,w,w,w,w}};
-      return new ExplainRecipe(ingredients);
+      return new ExplainRecipe(this, ingredients);
    }
    
    @Override
@@ -742,7 +742,7 @@ public class AequalisScientia extends ArcanaItem {
                         }
                         Containers.dropItemStack(world, center.x,center.y,center.z,result);
                      }
-                     ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE));
+                     ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE));
                   }));
                }
             }else{

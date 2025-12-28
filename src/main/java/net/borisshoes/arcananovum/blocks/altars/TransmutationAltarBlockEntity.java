@@ -158,7 +158,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
             this.getLevel().addFreshEntity(new ItemEntity(this.getLevel(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
          }
          if(transmuteCount > 0 && player != null){
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaConfig.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE));
             ArcanaAchievements.progress(player,ArcanaAchievements.STATE_ALCHEMIST.id,transmuteCount);
          }
          

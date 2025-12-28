@@ -18,9 +18,11 @@ public class ExplainIngredient extends ArcanaIngredient {
    private Component displayName;
    private List<Component> lore;
    private final ItemStack displayOverride;
+   private final Item itemType;
    
    public ExplainIngredient(ItemStack itemStack, int count, String ingredientName, boolean show){
       super(itemStack.getItem(), count);
+      this.itemType = itemStack.getItem();
       this.ingredientName = ingredientName;
       this.show = show;
       this.displayOverride = itemStack.copy();
@@ -28,6 +30,7 @@ public class ExplainIngredient extends ArcanaIngredient {
    
    public ExplainIngredient(Item item, int count, String ingredientName){
       super(item, count);
+      this.itemType = item;
       this.ingredientName = ingredientName;
       this.show = true;
       this.displayOverride = null;
@@ -35,6 +38,7 @@ public class ExplainIngredient extends ArcanaIngredient {
    
    public ExplainIngredient(Item item, int count, String ingredientName, boolean show){
       super(item, count);
+      this.itemType = item;
       this.ingredientName = ingredientName;
       this.show = show;
       this.displayOverride = null;

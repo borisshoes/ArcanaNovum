@@ -157,7 +157,7 @@ public class AlchemicalArbalest extends ArcanaItem {
       ArcanaIngredient b = new ArcanaIngredient(Items.NETHER_WART,16);
       ArcanaIngredient c = new ArcanaIngredient(Items.DRAGON_BREATH,32);
       ArcanaIngredient d = new ArcanaIngredient(Items.BLAZE_POWDER,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT),1));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.MULTISHOT,1));
       ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,2);
       ArcanaIngredient k = new ArcanaIngredient(Items.FERMENTED_SPIDER_EYE,32);
       ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,4);
@@ -169,7 +169,7 @@ public class AlchemicalArbalest extends ArcanaItem {
             {k,l,m,l,k},
             {d,g,h,g,b},
             {a,d,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore().withFletchery().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore().withFletchery().withEnchanter()).addCenterpiece(12);
       
    }
    

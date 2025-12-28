@@ -298,7 +298,7 @@ public class GravitonMaul extends ArcanaItem {
                      totalDmg += radius;
                   }
                }
-               ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_PER_10) * totalDmg / 10,ArcanaConfig.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_CAP)));
+               ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_PER_10) * totalDmg / 10,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_CAP)));
                ArcanaEffectUtils.gravitonMaulSlam(player.level(), player.getOnPos(),radius,0);
                player.releaseUsingItem();
                player.getCooldowns().addCooldown(stack,40);
@@ -339,7 +339,7 @@ public class GravitonMaul extends ArcanaItem {
    protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,32);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.BREACH),4));
+      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.BREACH,4));
       ArcanaIngredient g = new ArcanaIngredient(Items.COBWEB,32);
       ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,3);
       ArcanaIngredient c = new ArcanaIngredient(Items.BREEZE_ROD,32);
@@ -352,7 +352,7 @@ public class GravitonMaul extends ArcanaItem {
             {k,l,m,l,k},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter()).addCenterpiece(12);
    }
    
    @Override

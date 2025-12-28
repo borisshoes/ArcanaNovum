@@ -85,7 +85,7 @@ public class RunicMatrix extends ArcanaItem {
             {c,a,m,a,c},
             {b,g,a,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

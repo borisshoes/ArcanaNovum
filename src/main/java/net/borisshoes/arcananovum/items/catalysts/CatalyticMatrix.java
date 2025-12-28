@@ -93,7 +93,7 @@ public class CatalyticMatrix extends ArcanaItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil());
    }
    
    @Override

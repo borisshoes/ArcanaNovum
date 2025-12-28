@@ -169,7 +169,7 @@ public class MagmaticEversource extends EnergyItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil());
    }
    
    @Override
@@ -290,7 +290,7 @@ public class MagmaticEversource extends EnergyItem {
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer ? blockPos : blockPos2;
             if(placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult)){
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MAGMATIC_EVERSOURCE_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.MAGMATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.HELLGATE.id,1);
                putProperty(stack,USES_TAG,charges-1);
                buildItemLore(stack, playerEntity.level().getServer());

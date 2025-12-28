@@ -151,13 +151,13 @@ public class ShieldOfFortitude extends ArcanaItem {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient r = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.FIRE_PROTECTION),4));
+      ArcanaIngredient r = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.FIRE_PROTECTION,4));
       ArcanaIngredient c = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       ArcanaIngredient g = new ArcanaIngredient(Items.GOLDEN_APPLE,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.BLAST_PROTECTION),4));
-      ArcanaIngredient l = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),4));
+      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.BLAST_PROTECTION,4));
+      ArcanaIngredient l = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.PROTECTION,4));
       ArcanaIngredient m = new ArcanaIngredient(Items.SHIELD,1, true);
-      ArcanaIngredient n = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.PROJECTILE_PROTECTION),4));
+      ArcanaIngredient n = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.PROJECTILE_PROTECTION,4));
       
       ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
@@ -165,7 +165,7 @@ public class ShieldOfFortitude extends ArcanaItem {
             {c,l,m,n,c},
             {b,g,r,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter()).addCenterpiece(12);
       
    }
    

@@ -235,7 +235,7 @@ public class NulMemento extends EnergyItem {
                         .append(Component.literal("Let my gift offer you a second chance.").withStyle(ChatFormatting.DARK_GRAY))
             )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
          }
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.NUL_MEMENTO_PROTECT));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.NUL_MEMENTO_PROTECT));
       }
       
       setEnergy(stack,getMaxEnergy(stack));
@@ -395,7 +395,7 @@ public class NulMemento extends EnergyItem {
             )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
             
             ArcanaNovum.data(player).removeAllAugments();
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.NUL_MEMENTO_DEALLOCATE));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.NUL_MEMENTO_DEALLOCATE));
             ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE.id);
             ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC.id,1);
          }
@@ -723,7 +723,7 @@ public class NulMemento extends EnergyItem {
             {a,s,n,s,c},
             {a,a,s,a,a},
             {a,a,a,a,a}};
-      return new ExplainRecipe(ingredients);
+      return new ExplainRecipe(this, ingredients);
    }
    
    @Override

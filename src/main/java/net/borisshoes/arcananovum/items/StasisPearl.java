@@ -164,7 +164,7 @@ public class StasisPearl extends EnergyItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil());
    }
    
    @Override
@@ -258,7 +258,7 @@ public class StasisPearl extends EnergyItem {
                      putProperty(stack,PEARL_ID_TAG,newPearlID);
                      
                      setEnergy(stack,0);
-                     ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.STASIS_PEARL_USE));
+                     ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STASIS_PEARL_USE));
                   }
                }else{
                   playerEntity.getCooldowns().addCooldown(stack, 0);

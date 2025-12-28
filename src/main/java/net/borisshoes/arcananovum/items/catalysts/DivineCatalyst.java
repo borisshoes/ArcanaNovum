@@ -134,7 +134,7 @@ public class DivineCatalyst extends ArcanaItem {
             {a,s,n,s,c},
             {a,a,s,a,a},
             {a,a,a,a,a}};
-      return new ExplainRecipe(ingredients);
+      return new ExplainRecipe(this, ingredients);
    }
    
    @Override

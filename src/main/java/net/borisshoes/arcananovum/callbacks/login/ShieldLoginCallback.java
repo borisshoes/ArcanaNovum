@@ -39,7 +39,7 @@ public class ShieldLoginCallback extends LoginCallback {
          float removed = Math.max(0,player.getAbsorptionAmount()-hearts);
          float diff = hearts - player.getAbsorptionAmount() + removed;
          if(diff != 0){
-            ArcanaNovum.data(player).addXP((int) (ArcanaConfig.getInt(ArcanaRegistry.SHIELD_OF_FORTITUDE_ABSORB_DAMAGE)*diff)); // Give XP
+            ArcanaNovum.data(player).addXP((int) (ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHIELD_OF_FORTITUDE_ABSORB_DAMAGE)*diff)); // Give XP
          }
          if(player.getAbsorptionAmount() != 0){
             SoundUtils.playSongToPlayer(player, SoundEvents.AMETHYST_CLUSTER_FALL, .3f, .3f);

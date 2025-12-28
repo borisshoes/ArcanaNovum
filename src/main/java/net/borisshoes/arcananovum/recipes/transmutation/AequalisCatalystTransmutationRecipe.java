@@ -175,7 +175,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          }
       }
       if(player != null){
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE));
       }
       return outputs;
    }

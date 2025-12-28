@@ -81,7 +81,7 @@ public abstract class QuiverItem extends ArcanaItem {
       if(eligible.isEmpty()) return;
       eligible.get((int)(Math.random()*eligible.size())).grow(1);
       
-      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.QUIVER_REFILL)); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.QUIVER_REFILL)); // Add xp
       if(this instanceof OverflowingQuiver){
          ArcanaAchievements.progress(player,ArcanaAchievements.SPARE_STOCK.id,1);
       }else if(this instanceof RunicQuiver){

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
+import com.google.gson.JsonObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -56,5 +57,20 @@ public class ShulkerCoreIngredient extends ArcanaIngredient {
    @Override
    public ItemStack ingredientAsStack(){
       return ArcanaRegistry.SHULKER_CORE.getPrefItem();
+   }
+   
+   public JsonObject toJson(){
+      JsonObject json = new JsonObject();
+      json.addProperty("type", "arcananovum:shulker_core_ingredient");
+      json.addProperty("needs_stone", needsStone);
+      json.addProperty("min_souls", minSouls);
+      return json;
+   }
+   
+   public static ShulkerCoreIngredient fromJson(JsonObject json){
+      if(!json.get("type").getAsString().equals("arcananovum:shulker_core_ingredient")) return null;
+      boolean needsStone = json.get("needs_stone").getAsBoolean();
+      int minSouls = json.get("min_souls").getAsInt();
+      return new ShulkerCoreIngredient(needsStone, minSouls);
    }
 }

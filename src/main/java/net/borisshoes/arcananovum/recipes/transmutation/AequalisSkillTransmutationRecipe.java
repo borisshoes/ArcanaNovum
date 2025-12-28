@@ -200,7 +200,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      if(player != null) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_SKILL_TRANSMUTE));
+      if(player != null) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_SKILL_TRANSMUTE));
       return new ArrayList<>();
    }
    

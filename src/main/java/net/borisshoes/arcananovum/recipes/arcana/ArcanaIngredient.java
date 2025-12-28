@@ -1,16 +1,30 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Either;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -19,53 +33,56 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class ArcanaIngredient {
-   protected final Item itemType;
+   protected final List<Either<Item, TagKey<Item>>> acceptedItems = new ArrayList<>();
    protected final int count;
    protected Predicate<ItemStack> itemPredicate;
    protected final ItemStack exampleStack;
    protected final boolean ignoresResourceful;
+   protected final List<Tuple<ResourceKey<Enchantment>,Integer>> enchantments = new ArrayList<>();
+   protected final List<PotionData> potions = new ArrayList<>();
    
-   public static final ArcanaIngredient EMPTY = new ArcanaIngredient(Items.AIR,0, true, ItemStack.EMPTY, ItemStack::isEmpty);
+   public static final ArcanaIngredient EMPTY = new ArcanaIngredient(List.of(Either.left(Items.AIR)),0, true, ItemStack.EMPTY, ItemStack::isEmpty);
    
    public ArcanaIngredient(Item itemType, int count, boolean ignoresResourceful){
       this.count = count;
-      this.itemType = itemType;
       this.ignoresResourceful = ignoresResourceful;
       this.exampleStack = new ItemStack(itemType,count);
-      this.itemPredicate = (stack) -> stack.is(itemType);
+      this.acceptedItems.add(Either.left(itemType));
+      this.itemPredicate = (stack) -> acceptedItems.stream().anyMatch(e -> (e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get())));
    }
    
    public ArcanaIngredient(Item itemType, int count){
       this.count = count;
-      this.itemType = itemType;
       this.exampleStack = new ItemStack(itemType,count);
-      this.itemPredicate = (stack) -> stack.is(itemType);
+      this.acceptedItems.add(Either.left(itemType));
+      this.itemPredicate = (stack) -> acceptedItems.stream().anyMatch(e -> (e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get())));
       this.ignoresResourceful = false;
    }
    
-   private ArcanaIngredient(Item itemType, int count, boolean ignoresResourceful, ItemStack exampleStack, Predicate<ItemStack> itemPredicate){
+   private ArcanaIngredient(List<Either<Item, TagKey<Item>>> acceptedItems, int count, boolean ignoresResourceful, ItemStack exampleStack, Predicate<ItemStack> itemPredicate){
+      this.acceptedItems.addAll(acceptedItems);
       this.count = count;
-      this.itemType = itemType;
       this.exampleStack = exampleStack.copyWithCount(count);
       this.itemPredicate = itemPredicate;
       this.ignoresResourceful = ignoresResourceful;
    }
    
    public ArcanaIngredient copyWithCount(int newCount){
-      return new ArcanaIngredient(itemType,newCount,ignoresResourceful,exampleStack,itemPredicate);
+      return new ArcanaIngredient(acceptedItems,newCount,ignoresResourceful,exampleStack,itemPredicate);
    }
    
-   public ArcanaIngredient withEnchantments(EnchantmentInstance... enchantments){
+   public ArcanaIngredient withEnchantments(ArcanaIngredient.EnchantmentEntry... enchantments){
       this.itemPredicate = this.itemPredicate.and((stack) -> {
          ItemEnchantments enchants = EnchantmentHelper.getEnchantmentsForCrafting(stack);
-         for(EnchantmentInstance enchantment : enchantments){
+         for(EnchantmentEntry enchantment : enchantments){
             if(enchants.getLevel(enchantment.enchantment()) < enchantment.level()) return false;
          }
          return true;
       });
       
-      for(EnchantmentInstance enchantment : enchantments){
+      for(EnchantmentEntry enchantment : enchantments){
          this.exampleStack.enchant(enchantment.enchantment(),enchantment.level());
+         this.enchantments.add(new Tuple<>(enchantment.enchantmentKey(),enchantment.level()));
       }
       
       return this;
@@ -74,6 +91,10 @@ public class ArcanaIngredient {
    public ArcanaIngredient withPotions(Holder<Potion>... potions){
       List<MobEffectInstance> effects = new ArrayList<>();
       Arrays.stream(potions).forEach(potion -> effects.addAll(potion.value().getEffects()));
+      for(Holder<Potion> potion : potions){
+         String fullId = BuiltInRegistries.POTION.getKey(potion.value()).toString();
+         this.potions.add(new PotionData(fullId,0,0,0));
+      }
       return withEffects(effects.toArray(new MobEffectInstance[0]));
    }
    
@@ -109,14 +130,8 @@ public class ArcanaIngredient {
       return this;
    }
    
-   
-   
    public int getCount(){
       return count;
-   }
-   
-   public Item getItemType(){
-      return itemType;
    }
    
    public boolean validStack(ItemStack stack){
@@ -158,5 +173,186 @@ public class ArcanaIngredient {
       if(other == this) return true;
       if(!(other instanceof ArcanaIngredient o)) return false;
       return o.itemPredicate.test(this.exampleStack) && this.itemPredicate.test(o.exampleStack);
+   }
+   
+   public JsonObject toJson(){
+      JsonObject json = new JsonObject();
+      json.addProperty("type", "arcananovum:generic_ingredient");
+      
+      // Serialize item(s)
+      if(acceptedItems.size() == 1){
+         Either<Item, TagKey<Item>> entry = acceptedItems.getFirst();
+         if(entry.left().isPresent()){
+            json.addProperty("item", BuiltInRegistries.ITEM.getKey(entry.left().get()).toString());
+         }else if(entry.right().isPresent()){
+            json.addProperty("item", "#" + entry.right().get().location().toString());
+         }
+      }else{
+         JsonArray itemArray = new JsonArray();
+         for(Either<Item, TagKey<Item>> entry : acceptedItems){
+            if(entry.left().isPresent()){
+               itemArray.add(BuiltInRegistries.ITEM.getKey(entry.left().get()).toString());
+            }else if(entry.right().isPresent()){
+               itemArray.add("#" + entry.right().get().location().toString());
+            }
+         }
+         json.add("item", itemArray);
+      }
+      
+      json.addProperty("count", count);
+      
+      if(ignoresResourceful){
+         json.addProperty("ignores_resourceful", true);
+      }
+      
+      // Serialize enchantments
+      if(!enchantments.isEmpty()){
+         JsonObject enchantmentsJson = new JsonObject();
+         for(Tuple<ResourceKey<Enchantment>,Integer> enchantTuple : enchantments){
+            enchantmentsJson.addProperty(enchantTuple.getA().identifier().toString(), enchantTuple.getB());
+         }
+         json.add("enchantments", enchantmentsJson);
+      }
+      
+      // Serialize potions
+      if(!potions.isEmpty()){
+         JsonArray potionsArray = new JsonArray();
+         for(PotionData potion : potions){
+            JsonObject potionJson = new JsonObject();
+            potionJson.addProperty("effect", potion.effectId());
+            potionJson.addProperty("duration", potion.duration());
+            potionJson.addProperty("amplifier", potion.amplifier());
+            if(potion.color() != -1){
+               potionJson.addProperty("color", potion.color());
+            }
+            potionsArray.add(potionJson);
+         }
+         json.add("potions", potionsArray);
+      }
+      
+      return json;
+   }
+   
+   public static ArcanaIngredient fromJson(JsonObject json){
+      if(!json.get("type").getAsString().equals("arcananovum:generic_ingredient")) return null;
+      
+      // Parse item(s)
+      List<Either<Item, TagKey<Item>>> acceptedItems = new ArrayList<>();
+      JsonElement itemElement = json.get("item");
+      if(itemElement.isJsonArray()){
+         for(JsonElement element : itemElement.getAsJsonArray()){
+            acceptedItems.add(parseItemOrTag(element.getAsString()));
+         }
+      }else{
+         acceptedItems.add(parseItemOrTag(itemElement.getAsString()));
+      }
+      
+      int count = json.get("count").getAsInt();
+      boolean ignoresResourceful = json.has("ignores_resourceful") && json.get("ignores_resourceful").getAsBoolean();
+      
+      // Get the first item for the example stack
+      Item exampleItem = acceptedItems.getFirst().left().orElse(Items.AIR);
+      ItemStack exampleStack = new ItemStack(exampleItem, count);
+      
+      // Build the base predicate
+      Predicate<ItemStack> itemPredicate = (stack) -> acceptedItems.stream().anyMatch(e ->
+            (e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get())));
+      
+      ArcanaIngredient ingredient = new ArcanaIngredient(acceptedItems, count, ignoresResourceful, exampleStack, itemPredicate);
+      
+      // Parse enchantments
+      if(json.has("enchantments")){
+         JsonObject enchantmentsJson = json.getAsJsonObject("enchantments");
+         for(Map.Entry<String, JsonElement> entry : enchantmentsJson.entrySet()){
+            ResourceKey<Enchantment> enchantKey = ResourceKey.create(Registries.ENCHANTMENT, Identifier.parse(entry.getKey()));
+            int level = entry.getValue().getAsInt();
+            ingredient.enchantments.add(new Tuple<>(enchantKey, level));
+            // Add enchantment predicate
+            final ResourceKey<Enchantment> finalEnchantKey = enchantKey;
+            final int finalLevel = level;
+            ingredient.itemPredicate = ingredient.itemPredicate.and((stack) -> {
+               ItemEnchantments enchants = EnchantmentHelper.getEnchantmentsForCrafting(stack);
+               for(Object2IntMap.Entry<Holder<Enchantment>> e : enchants.entrySet()){
+                  if(e.getKey().is(finalEnchantKey) && e.getIntValue() >= finalLevel) return true;
+               }
+               return false;
+            });
+         }
+      }
+      
+      // Parse potions
+      if(json.has("potions")){
+         JsonArray potionsArray = json.getAsJsonArray("potions");
+         List<MobEffectInstance> effects = new ArrayList<>();
+         for(JsonElement element : potionsArray){
+            JsonObject potionJson = element.getAsJsonObject();
+            String effectId = potionJson.get("effect").getAsString();
+            Holder<Potion> foundPotion = BuiltInRegistries.POTION.get(Identifier.parse(effectId)).orElse(null);
+            if(foundPotion != null){
+               ingredient.potions.add(new PotionData(effectId, 0, 0, 0));
+               effects.addAll(foundPotion.value().getEffects());
+            }else{
+               int duration = potionJson.get("duration").getAsInt();
+               int amplifier = potionJson.get("amplifier").getAsInt();
+               int color = potionJson.has("color") ? potionJson.get("color").getAsInt() : -1;
+               
+               ingredient.potions.add(new PotionData(effectId, duration, amplifier, color));
+               
+               // Try to parse as mob effect
+               Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(effectId)).orElse(null);
+               if(effectHolder != null){
+                  effects.add(new MobEffectInstance(effectHolder, duration, amplifier));
+               }
+            }
+         }
+         
+         if(!effects.isEmpty()){
+            ingredient.itemPredicate = ingredient.itemPredicate.and((stack) -> {
+               PotionContents pots = stack.get(DataComponents.POTION_CONTENTS);
+               if(pots == null) return false;
+               
+               for(MobEffectInstance reqEffect : effects){
+                  boolean found = false;
+                  for(MobEffectInstance effect : pots.getAllEffects()){
+                     if(reqEffect.getEffect().value().equals(effect.getEffect().value()) &&
+                           effect.getAmplifier() >= reqEffect.getAmplifier() &&
+                           effect.getDuration() >= reqEffect.getDuration()){
+                        found = true;
+                        break;
+                     }
+                  }
+                  if(!found) return false;
+               }
+               return true;
+            });
+            
+            // Set potion contents on example stack
+            OptionalInt colorOpt = PotionContents.getColorOptional(effects);
+            PotionContents newComp = new PotionContents(Optional.empty(), colorOpt.isPresent() ? Optional.of(colorOpt.getAsInt()) : Optional.empty(), effects, Optional.empty());
+            ingredient.exampleStack.set(DataComponents.POTION_CONTENTS, newComp);
+         }
+      }
+      
+      return ingredient;
+   }
+   
+   private static Either<Item, TagKey<Item>> parseItemOrTag(String str){
+      if(str.startsWith("#")){
+         // It's a tag
+         Identifier tagLoc = Identifier.parse(str.substring(1));
+         return Either.right(TagKey.create(Registries.ITEM, tagLoc));
+      }else{
+         // It's an item
+         Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(str));
+         return Either.left(item);
+      }
+   }
+   
+   protected record PotionData(String effectId, int duration, int amplifier, int color){}
+   
+   public record EnchantmentEntry(ResourceKey<Enchantment> enchantmentKey, Holder<Enchantment> enchantment, int level){
+      public EnchantmentEntry(ResourceKey<Enchantment> enchantmentKey, int level){
+         this(enchantmentKey, MinecraftUtils.getEnchantment(enchantmentKey), level);
+      }
    }
 }

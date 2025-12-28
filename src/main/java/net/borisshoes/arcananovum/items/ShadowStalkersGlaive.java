@@ -177,7 +177,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
             {c,l,m,l,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore()).addCenterpiece(12);
    }
    
    @Override
@@ -278,7 +278,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                      message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                   }
                   player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
-                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
                   
                   if(target instanceof ServerPlayer || target instanceof Warden) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,0);
                   if(target instanceof Mob){
@@ -322,7 +322,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                }
                player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
                
                int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE.id))];
                MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);

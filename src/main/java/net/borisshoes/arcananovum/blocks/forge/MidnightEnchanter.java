@@ -134,21 +134,21 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,24);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),4));
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.THORNS),3));
-      ArcanaIngredient d = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.BINDING_CURSE),1));
-      ArcanaIngredient f = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.EFFICIENCY),5));
+      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.PROTECTION,4));
+      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.THORNS,3));
+      ArcanaIngredient d = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.BINDING_CURSE,1));
+      ArcanaIngredient f = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.EFFICIENCY,5));
       ArcanaIngredient g = new ArcanaIngredient(Items.EXPERIENCE_BOTTLE,16);
       ArcanaIngredient h = new ArcanaIngredient(Items.LAPIS_BLOCK,12);
-      ArcanaIngredient j = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.SWIFT_SNEAK),3));
-      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),3));
+      ArcanaIngredient j = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.SWIFT_SNEAK,3));
+      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.UNBREAKING,3));
       ArcanaIngredient m = new ArcanaIngredient(Items.ENCHANTING_TABLE,16);
-      ArcanaIngredient o = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.SOUL_SPEED),3));
-      ArcanaIngredient p = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.MENDING),1));
-      ArcanaIngredient t = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING),4));
-      ArcanaIngredient v = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.SHARPNESS),5));
-      ArcanaIngredient w = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.LOOTING),3));
-      ArcanaIngredient x = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.VANISHING_CURSE),1));
+      ArcanaIngredient o = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.SOUL_SPEED,3));
+      ArcanaIngredient p = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.MENDING,1));
+      ArcanaIngredient t = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.FEATHER_FALLING,4));
+      ArcanaIngredient v = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.SHARPNESS,5));
+      ArcanaIngredient w = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.LOOTING,3));
+      ArcanaIngredient x = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.VANISHING_CURSE,1));
       
       ArcanaIngredient[][] ingredients = {
             {a,b,c,d,a},
@@ -156,7 +156,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
             {k,h,m,h,o},
             {p,g,h,g,t},
             {a,v,w,x,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

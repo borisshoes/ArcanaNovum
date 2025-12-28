@@ -192,7 +192,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -295,7 +295,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                
                putProperty(stack,CONTENTS_TAG,new CompoundTag());
                putProperty(stack,STATE_TAG,new CompoundTag());
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CHEST_TRANSLOCATOR_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CHEST_TRANSLOCATOR_USE)); // Add xp
                SoundUtils.playSound(world,placePos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1,1);
             }else{
                player.displayClientMessage(Component.literal("The chest cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);

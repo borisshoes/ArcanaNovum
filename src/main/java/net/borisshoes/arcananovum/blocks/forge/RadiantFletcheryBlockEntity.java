@@ -244,7 +244,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
             }
             
             watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.FINALLY_USEFUL_2.id));
-            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.RADIANT_FLETCHERY_TIP_ARROWS)));
+            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.RADIANT_FLETCHERY_TIP_ARROWS)));
          }
          
          //Update gui

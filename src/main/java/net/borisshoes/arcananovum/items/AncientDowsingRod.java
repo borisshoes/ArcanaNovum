@@ -126,7 +126,7 @@ public class AncientDowsingRod extends EnergyItem {
             {h,l,m,l,h},
             {d,g,h,g,b},
             {b,d,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -256,7 +256,7 @@ public class AncientDowsingRod extends EnergyItem {
                         Vec3 end = eyePos.add(blockPos.subtract(eyePos).normalize().scale(1.5+3));
                         ArcanaEffectUtils.dowsingRodArrow(player.level(),start,end,1);
                         
-                        ArcanaNovum.data(player).addXP(Math.min(ArcanaConfig.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_CAP),ArcanaConfig.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
+                        ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
                         SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1f, .5f);
                         
                         if(debris.size() >= 10){

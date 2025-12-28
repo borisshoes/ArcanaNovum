@@ -108,7 +108,7 @@ public class IgneousCollider extends ArcanaBlock {
       ArcanaIngredient g = new ArcanaIngredient(Items.MAGMA_BLOCK,32);
       ArcanaIngredient h = new ArcanaIngredient(Items.CAULDRON,24);
       ArcanaIngredient i = new ArcanaIngredient(Items.BLUE_ICE,32);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_PICKAXE,1, true).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.EFFICIENCY),5), new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),3));
+      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_PICKAXE,1, true).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.EFFICIENCY,5), new ArcanaIngredient.EnchantmentEntry(Enchantments.UNBREAKING,3));
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       
       ArcanaIngredient[][] ingredients = {
@@ -117,7 +117,7 @@ public class IgneousCollider extends ArcanaBlock {
             {a,l,m,l,a},
             {b,g,h,i,b},
             {a,b,a,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter());
    }
    
    @Override

@@ -161,7 +161,7 @@ public class TetherArrows extends RunicArrow {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = ArcanaIngredient.EMPTY;
       ArcanaIngredient c = new ArcanaIngredient(Items.STRING,32);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.RIPTIDE),3));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.RIPTIDE,3));
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
       ArcanaIngredient i = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_LEAPING);
       GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
@@ -172,7 +172,7 @@ public class TetherArrows extends RunicArrow {
             {c,h,m,h,c},
             {a,i,h,g,a},
             {a,a,c,a,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withFletchery().withEnchanter());
    }
    
    @Override

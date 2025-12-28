@@ -170,7 +170,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
             {c,o,m,o,c},
             {b,h,o,h,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

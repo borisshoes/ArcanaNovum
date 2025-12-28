@@ -358,7 +358,7 @@ public class EnhancedForgingGui extends SimpleGui {
          if(percentile >= 0.99 && !enhancedStack.is(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER)){
             ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
          }
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARDUST_INFUSION_PER_STARDUST)*finalCost);
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STARDUST_INFUSION_PER_STARDUST)*finalCost);
          Vec3 pos = blockEntity.getBlockPos().getCenter().add(0,2,0);
          Containers.dropItemStack(world,pos.x,pos.y,pos.z,enhancedStack);
       }));

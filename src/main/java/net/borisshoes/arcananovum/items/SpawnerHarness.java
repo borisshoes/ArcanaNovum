@@ -135,7 +135,7 @@ public class SpawnerHarness extends ArcanaItem {
    
    private void giveScrap(Player player){
       ItemStack stack = new ItemStack(Items.NETHERITE_SCRAP);
-      int reduction = ArcanaConfig.getInt(ArcanaRegistry.INGREDIENT_REDUCTION);
+      int reduction = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.INGREDIENT_REDUCTION);
       int scrapCost = (int) Math.ceil(4.0 / reduction);
       stack.setCount(scrapCost/2);
       MinecraftUtils.giveStacks(player,stack);
@@ -154,7 +154,7 @@ public class SpawnerHarness extends ArcanaItem {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),1));
+      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.SILK_TOUCH,1));
       ArcanaIngredient g = new ArcanaIngredient(Items.ENDER_EYE,4);
       ArcanaIngredient h = new ArcanaIngredient(Items.IRON_BARS,16);
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
@@ -165,7 +165,7 @@ public class SpawnerHarness extends ArcanaItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withEnchanter().withCore());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withEnchanter().withCore());
    }
    
    public class SpawnerHarnessItem extends ArcanaPolymerItem {
@@ -228,7 +228,7 @@ public class SpawnerHarness extends ArcanaItem {
                      stack.consume(stack.getCount(),player);
                      if(scrap) giveScrap(player);
                   }
-                  ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaConfig.getInt(ArcanaRegistry.SPAWNER_HARNESS_USE)*0.15)); // Add xp
+                  ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SPAWNER_HARNESS_USE)*0.15)); // Add xp
                   return InteractionResult.SUCCESS_SERVER;
                }else{
                   player.displayClientMessage(Component.literal("The harness cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);

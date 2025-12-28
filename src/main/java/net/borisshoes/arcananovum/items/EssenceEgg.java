@@ -205,7 +205,7 @@ public class EssenceEgg extends ArcanaItem {
             {c,h,t,h,c},
             {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement()).addCenterpiece(12);
    }
    
    public class EssenceEggItem extends ArcanaPolymerItem {
@@ -241,7 +241,7 @@ public class EssenceEgg extends ArcanaItem {
                      if(playerEntity instanceof ServerPlayer player){
                         player.displayClientMessage(Component.literal("The Spawner Assumes the Essence of "+ EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                         SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
-                        int xp = ArcanaConfig.getInt(ArcanaRegistry.ESSENCE_EGG_CONVERT);
+                        int xp = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ESSENCE_EGG_CONVERT);
                         ArcanaNovum.data(playerEntity).addXP(Math.min(0,xp-(xp/5)*captiveLevel)); // Add xp
                         ArcanaAchievements.grant(player,ArcanaAchievements.SOUL_CONVERSION.id);
                      }
@@ -274,7 +274,7 @@ public class EssenceEgg extends ArcanaItem {
                      }
                      if(playerEntity instanceof ServerPlayer player){
                         SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
-                        ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.ESSENCE_EGG_SPAWN)); // Add xp
+                        ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ESSENCE_EGG_SPAWN)); // Add xp
                         ArcanaAchievements.progress(player,ArcanaAchievements.SOUL_FOR_SOUL.id,1);
                      }
                   }

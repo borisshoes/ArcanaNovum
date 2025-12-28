@@ -161,7 +161,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
             {a,a,g,a,a},
             {a,a,s,a,a},
             {a,a,a,a,a}};
-      return new ExplainRecipe(ingredients);
+      return new ExplainRecipe(this, ingredients);
    }
    
    @Override

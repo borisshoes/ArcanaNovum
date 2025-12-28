@@ -169,7 +169,7 @@ public class StormArrows extends RunicArrow {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = ArcanaIngredient.EMPTY;
       ArcanaIngredient c = new ArcanaIngredient(Items.LIGHTNING_ROD,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.CHANNELING),1));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.CHANNELING,1));
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
       GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
       
@@ -179,7 +179,7 @@ public class StormArrows extends RunicArrow {
             {c,h,m,h,c},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withFletchery().withEnchanter());
    }
    
    @Override

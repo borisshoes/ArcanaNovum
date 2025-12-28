@@ -160,7 +160,7 @@ public class WingsOfEnderia extends EnergyItem {
                wings.addEnergy(item,1); // Add 1 energy for each tick of flying
                if(wings.getEnergy(item) % 1000 == 999)
                   player.displayClientMessage(Component.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).withStyle(ChatFormatting.DARK_PURPLE),true);
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_FLY)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_FLY)); // Add xp
             }
             CompoundTag leftShoulder = player.getShoulderEntityLeft();
             CompoundTag rightShoulder = player.getShoulderEntityRight();

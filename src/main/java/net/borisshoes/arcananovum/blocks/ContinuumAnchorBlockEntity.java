@@ -162,10 +162,10 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
                ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player == null){
                   BorisLib.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
-                  if(serverWorld.getServer().getTickCount() % 1200 == 0) BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE)));
+                  if(serverWorld.getServer().getTickCount() % 1200 == 0) BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE)));
                }else{
                   ArcanaAchievements.progress(player,ArcanaAchievements.TIMEY_WIMEY.id, 1);
-                  if(serverWorld.getServer().getTickCount() % 1200 == 0) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE));
+                  if(serverWorld.getServer().getTickCount() % 1200 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE));
                }
             }
          }

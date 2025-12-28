@@ -231,7 +231,7 @@ public class SojournerBoots extends EnergyItem {
             {c,l,m,l,c},
             {p,g,h,g,t},
             {a,v,c,x,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withAnvil()).addCenterpiece(12);
    }
    
    public class SojournerBootsItem extends ArcanaPolymerItem {
@@ -300,7 +300,7 @@ public class SojournerBoots extends EnergyItem {
                      int newEnergy = getEnergy(stack);
                      if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
                         player.displayClientMessage(Component.literal("Sojourner Boots Energy: "+newEnergy).withStyle(ChatFormatting.DARK_GREEN),true);
-                     if(world.getServer().getTickCount() % 20 == 0) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
+                     if(world.getServer().getTickCount() % 20 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
                      if(newEnergy >= getMaxEnergy(stack)){
                         Event.addEvent(new SojournersMaxRunEvent(player));
                         if(Event.getEventsOfType(SojournersMaxRunEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count() >= ((TimedAchievement) ArcanaAchievements.RUNNING).getGoal()){

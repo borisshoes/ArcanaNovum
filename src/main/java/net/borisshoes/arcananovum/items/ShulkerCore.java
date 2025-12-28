@@ -218,7 +218,7 @@ public class ShulkerCore extends EnergyItem {
                   addEnergy(stack, -(speed / 2 + 1));
                playerEntity.addEffect(levit);
                SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
-               ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
+               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
                if(world instanceof ServerLevel serverWorld){
                   ArcanaEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }
@@ -340,7 +340,7 @@ public class ShulkerCore extends EnergyItem {
             {c,h,t,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withAnvil()).addCenterpiece(12);
       
    }
    

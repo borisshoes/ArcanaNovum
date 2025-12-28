@@ -156,7 +156,7 @@ public abstract class ArcanaAchievement {
          
          SoundUtils.playSongToPlayer(player, SoundEvents.PLAYER_LEVELUP,1,1);
       }
-      if(ArcanaConfig.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
+      if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
          for(MutableComponent msg : msgs){
             server.getPlayerList().broadcastSystemMessage(msg, false);
          }

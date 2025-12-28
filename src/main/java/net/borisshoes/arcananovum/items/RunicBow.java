@@ -146,7 +146,7 @@ public class RunicBow extends ArcanaItem {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
       ArcanaIngredient b = new ArcanaIngredient(Items.AMETHYST_SHARD,32);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.POWER),5));
+      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.POWER,5));
       ArcanaIngredient d = new ArcanaIngredient(Items.END_CRYSTAL,24);
       ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       GenericArcanaIngredient h = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
@@ -158,7 +158,7 @@ public class RunicBow extends ArcanaItem {
             {c,h,m,h,c},
             {d,g,h,g,b},
             {a,d,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withFletchery().withEnchanter().withCore());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withFletchery().withEnchanter().withCore()).addCenterpiece(12);
    }
    
    @Override
@@ -230,7 +230,7 @@ public class RunicBow extends ArcanaItem {
                   volume = 1.2f;
                }
                
-               ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT) * list.size());
+               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT) * list.size());
                if(playerEntity instanceof ServerPlayer player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, list.size());
             }
             

@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -21,7 +24,10 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.cache.CacheGui;
+import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
@@ -81,6 +87,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.*;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
+import static net.borisshoes.borislib.BorisLib.LOGGER;
 
 public class ArcanaCommands {
    
@@ -466,7 +473,7 @@ public class ArcanaCommands {
                      ArrayList<String> enchStrs = new ArrayList<>();
                      for(Holder<Enchantment> entry : enchantComp.keySet()){
                         enchStrs.add("new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments."+entry.unwrapKey().get().identifier().getPath().toUpperCase(Locale.ROOT)+"),"+enchantComp.getLevel(entry)+")");
-                        ingred = ingred.withEnchantments(new EnchantmentInstance(entry, enchantComp.getLevel(entry)));
+                        ingred = ingred.withEnchantments(new ArcanaIngredient.EnchantmentEntry(entry.unwrapKey().get(), enchantComp.getLevel(entry)));
                      }
                      
                      if(!enchStrs.isEmpty()){
@@ -554,7 +561,7 @@ public class ArcanaCommands {
                }
                lines.add(line);
             }
-            lines.add("return new ArcanaRecipe(ingredients,"+forgeReqStr+");");
+            lines.add("return new ArcanaRecipe(this, ingredients,"+forgeReqStr+");");
             
             for(String line : lines){
                out.println(line);
@@ -576,7 +583,30 @@ public class ArcanaCommands {
          return 0;
       try {
          ServerPlayer player = ctx.getSource().getPlayer();
-
+         
+         Path dirPath = FabricLoader.getInstance().getConfigDir().resolve("arcananovum").resolve("recipe_gen");
+         Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+         
+         for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
+            ArcanaRecipe recipe = arcanaItem.getRecipe();
+            if(recipe == null || recipe instanceof ExplainRecipe){
+               LOGGER.info("Skipping Recipe for {}",arcanaItem.getId());
+               continue;
+            }
+            
+            File newFile = dirPath.resolve(arcanaItem.getId()+".json").toFile();
+            newFile.getParentFile().mkdirs();
+            
+            try(BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(newFile)))){
+               JsonObject json = recipe.toJson();
+               gson.toJson(json, output);
+               LOGGER.info("Saved Recipe for {} to {}",arcanaItem.getId(),newFile.getAbsolutePath());
+            }catch(IOException e){
+               LOGGER.fatal("Failed to save {} recipe file file!", arcanaItem.getId());
+               LOGGER.fatal(e);
+            }
+         }
+         
       } catch (Exception e){
          log(2,e.toString());
       }

@@ -68,7 +68,7 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
          }
          
          if(shooter instanceof ServerPlayer player){
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT));
             ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, 1);
             shooter.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS,volume, 1.0F / (shooter.level().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
          }

@@ -155,7 +155,7 @@ public class TotemOfVengeance extends ArcanaItem {
          }
          
          ArcanaAchievements.progress(player,ArcanaAchievements.TOO_ANGRY_TO_DIE.id,0); // Start the timer
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_ACTIVATE));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_ACTIVATE));
       }
    }
    
@@ -187,7 +187,7 @@ public class TotemOfVengeance extends ArcanaItem {
             {k,b,m,b,k},
             {p,k,r,k,t},
             {a,v,k,x,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withEnchanter());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter());
    }
    
    @Override

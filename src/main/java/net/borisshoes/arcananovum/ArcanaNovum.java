@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
+import net.borisshoes.borislib.config.ConfigManager;
 import net.borisshoes.borislib.utils.ItemModDataHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -49,17 +50,17 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
    public static MinecraftServer SERVER = null;
-   public static final boolean DEV_MODE = false;
+   public static final boolean DEV_MODE = true;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static final String BLANK_UUID = "00000000-0000-4000-8000-000000000000";
    public static final ItemModDataHandler ITEM_DATA = new ItemModDataHandler(MOD_ID);
-   public static ConfigUtils CONFIG;
+   public static ConfigManager CONFIG;
    public static int DEBUG_VALUE = 0;
    
    @Override
    public void onInitialize(){
-      CONFIG = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), LOGGER, ArcanaRegistry.CONFIG_SETTINGS.stream().map(ArcanaConfig.ConfigSetting::makeConfigValue).collect(Collectors.toList()));
+      CONFIG = new ConfigManager(MOD_ID,"Arcana Novum",CONFIG_NAME,ArcanaRegistry.CONFIG_SETTINGS);
       ArcanaRegistry.initialize();
       
       ServerTickEvents.END_WORLD_TICK.register(WorldTickCallback::onWorldTick);

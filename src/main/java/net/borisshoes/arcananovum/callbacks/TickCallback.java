@@ -191,7 +191,7 @@ public class TickCallback {
       if(ArcanaItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT.id);
       if(curConc > maxConc && !player.isCreative() && !player.isSpectator()){
          int concTick = ((IntTag)arcaneProfile.getMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG)).intValue() + 1;
-         if(ArcanaConfig.getBoolean(ArcanaRegistry.DO_CONCENTRATION_DAMAGE)){
+         if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DO_CONCENTRATION_DAMAGE)){
             player.displayClientMessage(Component.literal("Your mind burns as your Arcana overwhelms you!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC, ChatFormatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL,2,.1f);
             player.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(),ArcanaDamageTypes.CONCENTRATION), concTick*2);

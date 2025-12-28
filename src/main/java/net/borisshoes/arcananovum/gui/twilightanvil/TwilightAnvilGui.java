@@ -102,7 +102,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleContainer> {
             if(finalMaxEnhanced && !input1MaxEnhanced && !input2MaxEnhanced){
                ArcanaAchievements.grant(player,ArcanaAchievements.TINKER_TO_THE_TOP.id);
             }
-            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.TWILIGHT_ANVIL_CAP),ArcanaConfig.getInt(ArcanaRegistry.TWILIGHT_ANVIL_PER_10)*points/10.0));
+            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TWILIGHT_ANVIL_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TWILIGHT_ANVIL_PER_10)*points/10.0));
             
             listener.setUpdating();
             inventory.setItem(0, ItemStack.EMPTY);

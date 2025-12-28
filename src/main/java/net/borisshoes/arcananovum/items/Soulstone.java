@@ -153,7 +153,7 @@ public class Soulstone extends ArcanaItem {
          player.displayClientMessage(Component.literal("Your Soulstone crackles with new power!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, 1,1f);
          if(tier > maxTier){
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
             putProperty(stone,MAX_TIER_TAG,tier);
          }
          if(tier == 7){
@@ -263,7 +263,7 @@ public class Soulstone extends ArcanaItem {
             {c,h,m,h,c},
             {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withAnvil());
    }
    
    public class SoulstoneItem extends ArcanaPolymerItem {

@@ -34,19 +34,22 @@ import net.borisshoes.arcananovum.items.normal.*;
 import net.borisshoes.arcananovum.lootfunctions.ArcanaBlockEntityLootFunction;
 import net.borisshoes.arcananovum.lootfunctions.ArcaneNotesLootFunction;
 import net.borisshoes.arcananovum.lootfunctions.FoundArcanaItemLootFunction;
-import net.borisshoes.arcananovum.recipes.AquaticEversourceFillRecipe;
-import net.borisshoes.arcananovum.recipes.ArcanaShieldDecoratorRecipe;
-import net.borisshoes.arcananovum.recipes.MagmaticEversourceFillRecipe;
-import net.borisshoes.arcananovum.recipes.WaystoneCleanseRecipe;
+import net.borisshoes.arcananovum.recipes.vanilla.AquaticEversourceFillRecipe;
+import net.borisshoes.arcananovum.recipes.vanilla.ArcanaShieldDecoratorRecipe;
+import net.borisshoes.arcananovum.recipes.vanilla.MagmaticEversourceFillRecipe;
+import net.borisshoes.arcananovum.recipes.vanilla.WaystoneCleanseRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipes;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.borisshoes.arcananovum.world.structures.FabricStructurePoolRegistry;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.LoginCallback;
+import net.borisshoes.borislib.config.ConfigSetting;
+import net.borisshoes.borislib.config.IConfigSetting;
+import net.borisshoes.borislib.config.values.BooleanConfigValue;
+import net.borisshoes.borislib.config.values.IntConfigValue;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -99,7 +102,7 @@ public class ArcanaRegistry {
    public static final Registry<Item> ITEMS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"item")), Lifecycle.stable());
    //public static final Registry<PolymerModelData> MODELS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"model")), Lifecycle.stable());
    public static final Registry<AreaEffectTracker> AREA_EFFECTS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"area_effect")), Lifecycle.stable());
-   public static final Registry<ArcanaConfig.ConfigSetting<?>> CONFIG_SETTINGS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"config_settings")), Lifecycle.stable());
+   public static final Registry<IConfigSetting<?>> CONFIG_SETTINGS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"config_settings")), Lifecycle.stable());
    public static final ArrayList<CompendiumEntry> RECOMMENDED_LIST = new ArrayList<>();
    
    // Custom Tags
@@ -408,96 +411,179 @@ public class ArcanaRegistry {
    public static final LoginCallback VENGEANCE_LOGIN = registerCallback(new VengeanceTotemLoginCallback());
    
    // Config Settings
-   public static final ArcanaConfig.ConfigSetting<?> DO_CONCENTRATION_DAMAGE = registerConfigSetting(new ArcanaConfig.NormalConfigSetting<>(new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true, "Whether players are damaged for going over their concentration limit",
-         new ConfigUtils.Command("Do Concentration Damage is %s", "Do Concentration Damage is now %s"))));
-   public static final ArcanaConfig.ConfigSetting<?> ANNOUNCE_ACHIEVEMENTS = registerConfigSetting(new ArcanaConfig.NormalConfigSetting<>(new ConfigUtils.BooleanConfigValue("announceAchievements", true, "Whether it is announced in chat when players complete achievements, reach levels, or craft new items",
-         new ConfigUtils.Command("Announce Achievements is %s", "Announce Achievements is now %s"))));
-   public static final ArcanaConfig.ConfigSetting<?> INGREDIENT_REDUCTION = registerConfigSetting(new ArcanaConfig.NormalConfigSetting<>(new ConfigUtils.IntegerConfigValue("ingredientReduction", 1, new ConfigUtils.IntegerConfigValue.IntLimits(1,64), "The divisor for recipe ingredient costs",
-         new ConfigUtils.Command("Recipe ingredient counts are divided by %s", "Recipe ingredient count will now be divided by %s"))));
+   public static final IConfigSetting<?> DO_CONCENTRATION_DAMAGE = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("doConcentrationDamage", true)));
+   public static final IConfigSetting<?> ANNOUNCE_ACHIEVEMENTS = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("announceAchievements", true)));
+   public static final IConfigSetting<?> INGREDIENT_REDUCTION = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("ingredientReduction", 1, new IntConfigValue.IntLimits(1,64))));
    
-   public static final ArcanaConfig.ConfigSetting<?> STORMCALLER_ALTAR_ACTIVATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"StormcallerAltarActivate","activating the altar"));
-   public static final ArcanaConfig.ConfigSetting<?> CELESTIAL_ALTAR_ACTIVATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"CelestialAltarActivate","activating the altar"));
-   public static final ArcanaConfig.ConfigSetting<?> STARPATH_ALTAR_ACTIVATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"StarpathAltarActivate","activating the altar"));
-   public static final ArcanaConfig.ConfigSetting<?> IGNEOUS_COLLIDER_PRODUCE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"IgneousColliderProduce","producing 1 obsidian"));
-   public static final ArcanaConfig.ConfigSetting<?> CONTINUUM_ANCHOR_PER_MINUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"ContinuumAnchorPerMinute","having an anchor active for one minute"));
-   public static final ArcanaConfig.ConfigSetting<?> FRACTAL_SPONGE_ABSORB_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"FractalSpongeAbsorbBlock","absorbing a single block of fluid"));
-   public static final ArcanaConfig.ConfigSetting<?> WINGS_OF_ENDERIA_FLY = registerConfigSetting(new ArcanaConfig.XPConfigSetting(2,"WingsOfEnderiaFly","flying for 1 tick"));
-   public static final ArcanaConfig.ConfigSetting<?> RADIANT_FLETCHERY_TIP_ARROWS = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"RadiantFletcheryTipArrows","making tipped arrows"));
-   public static final ArcanaConfig.ConfigSetting<?> STELLAR_CORE_SALVAGE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"StellarCoreSalvage","salvaging an item"));
-   public static final ArcanaConfig.ConfigSetting<?> STELLAR_CORE_SMELT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"StellarCoreSmelt","smelting ore"));
-   public static final ArcanaConfig.ConfigSetting<?> PICKAXE_OF_CEPTYUS_MINE_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"PickaxeOfCeptyusMineBlock","mining a block"));
-   public static final ArcanaConfig.ConfigSetting<?> PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"PickaxeOfCeptyusVeinMineBlock","vein mining an ore"));
-   public static final ArcanaConfig.ConfigSetting<?> RUNIC_ARROW_SHOOT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"RunicArrowShoot","shooting a runic arrow"));
-   public static final ArcanaConfig.ConfigSetting<?> SHIELD_OF_FORTITUDE_ABSORB_DAMAGE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"ShieldOfFortitudeAbsorbDamage","absorbing 1 damage point"));
-   public static final ArcanaConfig.ConfigSetting<?> TOTEM_OF_VENGEANCE_ACTIVATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"TotemOfVengeanceActivate","activating the totem"));
-   public static final ArcanaConfig.ConfigSetting<?> TOTEM_OF_VENGEANCE_SURVIVE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(4000,"TotemOfVengeanceSurvive","getting revenge"));
-   public static final ArcanaConfig.ConfigSetting<?> DAMAGE_AMP_PER_10 = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"DamageAmpPer10","amplifying 10 damage"));
-   public static final ArcanaConfig.ConfigSetting<?> DAMAGE_AMP_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(200,"DamageAmpCap","amplifying damage",true));
-   public static final ArcanaConfig.ConfigSetting<?> ALCHEMICAL_ARBALEST_SHOOT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"AlchemicalArbalestShoot","shooting an alchemical arrow"));
-   public static final ArcanaConfig.ConfigSetting<?> TRANSMUTATION_ALTAR_TRANSMUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"TransmutationAltarTransmute","successfully transmuting"));
-   public static final ArcanaConfig.ConfigSetting<?> TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"TransmutationAltarTransmutePerItem","transmuting 1 item"));
-   public static final ArcanaConfig.ConfigSetting<?> MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"MidnightEnchanterDisenchantPerEssence","getting 1 essence from disenchanting"));
-   public static final ArcanaConfig.ConfigSetting<?> STARDUST_INFUSION_PER_STARDUST = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"StardustInfusionPerStardust","spending 1 stardust on infusion"));
-   public static final ArcanaConfig.ConfigSetting<?> TWILIGHT_ANVIL_PER_10 = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"TwilightAnvilPer10","spending 10 xp in the anvil"));
-   public static final ArcanaConfig.ConfigSetting<?> TWILIGHT_ANVIL_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"TwilightAnvilCap","spending xp in the anvil",true));
-   public static final ArcanaConfig.ConfigSetting<?> ANCIENT_DOWSING_ROD_PER_DEBRIS = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"AncientDowsingRodPerDebris","finding 1 debris"));
-   public static final ArcanaConfig.ConfigSetting<?> ANCIENT_DOWSING_ROD_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1500,"AncientDowsingRodCap","finding debris",true));
-   public static final ArcanaConfig.ConfigSetting<?> AQUATIC_EVERSOURCE_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"AquaticEversourceUse","making water with the eversource"));
-   public static final ArcanaConfig.ConfigSetting<?> MAGMATIC_EVERSOURCE_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"MagmaticEversourceUse","making lava with the eversource"));
-   public static final ArcanaConfig.ConfigSetting<?> BRAIN_JAR_MEND_PER_XP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"BrainJarMendPerXp","spending 1 xp to mend items"));
-   public static final ArcanaConfig.ConfigSetting<?> CHEST_TRANSLOCATOR_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"ChestTranslocatorUse","using the translocator"));
-   public static final ArcanaConfig.ConfigSetting<?> CONTAINMENT_CIRCLET_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"ContainmentCircletUse","using the circlet"));
-   public static final ArcanaConfig.ConfigSetting<?> ESSENCE_EGG_SPAWN = registerConfigSetting(new ArcanaConfig.XPConfigSetting(2500,"EssenceEggSpawn","spawning a creature"));
-   public static final ArcanaConfig.ConfigSetting<?> ESSENCE_EGG_CONVERT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(500,"EssenceEggConvert","converting a spawner"));
-   public static final ArcanaConfig.ConfigSetting<?> EVERLASTING_ROCKET_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"EverlastingRocketUse","using the rocket"));
-   public static final ArcanaConfig.ConfigSetting<?> LEVITATION_HARNESS_PER_SECOND = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"LevitationHarnessPerSecond","flying for one second"));
-   public static final ArcanaConfig.ConfigSetting<?> NUL_MEMENTO_DEALLOCATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50000,"NulMementoDeallocate","deallocating your skill points"));
-   public static final ArcanaConfig.ConfigSetting<?> NUL_MEMENTO_PROTECT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5000,"NulMementoProtect","having the memento protect you from death"));
-   public static final ArcanaConfig.ConfigSetting<?> PEARL_OF_RECALL_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"PearlOfRecallUse","using the pearl"));
-   public static final ArcanaConfig.ConfigSetting<?> PLANESHIFTER_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"PlaneshifterUse","using the shifter"));
-   public static final ArcanaConfig.ConfigSetting<?> STASIS_PEARL_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(250,"StasisPearlUse","using the pearl"));
-   public static final ArcanaConfig.ConfigSetting<?> QUIVER_REFILL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"QuiverRefill","having a quiver refill an arrow"));
-   public static final ArcanaConfig.ConfigSetting<?> SHADOW_STALKERS_GLAIVE_STALK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(500,"ShadowStalkersGlaiveStalk","using the glaive's stalk ability"));
-   public static final ArcanaConfig.ConfigSetting<?> SHADOW_STALKERS_GLAIVE_BLINK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"ShadowStalkersGlaiveBlink","using the glaive's blink ability"));
-   public static final ArcanaConfig.ConfigSetting<?> SHULKER_CORE_PER_SOUL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"ShulkerCorePerSoul","using a soul in the shulker core"));
-   public static final ArcanaConfig.ConfigSetting<?> SOJOURNERS_BOOTS_RUN_PER_SECOND = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"SojournersBootsRunPerSecond","running for one second"));
-   public static final ArcanaConfig.ConfigSetting<?> SOULSTONE_LEVEL_UP_PER_SOUL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"SoulstoneLevelUpPerSoul","levelling up the soulstone per soul"));
-   public static final ArcanaConfig.ConfigSetting<?> SPAWNER_HARNESS_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(20000,"SpawnerHarnessUse","using the harness"));
-   public static final ArcanaConfig.ConfigSetting<?> TELESCOPING_BEACON_PER_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"TelescopingBeaconPerBlock","placing the beacon per block in the base"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_IGNITE_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"CindersCharmIgniteBlock","igniting a block"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_IGNITE_TNT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"CindersCharmIgniteTNT","igniting a block of TNT"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_IGNITE_ENTITY = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"CindersCharmIgniteEntity","igniting an entity"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_IGNITE_CREEPER = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"CindersCharmIgniteCreeper","igniting a creeper"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_LIGHT_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"CindersCharmLightBlock","lighting a block (ex. candle)"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_SMELT_PER_CINDER = registerConfigSetting(new ArcanaConfig.XPConfigSetting(4,"CindersCharmSmeltPerCinder","spending a cinder on smelting"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_CONE_PER_TARGET = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"CindersCharmConePerTarget","hitting a target with cone of flame"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_PYROBLAST_PER_TARGET = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"CindersCharmPyroblastPerTarget","hitting a target with pyroblast"));
-   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_WEB_PER_TARGET = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"CindersCharmWebPerTarget","hitting a target with web of fire"));
-   public static final ArcanaConfig.ConfigSetting<?> FEASTING_CHARM_PER_FOOD_VALUE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"FeastingCharmPerFoodValue","getting fed per hunger point"));
-   public static final ArcanaConfig.ConfigSetting<?> LIGHT_CHARM_NOVA_PER_LIGHT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"LightCharmNovaPerLight","placing a light with radiant nova"));
-   public static final ArcanaConfig.ConfigSetting<?> LIGHT_CHARM_AUTOMATIC = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"LightCharmAutomatic","automatically placing a light"));
-   public static final ArcanaConfig.ConfigSetting<?> LIGHT_CHARM_MANUAL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"LightCharmManual","manually placing a light"));
-   public static final ArcanaConfig.ConfigSetting<?> MAGNETISM_CHARM_PER_ITEM = registerConfigSetting(new ArcanaConfig.XPConfigSetting(2,"MagnetismCharmPerItem","attracting an item with the active ability"));
-   public static final ArcanaConfig.ConfigSetting<?> MAGNETISM_CHARM_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"MagnetismCharmPerItemCap","attracting items with the active ability",true));
-   public static final ArcanaConfig.ConfigSetting<?> WILD_GROWTH_CHARM_PER_MATURE_CROP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"WildGrowthCharm","growing a crop to maturity"));
-   public static final ArcanaConfig.ConfigSetting<?> WILD_GROWTH_CHARM_PER_REAPED_CROP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"WildGrowthCharmPerReapedCrop","reaping and replanting a crop"));
-   public static final ArcanaConfig.ConfigSetting<?> WILD_GROWTH_CHARM_PASSIVE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"WildGrowthCharmPassive","having the charm affect nearby blocks"));
-   public static final ArcanaConfig.ConfigSetting<?> FELIDAE_CHARM_FALL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"FelidaeCharmFall","negating 1 point of fall damage"));
-   public static final ArcanaConfig.ConfigSetting<?> FELIDAE_CHARM_FALL_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"FelidaeCharmFallCap","negating fall damage",true));
-   public static final ArcanaConfig.ConfigSetting<?> FELIDAE_CHARM_SCARE_PHANTOM = registerConfigSetting(new ArcanaConfig.XPConfigSetting(2,"FelidaeCharmScarePhantom","scaring a phantom"));
-   public static final ArcanaConfig.ConfigSetting<?> FELIDAE_CHARM_SCARE_CREEPER = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"FelidaeCharmScareCreeper","scaring a creeper"));
-   public static final ArcanaConfig.ConfigSetting<?> WINGS_OF_ENDERIA_CUSHION = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"WingsOfEnderiaCushion","negating 1 point of kinetic damage"));
-   public static final ArcanaConfig.ConfigSetting<?> WINGS_OF_ENDERIA_CUSHION_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"WingsOfEnderiaCushionCap","negating kinetic damage",true));
-   public static final ArcanaConfig.ConfigSetting<?> AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"AequalisScientiaCatalystTransmute","transmuting catalysts"));
-   public static final ArcanaConfig.ConfigSetting<?> AEQUALIS_SCIENTIA_SKILL_TRANSMUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"AequalisScientiaSkillTransmute","transmuting skill points"));
-   public static final ArcanaConfig.ConfigSetting<?> AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(500,"AequalisScientiaAttunedTransmute","using the attuned transmutation"));
-   public static final ArcanaConfig.ConfigSetting<?> BINARY_BLADES_MAX_ENERGY_PER_SECOND = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"BinaryBladesMaxEnergyPerSecond","keeping the blades at max energy for one second"));
-   public static final ArcanaConfig.ConfigSetting<?> CETACEA_CHARM_PER_SECOND = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"CetaceaCharmPerSecond","having the charm active for one second"));
-   public static final ArcanaConfig.ConfigSetting<?> CLEANSING_CHARM_CLEANSE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(150,"CleansingCharmCleanse","cleansing an effect with the charm"));
-   public static final ArcanaConfig.ConfigSetting<?> GRAVITON_MAUL_IMPACT_DAMAGE_PER_10 = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"GravitonMaulImpactDamage","dealing 10 points of impact damage"));
-   public static final ArcanaConfig.ConfigSetting<?> GRAVITON_MAUL_IMPACT_DAMAGE_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(250,"GravitonMaulImpactDamageCap","dealing impact damage",true));
-   public static final ArcanaConfig.ConfigSetting<?> GREAVES_OF_GAIALTUS_REFILL_BLOCK_PER_10 = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"GreavesOfGaialtusRefillBlock","refilling your hand with 10 blocks"));
-   public static final ArcanaConfig.ConfigSetting<?> SPEAR_OF_TENBROUS_IMPALE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"SpearOfTenbrousImpale","impaling a creature with the spear"));
+   public static final IConfigSetting<?> XP_STORMCALLER_ALTAR_ACTIVATE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpStormcallerAltarActivate", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CELESTIAL_ALTAR_ACTIVATE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCelestialAltarActivate", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_STARPATH_ALTAR_ACTIVATE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpStarpathAltarActivate", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_IGNEOUS_COLLIDER_PRODUCE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpIgneousColliderProduce", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CONTINUUM_ANCHOR_PER_MINUTE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpContinuumAnchorPerMinute", 15, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_FRACTAL_SPONGE_ABSORB_BLOCK = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpFractalSpongeAbsorbBlock", 1, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_WINGS_OF_ENDERIA_FLY = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpWingsOfEnderiaFly", 2, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_RADIANT_FLETCHERY_TIP_ARROWS = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpRadiantFletcheryTipArrows", 100, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_STELLAR_CORE_SALVAGE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpStellarCoreSalvage", 100, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_STELLAR_CORE_SMELT = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpStellarCoreSmelt", 1, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_PICKAXE_OF_CEPTYUS_MINE_BLOCK = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpPickaxeOfCeptyusMineBlock", 1, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpPickaxeOfCeptyusVeinMineBlock", 5, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_RUNIC_ARROW_SHOOT = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpRunicArrowShoot", 50, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_SHIELD_OF_FORTITUDE_ABSORB_DAMAGE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpShieldOfFortitudeAbsorbDamage", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_TOTEM_OF_VENGEANCE_ACTIVATE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpTotemOfVengeanceActivate", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_TOTEM_OF_VENGEANCE_SURVIVE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpTotemOfVengeanceSurvive", 4000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_DAMAGE_AMP_PER_10 = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpDamageAmpPer10", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_DAMAGE_AMP_CAP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpDamageAmpCap", 200, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_ALCHEMICAL_ARBALEST_SHOOT = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpAlchemicalArbalestShoot", 25, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_TRANSMUTATION_ALTAR_TRANSMUTE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpTransmutationAltarTransmute", 100, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpTransmutationAltarTransmutePerItem", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpMidnightEnchanterDisenchantPerEssence", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_STARDUST_INFUSION_PER_STARDUST = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpStardustInfusionPerStardust", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_TWILIGHT_ANVIL_PER_10 = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpTwilightAnvilPer10", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_TWILIGHT_ANVIL_CAP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpTwilightAnvilCap", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_ANCIENT_DOWSING_ROD_PER_DEBRIS = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpAncientDowsingRodPerDebris", 15, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_ANCIENT_DOWSING_ROD_CAP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpAncientDowsingRodCap", 1500, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_AQUATIC_EVERSOURCE_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpAquaticEversourceUse", 1, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_MAGMATIC_EVERSOURCE_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpMagmaticEversourceUse", 25, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_BRAIN_JAR_MEND_PER_XP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpBrainJarMendPerXp", 5, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CHEST_TRANSLOCATOR_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpChestTranslocatorUse", 25, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CONTAINMENT_CIRCLET_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpContainmentCircletUse", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_ESSENCE_EGG_SPAWN = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpEssenceEggSpawn", 2500, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_ESSENCE_EGG_CONVERT = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpEssenceEggConvert", 500, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_EVERLASTING_ROCKET_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpEverlastingRocketUse", 100, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_LEVITATION_HARNESS_PER_SECOND = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpLevitationHarnessPerSecond", 25, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_NUL_MEMENTO_DEALLOCATE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpNulMementoDeallocate", 50000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_NUL_MEMENTO_PROTECT = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpNulMementoProtect", 5000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_PEARL_OF_RECALL_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpPearlOfRecallUse", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_PLANESHIFTER_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpPlaneshifterUse", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_STASIS_PEARL_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpStasisPearlUse", 250, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_QUIVER_REFILL = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpQuiverRefill", 50, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_SHADOW_STALKERS_GLAIVE_STALK = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpShadowStalkersGlaiveStalk", 500, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_SHADOW_STALKERS_GLAIVE_BLINK = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpShadowStalkersGlaiveBlink", 100, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_SHULKER_CORE_PER_SOUL = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpShulkerCorePerSoul", 50, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_SOJOURNERS_BOOTS_RUN_PER_SECOND = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpSojournersBootsRunPerSecond", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_SOULSTONE_LEVEL_UP_PER_SOUL = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpSoulstoneLevelUpPerSoul", 50, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_SPAWNER_HARNESS_USE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpSpawnerHarnessUse", 20000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_TELESCOPING_BEACON_PER_BLOCK = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpTelescopingBeaconPerBlock", 1, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_IGNITE_BLOCK = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmIgniteBlock", 15, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_IGNITE_TNT = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmIgniteTnt", 50, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_IGNITE_ENTITY = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmIgniteEntity", 15, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_IGNITE_CREEPER = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmIgniteCreeper", 50, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_LIGHT_BLOCK = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmLightBlock", 15, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_SMELT_PER_CINDER = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmSmeltPerCinder", 4, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_CONE_PER_TARGET = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmConePerTarget", 5, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_PYROBLAST_PER_TARGET = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmPyroblastPerTarget", 5, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CINDERS_CHARM_WEB_PER_TARGET = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCindersCharmWebPerTarget", 5, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_FEASTING_CHARM_PER_FOOD_VALUE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpFeastingCharmPerFoodValue", 50, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_LIGHT_CHARM_NOVA_PER_LIGHT = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpLightCharmNovaPerLight", 1, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_LIGHT_CHARM_AUTOMATIC = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpLightCharmAutomatic", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_LIGHT_CHARM_MANUAL = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpLightCharmManual", 15, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_MAGNETISM_CHARM_PER_ITEM = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpMagnetismCharmPerItem", 2, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_MAGNETISM_CHARM_CAP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpMagnetismCharmCap", 25, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_WILD_GROWTH_CHARM_PER_MATURE_CROP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpWildGrowthCharmPerMatureCrop", 25, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_WILD_GROWTH_CHARM_PER_REAPED_CROP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpWildGrowthCharmPerReapedCrop", 1, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_WILD_GROWTH_CHARM_PASSIVE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpWildGrowthCharmPassive", 1, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_FELIDAE_CHARM_FALL = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpFelidaeCharmFall", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_FELIDAE_CHARM_FALL_CAP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpFelidaeCharmFallCap", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_FELIDAE_CHARM_SCARE_PHANTOM = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpFelidaeCharmScarePhantom", 2, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_FELIDAE_CHARM_SCARE_CREEPER = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpFelidaeCharmScareCreeper", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_WINGS_OF_ENDERIA_CUSHION = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpWingsOfEnderiaCushion", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_WINGS_OF_ENDERIA_CUSHION_CAP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpWingsOfEnderiaCushionCap", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpAequalisScientiaTransmuteCatalyst", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_AEQUALIS_SCIENTIA_SKILL_TRANSMUTE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpAequalisScientiaTransmuteSkill", 1000, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpAequalisScientiaTransmuteAttuned", 500, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_BINARY_BLADES_MAX_ENERGY_PER_SECOND = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpBinaryBladesMaxEnergyPerSecond", 50, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CETACEA_CHARM_PER_SECOND = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCetaceaCharmPerSecond", 10, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_CLEANSING_CHARM_CLEANSE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpCleansingCharmCleanse", 150, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_GRAVITON_MAUL_IMPACT_DAMAGE_PER_10 = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpGravitonMaulImpactDamagePer10", 5, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_GRAVITON_MAUL_IMPACT_DAMAGE_CAP = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpGravitonMaulImpactDamageCap", 250, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_GREAVES_OF_GAIALTUS_REFILL_BLOCK_PER_10 = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpGreavesOfGaialtusRefillBlockPer10", 5, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> XP_SPEAR_OF_TENBROUS_IMPALE = registerConfigSetting(new ConfigSetting<>(
+         new IntConfigValue("xpSpearOfTenbrousImpale", 50, new IntConfigValue.IntLimits(0))));
    
    public static void initialize(){
       PolymerResourcePackUtils.addModAssets(MOD_ID);
@@ -691,7 +777,7 @@ public class ArcanaRegistry {
       return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, Identifier.fromNamespaceAndPath(MOD_ID,id), new LootItemFunctionType<>(codec));
    }
    
-   private static ArcanaConfig.ConfigSetting<?> registerConfigSetting(ArcanaConfig.ConfigSetting<?> setting){
+   private static IConfigSetting<?> registerConfigSetting(IConfigSetting<?> setting){
       Registry.register(CONFIG_SETTINGS, Identifier.fromNamespaceAndPath(MOD_ID,setting.getId()),setting);
       return setting;
    }
@@ -741,6 +827,6 @@ public class ArcanaRegistry {
       
       ItemStack displayStack = new ItemStack(Items.CRYING_OBSIDIAN);
       displayStack.set(DataComponents.RARITY, Rarity.UNCOMMON);
-      return new IngredientCompendiumEntry(Component.translatable(Items.CRYING_OBSIDIAN.getDescriptionId()), displayStack, new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(Items.CRYING_OBSIDIAN.getDescriptionId()), displayStack, new ExplainRecipe(BuiltInRegistries.ITEM.getKey(Items.CRYING_OBSIDIAN),ingredients));
    }
 }

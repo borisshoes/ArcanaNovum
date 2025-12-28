@@ -62,7 +62,7 @@ public class BaseSpawnerMixin {
       }
    }
    
-   @Inject(method = "serverTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;syncWorldEvent(ILnet/minecraft/core/BlockPos;I)V"))
+   @Inject(method = "serverTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;levelEvent(ILnet/minecraft/core/BlockPos;I)V"))
    private void arcananovum$infuserMobCapSet(ServerLevel world, BlockPos pos, CallbackInfo ci, @Local Entity entity){
       if(!(entity instanceof Mob mob)) return;
       BlockPos infuserPos = pos.offset(0,-2,0);

@@ -252,7 +252,7 @@ public class Planeshifter extends EnergyItem {
          directTeleport(player,target);
       }
       
-      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PLANESHIFTER_USE)); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.PLANESHIFTER_USE)); // Add xp
       setEnergy(stack,0);
       SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL,1,2f);
       ArcanaEffectUtils.recallTeleport(world,player.position());
@@ -287,7 +287,7 @@ public class Planeshifter extends EnergyItem {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

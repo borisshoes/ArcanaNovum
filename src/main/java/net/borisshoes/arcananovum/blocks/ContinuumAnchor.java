@@ -195,7 +195,7 @@ public class ContinuumAnchor extends ArcanaBlock {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore());
    }
    
    public class ContinuumAnchorItem extends ArcanaPolymerBlockItem {

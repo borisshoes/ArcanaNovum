@@ -151,9 +151,9 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       BorisLib.addTickTimerCallback(new GenericTimer(500, () -> {
          teleport(player);
          if(player == null && getCrafterId() != null){
-            BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(), getCrafterId(),ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
+            BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(), getCrafterId(),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
          }else if(player != null){
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARPATH_ALTAR_ACTIVATE));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STARPATH_ALTAR_ACTIVATE));
          }
       }));
       return true;

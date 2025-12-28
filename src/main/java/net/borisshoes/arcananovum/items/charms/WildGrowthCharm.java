@@ -144,7 +144,7 @@ public class WildGrowthCharm extends ArcanaItem {
             {k,h,m,h,o},
             {p,q,h,s,t},
             {u,v,w,x,y}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -231,7 +231,7 @@ public class WildGrowthCharm extends ArcanaItem {
                      world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
                      if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMaxAge(world.getBlockState(blockPos))){
                         ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST.id,1);
-                        ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
+                        ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
                      }
                   }else if(bloom && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
                      world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
@@ -287,7 +287,7 @@ public class WildGrowthCharm extends ArcanaItem {
                }
                
                if(count >= 2){
-                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PASSIVE)); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PASSIVE)); // Add xp
                }
             }
          }catch(Exception ignored){

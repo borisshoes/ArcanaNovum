@@ -192,7 +192,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.LEATHER,32);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentInstance(MinecraftUtils.getEnchantment(Enchantments.INFINITY),1));
+      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.INFINITY,1));
       ArcanaIngredient c = new ArcanaIngredient(Items.NETHER_STAR,2);
       ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       GenericArcanaIngredient h = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
@@ -204,7 +204,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withFletchery().withEnchanter().withAnvil());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withFletchery().withEnchanter().withAnvil()).addCenterpiece(12);
    }
    
    @Override

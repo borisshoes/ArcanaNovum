@@ -128,7 +128,7 @@ public class CetaceaCharm extends ArcanaItem {
             {c,h,m,h,c},
             {b,q,h,s,b},
             {e,b,c,b,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -190,7 +190,7 @@ public class CetaceaCharm extends ArcanaItem {
                player.addEffect(grace);
                
                if(world.getServer().getTickCount() % 20 == 0){
-                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CETACEA_CHARM_PER_SECOND));
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CETACEA_CHARM_PER_SECOND));
                }
             }
             if(player.isUnderWater() && gills){

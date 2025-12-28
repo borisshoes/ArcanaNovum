@@ -159,7 +159,7 @@ public class GravitonArrows extends RunicArrow {
             {c,h,m,h,c},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery());
+      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withFletchery());
    }
    
    @Override

@@ -184,10 +184,10 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player == null){
                   BorisLib.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
-                  BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
+                  BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
                }else{
                   ArcanaAchievements.progress(player,ArcanaAchievements.ENDLESS_EXTRUSION.id,1);
-                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE));
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE));
                   if(obby.is(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(player,ArcanaAchievements.EXPENSIVE_INFUSION.id);
                }
             }

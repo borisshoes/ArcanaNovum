@@ -84,7 +84,7 @@ public interface CauldronInteractionMixin {
             world.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
             world.gameEvent(null, GameEvent.FLUID_PLACE, pos);
             serverPlayer.awardStat(Stats.ITEM_USED.get(stack.getItem()));
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
             ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.POCKET_OCEAN.id,1);
          }
          return InteractionResult.SUCCESS_SERVER;
@@ -105,7 +105,7 @@ public interface CauldronInteractionMixin {
                world.setBlockAndUpdate(pos, Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3));
                world.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
                world.gameEvent(null, GameEvent.FLUID_PLACE, pos);
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.POCKET_OCEAN.id,1);
             }
             serverPlayer.awardStat(Stats.ITEM_USED.get(stack.getItem()));
@@ -172,7 +172,7 @@ public interface CauldronInteractionMixin {
             world.gameEvent(null, GameEvent.FLUID_PLACE, pos);
             serverPlayer.awardStat(Stats.ITEM_USED.get(stack.getItem()));
             
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MAGMATIC_EVERSOURCE_USE)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.MAGMATIC_EVERSOURCE_USE)); // Add xp
             ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.HELLGATE.id,1);
             ArcanaItem.putProperty(stack,MagmaticEversource.USES_TAG,charges-1);
             eversource.buildItemLore(stack, serverPlayer.level().getServer());
