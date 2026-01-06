@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -74,7 +73,7 @@ public class ShulkerCore extends EnergyItem {
       id = ID;
       name = "Shulker Core";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       initEnergy = 1000;
       vanillaItem = Items.SHULKER_BOX;
       item = new ShulkerCoreItem();
@@ -218,7 +217,7 @@ public class ShulkerCore extends EnergyItem {
                   addEnergy(stack, -(speed / 2 + 1));
                playerEntity.addEffect(levit);
                SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
-               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
+               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
                if(world instanceof ServerLevel serverWorld){
                   ArcanaEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }
@@ -323,25 +322,6 @@ public class ShulkerCore extends EnergyItem {
          buildItemLore(newArcanaItem,BorisLib.SERVER);
       }
       return newArcanaItem;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      SoulstoneIngredient t = new SoulstoneIngredient(Soulstone.tiers[4],false,true, false, EntityType.getKey(EntityType.SHULKER).toString());
-      ArcanaIngredient a = new ArcanaIngredient(Items.PHANTOM_MEMBRANE,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.SHULKER_SHELL,8);
-      ArcanaIngredient c = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.LONG_SLOW_FALLING);
-      ArcanaIngredient g = new ArcanaIngredient(Items.GLOWSTONE_DUST,32);
-      ArcanaIngredient h = new ArcanaIngredient(Items.NETHER_STAR,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,t,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withAnvil()).addCenterpiece(12);
-      
    }
    
    @Override

@@ -6,7 +6,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.greaves.GreavesOfGaialtusGui;
 import net.borisshoes.arcananovum.gui.greaves.GreavesSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
@@ -67,7 +67,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
       id = ID;
       name = "Greaves Of Gaialtus";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 0;
       vanillaItem = Items.DIAMOND_LEGGINGS;
       item = new GreavesOfGaialtusItem();

@@ -7,7 +7,8 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -16,6 +17,7 @@ import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -77,7 +79,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    protected String id;
    protected ArcanaRarity rarity;
    protected ItemStack prefItem;
-   protected TomeGui.TomeFilter[] categories;
+   protected ArcaneTomeGui.TomeFilter[] categories;
    public static final int VERSION = 12;
    public int itemVersion;
    protected Item item;
@@ -114,7 +116,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    
    public abstract List<List<Component>> getBookLore();
    
-   public TomeGui.TomeFilter[] getCategories(){ return categories; }
+   public ArcaneTomeGui.TomeFilter[] getCategories(){ return categories; }
    
    public abstract List<Component> getItemLore(@Nullable ItemStack itemStack);
    
@@ -122,8 +124,8 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return researchTasks;
    }
    
-   public boolean hasCategory(TomeGui.TomeFilter category){
-      for(TomeGui.TomeFilter tomeFilter : categories){
+   public boolean hasCategory(ArcaneTomeGui.TomeFilter category){
+      for(ArcaneTomeGui.TomeFilter tomeFilter : categories){
          if(category == tomeFilter) return true;
       }
       return false;
@@ -567,19 +569,19 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
          boolean anyUnusual = false;
          MutableComponent text = Component.literal("").withStyle(ChatFormatting.GOLD);
          if(armor != 0 || toughness != 0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.IRON_CHESTPLATE).withStyle(ChatFormatting.WHITE));
+            text.append(MinecraftUtils.getAtlasedTexture(Items.IRON_CHESTPLATE).withStyle(ChatFormatting.WHITE));
             text.append(Component.literal(" "+TextUtils.readableDouble(armor, 2)+" | "));
-            text.append(ArcanaUtils.getAtlasedTexture(Items.DIAMOND_CHESTPLATE).withStyle(ChatFormatting.WHITE));
+            text.append(MinecraftUtils.getAtlasedTexture(Items.DIAMOND_CHESTPLATE).withStyle(ChatFormatting.WHITE));
             text.append(Component.literal(" "+TextUtils.readableDouble(toughness, 2)+" | "));
             anyUnusual = true;
          }
          if(kbRes != 0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.NETHERITE_CHESTPLATE).withStyle(ChatFormatting.WHITE));
+            text.append(MinecraftUtils.getAtlasedTexture(Items.NETHERITE_CHESTPLATE).withStyle(ChatFormatting.WHITE));
             text.append(Component.literal(" "+TextUtils.readableDouble(kbRes, 2)+" | "));
             anyUnusual = true;
          }
          if(health != 0){
-            text.append(ArcanaUtils.getAtlasedTexture(AtlasIds.GUI, Identifier.parse("hud/heart/full")).withStyle(ChatFormatting.WHITE));
+            text.append(MinecraftUtils.getAtlasedTexture(AtlasIds.GUI, Identifier.parse("hud/heart/full")).withStyle(ChatFormatting.WHITE));
             text.append(Component.literal((health > 0 ? " +" : " ")+TextUtils.readableDouble(health, 2)+" | "));
             anyUnusual = true;
          }
@@ -603,19 +605,19 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
          }
          MutableComponent text = Component.literal("").withStyle(ChatFormatting.GOLD);
          if(dmg != 1 || speed != 4.0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.DIAMOND_SWORD).withStyle(ChatFormatting.WHITE));
+            text.append(MinecraftUtils.getAtlasedTexture(Items.DIAMOND_SWORD).withStyle(ChatFormatting.WHITE));
             text.append(Component.literal(" "+TextUtils.readableDouble(dmg, 2)+" | "));
-            text.append(ArcanaUtils.getAtlasedTexture(Items.GOLDEN_SWORD).withStyle(ChatFormatting.WHITE));
+            text.append(MinecraftUtils.getAtlasedTexture(Items.GOLDEN_SWORD).withStyle(ChatFormatting.WHITE));
             text.append(Component.literal(" "+TextUtils.readableDouble(speed, 2)+" | "));
             anyUnusual = true;
          }
          if(rangeMin != 0 || rangeMax != 3.0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.IRON_SPEAR).withStyle(ChatFormatting.WHITE));
+            text.append(MinecraftUtils.getAtlasedTexture(Items.IRON_SPEAR).withStyle(ChatFormatting.WHITE));
             text.append(Component.literal(" "+TextUtils.readableDouble(rangeMin, 2)+"-"+TextUtils.readableDouble(rangeMax, 2)+" | "));
             anyUnusual = true;
          }
          if(shieldDisable != 0){
-            text.append(ArcanaUtils.getAtlasedTexture(Items.COPPER_AXE).withStyle(ChatFormatting.WHITE));
+            text.append(MinecraftUtils.getAtlasedTexture(Items.COPPER_AXE).withStyle(ChatFormatting.WHITE));
             text.append(Component.literal(" "+TextUtils.readableDouble(shieldDisable, 2)+" | "));
             anyUnusual = true;
          }

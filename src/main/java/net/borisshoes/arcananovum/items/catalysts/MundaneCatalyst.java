@@ -4,7 +4,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -32,7 +32,7 @@ public class MundaneCatalyst extends ArcanaItem {
       id = ID;
       name = "Mundane Augment Catalyst";
       rarity = ArcanaRarity.MUNDANE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.QUARTZ;
       item = new MundaneCatalystItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
@@ -69,23 +69,6 @@ public class MundaneCatalyst extends ArcanaItem {
             .append(Component.literal(" of a ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("Twilight Anvil").withStyle(ChatFormatting.GREEN)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = ArcanaIngredient.EMPTY;
-      ArcanaIngredient c = new ArcanaIngredient(Items.OBSIDIAN,8);
-      ArcanaIngredient g = new ArcanaIngredient(Items.CRYING_OBSIDIAN,8);
-      ArcanaIngredient h = new ArcanaIngredient(Items.QUARTZ,6);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.CATALYTIC_MATRIX,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,a,c,a,a},
-            {a,g,h,g,a},
-            {c,h,m,h,c},
-            {a,g,h,g,a},
-            {a,a,c,a,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil());
    }
    
    @Override

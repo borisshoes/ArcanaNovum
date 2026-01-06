@@ -33,7 +33,7 @@ public class TransmutationAltarGui extends SimpleGui {
    public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       if(index == 2){
          TransmutationAltarRecipeGui recipeGui = new TransmutationAltarRecipeGui(player, this, Optional.of(blockEntity));
-         recipeGui.buildRecipeListGui();
+         recipeGui.buildPage();
          recipeGui.open();
       }else if(index == 4  && blockEntity.getLevel() instanceof ServerLevel serverWorld){
          if(blockEntity.getCooldown() <= 0){

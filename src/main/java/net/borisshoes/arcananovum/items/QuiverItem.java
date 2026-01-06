@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -81,7 +80,7 @@ public abstract class QuiverItem extends ArcanaItem {
       if(eligible.isEmpty()) return;
       eligible.get((int)(Math.random()*eligible.size())).grow(1);
       
-      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.QUIVER_REFILL)); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_QUIVER_REFILL)); // Add xp
       if(this instanceof OverflowingQuiver){
          ArcanaAchievements.progress(player,ArcanaAchievements.SPARE_STOCK.id,1);
       }else if(this instanceof RunicQuiver){

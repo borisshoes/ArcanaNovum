@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -25,8 +24,8 @@ import java.util.*;
 
 public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    
-   public AequalisCatalystTransmutationRecipe(String name){
-      super(name,new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
+   public AequalisCatalystTransmutationRecipe(String id){
+      super(id,new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
    }
    
    @Override // This transmutation cannot be done by an Aequalis
@@ -37,8 +36,6 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    @Override
    public List<Tuple<ItemStack,String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
-      ItemStack re1 = getBargainReagent(reagent1,bargainLvl);
-      ItemStack re2 = getBargainReagent(reagent2,bargainLvl);
       ItemStack input1Stack = input1Entity != null ? input1Entity.getItem() : ItemStack.EMPTY;
       ItemStack input2Stack = input2Entity != null ? input2Entity.getItem() : ItemStack.EMPTY;
       ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
@@ -143,13 +140,13 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      boolean m11 = validStack(re1, reagent1Stack), m22 = validStack(re2, reagent2Stack), m12 = validStack(re1, reagent2Stack), m21 = validStack(re2, reagent1Stack);
+      boolean m11 = validReagent1(reagent1Stack,bargainLvl), m22 = validReagent2(reagent2Stack,bargainLvl), m12 = validReagent1(reagent2Stack,bargainLvl), m21 = validReagent2(reagent1Stack,bargainLvl);
       boolean straight = m11 && m22;
       boolean cross = !straight && m12 && m21;
       if (!straight && !cross) return new ArrayList<>(); // should be impossible
       
-      ItemStack reagent1 = straight ? re1 : re2;
-      ItemStack reagent2 = straight ? re2 : re1;
+      ItemStack reagent1 = straight ? getComputedReagent1(reagent1Stack,bargainLvl) : getComputedReagent2(reagent1Stack,bargainLvl);
+      ItemStack reagent2 = straight ? getComputedReagent2(reagent2Stack,bargainLvl) : getComputedReagent1(reagent2Stack,bargainLvl);
       
       if (reagent1Entity != null) {
          int take = reagent1.isEmpty() ? 0 : reagent1.getCount();
@@ -175,7 +172,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          }
       }
       if(player != null){
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE));
       }
       return outputs;
    }
@@ -183,10 +180,8 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    @Override
    public boolean canTransmute(ItemStack input1, ItemStack input2, ItemStack reagent1Input, ItemStack reagent2Input, ItemStack aequalisInput, TransmutationAltarBlockEntity altar){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
-      ItemStack re1 = getBargainReagent(reagent1,bargainLvl);
-      ItemStack re2 = getBargainReagent(reagent2,bargainLvl);
-      boolean reagentCheck1 = validStack(re1, reagent1Input) && validStack(re2, reagent2Input);
-      boolean reagentCheck2 = validStack(re1, reagent2Input) && validStack(re2, reagent1Input);
+      boolean reagentCheck1 = validReagent1(reagent1Input,bargainLvl) && validReagent2(reagent2Input,bargainLvl);
+      boolean reagentCheck2 = validReagent1(reagent2Input,bargainLvl) && validReagent2(reagent1Input,bargainLvl);
       if (!(reagentCheck1 || reagentCheck2)) return false;
       boolean matrixCheck = (input1.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem()) || input2.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
       boolean arcanaItemCheck = (ArcanaItemUtils.isArcane(input1) && !input1.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem())) || (ArcanaItemUtils.isArcane(input2) && !input2.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));

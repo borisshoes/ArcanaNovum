@@ -320,13 +320,13 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    
    public void openGui(ServerPlayer player){
       ArcaneSingularityGui gui = new ArcaneSingularityGui(player,this,getCapacity());
-      gui.buildGui();
+      gui.buildPage();
       gui.open();
       watchingPlayers.put(player,gui);
    }
    
    private void sendRefresh(){
-      watchingPlayers.forEach((player, gui) -> gui.buildGui());
+      watchingPlayers.forEach((player, gui) -> gui.buildPage());
    }
    
    public boolean isAssembled(){

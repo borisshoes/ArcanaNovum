@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import io.github.ladysnake.pal.VanillaAbilities;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;

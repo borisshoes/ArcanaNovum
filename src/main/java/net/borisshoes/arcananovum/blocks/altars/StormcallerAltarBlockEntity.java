@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -107,7 +106,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       ArcanaEffectUtils.stormcallerAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0);
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
          changeWeather(finalPlayer);
-         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STORMCALLER_ALTAR_ACTIVATE));
+         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STORMCALLER_ALTAR_ACTIVATE));
       }));
       return true;
    }

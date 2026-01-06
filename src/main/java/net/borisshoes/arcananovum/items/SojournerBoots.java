@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -12,7 +11,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.events.SojournersMaxRunEvent;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -76,7 +75,7 @@ public class SojournerBoots extends EnergyItem {
       id = ID;
       name = "Sojourner's Boots";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.LEATHER_BOOTS;
       item = new SojournerBootsItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GREEN);
@@ -208,32 +207,6 @@ public class SojournerBoots extends EnergyItem {
       return list;
    }
    
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient b = new ArcanaIngredient(Items.TUFF,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.NETHER_STAR,2);
-      ArcanaIngredient d = new ArcanaIngredient(Items.RED_SAND,16);
-      ArcanaIngredient f = new ArcanaIngredient(Items.ROOTED_DIRT,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      ArcanaIngredient h = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_SWIFTNESS);
-      ArcanaIngredient j = new ArcanaIngredient(Items.PACKED_MUD,16);
-      ArcanaIngredient l = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_LEAPING);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_BOOTS,1, true);
-      ArcanaIngredient p = new ArcanaIngredient(Items.GRASS_BLOCK,16);
-      ArcanaIngredient t = new ArcanaIngredient(Items.GRAVEL,16);
-      ArcanaIngredient v = new ArcanaIngredient(Items.SAND,16);
-      ArcanaIngredient x = new ArcanaIngredient(Items.TERRACOTTA,16);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {f,g,h,g,j},
-            {c,l,m,l,c},
-            {p,g,h,g,t},
-            {a,v,c,x,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withAnvil()).addCenterpiece(12);
-   }
-   
    public class SojournerBootsItem extends ArcanaPolymerItem {
       public SojournerBootsItem(){
          super(getThis(),getEquipmentArcanaItemComponents()
@@ -300,7 +273,7 @@ public class SojournerBoots extends EnergyItem {
                      int newEnergy = getEnergy(stack);
                      if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
                         player.displayClientMessage(Component.literal("Sojourner Boots Energy: "+newEnergy).withStyle(ChatFormatting.DARK_GREEN),true);
-                     if(world.getServer().getTickCount() % 20 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
+                     if(world.getServer().getTickCount() % 20 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
                      if(newEnergy >= getMaxEnergy(stack)){
                         Event.addEvent(new SojournersMaxRunEvent(player));
                         if(Event.getEventsOfType(SojournersMaxRunEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count() >= ((TimedAchievement) ArcanaAchievements.RUNNING).getGoal()){

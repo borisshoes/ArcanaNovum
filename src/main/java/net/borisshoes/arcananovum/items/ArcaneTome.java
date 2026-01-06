@@ -4,7 +4,9 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
@@ -47,7 +49,7 @@ public class ArcaneTome extends ArcanaItem {
       id = ID;
       name = "Tome of Arcana Novum";
       rarity = ArcanaRarity.MUNDANE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.KNOWLEDGE_BOOK;
       item = new ArcaneTomeItem();
@@ -82,86 +84,6 @@ public class ArcaneTome extends ArcanaItem {
       return true;
    }
    
-   public void openGui(Player playerEntity, TomeGui.TomeMode mode, TomeGui.CompendiumSettings settings){
-      openGui(playerEntity,mode,settings,"");
-   }
-   
-   public void openGui(Player playerEntity, TomeGui.TomeMode mode, TomeGui.CompendiumSettings settings, String data){
-      if(!(playerEntity instanceof ServerPlayer))
-         return;
-      ServerPlayer player = (ServerPlayer) playerEntity;
-      TomeGui gui = null;
-      boolean open = false;
-      if(mode == TomeGui.TomeMode.PROFILE){
-         gui = new TomeGui(MenuType.GENERIC_9x6,player,mode,this,settings);
-         gui.buildProfileGui(player);
-         open = true;
-      }else if(mode == TomeGui.TomeMode.COMPENDIUM){
-         gui = new TomeGui(MenuType.GENERIC_9x6,player,mode,this,settings);
-         TomeGui.buildCompendiumGui(gui,player,settings);
-         open = true;
-      }else if(mode == TomeGui.TomeMode.ITEM){
-         if(ArcanaItemUtils.getItemFromId(data) != null){
-            gui = new TomeGui(MenuType.GENERIC_9x6,player,mode,this,settings);
-            TomeGui.buildItemGui(gui,player,data);
-            open = true;
-         }else{
-            gui = new TomeGui(MenuType.GENERIC_9x6,player,mode,this,settings);
-            TomeGui.buildCompendiumGui(gui,player,settings);
-            open = true;
-         }
-      }else if(mode == TomeGui.TomeMode.RECIPE){
-         if(ArcanaItemUtils.getItemFromId(data) != null){
-            openRecipeGui(player,settings,ArcanaItemUtils.getItemFromId(data));
-         }else{
-            gui = new TomeGui(MenuType.GENERIC_9x6,player,mode,this,settings);
-            TomeGui.buildCompendiumGui(gui,player,settings);
-            open = true;
-         }
-      }else if(mode == TomeGui.TomeMode.ACHIEVEMENTS){
-         gui = new TomeGui(MenuType.GENERIC_9x6,player,mode,this,settings);
-         gui.buildAchievementsGui(player,settings);
-         open = true;
-      }else if(mode == TomeGui.TomeMode.LEADERBOARD){
-         gui = new TomeGui(MenuType.GENERIC_9x6,player,mode,this,settings);
-         gui.buildLeaderboardGui(player,settings);
-         open = true;
-      }else if(mode == TomeGui.TomeMode.RESEARCH){
-         gui = new TomeGui(MenuType.GENERIC_9x6,player,mode,this,settings);
-         gui.buildResearchGui(player,settings,data);
-         open = true;
-      }
-      if(open){
-         gui.setMode(mode);
-         gui.open();
-      }
-   }
-   
-   public void openRecipeGui(ServerPlayer player, TomeGui.CompendiumSettings settings, ArcanaItem arcanaItem){
-      openRecipeGui(player,settings,arcanaItem.getTranslatedName(),arcanaItem.getRecipe(),arcanaItem.getPrefItem());
-   }
-   
-   public void openRecipeGui(ServerPlayer player, TomeGui.CompendiumSettings settings, Component name, ArcanaRecipe recipe, ItemStack output){
-      TomeGui gui = new TomeGui(MenuType.GENERIC_9x5,player, TomeGui.TomeMode.RECIPE,this,settings);
-      gui.buildRecipeGui(gui,name,recipe,output);
-      gui.setMode(TomeGui.TomeMode.RECIPE);
-      gui.open();
-   }
-   
-   public void openItemGui(ServerPlayer player, TomeGui.CompendiumSettings settings, String id){
-      TomeGui gui = new TomeGui(MenuType.GENERIC_9x6,player,TomeGui.TomeMode.ITEM,this,settings);
-      TomeGui.buildItemGui(gui,player,id);
-      gui.setMode(TomeGui.TomeMode.ITEM);
-      gui.open();
-   }
-   
-   public void openResearchGui(ServerPlayer player, TomeGui.CompendiumSettings settings, String id){
-      TomeGui gui = new TomeGui(MenuType.GENERIC_9x6,player,TomeGui.TomeMode.RESEARCH,this,settings);
-      gui.buildResearchGui(player,settings,id);
-      gui.setMode(TomeGui.TomeMode.RESEARCH);
-      gui.open();
-   }
-   
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
@@ -169,30 +91,6 @@ public class ArcaneTome extends ArcanaItem {
       list.add(List.of(Component.literal("  Tome of Arcana           Novum").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nnew notebook.\n\nEnchanting the pages together with an additional Eye of Ender should bind the whole Tome together nicely.\n\nIt is here that I shall \nscribe all the secrets ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Tome of Arcana           Novum").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nof this Arcana Novum that I seek to uncover.").withStyle(ChatFormatting.BLACK)));
       return list;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Component.literal("In World Recipe").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Do this in the World").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient t = new ExplainIngredient(Items.ENCHANTING_TABLE,1,"Enchanting Table")
-            .withName(Component.literal("Enchanting Table").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Place an Enchanting Table in the World").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient p = new ExplainIngredient(ArcanaRegistry.MUNDANE_ARCANE_PAPER,4,"Mundane Arcane Paper")
-            .withName(Component.literal("Mundane Arcane Paper").withStyle(ChatFormatting.AQUA))
-            .withLore(List.of(Component.literal("Place the Paper onto the Enchanting Table").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient e = new ExplainIngredient(Items.ENDER_EYE,1,"Eye of Ender")
-            .withName(Component.literal("Eye of Ender").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Place an Eye of Ender onto the Enchanting Table").withStyle(ChatFormatting.DARK_PURPLE)));
-      
-      ExplainIngredient[][] ingredients = {
-            {a,a,a,a,a},
-            {a,a,e,a,a},
-            {a,a,p,a,a},
-            {a,a,t,a,a},
-            {a,a,a,a,a}};
-      return new ExplainRecipe(this, ingredients);
    }
    
    public class ArcaneTomeItem extends ArcanaPolymerItem {
@@ -207,7 +105,9 @@ public class ArcaneTome extends ArcanaItem {
       
       @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
-         openGui(playerEntity, TomeGui.TomeMode.PROFILE,new TomeGui.CompendiumSettings(0,0));
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
+         ArcaneTomeGui tomeGui = new ArcaneTomeGui(player, ArcaneTomeGui.TomeMode.PROFILE).addModes();
+         tomeGui.buildAndOpen();
          return InteractionResult.SUCCESS_SERVER;
       }
       

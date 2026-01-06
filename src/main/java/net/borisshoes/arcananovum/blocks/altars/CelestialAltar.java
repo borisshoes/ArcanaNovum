@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -63,7 +63,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Celestial Altar";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.PEARLESCENT_FROGLIGHT;
       block = new CelestialAltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).strength(.3f,1200.0f).lightLevel(state -> 15).sound(SoundType.FROGLIGHT));
@@ -127,27 +127,6 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public Multiblock getMultiblock(){
       return multiblock;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient p = new ArcanaIngredient(Items.SEA_LANTERN,4);
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,32);
-      ArcanaIngredient b = new ArcanaIngredient(Items.GOLD_BLOCK,4);
-      ArcanaIngredient r = new ArcanaIngredient(Items.LAPIS_BLOCK,4);
-      ArcanaIngredient d = new ArcanaIngredient(Items.GLOWSTONE,4);
-      ArcanaIngredient g = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient k = new ArcanaIngredient(ArcanaRegistry.STARDUST,12);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,2);
-      ArcanaIngredient m = new ArcanaIngredient(Items.PEARLESCENT_FROGLIGHT,16);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,b,d,d},
-            {b,g,b,d,d},
-            {k,l,m,l,k},
-            {p,p,r,g,r},
-            {p,p,r,r,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

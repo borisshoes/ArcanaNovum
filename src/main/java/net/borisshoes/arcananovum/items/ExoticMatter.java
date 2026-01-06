@@ -6,7 +6,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -40,7 +40,7 @@ public class ExoticMatter extends EnergyItem {
       id = ID;
       name = "Exotic Matter";
       rarity = ArcanaRarity.MUNDANE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       initEnergy = 600000;
       vanillaItem = Items.STRUCTURE_BLOCK;
       item = new ExoticMatterItem();
@@ -135,23 +135,6 @@ public class ExoticMatter extends EnergyItem {
       List<List<Component>> list = new ArrayList<>();
       list.add(List.of(Component.literal("    Exotic Matter").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe components of this matter seem to spontaneously warp spacetime when combined with a Temporal Moment. Perhaps this can be exploited…").withStyle(ChatFormatting.BLACK)));
       return list;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,8);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,8);
-      ArcanaIngredient c = new ArcanaIngredient(Items.DIAMOND,2);
-      ArcanaIngredient d = new ArcanaIngredient(Items.END_CRYSTAL,2);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {d,a,d,a,b},
-            {c,d,m,d,c},
-            {b,a,d,a,d},
-            {a,d,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    public class ExoticMatterItem extends ArcanaPolymerItem {

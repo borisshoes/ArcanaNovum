@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -70,7 +69,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
       id = ID;
       name = "Shadow Stalkers Glaive";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_SWORD;
       item = new ShadowStalkersGlaiveItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
@@ -159,25 +158,6 @@ public class ShadowStalkersGlaive extends EnergyItem {
          EnhancedStatUtils.enhanceItem(newArcanaItem,getDoubleProperty(toolStack,EnhancedStatUtils.ENHANCED_STAT_TAG));
       }
       return newArcanaItem;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_EYE,12);
-      ArcanaIngredient b = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.RED_NETHER_BRICKS,32);
-      ArcanaIngredient g = new ArcanaIngredient(Items.OBSIDIAN,24);
-      ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,3);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,3);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_SWORD,1, true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,l,m,l,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore()).addCenterpiece(12);
    }
    
    @Override
@@ -278,7 +258,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                      message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                   }
                   player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
                   
                   if(target instanceof ServerPlayer || target instanceof Warden) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,0);
                   if(target instanceof Mob){
@@ -322,7 +302,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                }
                player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
                
                int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE.id))];
                MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);

@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -56,7 +56,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Midnight Enchanter";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.ENCHANTING_TABLE;
       block = new MidnightEnchanterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(5.0f, 1200.0f).requiresCorrectToolForDrops().lightLevel(state -> 7));
@@ -129,34 +129,6 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    @Override
    public Vec3i getCheckOffset(){
       return new Vec3i(-2,-1,-2);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,24);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.PROTECTION,4));
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.THORNS,3));
-      ArcanaIngredient d = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.BINDING_CURSE,1));
-      ArcanaIngredient f = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.EFFICIENCY,5));
-      ArcanaIngredient g = new ArcanaIngredient(Items.EXPERIENCE_BOTTLE,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.LAPIS_BLOCK,12);
-      ArcanaIngredient j = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.SWIFT_SNEAK,3));
-      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.UNBREAKING,3));
-      ArcanaIngredient m = new ArcanaIngredient(Items.ENCHANTING_TABLE,16);
-      ArcanaIngredient o = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.SOUL_SPEED,3));
-      ArcanaIngredient p = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.MENDING,1));
-      ArcanaIngredient t = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.FEATHER_FALLING,4));
-      ArcanaIngredient v = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.SHARPNESS,5));
-      ArcanaIngredient w = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.LOOTING,3));
-      ArcanaIngredient x = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.VANISHING_CURSE,1));
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {f,g,h,g,j},
-            {k,h,m,h,o},
-            {p,g,h,g,t},
-            {a,v,w,x,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

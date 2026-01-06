@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -62,7 +62,7 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Altar of the Stormcaller";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.RAW_COPPER_BLOCK;
       block = new StormcallerAltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(5.0f,1200.0f).requiresCorrectToolForDrops().sound(SoundType.METAL));
@@ -123,24 +123,6 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public Vec3i getCheckOffset(){
       return new Vec3i(-5,0,-5);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.LIGHTNING_ROD,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OXIDIZED_COPPER,12);
-      ArcanaIngredient c = new ArcanaIngredient(Items.DIAMOND,6);
-      ArcanaIngredient g = new ArcanaIngredient(Items.HEART_OF_THE_SEA,1);
-      ArcanaIngredient h = new ArcanaIngredient(Items.COPPER_BULB,8);
-      ArcanaIngredient m = new ArcanaIngredient(Items.RAW_COPPER_BLOCK,16);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

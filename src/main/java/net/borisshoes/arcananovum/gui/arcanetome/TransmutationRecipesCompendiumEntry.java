@@ -15,7 +15,7 @@ import java.util.List;
 public class TransmutationRecipesCompendiumEntry extends CompendiumEntry{
    
    public TransmutationRecipesCompendiumEntry(){
-      super(new TomeGui.TomeFilter[]{}, GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK));
+      super(new ArcaneTomeGui.TomeFilter[]{}, GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK));
       
       displayStack.set(DataComponents.ITEM_NAME, Component.literal("Transmutation Recipes").withStyle(ChatFormatting.AQUA));
       List<Component> loreText = new ArrayList<>();

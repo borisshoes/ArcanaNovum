@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -61,7 +61,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Arcane Singularity";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.LECTERN;
       block = new ArcaneSingularityBlock(BlockBehaviour.Properties.of().strength(2.5f,1200.0f).sound(SoundType.WOOD));
@@ -149,25 +149,6 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    @Override
    public Vec3i getCheckOffset(){
       return new Vec3i(-1,-1,-2);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      ArcanaIngredient b = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENDER_EYE,24);
-      ArcanaIngredient g = new ArcanaIngredient(ArcanaRegistry.NEBULOUS_ESSENCE,32);
-      ArcanaIngredient h = new ArcanaIngredient(ArcanaRegistry.STARDUST,32);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHER_STAR,4);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter().withCore().withAnvil());
-      
    }
    
    @Override

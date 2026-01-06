@@ -3,11 +3,14 @@ package net.borisshoes.arcananovum;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -21,19 +24,17 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
-import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.borisshoes.arcananovum.gui.cache.CacheGui;
-import net.borisshoes.arcananovum.items.AequalisScientia;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.gui.arcanetome.*;
+import net.borisshoes.arcananovum.recipes.RecipeManager;
+import net.borisshoes.arcananovum.recipes.arcana.*;
+import net.borisshoes.arcananovum.research.ResearchTask;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
@@ -49,6 +50,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -58,13 +60,13 @@ import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -75,6 +77,7 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.function.TriConsumer;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -83,11 +86,11 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.*;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
-import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
-import static net.borisshoes.borislib.BorisLib.LOGGER;
+import static net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui.getIngredStr;
 
 public class ArcanaCommands {
    
@@ -100,7 +103,7 @@ public class ArcanaCommands {
       }
       ServerPlayer player = ctx.getSource().getPlayerOrException();
       BookElementBuilder bookBuilder = getGuideBook();
-      LoreGui loreGui = new LoreGui(player,bookBuilder,null, TomeGui.TomeMode.NONE,null);
+      LoreGui loreGui = new LoreGui(player,bookBuilder,null);
       loreGui.open();
       return 1;
    }
@@ -335,6 +338,19 @@ public class ArcanaCommands {
       }
    }
    
+   public static int reloadCommand(CommandContext<CommandSourceStack> ctx){
+      try {
+         ctx.getSource().sendSuccess(() -> Component.literal("Reloading Arcana Data..."),true);
+         CONFIG.read();
+         RecipeManager.refreshRecipes(ctx.getSource().getServer());
+         ctx.getSource().sendSuccess(() -> Component.literal("Arcana Data Reloaded!"),true);
+         return 1;
+      } catch (Exception e){
+         log(2,e.toString());
+      }
+      return 0;
+   }
+   
    public static int getItemData(CommandContext<CommandSourceStack> objectCommandContext, String name){
       if(!DEV_MODE)
          return 0;
@@ -415,6 +431,131 @@ public class ArcanaCommands {
       return 0;
    }
    
+   
+   public static int loadItemData(CommandContext<CommandSourceStack> ctx, String id){
+      if(!DEV_MODE)
+         return 0;
+      try{
+         CommandSourceStack source = ctx.getSource();
+         ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+         if(arcanaItem == null){
+            source.sendSystemMessage(Component.literal("Invalid Arcana Item ID: "+id).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+            return 0;
+         }
+         
+         ServerPlayer player = source.getPlayerOrException();
+         ServerLevel world = player.level();
+         Vec3 vec3d = player.getEyePosition(0);
+         Vec3 vec3d2 = player.getViewVector(0);
+         double maxDistance = 5;
+         Vec3 vec3d3 = vec3d.add(vec3d2.x * maxDistance, vec3d2.y * maxDistance, vec3d2.z * maxDistance);
+         BlockHitResult result = world.clip(new ClipContext(vec3d, vec3d3, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+         if(result.getType() == BlockHitResult.Type.MISS){
+            return 0;
+         }
+         BlockPos blockPos = result.getBlockPos();
+         BlockEntity blockEntity = world.getBlockEntity(blockPos);
+         BlockState blockState = world.getBlockState(blockPos);
+         Block block = blockState.getBlock();
+         if(blockEntity instanceof ChestBlockEntity chest && block instanceof ChestBlock chestBlock){
+            Container chestInventory = ChestBlock.getContainer(chestBlock, blockState, world, blockPos, true);
+            if(chestInventory == null || chestInventory.getContainerSize() != 54){
+               return 0;
+            }
+            
+            ArcanaRecipe recipe = RecipeManager.getRecipeFor(arcanaItem);
+            if(recipe != null){
+               ArcanaIngredient[][] ingreds = recipe.getIngredients();
+               for(int x = 0; x < 5; x++){
+                  for(int y = 0; y < 5; y++){
+                     chestInventory.setItem(9*y+x+1,ingreds[y][x].ingredientAsStack());
+                  }
+               }
+               ForgeRequirement reqs = recipe.getForgeRequirement();
+               if(reqs.needsAnvil()){
+                  chestInventory.setItem(0,ArcanaRegistry.TWILIGHT_ANVIL.getNewItem());
+               }
+               if(reqs.needsCore()){
+                  chestInventory.setItem(9,ArcanaRegistry.STELLAR_CORE.getNewItem());
+               }
+               if(reqs.needsFletchery()){
+                  chestInventory.setItem(18,ArcanaRegistry.RADIANT_FLETCHERY.getNewItem());
+               }
+               if(reqs.needsEnchanter()){
+                  chestInventory.setItem(27,ArcanaRegistry.MIDNIGHT_ENCHANTER.getNewItem());
+               }
+               if(reqs.needsSingularity()){
+                  chestInventory.setItem(36,ArcanaRegistry.ARCANE_SINGULARITY.getNewItem());
+               }
+               
+               GuiElementBuilder recipeItem = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
+               HashMap<String, Tuple<Integer, ItemStack>> ingredList = recipe.getIngredientList();
+               recipeItem.setName(Component.literal("Total Ingredients").withStyle(ChatFormatting.DARK_PURPLE));
+               recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("-----------------------").withStyle(ChatFormatting.LIGHT_PURPLE)));
+               for(Map.Entry<String, Tuple<Integer, ItemStack>> ingred : ingredList.entrySet()){
+                  recipeItem.addLoreLine(TextUtils.removeItalics(getIngredStr(ingred)));
+               }
+               recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+               for(ArcanaItem req : recipe.getForgeRequirementList()){
+                  MutableComponent requiresText = Component.literal("")
+                        .append(Component.literal("Requires").withStyle(ChatFormatting.GREEN))
+                        .append(Component.literal(" a ").withStyle(ChatFormatting.DARK_PURPLE))
+                        .append(req.getTranslatedName().withStyle(ChatFormatting.AQUA));
+                  recipeItem.addLoreLine(TextUtils.removeItalics(requiresText));
+               }
+               if(!recipe.getForgeRequirementList().isEmpty()) recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+               recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("Does not include item data").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)));
+               chestInventory.setItem(34,recipeItem.asStack());
+            }
+            
+            ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),source.getPlayerOrException().getStringUUID(),1,source.getServer());
+            if(item == null){
+               source.sendSystemMessage((Component.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+               return 0;
+            }
+            chestInventory.setItem(25,item);
+            
+            List<List<Component>> rawBookLore = arcanaItem.getBookLore();
+            List<Filterable<String>> filteredLore = new ArrayList<>();
+            for(List<Component> components : rawBookLore){
+               StringBuilder builder = new StringBuilder();
+               for(Component component : components){
+                  builder.append(component.getString());
+               }
+               filteredLore.add(new Filterable<>(builder.toString(),Optional.empty()));
+            }
+            ItemStack loreBook = new ItemStack(Items.WRITABLE_BOOK);
+            loreBook.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(filteredLore));
+            loreBook.set(DataComponents.CUSTOM_NAME,arcanaItem.getTranslatedName().append(Component.literal(" Lore")));
+            chestInventory.setItem(16,loreBook);
+            
+            GuiElementBuilder categoriesItem = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
+            categoriesItem.setName(Component.literal("Item Categories").withStyle(ChatFormatting.LIGHT_PURPLE));
+            for(ArcaneTomeGui.TomeFilter category : arcanaItem.getCategories()){
+               categoriesItem.addLoreLine(TextUtils.removeItalics(category.getColoredLabel()));
+            }
+            chestInventory.setItem(7,categoriesItem.asStack());
+            
+            
+            List<ResearchTask> allTasks = ResearchTasks.getUniqueTasks(arcanaItem.getResearchTasks()).stream().toList();
+            GuiElementBuilder researchItem = new GuiElementBuilder(Items.MAP).hideDefaultTooltip();
+            researchItem.setName(Component.literal("Item Research").withStyle(ChatFormatting.YELLOW));
+            boolean colorSwitch = false;
+            for(ResearchTask researchTask : allTasks){
+               researchItem.addLoreLine(TextUtils.removeItalics(researchTask.getName()).withColor(colorSwitch ? 0xe6d9bc : 0xb5a684));
+               colorSwitch = !colorSwitch;
+            }
+            chestInventory.setItem(43,researchItem.asStack());
+            
+            return 1;
+         }
+         return 0;
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
    public static int makeCraftingRecipe(CommandContext<CommandSourceStack> objectCommandContext){
       if(!DEV_MODE)
          return 0;
@@ -439,136 +580,76 @@ public class ArcanaCommands {
                return 0;
             }
             
-            Tuple<ArcanaIngredient,Character>[][] ingredients = new Tuple[5][5];
-            HashMap<Character,ArrayList<String>> lineSet = new HashMap<>();
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(chestInventory.getItem(25));
+            if(arcanaItem == null) return 0;
+            
+            ArcanaIngredient[][] ingredients = new ArcanaIngredient[5][5];
             for(int i = 0; i < 5; i++){
                for(int j = 0; j < 5; j++){
-                  ItemStack stack = chestInventory.getItem(i*9+j);
+                  ItemStack stack = chestInventory.getItem(i*9+j+1);
 
-                  ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+                  ArcanaItem arcanaItemIngred = ArcanaItemUtils.identifyItem(stack);
                   ArcanaIngredient ingred;
-                  ArrayList<String> lines = new ArrayList<>();
-                  char letter = (char) ('a' + (i * 5 + j));
 
-                  if(arcanaItem != null){
-                     ingred = new GenericArcanaIngredient(arcanaItem,stack.getCount());
-                     String idName = arcanaItem.getId().toUpperCase(Locale.ROOT);
-                     lines.add("GenericArcanaIngredient "+letter+" = new GenericArcanaIngredient(ArcanaRegistry."+idName+","+stack.getCount()+");");
+                  if(arcanaItemIngred != null){
+                     ingred = new GenericArcanaIngredient(arcanaItemIngred,stack.getCount());
                   }else if(stack.has(DataComponents.POTION_CONTENTS)){
-                     String idName = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
                      PotionContents potionsComp = stack.get(DataComponents.POTION_CONTENTS);
-                     String ingredStr = "ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+")";
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
                      if(potionsComp.potion().isPresent()){
-                        ingredStr += ".withPotions(Potions."+ BuiltInRegistries.POTION.getKey(potionsComp.potion().get().value()).getPath().toUpperCase(Locale.ROOT)+");";
-                        ingred = ingred.withPotions(potionsComp.potion().get());
+                        ingred = ingred.withPotion(potionsComp.potion().get());
                      }
-                     lines.add(ingredStr);
                   }else if(EnchantmentHelper.hasAnyEnchantments(stack)){
-                     String idName = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
                      ItemEnchantments enchantComp = EnchantmentHelper.getEnchantmentsForCrafting(stack);
-                     String ingredStr = "ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+")";
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
-                     
-                     ArrayList<String> enchStrs = new ArrayList<>();
                      for(Holder<Enchantment> entry : enchantComp.keySet()){
-                        enchStrs.add("new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments."+entry.unwrapKey().get().identifier().getPath().toUpperCase(Locale.ROOT)+"),"+enchantComp.getLevel(entry)+")");
                         ingred = ingred.withEnchantments(new ArcanaIngredient.EnchantmentEntry(entry.unwrapKey().get(), enchantComp.getLevel(entry)));
                      }
-                     
-                     if(!enchStrs.isEmpty()){
-                        ingredStr += ".withEnchantments(";
-                        for(int k = 0; k < enchStrs.size(); k++){
-                           ingredStr += enchStrs.get(k);
-                           if(k != enchStrs.size() - 1){
-                              ingredStr += ", ";
-                           }
-                        }
-                        ingredStr += ")";
-                     }
-                     ingredStr += ";";
-                     lines.add(ingredStr);
                   }else if(stack.isEmpty()){
                      ingred = ArcanaIngredient.EMPTY;
-                     lines.add("ArcanaIngredient "+letter+" = ArcanaIngredient.EMPTY;");
                   }else{
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
-                     String idName = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
-                     lines.add("ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+");");
                   }
-
-                  boolean match = false;
-                  for(int m = 0; m <= i; m++){
-                     if(match) break;
-                     for(int n = 0; n < (m == i ? j : 5); n++){
-                        Tuple<ArcanaIngredient,Character> prev = ingredients[m][n];
-                        ArcanaIngredient prevIng = prev.getA();
-
-                        if(prevIng.equals(ingred)){
-                           ingredients[i][j] = prev;
-                           match = true;
-                           break;
-                        }
-                     }
-                  }
-                  if(!match){
-                     ingredients[i][j] = new Tuple<>(ingred, letter);
-                     lineSet.put(letter,lines);
-                  }
+                  ingredients[i][j] = ingred;
                }
             }
             
-            String forgeReqStr = "new ForgeRequirement()";
-            int[] forgeSlots = new int[]{6,7,8,15,16,17};
+            ForgeRequirement forgeReq = new ForgeRequirement();
+            int[] forgeSlots = new int[]{0,9,18,27,36};
             for(int forgeSlot : forgeSlots){
                ItemStack stack = chestInventory.getItem(forgeSlot);
-               if(stack.is(Items.ANVIL)){
-                  forgeReqStr += ".withAnvil()";
-               }else if(stack.is(Items.BLAST_FURNACE)){
-                  forgeReqStr += ".withCore()";
-               }else if(stack.is(Items.ENCHANTING_TABLE)){
-                  forgeReqStr += ".withEnchanter()";
-               }else if(stack.is(Items.FLETCHING_TABLE)){
-                  forgeReqStr += ".withFletchery()";
-               }else if(stack.is(Items.LECTERN)){
-                  forgeReqStr += ".withSingularity()";
+               if(stack.is(ArcanaRegistry.MIDNIGHT_ENCHANTER.getItem())){
+                  forgeReq = forgeReq.withEnchanter();
+               }else if(stack.is(ArcanaRegistry.TWILIGHT_ANVIL.getItem())){
+                  forgeReq = forgeReq.withAnvil();
+               }else if(stack.is(ArcanaRegistry.STELLAR_CORE.getItem())){
+                  forgeReq = forgeReq.withCore();
+               }else if(stack.is(ArcanaRegistry.ARCANE_SINGULARITY.getItem())){
+                  forgeReq = forgeReq.withSingularity();
+               }else if(stack.is(ArcanaRegistry.RADIANT_FLETCHERY.getItem())){
+                  forgeReq = forgeReq.withFletchery();
                }
             }
             
-            Optional<Optional<Path>> outPathOpt = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/datagen/"));
-            if(outPathOpt.isEmpty() || outPathOpt.get().isEmpty()){
-               return -1;
-            }
+            ArcanaRecipe recipe = new ArcanaRecipe(arcanaItem,ingredients,forgeReq);
             
-            String path = outPathOpt.get().get() + "\\" + "recipedata.txt";
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
-            ArrayList<String> lines = new ArrayList<>();
-   
-            for(Map.Entry<Character, ArrayList<String>> entry : lineSet.entrySet()){
-               lines.addAll(entry.getValue());
-            }
-            lines.add("");
-            lines.add("ArcanaIngredient[][] ingredients = {");
-            for(int i = 0; i < 5; i++){
-               String line = "   {";
-               for(int j = 0; j < 5; j++){
-                  line += ingredients[i][j].getB()+",";
-               }
-               if(i == 4){
-                  line = line.substring(0,line.length()-1) + "}};";
-               }else{
-                  line = line.substring(0,line.length()-1) + "},";
-               }
-               lines.add(line);
-            }
-            lines.add("return new ArcanaRecipe(this, ingredients,"+forgeReqStr+");");
+            Path dirPath = FabricLoader.getInstance().getConfigDir().resolve("arcananovum").resolve("recipes").resolve("recipe_gen");
+            Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
             
-            for(String line : lines){
-               out.println(line);
-            }
-            player.sendSystemMessage(Component.literal("Click to get recipe data location").withStyle(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
+            File newFile = dirPath.resolve(recipe.getOutputId().getPath()+"_forging.json").toFile();
+            newFile.getParentFile().mkdirs();
             
-            out.close();
+            try(BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(newFile)))){
+               JsonObject json = recipe.toJson();
+               gson.toJson(json, output);
+               ArcanaNovum.log(0,"Saved Forging Recipe for "+ recipe.getOutputId() +" to "+newFile.getAbsolutePath());
+            }catch(IOException err){
+               ArcanaNovum.log(2,"Failed to save "+ recipe.getOutputId() +" forging recipe file!");
+               ArcanaNovum.log(2,err.toString());
+            }
+            player.sendSystemMessage(Component.literal("Click to get recipe data location").withStyle(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(dirPath.toAbsolutePath().toString()))));
+            
+            
             return 1;
          }
          
@@ -584,33 +665,220 @@ public class ArcanaCommands {
       try {
          ServerPlayer player = ctx.getSource().getPlayer();
          
-         Path dirPath = FabricLoader.getInstance().getConfigDir().resolve("arcananovum").resolve("recipe_gen");
-         Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+         // Get the recipe_gen directory
+         Path dirPath = FabricLoader.getInstance().getConfigDir().resolve("arcananovum").resolve("recipes").resolve("recipe_gen");
          
-         for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
-            ArcanaRecipe recipe = arcanaItem.getRecipe();
-            if(recipe == null || recipe instanceof ExplainRecipe){
-               LOGGER.info("Skipping Recipe for {}",arcanaItem.getId());
-               continue;
-            }
-            
-            File newFile = dirPath.resolve(arcanaItem.getId()+".json").toFile();
-            newFile.getParentFile().mkdirs();
-            
-            try(BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(newFile)))){
-               JsonObject json = recipe.toJson();
-               gson.toJson(json, output);
-               LOGGER.info("Saved Recipe for {} to {}",arcanaItem.getId(),newFile.getAbsolutePath());
-            }catch(IOException e){
-               LOGGER.fatal("Failed to save {} recipe file file!", arcanaItem.getId());
-               LOGGER.fatal(e);
-            }
+         if(!Files.exists(dirPath)){
+            player.sendSystemMessage(Component.literal("Recipe directory does not exist: " + dirPath));
+            return 0;
          }
+         
+         // Find all JSON files with "_forging" in their name
+         List<Path> forgingRecipes = new ArrayList<>();
+         try(Stream<Path> paths = Files.walk(dirPath)){
+            paths.filter(Files::isRegularFile)
+                  .filter(path -> path.getFileName().toString().contains("_forging"))
+                  .filter(path -> path.toString().endsWith(".json"))
+                  .forEach(forgingRecipes::add);
+         }
+         
+         if(forgingRecipes.isEmpty()){
+            player.sendSystemMessage(Component.literal("No forging recipes found in directory"));
+            return 0;
+         }
+         
+         // Generate code file
+         Path outputFile = dirPath.resolve("generated_recipes.txt");
+         try(BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile.toFile()))){
+            writer.write("// Generated Recipe Definitions\n");
+            writer.write("// Total recipes: " + forgingRecipes.size() + "\n\n");
+            
+            for(Path recipePath : forgingRecipes){
+               String content = Files.readString(recipePath);
+               JsonObject json = JsonParser.parseString(content).getAsJsonObject();
+               ArcanaRecipe recipe = ArcanaRecipe.fromJson(json);
+               
+               if(recipe == null){
+                  writer.write("// ERROR: Failed to parse " + recipePath.getFileName() + "\n\n");
+                  continue;
+               }
+               
+               String itemName = recipe.getOutputId().getPath().toUpperCase().replace("_", " ");
+               
+               // Write comment header
+               writer.write("      \n");
+               writer.write("      // ===================================\n");
+               writer.write("      //          " + itemName + "\n");
+               writer.write("      // ===================================\n");
+               
+               // Generate ingredient assignments
+               Map<String, ArcanaIngredient> ingredientMap = new HashMap<>();
+               char currentVar = 'a';
+               
+               ArcanaIngredient[][] ingredients = recipe.getIngredients();
+               for(int i = 0; i < 5; i++){
+                  for(int j = 0; j < 5; j++){
+                     ArcanaIngredient ingred = ingredients[i][j];
+                     if(ingred == null || ingred.equals(ArcanaIngredient.EMPTY)) continue;
+                     
+                     String key = String.valueOf(currentVar);
+                     boolean found = false;
+                     for(Map.Entry<String, ArcanaIngredient> entry : ingredientMap.entrySet()){
+                        if(entry.getValue().equals(ingred)){
+                           found = true;
+                           break;
+                        }
+                     }
+                     
+                     if(!found){
+                        ingredientMap.put(key, ingred);
+                        writer.write("      " + key + " = " + generateIngredientCode(ingred) + ";\n");
+                        currentVar++;
+                     }
+                  }
+               }
+               
+               writer.write("      \n");
+               
+               // Generate ingredients array
+               writer.write("      ingredients = new ArcanaIngredient[][]{\n");
+               for(int i = 0; i < 5; i++){
+                  writer.write("            {");
+                  for(int j = 0; j < 5; j++){
+                     ArcanaIngredient ingred = ingredients[i][j];
+                     String varName = findIngredientVar(ingred, ingredientMap);
+                     writer.write(varName);
+                     if(j < 4) writer.write(", ");
+                  }
+                  writer.write("}");
+                  if(i < 4) writer.write(",");
+                  writer.write("\n");
+               }
+               writer.write("            };\n");
+               
+               // Generate recipe add statement
+               String forgeReqCode = generateForgeRequirementCode(recipe.getForgeRequirement());
+               writer.write("      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry." +
+                     recipe.getOutputId().getPath().toUpperCase() + ", ingredients," + forgeReqCode + ")");
+               
+               // Add centerpieces if any
+               List<Integer> centerpieces = recipe.getCenterpieces();
+               for(int centerpiece : centerpieces){
+                  writer.write(".addCenterpiece(" + centerpiece + ")");
+               }
+               writer.write(");\n");
+               writer.write("      \n");
+            }
+            
+            writer.write("\n// End of generated recipes\n");
+         }
+         
+         player.sendSystemMessage(Component.literal("Generated recipe code file at: " + outputFile.toAbsolutePath()));
+         player.sendSystemMessage(Component.literal("Click to copy path").withStyle(s ->
+               s.withClickEvent(new ClickEvent.CopyToClipboard(outputFile.toAbsolutePath().toString()))));
          
       } catch (Exception e){
          log(2,e.toString());
+         e.printStackTrace();
       }
       return 0;
+   }
+   
+   private static String generateIngredientCode(ArcanaIngredient ingred){
+      if(ingred == null || ingred.equals(ArcanaIngredient.EMPTY)){
+         return "ArcanaIngredient.EMPTY";
+      }
+      
+      ItemStack stack = ingred.ingredientAsStack();
+      StringBuilder code = new StringBuilder();
+      
+      // Check if it's a GenericArcanaIngredient (Arcana item)
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+      if(arcanaItem != null){
+         code.append("new GenericArcanaIngredient(ArcanaRegistry.")
+               .append(arcanaItem.getId().toUpperCase())
+               .append(",")
+               .append(stack.getCount())
+               .append(")");
+         return code.toString();
+      }
+      
+      // Regular item
+      String itemName = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().toUpperCase();
+      boolean isIgnoresResourceful = ingred.getIgnoresResourceful();
+      
+      code.append("new ArcanaIngredient(Items.")
+            .append(itemName)
+            .append(",")
+            .append(stack.getCount());
+      
+      if(isIgnoresResourceful){
+         code.append(", true");
+      }
+      
+      code.append(")");
+      
+      // Add enchantments if any
+      List<Tuple<ResourceKey<Enchantment>, Integer>> enchantments = ingred.getEnchantments();
+      if(!enchantments.isEmpty()){
+         code.append(".withEnchantments(");
+         for(int i = 0; i < enchantments.size(); i++){
+            Tuple<ResourceKey<Enchantment>, Integer> ench = enchantments.get(i);
+            String enchName = ench.getA().identifier().getPath().toUpperCase();
+            code.append("new ArcanaIngredient.EnchantmentEntry(Enchantments.")
+                  .append(enchName)
+                  .append(",")
+                  .append(ench.getB())
+                  .append(")");
+            if(i < enchantments.size() - 1) code.append(", ");
+         }
+         code.append(")");
+      }
+      
+      // Add potion if any
+      Holder<Potion> potion = ingred.getPotion();
+      if(potion != null){
+         String potionName = BuiltInRegistries.POTION.getKey(potion.value()).getPath().toUpperCase();
+         code.append(".withPotions(Potions.").append(potionName).append(")");
+      }
+      
+      return code.toString();
+   }
+   
+   private static String findIngredientVar(ArcanaIngredient ingred, Map<String, ArcanaIngredient> ingredientMap){
+      if(ingred == null || ingred.equals(ArcanaIngredient.EMPTY)){
+         return "ArcanaIngredient.EMPTY";
+      }
+      
+      for(Map.Entry<String, ArcanaIngredient> entry : ingredientMap.entrySet()){
+         if(entry.getValue().equals(ingred)){
+            return entry.getKey();
+         }
+      }
+      
+      return "ArcanaIngredient.EMPTY";
+   }
+   
+   private static String generateForgeRequirementCode(ForgeRequirement req){
+      StringBuilder code = new StringBuilder("new ForgeRequirement()");
+      
+      if(req.needsEnchanter()){
+         code.append(".withEnchanter()");
+      }
+      if(req.needsAnvil()){
+         code.append(".withAnvil()");
+      }
+      if(req.needsCore()){
+         code.append(".withCore()");
+      }
+      if(req.needsFletchery()){
+         code.append(".withFletchery()");
+      }
+      if(req.needsSingularity()){
+         code.append(".withSingularity()");
+      }
+      
+      return code.toString();
    }
    
    public static int testCommand(CommandContext<CommandSourceStack> objectCommandContext, int num){
@@ -633,9 +901,21 @@ public class ArcanaCommands {
          CommandSourceStack source = objectCommandContext.getSource();
          ServerPlayer player = source.getPlayerOrException();
    
-         CacheGui gui = new CacheGui(player);
-         gui.buildCompendiumGui();
-         gui.open();
+         ArcaneTomeGui gui = new ArcaneTomeGui(player, ArcaneTomeGui.TomeMode.COMPENDIUM,null);
+         gui.setGuiFlags(false,false,true,false);
+         TriConsumer<CompendiumEntry, Integer, ClickType> consumer = (entry, index, clickType) -> {
+            if(clickType.isRight){
+               player.containerMenu.setCarried(ItemStack.EMPTY.copy());
+               return;
+            }
+            if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
+               player.containerMenu.setCarried(arcanaEntry.getArcanaItem().getNewItem());
+            }else if(entry instanceof IngredientCompendiumEntry ing){
+               player.containerMenu.setCarried(ing.getDisplayStack().copyWithCount(ing.getDisplayStack().getMaxStackSize()));
+            }
+         };
+         gui.addModes(consumer,(a,b,c)->{},(a,b,c)->{},(a,b,c)->{});
+         gui.buildAndOpen();
          return 0;
       }catch(Exception e){
          log(2,e.toString());
@@ -974,7 +1254,7 @@ public class ArcanaCommands {
       }
    }
    
-   public static int createItem(CommandSourceStack source, String id) throws CommandSyntaxException{
+   public static int createItem(CommandSourceStack source, String id){
       try{
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
          if(arcanaItem == null){

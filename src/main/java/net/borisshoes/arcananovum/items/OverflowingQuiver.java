@@ -4,7 +4,7 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverSlot;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -61,7 +61,7 @@ public class OverflowingQuiver extends QuiverItem{
       id = ID;
       name = "Overflowing Quiver";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       color = ChatFormatting.DARK_AQUA;
       vanillaItem = Items.RABBIT_HIDE;
       itemVersion = 1;
@@ -163,23 +163,6 @@ public class OverflowingQuiver extends QuiverItem{
       return this;
    }
    
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.INFINITY,1));
-      ArcanaIngredient c = new ArcanaIngredient(Items.RABBIT_HIDE,12);
-      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,32);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,c,h,c,b},
-            {c,h,m,h,c},
-            {b,c,h,c,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withFletchery().withCore().withEnchanter());
-   }
    
    @Override
    public List<List<Component>> getBookLore(){

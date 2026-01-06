@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
@@ -54,7 +53,7 @@ public class WingsOfEnderia extends EnergyItem {
       id = ID;
       name = "Armored Wings of Enderia";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 1;
       vanillaItem = Items.ELYTRA;
       item = new WingsOfEnderiaItem();
@@ -160,7 +159,7 @@ public class WingsOfEnderia extends EnergyItem {
                wings.addEnergy(item,1); // Add 1 energy for each tick of flying
                if(wings.getEnergy(item) % 1000 == 999)
                   player.displayClientMessage(Component.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).withStyle(ChatFormatting.DARK_PURPLE),true);
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_FLY)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WINGS_OF_ENDERIA_FLY)); // Add xp
             }
             CompoundTag leftShoulder = player.getShoulderEntityLeft();
             CompoundTag rightShoulder = player.getShoulderEntityRight();

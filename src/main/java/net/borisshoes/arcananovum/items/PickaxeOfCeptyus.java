@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -10,7 +9,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -62,7 +61,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       id = ID;
       name = "Ancient Pickaxe of Ceptyus";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_PICKAXE;
       item = new PickaxeOfCeptyusItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
@@ -172,7 +171,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          if(type instanceof RedStoneOreBlock ore){
             ore.spawnAfterBreak(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
          }
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
       }
       for(ItemStack stack : drops){
          Block.popResource(world, pos, stack);

@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -162,10 +161,10 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
                ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player == null){
                   BorisLib.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
-                  if(serverWorld.getServer().getTickCount() % 1200 == 0) BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE)));
+                  if(serverWorld.getServer().getTickCount() % 1200 == 0) BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CONTINUUM_ANCHOR_PER_MINUTE)));
                }else{
                   ArcanaAchievements.progress(player,ArcanaAchievements.TIMEY_WIMEY.id, 1);
-                  if(serverWorld.getServer().getTickCount() % 1200 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE));
+                  if(serverWorld.getServer().getTickCount() % 1200 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CONTINUUM_ANCHOR_PER_MINUTE));
                }
             }
          }

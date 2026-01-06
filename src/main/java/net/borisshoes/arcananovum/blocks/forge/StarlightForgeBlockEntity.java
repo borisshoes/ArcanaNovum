@@ -10,7 +10,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.core.BlockPos;
@@ -62,25 +62,22 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       return this.seedUses;
    }
    
-   public void openGui(int screen, ServerPlayer player, String data, @Nullable TomeGui.CompendiumSettings settings){ // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - Compendium (9x6), 5 - Skilled Selection (9x5)
+   public void openGui(int screen, ServerPlayer player, String data, ArcaneTomeGui tomeGui){ // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - (Deprecated), 5 - Skilled Selection (9x5)
       StarlightForgeGui gui = null;
       if(screen == 0){
-         gui = new StarlightForgeGui(MenuType.HOPPER,player,this, level,screen,settings);
+         gui = new StarlightForgeGui(MenuType.HOPPER,player,this,level,screen,tomeGui);
          gui.buildMenuGui();
       }else if(screen == 1){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this, level,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,screen,tomeGui);
          gui.buildCraftingGui(data);
       }else if(screen == 2){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x3,player,this, level,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x3,player,this,level,screen,tomeGui);
          gui.buildForgeGui();
       }else if(screen == 3){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this, level,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,screen,tomeGui);
          gui.buildRecipeGui(data);
-      }else if(screen == 4){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x6,player,this, level,screen,settings);
-         TomeGui.buildCompendiumGui(gui,player,settings);
       }else if(screen == 5){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this, level,screen,settings);
+         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,screen,tomeGui);
          gui.buildSkilledGui(data);
       }
       if(gui != null){

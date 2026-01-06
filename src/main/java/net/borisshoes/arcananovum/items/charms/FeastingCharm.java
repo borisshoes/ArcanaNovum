@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import com.mojang.datafixers.util.Pair;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -53,7 +52,7 @@ public class FeastingCharm extends ArcanaItem {
       id = ID;
       name = "Charm of Feasting";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CHARMS, ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.RABBIT_STEW;
       item = new FeastingCharmItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
@@ -109,37 +108,6 @@ public class FeastingCharm extends ArcanaItem {
       list.add(List.of(Component.literal(" Charm of Feasting").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nUsing the Charm switches the feeding mode.\n \nOptimal mode waits for me to be as hungry as the food will restore.\n\nRegen mode keeps me within the threshold for health regeneration. ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Charm of Feasting").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nEmergency mode feeds me whenever possible when I am below half health.").withStyle(ChatFormatting.BLACK)));
       return list;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.COOKED_SALMON,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.GLOW_BERRIES,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.COOKED_BEEF,16);
-      ArcanaIngredient d = new ArcanaIngredient(Items.PUMPKIN_PIE,16);
-      ArcanaIngredient e = new ArcanaIngredient(Items.BREAD,16);
-      ArcanaIngredient f = new ArcanaIngredient(Items.COOKIE,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.GOLDEN_CARROT,8);
-      ArcanaIngredient h = new ArcanaIngredient(Items.GOLDEN_APPLE,4);
-      ArcanaIngredient j = new ArcanaIngredient(Items.MELON_SLICE,16);
-      ArcanaIngredient k = new ArcanaIngredient(Items.COOKED_CHICKEN,16);
-      ArcanaIngredient m = new ArcanaIngredient(Items.ENCHANTED_GOLDEN_APPLE,1, true);
-      ArcanaIngredient o = new ArcanaIngredient(Items.COOKED_MUTTON,16);
-      ArcanaIngredient p = new ArcanaIngredient(Items.BEETROOT,16);
-      ArcanaIngredient t = new ArcanaIngredient(Items.DRIED_KELP,16);
-      ArcanaIngredient u = new ArcanaIngredient(Items.COOKED_RABBIT,16);
-      ArcanaIngredient v = new ArcanaIngredient(Items.BAKED_POTATO,16);
-      ArcanaIngredient w = new ArcanaIngredient(Items.COOKED_PORKCHOP,16);
-      ArcanaIngredient x = new ArcanaIngredient(Items.SWEET_BERRIES,16);
-      ArcanaIngredient y = new ArcanaIngredient(Items.COOKED_COD,16);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,e},
-            {f,g,h,g,j},
-            {k,h,m,h,o},
-            {p,g,h,g,t},
-            {u,v,w,x,y}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    public class FeastingCharmItem extends ArcanaPolymerItem {
@@ -219,7 +187,7 @@ public class FeastingCharm extends ArcanaItem {
                   Consumable consumableComponent = selectedFood.get(DataComponents.CONSUMABLE);
                   consumableComponent.onConsume(world, player, selectedFood); // Handles effects, nutrition, and stack decrease
                   
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FEASTING_CHARM_PER_FOOD_VALUE)*foodValue); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FEASTING_CHARM_PER_FOOD_VALUE)*foodValue); // Add xp
                }
             }
          }

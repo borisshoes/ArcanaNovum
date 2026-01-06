@@ -5,7 +5,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -62,7 +62,7 @@ public class SpawnerInfuser extends ArcanaBlock {
       id = ID;
       name = "Spawner Infuser";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.SCULK_SHRIEKER;
       block = new SpawnerInfuserBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(3.0f, 1200.0f).sound(SoundType.SCULK_SHRIEKER));
       item = new SpawnerInfuserItem(this.block);
@@ -133,24 +133,6 @@ public class SpawnerInfuser extends ArcanaBlock {
             .append(Component.literal("abilities").withStyle(ChatFormatting.DARK_GREEN))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ECHO_SHARD,8);
-      ArcanaIngredient c = new ArcanaIngredient(Items.SCULK_CATALYST,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.SCULK_SHRIEKER,24);
-      ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,2);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.SPAWNER_HARNESS,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withSingularity().withCore().withEnchanter().withAnvil());
    }
    
    @Override

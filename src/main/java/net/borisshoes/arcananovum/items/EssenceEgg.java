@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,8 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -64,7 +64,7 @@ public class EssenceEgg extends ArcanaItem {
       id = ID;
       name = "Essence Egg";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.GHAST_SPAWN_EGG;
       item = new EssenceEggItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
@@ -191,23 +191,6 @@ public class EssenceEgg extends ArcanaItem {
       return list;
    }
    
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      SoulstoneIngredient t = new SoulstoneIngredient(Soulstone.tiers[0],true,false, false,null);
-      ArcanaIngredient a = new ArcanaIngredient(Items.OBSIDIAN,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.IRON_BARS,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.SOUL_SAND,16);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,c,h,c,b},
-            {c,h,t,h,c},
-            {b,c,h,c,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement()).addCenterpiece(12);
-   }
-   
    public class EssenceEggItem extends ArcanaPolymerItem {
       public EssenceEggItem(){
          super(getThis());
@@ -241,7 +224,7 @@ public class EssenceEgg extends ArcanaItem {
                      if(playerEntity instanceof ServerPlayer player){
                         player.displayClientMessage(Component.literal("The Spawner Assumes the Essence of "+ EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                         SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
-                        int xp = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ESSENCE_EGG_CONVERT);
+                        int xp = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ESSENCE_EGG_CONVERT);
                         ArcanaNovum.data(playerEntity).addXP(Math.min(0,xp-(xp/5)*captiveLevel)); // Add xp
                         ArcanaAchievements.grant(player,ArcanaAchievements.SOUL_CONVERSION.id);
                      }
@@ -274,7 +257,7 @@ public class EssenceEgg extends ArcanaItem {
                      }
                      if(playerEntity instanceof ServerPlayer player){
                         SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
-                        ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ESSENCE_EGG_SPAWN)); // Add xp
+                        ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ESSENCE_EGG_SPAWN)); // Add xp
                         ArcanaAchievements.progress(player,ArcanaAchievements.SOUL_FOR_SOUL.id,1);
                      }
                   }

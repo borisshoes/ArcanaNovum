@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverSlot;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -67,7 +67,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       id = ID;
       name = "Runic Quiver";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       color = ChatFormatting.LIGHT_PURPLE;
       vanillaItem = Items.LEATHER;
       itemVersion = 1;
@@ -187,24 +187,6 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    
    private RunicQuiver getOuter(){
       return this;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.LEATHER,32);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.INFINITY,1));
-      ArcanaIngredient c = new ArcanaIngredient(Items.NETHER_STAR,2);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      GenericArcanaIngredient h = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.OVERFLOWING_QUIVER,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withFletchery().withEnchanter().withAnvil()).addCenterpiece(12);
    }
    
    @Override

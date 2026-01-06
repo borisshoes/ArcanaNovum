@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -96,7 +97,7 @@ public class WaystoneIngredient extends ArcanaIngredient {
          name += " (Not Consumed)";
       }
       if(worldKey != null){
-         name += " Attuned ["+ArcanaUtils.getFormattedDimName(worldKey).getString()+"]";
+         name += " Attuned ["+ MinecraftUtils.getFormattedDimName(worldKey).getString()+"]";
       }else if(requireAttuned){
          name += " Attuned";
       }else if(requireUnattuned){

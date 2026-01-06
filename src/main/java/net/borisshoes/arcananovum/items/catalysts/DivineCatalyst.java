@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.entities.NulConstructEntity;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
@@ -51,7 +51,7 @@ public class DivineCatalyst extends ArcanaItem {
       id = ID;
       name = "Divine Augment Catalyst";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CATALYSTS};
       itemVersion = 1;
       vanillaItem = Items.AMETHYST_CLUSTER;
       item = new DivineCatalystItem();
@@ -89,52 +89,6 @@ public class DivineCatalyst extends ArcanaItem {
             .append(Component.literal(" of a ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("Twilight Anvil").withStyle(ChatFormatting.GREEN)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Component.literal("In World Recipe").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Build this in the World").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient s = new ExplainIngredient(Items.SOUL_SAND,1,"Soul Sand or Soil")
-            .withName(Component.literal("Soul Sand or Soil").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient k = new ExplainIngredient(Items.WITHER_SKELETON_SKULL,1,"Wither Skeleton Skull")
-            .withName(Component.literal("Wither Skeleton Skull").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient n = new ExplainIngredient(Items.NETHERITE_BLOCK,1,"Netherite Block")
-            .withName(Component.literal("Block of Netherite").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient c = new ExplainIngredient(ArcanaRegistry.SOVEREIGN_CATALYST.getItem(),1,"Sovereign Augment Catalyst")
-            .withName(Component.literal("Sovereign Augmentation Catalyst").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
-            .withLore(List.of(
-                  Component.literal("")
-                        .append(Component.literal("Right Click").withStyle(ChatFormatting.BLUE))
-                        .append(Component.literal(" the ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Catalyst").withStyle(ChatFormatting.GOLD))
-                        .append(Component.literal(" on the ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Netherite Heart").withStyle(ChatFormatting.DARK_RED)),
-                  Component.literal("")
-                        .append(Component.literal("Divine Energy").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(" will flow into the ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Nul Construct").withStyle(ChatFormatting.DARK_GRAY))
-                        .append(Component.literal(" empowering it").withStyle(ChatFormatting.DARK_PURPLE)),
-                  Component.literal("")
-                        .append(Component.literal("Defeat the ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Nul Construct").withStyle(ChatFormatting.DARK_GRAY))
-                        .append(Component.literal(" without dying to receive a ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Divine Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE)),
-                  Component.literal(""),
-                  Component.literal("Warning! This fight is difficult, preparation is necessary.").withStyle(ChatFormatting.RED)
-            ));
-      
-      ExplainIngredient[][] ingredients = {
-            {a,a,a,a,a},
-            {a,k,k,k,a},
-            {a,s,n,s,c},
-            {a,a,s,a,a},
-            {a,a,a,a,a}};
-      return new ExplainRecipe(this, ingredients);
    }
    
    @Override

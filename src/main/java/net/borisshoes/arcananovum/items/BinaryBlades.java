@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -14,7 +13,7 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.events.BinaryBladesMaxEnergyEvent;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -84,7 +83,7 @@ public class BinaryBlades extends EnergyItem {
       id = ID;
       name = "Binary Blades";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 0;
       vanillaItem = Items.IRON_SWORD;
       item = new BinaryBladesItem();
@@ -264,25 +263,6 @@ public class BinaryBlades extends EnergyItem {
    }
    
    @Override
-   protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.GLOWSTONE_DUST,32);
-      ArcanaIngredient b = new ArcanaIngredient(ArcanaRegistry.STARDUST,32);
-      ArcanaIngredient c = new ArcanaIngredient(Items.DIAMOND,8);
-      ArcanaIngredient e = new ArcanaIngredient(Items.NETHER_STAR,4);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_SWORD,1,true);
-      ArcanaIngredient h = new ArcanaIngredient(Items.BLAZE_POWDER,48);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,4);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,e},
-            {b,g,h,a,b},
-            {c,h,m,h,c},
-            {b,a,h,g,b},
-            {e,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore()).addCenterpiece(6).addCenterpiece(18);
-   }
-   
-   @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
       list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nGazing up at the stars one night led me to observe two close stars dancing in the sky. Two stars harmoniously acting as one. Glancing over at my Forge gave me an idea.").withStyle(ChatFormatting.BLACK)));
@@ -412,7 +392,7 @@ public class BinaryBlades extends EnergyItem {
                ArcanaAchievements.grant(player,ArcanaAchievements.STARBURST_STREAM);
             }
             if(world.getServer().getTickCount() % 20 == 0){
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.BINARY_BLADES_MAX_ENERGY_PER_SECOND));
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BINARY_BLADES_MAX_ENERGY_PER_SECOND));
             }
          }
          

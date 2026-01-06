@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
-   protected AequalisUnattuneTransmutationRecipe(String name){
-      super(name,new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,48),new ItemStack(Items.AMETHYST_SHARD,48));
+   public AequalisUnattuneTransmutationRecipe(String id){
+      super(id,new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,48),new ItemStack(Items.AMETHYST_SHARD,48));
    }
    
    @Override
@@ -39,8 +39,6 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
    @Override
    public List<Tuple<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
-      ItemStack re1 = getBargainReagent(reagent1,bargainLvl);
-      ItemStack re2 = getBargainReagent(reagent2,bargainLvl);
       ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
       ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getItem() : ItemStack.EMPTY;
       ItemStack inputStack;
@@ -76,13 +74,13 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
          inputEntity.setItem(inputStack);
       }
       
-      boolean m11 = validStack(re1, reagent1Stack), m22 = validStack(re2, reagent2Stack), m12 = validStack(re1, reagent2Stack), m21 = validStack(re2, reagent1Stack);
+      boolean m11 = validReagent1(reagent1Stack,bargainLvl), m22 = validReagent2(reagent2Stack,bargainLvl), m12 = validReagent1(reagent2Stack,bargainLvl), m21 = validReagent2(reagent1Stack,bargainLvl);
       boolean straight = m11 && m22;
       boolean cross = !straight && m12 && m21;
       if (!straight && !cross) return new ArrayList<>(); // should be impossible
       
-      ItemStack reagent1 = straight ? re1 : re2;
-      ItemStack reagent2 = straight ? re2 : re1;
+      ItemStack reagent1 = straight ? getComputedReagent1(reagent1Stack,bargainLvl) : getComputedReagent2(reagent1Stack,bargainLvl);
+      ItemStack reagent2 = straight ? getComputedReagent2(reagent2Stack,bargainLvl) : getComputedReagent1(reagent2Stack,bargainLvl);
       
       if (reagent1Entity != null) {
          int take = reagent1.isEmpty() ? 0 : reagent1.getCount();
@@ -114,10 +112,8 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
    @Override
    public boolean canTransmute(ItemStack input1, ItemStack input2, ItemStack reagent1Input, ItemStack reagent2Input, ItemStack aequalisInput, TransmutationAltarBlockEntity altar){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
-      ItemStack re1 = getBargainReagent(reagent1,bargainLvl);
-      ItemStack re2 = getBargainReagent(reagent2,bargainLvl);
-      boolean reagentCheck1 = validStack(re1, reagent1Input) && validStack(re2, reagent2Input);
-      boolean reagentCheck2 = validStack(re1, reagent2Input) && validStack(re2, reagent1Input);
+      boolean reagentCheck1 = validReagent1(reagent1Input,bargainLvl) && validReagent2(reagent2Input,bargainLvl);
+      boolean reagentCheck2 = validReagent1(reagent2Input,bargainLvl) && validReagent2(reagent1Input,bargainLvl);
       if (!(reagentCheck1 || reagentCheck2)) return false;
       
       ItemStack inputStack;

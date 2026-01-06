@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerCrossbowItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -49,7 +49,7 @@ public class AlchemicalArbalest extends ArcanaItem {
       id = ID;
       name = "Alchemical Arbalest";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 0;
       vanillaItem = Items.CROSSBOW;
       item = new AlchemicalArbalestItem();
@@ -149,28 +149,6 @@ public class AlchemicalArbalest extends ArcanaItem {
       }
       newArcanaItem.enchant(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT),1);
       return newArcanaItem;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.GLOWSTONE_DUST,32);
-      ArcanaIngredient b = new ArcanaIngredient(Items.NETHER_WART,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.DRAGON_BREATH,32);
-      ArcanaIngredient d = new ArcanaIngredient(Items.BLAZE_POWDER,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.MULTISHOT,1));
-      ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,2);
-      ArcanaIngredient k = new ArcanaIngredient(Items.FERMENTED_SPIDER_EYE,32);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,4);
-      ArcanaIngredient m = new ArcanaIngredient(Items.CROSSBOW,1, true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {b,g,h,g,d},
-            {k,l,m,l,k},
-            {d,g,h,g,b},
-            {a,d,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore().withFletchery().withEnchanter()).addCenterpiece(12);
-      
    }
    
    @Override

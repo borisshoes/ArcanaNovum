@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
+import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -9,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -17,6 +19,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -34,34 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArcanaUtils {
-   
-   public static MutableComponent getAtlasedTexture(Item item){
-      Identifier id = BuiltInRegistries.ITEM.getResourceKey(item).get().identifier();
-      Identifier newId = Identifier.fromNamespaceAndPath(id.getNamespace(),"item/"+id.getPath());
-      return Component.object(new AtlasSprite(AtlasIds.ITEMS, newId));
-   }
-   
-   public static MutableComponent getAtlasedTexture(Block block){
-      Identifier id = BuiltInRegistries.BLOCK.getResourceKey(block).get().identifier();
-      Identifier newId = Identifier.fromNamespaceAndPath(id.getNamespace(),"block/"+id.getPath());
-      return Component.object(new AtlasSprite(AtlasIds.BLOCKS, newId));
-   }
-   
-   public static MutableComponent getAtlasedTexture(Identifier atlas, Identifier rawId){
-      return Component.object(new AtlasSprite(atlas, rawId));
-   }
-   
-   public static MutableComponent getFormattedDimName(ResourceKey<Level> worldKey){
-      if(worldKey.identifier().toString().equals(ServerLevel.OVERWORLD.identifier().toString())){
-         return Component.literal("Overworld").withStyle(ChatFormatting.GREEN);
-      }else if(worldKey.identifier().toString().equals(ServerLevel.NETHER.identifier().toString())){
-         return Component.literal("The Nether").withStyle(ChatFormatting.RED);
-      }else if(worldKey.identifier().toString().equals(ServerLevel.END.identifier().toString())){
-         return Component.literal("The End").withStyle(ChatFormatting.DARK_PURPLE);
-      }else{
-         return Component.literal(worldKey.identifier().toString()).withStyle(ChatFormatting.YELLOW);
-      }
-   }
    
    public static void blockWithShield(LivingEntity entity, float damage){
       if(entity.isBlocking()){

@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -59,7 +58,7 @@ public class Soulstone extends ArcanaItem {
       id = ID;
       name = "Soulstone";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.FIRE_CHARGE;
       item = new SoulstoneItem();
@@ -153,7 +152,7 @@ public class Soulstone extends ArcanaItem {
          player.displayClientMessage(Component.literal("Your Soulstone crackles with new power!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, 1,1f);
          if(tier > maxTier){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
             putProperty(stone,MAX_TIER_TAG,tier);
          }
          if(tier == 7){
@@ -247,23 +246,6 @@ public class Soulstone extends ArcanaItem {
       list.add(List.of(Component.literal("     Soulstone").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nStone that can act as an inescapable bulk prison for souls of a single variety. I know not why soul types refuse to combine.\n\nThe Soulstone should be able to attune to a type of mob by merely using it to draw blood.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("     Soulstone").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nAfter that, any souls of that type that are freed from their mortal prisons should be sucked into the Stone like a black hole, never to be released…\n\nUntil I find a way to use them…\n").withStyle(ChatFormatting.BLACK)));
       return list;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.RED_NETHER_BRICKS,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.SOUL_SAND,32);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_BLOCK,1, true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,c,h,c,b},
-            {c,h,m,h,c},
-            {b,c,h,c,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withAnvil());
    }
    
    public class SoulstoneItem extends ArcanaPolymerItem {

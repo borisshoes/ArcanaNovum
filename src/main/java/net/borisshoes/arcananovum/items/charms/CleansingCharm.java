@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.events.CleansingCharmEvent;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -60,7 +59,7 @@ public class CleansingCharm extends EnergyItem {
       id = ID;
       name = "Charm of Cleansing";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.CHARMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS, ArcaneTomeGui.TomeFilter.CHARMS};
       itemVersion = 0;
       vanillaItem = Items.PRISMARINE_CRYSTALS;
       item = new CleansingCharmItem();
@@ -118,7 +117,7 @@ public class CleansingCharm extends EnergyItem {
          }
          
          setEnergy(stack,getMaxEnergy(stack));
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CLEANSING_CHARM_CLEANSE));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CLEANSING_CHARM_CLEANSE));
       }
    }
    
@@ -149,24 +148,6 @@ public class CleansingCharm extends EnergyItem {
             .append(Component.literal(" ability.").withStyle(ChatFormatting.GRAY)));
       
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-   protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.MILK_BUCKET,1);
-      ArcanaIngredient b = new ArcanaIngredient(Items.HONEY_BOTTLE,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.CHARCOAL,48);
-      ArcanaIngredient g = new ArcanaIngredient(Items.DIAMOND,8);
-      ArcanaIngredient h = new ArcanaIngredient(Items.QUARTZ,32);
-      ArcanaIngredient m = new ArcanaIngredient(Items.DIAMOND_BLOCK,2);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

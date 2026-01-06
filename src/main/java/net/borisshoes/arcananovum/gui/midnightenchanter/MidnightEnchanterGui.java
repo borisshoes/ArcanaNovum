@@ -5,7 +5,6 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -20,8 +19,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
-import net.borisshoes.borislib.gui.GraphicalItem;
-import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.gui.*;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -49,137 +47,103 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Predicate;
 
-public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> implements ContainerListener {
+public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantEntry> implements ContainerListener, VirtualInventoryGui<SimpleContainer> {
    private final MidnightEnchanterBlockEntity blockEntity;
-   private int page = 1;
-   private int maxPages = 1;
    private int xpCost = 0;
    private int essenceCost = 0;
    private int bookshelves = -1; // Mode for enchanting unenchanted items
    private int lapisLevel = 0;
    private boolean updating = false;
-   private List<EnchantEntry> enchants = new ArrayList<>();
+   private final SimpleContainer inventory;
    
    public MidnightEnchanterGui(ServerPlayer player, MidnightEnchanterBlockEntity blockEntity){
-      super(MenuType.GENERIC_9x6, player, false);
+      super(MenuType.GENERIC_9x6, player, new ArrayList<>());
       this.blockEntity = blockEntity;
       setTitle(Component.literal("Midnight Enchanter"));
       inventory = new SimpleContainer(1);
       inventory.addListener(this);
+      
+      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)));
+      setPaneHeight(3);
+      setPaneStartInd(19);
+      setSortInd(9);
+      setFilterInd(17);
+      
+      curFilter(BookFilter.NONE);
+      curSort(BookSort.ALPHABETICAL);
+      
+      itemElemBuilder((pageItem, index) -> {
+         GuiElementBuilder enchantBook = new GuiElementBuilder(pageItem.selected ? Items.ENCHANTED_BOOK : Items.WRITTEN_BOOK).glow().hideDefaultTooltip();
+         enchantBook.setName((Component.literal("")
+               .append(Enchantment.getFullname(pageItem.enchantment,pageItem.level)).withStyle(ChatFormatting.AQUA)));
+         if(pageItem.selected){
+            enchantBook.addLoreLine(TextUtils.removeItalics(Component.literal("Selected").withStyle(ChatFormatting.YELLOW)));
+            enchantBook.addLoreLine(TextUtils.removeItalics(Component.literal("").withStyle(ChatFormatting.YELLOW)));
+         }
+         if(isCompatible(pageItem.enchantment, pageItem.level)){
+            enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("")
+                  .append(Component.literal("Click").withStyle(ChatFormatting.BLUE))
+                  .append(Component.literal(" to toggle selection").withStyle(ChatFormatting.DARK_PURPLE)))));
+         }else{
+            enchantBook.addLoreLine(TextUtils.removeItalics(Component.literal("Incompatible Enchant").withStyle(ChatFormatting.RED)));
+         }
+         return enchantBook;
+      });
+      
+      elemClickFunction((entry, index, clickType) -> {
+         if(isCompatible(entry.enchantment, entry.level)){
+            entry.setSelected(!entry.selected);
+            calculateXPCost();
+            buildPage();
+         }
+      });
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      if(!(blockEntity.getLevel() instanceof ServerLevel serverWorld)) return true;
-      boolean enchanted = EnchantmentHelper.hasAnyEnchantments(getStack());
+   public void buildPage(){
       boolean precision = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PRECISION_DISENCHANTING.id) >= 1;
+      boolean paperUpgrade = getStack().is(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
       
-      if(index == 49){
-         if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
-            if(lapisLevel == -1){
-               player.displayClientMessage(Component.literal("You must select a Lapis Level").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-               return true;
-            }
-            if(player.experienceLevel < xpCost && !player.isCreative()){
-               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-               return true;
-            }
-            
-            if(MinecraftUtils.removeItems(player, Items.LAPIS_LAZULI,lapisLevel)){
-               player.onEnchantmentPerformed(getStack(),0);
-               applyEnchants();
-               removeXP(lapisLevel);
-               MinecraftUtils.returnItems(inventory,player);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-               setUpdating();
-               setItem(ItemStack.EMPTY);
-               finishUpdate();
-            }else{
-               player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                     .append(Component.translatable(Items.LAPIS_LAZULI.getDescriptionId()).withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC)),false);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-            }
-         }else if(getStack().is(ArcanaRegistry.EMPOWERED_ARCANE_PAPER)){
-            if(player.experienceLevel >= xpCost || player.isCreative()){
-               if(MinecraftUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
-                  setUpdating();
-                  ItemStack newStack = new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER);
-                  newStack.setCount(getStack().getCount());
-                  setItem(newStack);
-                  removeXP(xpCost);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-                  MinecraftUtils.returnItems(inventory,player);
-                  setItem(ItemStack.EMPTY);
-                  finishUpdate();
-               }else{
-                  player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                        .append(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)),false);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-               }
-            }else{
-               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-            }
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR, Component.empty());
+      clearSlot(4);
+      
+      setSlotRedirect(4,new MidnightEnchanterSlot(inventory,0,0,0));
+      
+      boolean enchanted = EnchantmentHelper.hasAnyEnchantments(getStack());
+      Component name = getStack().isEmpty() ? Component.literal("Insert an Enchanted or Enchantable Item").withStyle(ChatFormatting.DARK_PURPLE) : Component.literal("Add Enchantments or Disenchant Your Item").withStyle(ChatFormatting.LIGHT_PURPLE);
+      int color = getStack().isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR;
+      boolean vanillaEnchantingMode = getStack().isEnchantable() && !enchanted && bookshelves >= 0;
+      
+      for(int i = 0; i < 9; i++){
+         if(i == 0){
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,color)).hideDefaultTooltip().setName(name));
+         }else if(i == 8){
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,color)).hideDefaultTooltip().setName(name));
+         }else if(i == 3){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT,color)).hideDefaultTooltip().setName(name));
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,color)).hideDefaultTooltip().setName(name));
+         }else if(i == 5){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT,color)).hideDefaultTooltip().setName(name));
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,color)).hideDefaultTooltip().setName(name));
          }else{
-            if(getSelected().isEmpty()) return true;
-            if(player.experienceLevel >= xpCost || player.isCreative()){
-               if(MinecraftUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
-                  applyEnchants();
-                  removeXP(xpCost);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-                  MinecraftUtils.returnItems(inventory,player);
-                  setUpdating();
-                  setItem(ItemStack.EMPTY);
-                  finishUpdate();
-               }else{
-                  player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                        .append(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)),false);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-               }
-            }else{
-               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-            }
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,color)).hideDefaultTooltip().setName(name));
          }
-         buildGui();
-      }else if(index == 27){
-         prevPage();
-         buildGui();
-      }else if(index == 35){
-         nextPage();
-         buildGui();
-      }else if(index == 6 && precision && enchanted){
-         if(MinecraftUtils.removeItems(player, Items.BOOK,1)){
-            ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
-            if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-               ItemEnchantments comp = EnchantmentHelper.getEnchantmentsForCrafting(getStack());
-               EnchantmentHelper.setEnchantments(book,comp);
-               disenchantItem();
-            }else{
-               ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-               Tuple<Holder<Enchantment>, Integer> entry = removeTopEnchant();
-               enchantBuilder.upgrade(entry.getA(),entry.getB());
-               EnchantmentHelper.setEnchantments(book, enchantBuilder.toImmutable());
-            }
-            SimpleContainer sinv = new SimpleContainer(book);
-            SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-            MinecraftUtils.returnItems(sinv,player);
-         }else{
-            player.displayClientMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-         }
-         buildGui();
-      }else if(index == 7){
-         if(enchanted){
+      }
+      
+      if(enchanted){
+         GuiElementBuilder essenceItem = GuiElementBuilder.from(MinecraftUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance())).hideDefaultTooltip();
+         essenceItem.setName((Component.literal("")
+               .append(Component.literal("Disenchant into Essence").withStyle(ChatFormatting.DARK_AQUA))));
+         essenceItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
+               .append(Component.literal(" to disenchant this item").withStyle(ChatFormatting.DARK_PURPLE)))));
+         essenceItem.setCallback((clickType) -> {
             int essence = (int) (ArcanaUtils.calcEssenceFromEnchants(getStack()) * (1 + .15*ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA.id)));
             SimpleContainer sinv = new SimpleContainer(essence / 64 + 1);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE)*essence);
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE)*essence);
             if(essence > 0){
                while(essence > 64){
                   sinv.addItem(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance().copyWithCount(64));
@@ -203,133 +167,8 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
             }
             
             disenchantItem();
-            buildGui();
-         }else{
-            if(type == ClickType.MOUSE_LEFT_SHIFT){
-               bookshelves = -1;
-            }else if(type == ClickType.MOUSE_RIGHT){
-               if(bookshelves == -1){
-                  bookshelves = 15;
-               }else if(bookshelves > -1){
-                  bookshelves--;
-               }
-            }else{
-               if(bookshelves == 15){
-                  bookshelves = -1;
-               }else{
-                  bookshelves++;
-               }
-            }
-            this.enchants = getEnchantsForItem(this.getStack());
-            lapisLevel = -1;
-            xpCost = -1;
-         }
-         buildGui();
-      }else if(index == 8 && precision && enchanted){
-         StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(serverWorld,blockEntity.getBlockPos());
-         ArcaneSingularityBlockEntity singularity;
-         if(forge != null && (singularity = (ArcaneSingularityBlockEntity) forge.getForgeAddition(serverWorld,ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY)) != null){
-            if(singularity.getNumBooks() < singularity.getCapacity()){
-               if(MinecraftUtils.removeItems(player, Items.BOOK,1)){
-                  ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
-                  if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-                     ItemEnchantments comp = EnchantmentHelper.getEnchantmentsForCrafting(getStack());
-                     EnchantmentHelper.setEnchantments(book,comp);
-                     disenchantItem();
-                  }else{
-                     ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-                     Tuple<Holder<Enchantment>, Integer> entry = removeTopEnchant();
-                     enchantBuilder.upgrade(entry.getA(),entry.getB());
-                     EnchantmentHelper.setEnchantments(book, enchantBuilder.toImmutable());
-                  }
-                  singularity.addBook(book);
-               }else{
-                  player.displayClientMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-               }
-            }else{
-               player.displayClientMessage(Component.literal("The Singularity does not have enough space").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-            }
-         }else{
-            player.displayClientMessage(Component.literal("The Enchanter's Forge does not have access to a Singularity").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
-         }
-         buildGui();
-      }else if(index % 9 > 0 && index % 9 < 8 && index > 18 && index < 44){
-         if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
-            int row = (index / 9) - 1;
-            if(getSlot(index) != null && (getSlot(index).getItemStack().is(Items.ENCHANTED_BOOK) ||  getSlot(index).getItemStack().is(Items.LAPIS_LAZULI))){
-               lapisLevel = row;
-            }
-            buildGui();
-         }else{
-            int ind = (7*(index/9 - 2) + (index % 9 - 1)) + 21*(page-1);
-            if(ind >= enchants.size()) return true;
-            EnchantEntry entry = enchants.get(ind);
-            if(isCompatible(entry.enchantment, entry.level)){
-               enchants.set(ind,new EnchantEntry(entry.enchantment,entry.level,!entry.selected));
-               calculateXPCost();
-               buildGui();
-            }
-         }
-      }
-      
-      return true;
-   }
-   
-   public void buildGui(){
-      boolean precision = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PRECISION_DISENCHANTING.id) >= 1;
-      boolean paperUpgrade = getStack().is(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
-      
-      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR, Component.empty());
-      clearSlot(4);
-      
-      setSlotRedirect(4,new MidnightEnchanterSlot(inventory,0,0,0));
-      
-      boolean enchanted = EnchantmentHelper.hasAnyEnchantments(getStack());
-      Component name = getStack().isEmpty() ? Component.literal("Insert an Enchanted or Enchantable Item").withStyle(ChatFormatting.DARK_PURPLE) : Component.literal("Add Enchantments or Disenchant Your Item").withStyle(ChatFormatting.LIGHT_PURPLE);
-      int color = getStack().isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR;
-      
-      for(int i = 0; i < 9; i++){
-         if(i == 0){
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,color)).hideDefaultTooltip().setName(name));
-         }else if(i == 8){
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,color)).hideDefaultTooltip().setName(name));
-         }else if(i == 3){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT,color)).hideDefaultTooltip().setName(name));
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,color)).hideDefaultTooltip().setName(name));
-         }else if(i == 5){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT,color)).hideDefaultTooltip().setName(name));
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,color)).hideDefaultTooltip().setName(name));
-         }else{
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,color)).hideDefaultTooltip().setName(name));
-         }
-      }
-      
-      if(maxPages > 1 && !(getStack().isEnchantable() && !enchanted && bookshelves >= 0)){
-         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
-         nextArrow.setName((Component.literal("")
-               .append(Component.literal("Next Page").withStyle(ChatFormatting.GOLD))));
-         nextArrow.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal("("+page+" of "+maxPages+")").withStyle(ChatFormatting.DARK_PURPLE)))));
-         setSlot(35,nextArrow);
-         
-         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
-         prevArrow.setName((Component.literal("")
-               .append(Component.literal("Prev Page").withStyle(ChatFormatting.GOLD))));
-         prevArrow.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal("("+page+" of "+maxPages+")").withStyle(ChatFormatting.DARK_PURPLE)))));
-         setSlot(27,prevArrow);
-      }
-      
-      if(enchanted){
-         GuiElementBuilder essenceItem = GuiElementBuilder.from(MinecraftUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance())).hideDefaultTooltip();
-         essenceItem.setName((Component.literal("")
-               .append(Component.literal("Disenchant into Essence").withStyle(ChatFormatting.DARK_AQUA))));
-         essenceItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
-               .append(Component.literal(" to disenchant this item").withStyle(ChatFormatting.DARK_PURPLE)))));
+            buildPage();
+         });
          setSlot(7,essenceItem);
          
          if(precision){
@@ -342,6 +181,28 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
             disenchantBookItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                   .append(Component.literal("Right Click").withStyle(ChatFormatting.AQUA))
                   .append(Component.literal(" to move all enchants to a book").withStyle(ChatFormatting.DARK_PURPLE)))));
+            disenchantBookItem.setCallback((clickType) -> {
+               if(MinecraftUtils.removeItems(player, Items.BOOK,1)){
+                  ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+                  if(clickType == ClickType.MOUSE_RIGHT || clickType == ClickType.MOUSE_RIGHT_SHIFT){
+                     ItemEnchantments comp = EnchantmentHelper.getEnchantmentsForCrafting(getStack());
+                     EnchantmentHelper.setEnchantments(book,comp);
+                     disenchantItem();
+                  }else{
+                     ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+                     Tuple<Holder<Enchantment>, Integer> entry = removeTopEnchant();
+                     enchantBuilder.upgrade(entry.getA(),entry.getB());
+                     EnchantmentHelper.setEnchantments(book, enchantBuilder.toImmutable());
+                  }
+                  SimpleContainer sinv = new SimpleContainer(book);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
+                  MinecraftUtils.returnItems(sinv,player);
+               }else{
+                  player.displayClientMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               }
+               buildPage();
+            });
             setSlot(6,disenchantBookItem);
             
             GuiElementBuilder singularityItem = new GuiElementBuilder(Items.LECTERN).hideDefaultTooltip();
@@ -353,6 +214,39 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
             singularityItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                   .append(Component.literal("Right Click").withStyle(ChatFormatting.AQUA))
                   .append(Component.literal(" to move all enchants to a Singularity").withStyle(ChatFormatting.DARK_PURPLE)))));
+            singularityItem.setCallback((clickType) -> {
+               if(!(blockEntity.getLevel() instanceof ServerLevel serverWorld)) return;
+               StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(serverWorld,blockEntity.getBlockPos());
+               ArcaneSingularityBlockEntity singularity;
+               if(forge != null && (singularity = (ArcaneSingularityBlockEntity) forge.getForgeAddition(serverWorld,ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY)) != null){
+                  if(singularity.getNumBooks() < singularity.getCapacity()){
+                     if(MinecraftUtils.removeItems(player, Items.BOOK,1)){
+                        ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+                        if(clickType == ClickType.MOUSE_RIGHT || clickType == ClickType.MOUSE_RIGHT_SHIFT){
+                           ItemEnchantments comp = EnchantmentHelper.getEnchantmentsForCrafting(getStack());
+                           EnchantmentHelper.setEnchantments(book,comp);
+                           disenchantItem();
+                        }else{
+                           ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+                           Tuple<Holder<Enchantment>, Integer> entry = removeTopEnchant();
+                           enchantBuilder.upgrade(entry.getA(),entry.getB());
+                           EnchantmentHelper.setEnchantments(book, enchantBuilder.toImmutable());
+                        }
+                        singularity.addBook(book);
+                     }else{
+                        player.displayClientMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+                        SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+                     }
+                  }else{
+                     player.displayClientMessage(Component.literal("The Singularity does not have enough space").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+                  }
+               }else{
+                  player.displayClientMessage(Component.literal("The Enchanter's Forge does not have access to a Singularity").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               }
+               buildPage();
+            });
             setSlot(8,singularityItem);
          }
       }else if(paperUpgrade){
@@ -393,10 +287,31 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
                   .append(Component.literal(" to go to ").withStyle(ChatFormatting.DARK_PURPLE))
                   .append(Component.literal("Enlightened Enchantment").withStyle(ChatFormatting.DARK_AQUA)))));
          }
+         essenceItem.setCallback((clickType) -> {
+            if(clickType == ClickType.MOUSE_LEFT_SHIFT){
+               bookshelves = -1;
+            }else if(clickType == ClickType.MOUSE_RIGHT){
+               if(bookshelves == -1){
+                  bookshelves = 15;
+               }else if(bookshelves > -1){
+                  bookshelves--;
+               }
+            }else{
+               if(bookshelves == 15){
+                  bookshelves = -1;
+               }else{
+                  bookshelves++;
+               }
+            }
+            items(getEnchantsForItem(this.getStack()));
+            lapisLevel = -1;
+            xpCost = -1;
+            buildPage();
+         });
          setSlot(7,essenceItem);
       }
       
-      if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
+      if(vanillaEnchantingMode){
          for(int i = 19; i < 26; i++){
             GuiElementBuilder bgPane2 = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
             bgPane2.setName(Component.empty()).hideTooltip();
@@ -437,11 +352,16 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
                         .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
                         .append(Component.literal(" to select").withStyle(ChatFormatting.DARK_PURPLE)))));
                }
+               int finalI = i;
+               lapisItem.setCallback((clickType) -> {
+                  lapisLevel = finalI +1;
+                  buildPage();
+               });
                setSlot(19 + i*9,lapisItem);
                
                for(int j = 0; j < list.size() && j < 5; j++){
                   EnchantmentInstance entry = list.get(j);
-                  
+                  int slotInd = 21 + i*9 + j;
                   GuiElementBuilder enchantBook = new GuiElementBuilder(Items.ENCHANTED_BOOK).hideDefaultTooltip();
                   enchantBook.glow(false);
                   enchantBook.setName((Component.literal("")
@@ -451,7 +371,11 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
                      enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("")
                            .append(Component.literal("Selected").withStyle(ChatFormatting.AQUA)))));
                   }
-                  setSlot(21 + i*9 + j,enchantBook);
+                  enchantBook.setCallback((clickType) -> {
+                     lapisLevel = finalI +1;
+                     buildPage();
+                  });
+                  setSlot(slotInd,enchantBook);
                }
             }
          }
@@ -464,33 +388,15 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
          xpCost = 10;
          essenceCost = getStack().getCount();
       }else{
-         List<EnchantEntry> pageItems = getPage();
-         int k = 0;
-         for(int i = 0; i < 3; i++){
-            for(int j = 0; j < 7; j++){
-               if(k < pageItems.size()){
-                  EnchantEntry pageItem = pageItems.get(k);
-                  GuiElementBuilder enchantBook = new GuiElementBuilder(pageItem.selected ? Items.ENCHANTED_BOOK : Items.WRITTEN_BOOK).glow().hideDefaultTooltip();
-                  enchantBook.setName((Component.literal("")
-                        .append(Enchantment.getFullname(pageItem.enchantment,pageItem.level)).withStyle(ChatFormatting.AQUA)));
-                  if(pageItem.selected){
-                     enchantBook.addLoreLine(TextUtils.removeItalics(Component.literal("Selected").withStyle(ChatFormatting.YELLOW)));
-                     enchantBook.addLoreLine(TextUtils.removeItalics(Component.literal("").withStyle(ChatFormatting.YELLOW)));
-                  }
-                  if(isCompatible(pageItem.enchantment, pageItem.level)){
-                     enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("")
-                           .append(Component.literal("Click").withStyle(ChatFormatting.BLUE))
-                           .append(Component.literal(" to toggle selection").withStyle(ChatFormatting.DARK_PURPLE)))));
-                  }else{
-                     enchantBook.addLoreLine(TextUtils.removeItalics(Component.literal("Incompatible Enchant").withStyle(ChatFormatting.RED)));
-                  }
-                  
-                  setSlot((i*9+19)+j,enchantBook);
-               }else{
-                  setSlot((i*9+19)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, getStack().isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
-               }
-               k++;
-            }
+         if(getStack().isEmpty()){
+            blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)));
+         }else{
+            blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)));
+         }
+         super.buildPage();
+         if(getStack().isEmpty()){
+            setSlot(9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }
       }
       
@@ -528,7 +434,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
          if(xpCost > 0){
             enchantItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                   .append(Component.literal(xpCost+" Levels").withStyle(ChatFormatting.DARK_GREEN)))));
-            if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
+            if(vanillaEnchantingMode){
                enchantItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                      .append(Component.literal(lapisLevel+" Lapis Lazuli").withStyle(ChatFormatting.BLUE)))));
             }else{
@@ -538,6 +444,78 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
          }
       }
       
+      enchantItem.setCallback((clickType) -> {
+         if(vanillaEnchantingMode){
+            if(lapisLevel == -1){
+               player.displayClientMessage(Component.literal("You must select a Lapis Level").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               return;
+            }
+            if(player.experienceLevel < xpCost && !player.isCreative()){
+               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               return;
+            }
+            
+            if(MinecraftUtils.removeItems(player, Items.LAPIS_LAZULI,lapisLevel)){
+               player.onEnchantmentPerformed(getStack(),0);
+               applyEnchants();
+               removeXP(lapisLevel);
+               MinecraftUtils.returnItems(inventory,player);
+               SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
+               setUpdating();
+               setItem(ItemStack.EMPTY);
+               finishUpdate();
+            }else{
+               player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                     .append(Component.translatable(Items.LAPIS_LAZULI.getDescriptionId()).withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC)),false);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+            }
+         }else if(getStack().is(ArcanaRegistry.EMPOWERED_ARCANE_PAPER)){
+            if(player.experienceLevel >= xpCost || player.isCreative()){
+               if(MinecraftUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
+                  setUpdating();
+                  ItemStack newStack = new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER);
+                  newStack.setCount(getStack().getCount());
+                  setItem(newStack);
+                  removeXP(xpCost);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
+                  MinecraftUtils.returnItems(inventory,player);
+                  setItem(ItemStack.EMPTY);
+                  finishUpdate();
+               }else{
+                  player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)),false);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               }
+            }else{
+               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+            }
+         }else{
+            if(getSelected().isEmpty()) return;
+            if(player.experienceLevel >= xpCost || player.isCreative()){
+               if(MinecraftUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
+                  applyEnchants();
+                  removeXP(xpCost);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
+                  MinecraftUtils.returnItems(inventory,player);
+                  setUpdating();
+                  setItem(ItemStack.EMPTY);
+                  finishUpdate();
+               }else{
+                  player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)),false);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               }
+            }else{
+               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+            }
+         }
+         buildPage();
+      });
+      
       GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideDefaultTooltip();
       String costStr = bookshelves >= 0 && !paperUpgrade ? "Lapis" : "Essence";
       xpItem.setName((Component.literal("")
@@ -545,7 +523,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
       if(xpCost > 0 && (!selected.isEmpty() || paperUpgrade)){
          xpItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal(xpCost+" Levels").withStyle(ChatFormatting.DARK_GREEN)))));
-         if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
+         if(vanillaEnchantingMode){
             xpItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                   .append(Component.literal(lapisLevel+" Lapis Lazuli").withStyle(ChatFormatting.BLUE)))));
          }else{
@@ -687,17 +665,15 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
    
    public void setItem(ItemStack stack){
       lapisLevel = -1;
-      enchants = getEnchantsForItem(stack);
-      page = 1;
-      maxPages = (int) Math.ceil(enchants.size() / 21.0);
+      items(getEnchantsForItem(stack));
       inventory.setItem(0,stack.copy());
       calculateXPCost();
    }
    
    private void setSelectedFromList(List<EnchantmentInstance> entries){
-      enchants = new ArrayList<>();
+      items(new ArrayList<>());
       HolderLookup.RegistryLookup<Enchantment> impl = player.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-      entries.forEach(e -> enchants.add(new EnchantEntry(impl.getOrThrow(e.enchantment().unwrapKey().get()), e.level(),true)));
+      entries.forEach(e -> getItemList().add(new EnchantEntry(impl.getOrThrow(e.enchantment().unwrapKey().get()), e.level(), true)));
    }
    
    public void calculateXPCost(){
@@ -736,29 +712,8 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
       xpCost = cost;
    }
    
-   public void nextPage(){
-      if(page < maxPages){
-         page++;
-      }
-   }
-   
-   public void prevPage(){
-      if(page > 1){
-         page--;
-      }
-   }
-   
    private List<EnchantEntry> getSelected(){
-      return enchants.stream().filter(e -> e.selected).toList();
-   }
-   
-   private List<EnchantEntry> getPage(){
-      List<EnchantEntry> pageItems = new ArrayList<>();
-      
-      for(int i = (page-1)*21; i < page*21 && i < enchants.size(); i++){
-         pageItems.add(enchants.get(i));
-      }
-      return pageItems;
+      return getItemList().stream().filter(e -> e.selected).toList();
    }
    
    private List<EnchantEntry> getEnchantsForItem(ItemStack stack){
@@ -781,12 +736,12 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
             if(curLevel < maxLevel){ // Allow level increases
                for(int i = curLevel+1; i <= maxLevel; i++){
                   
-                  possibleAdditions.add(new EnchantEntry(entry,i,false));
+                  possibleAdditions.add(new EnchantEntry(entry, i, false));
                }
             }
          }else{ // Add possible additions
             for(int i = enchantment.getMinLevel(); i <= enchantment.getMaxLevel(); i++){
-               possibleAdditions.add(new EnchantEntry(entry,i,false));
+               possibleAdditions.add(new EnchantEntry(entry, i, false));
             }
          }
       }
@@ -820,7 +775,14 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
    @Override
    public void onClose(){
       MinecraftUtils.returnItems(inventory,player);
+      onVirtualInventoryClose();
       super.onClose();
+   }
+   
+   @Override
+   public void onOpen() {
+      onVirtualInventoryOpen();
+      super.onOpen();
    }
    
    @Override
@@ -829,11 +791,17 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
    }
    
    @Override
+   public SimpleContainer getInventory() { return inventory; }
+   
+   @Override
+   public ServerPlayer getPlayer() { return player; }
+   
+   @Override
    public void containerChanged(Container inv){
       if(!updating){
          setUpdating();
          ItemStack mainStack = inv.getItem(0);
-         buildGui();
+         buildPage();
          setItem(mainStack);
          //Update gui
          finishUpdate();
@@ -851,6 +819,107 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleContainer> i
       updating = true;
    }
    
-   private record EnchantEntry(Holder<Enchantment> enchantment, int level, boolean selected){}
+   public static class EnchantEntry{
+      private final Holder<Enchantment> enchantment;
+      private final int level;
+      private boolean selected;
+      
+      public EnchantEntry(Holder<Enchantment> enchantment, int level, boolean selected){
+         this.enchantment = enchantment;
+         this.level = level;
+         this.selected = selected;
+      }
+      
+      public boolean isSelected(){
+         return selected;
+      }
+      
+      public void setSelected(boolean selected){
+         this.selected = selected;
+      }
+      
+      public Holder<Enchantment> enchantment(){
+         return enchantment;
+      }
+      
+      public int level(){
+         return level;
+      }
+   }
+   
+   private static class BookFilter extends GuiFilter<EnchantEntry> {
+      public static final List<BookFilter> FILTERS = new ArrayList<>();
+      
+      public static final BookFilter NONE = new BookFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor().intValue(),
+            (stack) -> true);
+      public static final BookFilter MAX_LEVEL = new BookFilter("gui.arcananovum.max_level", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+            (entry) -> entry.enchantment().value().getMaxLevel() == entry.level());
+      public static final BookFilter SWORDS = new BookFilter("gui.arcananovum.sword_enchants", ChatFormatting.RED.getColor().intValue(),
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_SWORD)));
+      public static final BookFilter BOWS = new BookFilter("gui.arcananovum.bow_enchants", ChatFormatting.GOLD.getColor().intValue(),
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.BOW)));
+      public static final BookFilter AXES = new BookFilter("gui.arcananovum.axe_enchants", ChatFormatting.DARK_RED.getColor().intValue(),
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_AXE)));
+      public static final BookFilter TOOLS = new BookFilter("gui.arcananovum.tool_enchants", ChatFormatting.BLUE.getColor().intValue(),
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_PICKAXE)));
+      public static final BookFilter CROSSBOWS = new BookFilter("gui.arcananovum.crossbow_enchants", ChatFormatting.GRAY.getColor().intValue(),
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.CROSSBOW)));
+      public static final BookFilter TRIDENTS = new BookFilter("gui.arcananovum.trident_enchants", ChatFormatting.DARK_AQUA.getColor().intValue(),
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.TRIDENT)));
+      public static final BookFilter FISHING = new BookFilter("gui.arcananovum.fishing_rod_enchants", ChatFormatting.DARK_GRAY.getColor().intValue(),
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.FISHING_ROD)));
+      public static final BookFilter ARMOR = new BookFilter("gui.arcananovum.armor_enchants", ChatFormatting.DARK_GREEN.getColor().intValue(),
+            (entry) -> (
+                  entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_HELMET)) ||
+                  entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_CHESTPLATE)) ||
+                  entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_LEGGINGS)) ||
+                  entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_BOOTS))));
+      public static final BookFilter MACES = new BookFilter("gui.arcananovum.mace_enchants", ChatFormatting.DARK_BLUE.getColor().intValue(),
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.MACE)));
+      public static final BookFilter SPEARS = new BookFilter("gui.arcananovum.spear_enchants", 0xa0ffec,
+            (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_SPEAR)));
+      public static final BookFilter TREASURE = new BookFilter("gui.arcananovum.treasure_enchants", ChatFormatting.YELLOW.getColor().intValue(),
+            (entry) -> entry.enchantment().is(net.minecraft.tags.EnchantmentTags.TREASURE) && !entry.enchantment().is(net.minecraft.tags.EnchantmentTags.CURSE));
+      public static final BookFilter CURSES = new BookFilter("gui.arcananovum.curses", ChatFormatting.DARK_PURPLE.getColor().intValue(),
+            (entry) -> entry.enchantment().is(net.minecraft.tags.EnchantmentTags.CURSE));
+      
+      private BookFilter(String key, int color, Predicate<EnchantEntry> filter){
+         super(key, color, filter);
+         FILTERS.add(this);
+      }
+      
+      @Override
+      protected List<BookFilter> getList(){
+         return FILTERS;
+      }
+      
+      public BookFilter getStaticDefault(){
+         return NONE;
+      }
+   }
+   
+   private static class BookSort extends GuiSort<EnchantEntry> {
+      public static final List<BookSort> SORTS = new ArrayList<>();
+      
+      public static final BookSort LEVEL_ASC = new BookSort("gui.arcananovum.level_descending", ChatFormatting.AQUA.getColor().intValue(),
+            Comparator.<EnchantEntry>comparingInt(entry -> -entry.level()));
+      public static final BookSort LEVEL_DESC = new BookSort("gui.arcananovum.level_ascending", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+            Comparator.<EnchantEntry>comparingInt(EnchantEntry::level));
+      public static final BookSort ALPHABETICAL = new BookSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor().intValue(),
+            Comparator.comparing(entry -> Enchantment.getFullname(entry.enchantment(),entry.level()).getString()));
+      
+      private BookSort(String key, int color, Comparator<EnchantEntry> comparator){
+         super(key, color, comparator);
+         SORTS.add(this);
+      }
+      
+      @Override
+      protected List<BookSort> getList(){
+         return SORTS;
+      }
+      
+      public BookSort getStaticDefault(){
+         return ALPHABETICAL;
+      }
+   }
 }
-

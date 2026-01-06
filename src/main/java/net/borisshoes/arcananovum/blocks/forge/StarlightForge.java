@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
@@ -58,7 +58,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Starlight Forge";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.SMITHING_TABLE;
       block = new StarlightForgeBlock(BlockBehaviour.Properties.of().strength(2.5f,1200.0f).sound(SoundType.WOOD));
@@ -135,33 +135,6 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
          }
       }
       return null;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Component.literal("In World Recipe").withStyle(ChatFormatting.BLUE))
-            .withLore(List.of(Component.literal("Do this in the World").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient s = new ExplainIngredient(Items.SMITHING_TABLE,1,"Smithing Table")
-            .withName(Component.literal("Smithing Table").withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY))
-            .withLore(List.of(Component.literal("Place a Smithing Table in the World").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient m = new ExplainIngredient(Items.SEA_LANTERN,1,"",false)
-            .withName(Component.literal("Night of a New Moon").withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY))
-            .withLore(List.of(Component.literal("Follow this Recipe under the darkness of a New Moon").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient g = new ExplainIngredient(Items.ENCHANTED_GOLDEN_APPLE,1,"Enchanted Golden Apple")
-            .withName(Component.literal("Enchanted Golden Apple").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD))
-            .withLore(List.of(Component.literal("Place the apple upon the Smithing Table.").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient t = new ExplainIngredient(ArcanaRegistry.ARCANE_TOME.getItem(),1,"Tome of Arcana Novum")
-            .withName(Component.literal("Tome of Arcana Novum").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA))
-            .withLore(List.of(Component.literal("Place the Tome upon the Smithing Table.").withStyle(ChatFormatting.DARK_PURPLE)));
-      
-      ExplainIngredient[][] ingredients = {
-            {m,a,a,a,a},
-            {a,a,t,a,a},
-            {a,a,g,a,a},
-            {a,a,s,a,a},
-            {a,a,a,a,a}};
-      return new ExplainRecipe(this, ingredients);
    }
    
    @Override

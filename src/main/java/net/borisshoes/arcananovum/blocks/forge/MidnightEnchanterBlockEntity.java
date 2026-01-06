@@ -85,7 +85,7 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    
    public void openGui(ServerPlayer player){
       MidnightEnchanterGui gui = new MidnightEnchanterGui(player,this);
-      gui.buildGui();
+      gui.buildPage();
       gui.open();
    }
    

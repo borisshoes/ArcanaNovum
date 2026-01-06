@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -11,7 +10,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -59,7 +58,7 @@ public class TotemOfVengeance extends ArcanaItem {
       id = ID;
       name = "Totem Of Vengeance";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS,TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS,ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.TOTEM_OF_UNDYING;
       item = new TotemOfVengeanceItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
@@ -155,7 +154,7 @@ public class TotemOfVengeance extends ArcanaItem {
          }
          
          ArcanaAchievements.progress(player,ArcanaAchievements.TOO_ANGRY_TO_DIE.id,0); // Start the timer
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_ACTIVATE));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TOTEM_OF_VENGEANCE_ACTIVATE));
       }
    }
    
@@ -166,28 +165,6 @@ public class TotemOfVengeance extends ArcanaItem {
          return upgradeLevel(stack,false);
       }
       return stack;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      SoulstoneIngredient r = new SoulstoneIngredient(100,false,false,true,null);
-      ArcanaIngredient p = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_TURTLE_MASTER);
-      ArcanaIngredient a = ArcanaIngredient.EMPTY;
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,12);
-      ArcanaIngredient t = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_SWIFTNESS);
-      ArcanaIngredient v = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_STRENGTH);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient x = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.LONG_FIRE_RESISTANCE);
-      ArcanaIngredient k = new ArcanaIngredient(Items.CRYING_OBSIDIAN,8);
-      ArcanaIngredient m = new ArcanaIngredient(Items.TOTEM_OF_UNDYING,1, true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,b,b,a},
-            {a,g,b,g,a},
-            {k,b,m,b,k},
-            {p,k,r,k,t},
-            {a,v,k,x,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter());
    }
    
    @Override

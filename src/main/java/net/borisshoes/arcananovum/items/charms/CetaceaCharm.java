@@ -1,13 +1,12 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -54,7 +53,7 @@ public class CetaceaCharm extends ArcanaItem {
       id = ID;
       name = "Charm of Cetacea";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.CHARMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS, ArcaneTomeGui.TomeFilter.CHARMS};
       itemVersion = 0;
       vanillaItem = Items.COD;
       item = new CetaceaCharmItem();
@@ -107,28 +106,6 @@ public class CetaceaCharm extends ArcanaItem {
             .append(Component.literal(" effect.").withStyle(ChatFormatting.AQUA)));
       
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-   protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.LONG_WATER_BREATHING);
-      ArcanaIngredient q = new ArcanaIngredient(Items.COD,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.PRISMARINE_CRYSTALS,4);
-      ArcanaIngredient c = new ArcanaIngredient(Items.TURTLE_SCUTE,4);
-      ArcanaIngredient s = new ArcanaIngredient(Items.SALMON,16);
-      ArcanaIngredient e = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_SWIFTNESS);
-      ArcanaIngredient g = new ArcanaIngredient(Items.PUFFERFISH,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.NAUTILUS_SHELL,1);
-      ArcanaIngredient i = new ArcanaIngredient(Items.TROPICAL_FISH,16);
-      ArcanaIngredient m = new ArcanaIngredient(Items.CONDUIT,1,true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,e},
-            {b,g,h,i,b},
-            {c,h,m,h,c},
-            {b,q,h,s,b},
-            {e,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -190,7 +167,7 @@ public class CetaceaCharm extends ArcanaItem {
                player.addEffect(grace);
                
                if(world.getServer().getTickCount() % 20 == 0){
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CETACEA_CHARM_PER_SECOND));
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CETACEA_CHARM_PER_SECOND));
                }
             }
             if(player.isUnderWater() && gills){

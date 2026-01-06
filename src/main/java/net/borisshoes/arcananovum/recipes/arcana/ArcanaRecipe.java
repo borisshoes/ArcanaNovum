@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.recipes.arcana;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -78,6 +78,10 @@ public class ArcanaRecipe {
       return getAlteredIngredients();
    }
    
+   public Identifier getOutputId(){
+      return itemId;
+   }
+   
    public ForgeRequirement getForgeRequirement(){
       return forgeRequirement;
    }
@@ -125,16 +129,13 @@ public class ArcanaRecipe {
    }
    
    private ArcanaIngredient[][] getAlteredIngredients(){
-      int reduction = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.INGREDIENT_REDUCTION);
-      
       ArcanaIngredient[][] alteredIngredients = new ArcanaIngredient[trueIngredients.length][trueIngredients[0].length];
       for(int i = 0; i < trueIngredients.length; i++){
          for(int j = 0; j < trueIngredients[0].length; j++){
-            int newCount = (int) Math.ceil((double) trueIngredients[i][j].getCount() / reduction);
+            int newCount = trueIngredients[i][j].getCount();
             alteredIngredients[i][j] = trueIngredients[i][j].copyWithCount(newCount);
          }
       }
-      
       return alteredIngredients;
    }
    

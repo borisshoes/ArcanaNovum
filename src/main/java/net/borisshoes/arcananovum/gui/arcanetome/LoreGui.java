@@ -2,31 +2,18 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public class LoreGui extends BookGui {
    
-   private final ArcaneTome tome;
-   private final TomeGui.TomeMode returnMode;
-   private final String returnItem;
-   private final TomeGui.CompendiumSettings settings;
+   private final SimpleGui returnGui;
    
-   public LoreGui(ServerPlayer player, BookElementBuilder book, @Nullable ArcaneTome tome, TomeGui.TomeMode returnMode, TomeGui.CompendiumSettings settings){
+   public LoreGui(ServerPlayer player, BookElementBuilder book, SimpleGui returnGui){
       super(player, book);
-      this.tome = tome;
-      this.returnMode = returnMode;
-      this.returnItem = "";
-      this.settings = settings;
-   }
-   
-   public LoreGui(ServerPlayer player, BookElementBuilder book, @Nullable ArcaneTome tome, TomeGui.TomeMode returnMode, TomeGui.CompendiumSettings settings, String returnItem){
-      super(player, book);
-      this.tome = tome;
-      this.returnMode = returnMode;
-      this.returnItem = returnItem;
-      this.settings = settings;
+      this.returnGui = returnGui;
    }
    
    @Override
@@ -36,8 +23,8 @@ public class LoreGui extends BookGui {
    
    @Override
    public void onClose(){
-      if(tome != null){
-         tome.openGui(player,returnMode,settings,returnItem);
+      if(returnGui != null){
+         returnGui.open();
       }
    }
 }

@@ -29,6 +29,7 @@ public class CommandRegisterCallback {
                         .then(argument("targets", players())
                               .executes(ctx -> ArcanaCommands.createItems(ctx.getSource(), getString(ctx, "id"), getPlayers(ctx,"targets"))))))
             .then(literal("cache").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::cacheCommand))
+            .then(literal("reload").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::reloadCommand))
             .then(literal("help").executes(ArcanaCommands::openGuideBook))
             .then(literal("guide").executes(ArcanaCommands::openGuideBook))
             .then(literal("show").executes(ArcanaCommands::showItem))
@@ -133,7 +134,7 @@ public class CommandRegisterCallback {
                               .executes(context ->ArcanaCommands.bossTeleport(context,context.getSource().getPlayer(),true)))))
       );
    
-      dispatcher.register(ArcanaNovum.CONFIG.generateCommand("arcananovum","config"));
+      dispatcher.register(ArcanaNovum.CONFIG.generateCommand("arcana","config"));
    
       if(DEV_MODE){
          dispatcher.register(literal("arcana")
@@ -145,6 +146,9 @@ public class CommandRegisterCallback {
                .then(literal("getitemdata").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                      .then(argument("name", string()).executes(ctx -> ArcanaCommands.getItemData(ctx, getString(ctx, "name")))))
                .then(literal("makerecipe").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::makeCraftingRecipe))
+               .then(literal("loaditemdata").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                     .then(argument("id", string()).suggests(ArcanaCommands::getItemSuggestions)
+                           .executes(ctx -> ArcanaCommands.loadItemData(ctx, getString(ctx, "id")))))
                .then(literal("boss")
                      .then(literal("test").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::testBoss)))
                .then(literal("item").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))

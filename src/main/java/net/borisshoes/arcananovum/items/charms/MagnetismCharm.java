@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -64,7 +63,7 @@ public class MagnetismCharm extends ArcanaItem {
       id = ID;
       name = "Charm of Magnetism";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CHARMS, ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 2;
       vanillaItem = Items.IRON_INGOT;
       item = new MagnetismCharmItem();
@@ -147,7 +146,7 @@ public class MagnetismCharm extends ArcanaItem {
          double heightMod = .08;
          item.setDeltaMovement(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
       }
-      ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.MAGNETISM_CHARM_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.MAGNETISM_CHARM_PER_ITEM)*items.size())); // Add xp
+      ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MAGNETISM_CHARM_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MAGNETISM_CHARM_PER_ITEM)*items.size())); // Add xp
       if(items.size() >= 25) ArcanaAchievements.grant(player,ArcanaAchievements.MAGNETS.id);
       
       if(ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.NEODYMIUM.id) >= 1){
@@ -262,23 +261,6 @@ public class MagnetismCharm extends ArcanaItem {
    @Override
    public boolean blocksHandInteractions(ItemStack item){
       return true;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.LIGHTNING_ROD,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.IRON_INGOT,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.IRON_BARS,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.IRON_BLOCK,8);
-      ArcanaIngredient m = new ArcanaIngredient(Items.HEAVY_CORE,1, true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,c,h,c,b},
-            {c,h,m,h,c},
-            {b,c,h,c,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

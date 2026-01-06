@@ -8,7 +8,7 @@ import net.borisshoes.arcananovum.callbacks.OverhealTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.mixins.AbstractArrowAccessor;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
@@ -53,7 +53,7 @@ public class SiphoningArrows extends RunicArrow {
       id = ID;
       name = "Siphoning Arrows";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new SiphoningArrowsItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
@@ -115,25 +115,6 @@ public class SiphoningArrows extends RunicArrow {
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){}
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = ArcanaIngredient.EMPTY;
-      ArcanaIngredient c = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_HARMING);
-      ArcanaIngredient g = new ArcanaIngredient(Items.FERMENTED_SPIDER_EYE,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
-      ArcanaIngredient i = new ArcanaIngredient(Items.GLISTERING_MELON_SLICE,16);
-      ArcanaIngredient k = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_HEALING);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,a,c,a,a},
-            {a,g,h,i,a},
-            {k,h,m,h,k},
-            {a,i,h,g,a},
-            {a,a,c,a,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withFletchery());
-   }
    
    @Override
    public List<List<Component>> getBookLore(){

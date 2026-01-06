@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
 import com.google.common.collect.Lists;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -10,7 +9,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -60,7 +59,7 @@ public class FractalSponge extends ArcanaBlock {
       id = ID;
       name = "Fractal Sponge";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.SPONGE;
       block = new FractalSpongeBlock(BlockBehaviour.Properties.of().strength(.6f,1200.0f).sound(SoundType.GRASS));
       item = new FractalSpongeItem(this.block);
@@ -184,29 +183,11 @@ public class FractalSponge extends ArcanaBlock {
       if(absorbed > 0){
          SoundUtils.playSound(world,pos, SoundEvents.ELDER_GUARDIAN_HURT, SoundSource.BLOCKS,1,.8f);
          if(placer instanceof ServerPlayer player){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
             ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_CLEANUP.id, absorbed);
          }
       }
       return absorbed;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.OBSIDIAN,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.MAGMA_BLOCK,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.SPONGE,6);
-      ArcanaIngredient d = new ArcanaIngredient(Items.BLUE_ICE,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.END_CRYSTAL,4);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHER_STAR,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {b,g,c,g,d},
-            {c,c,m,c,c},
-            {d,g,c,g,b},
-            {a,d,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

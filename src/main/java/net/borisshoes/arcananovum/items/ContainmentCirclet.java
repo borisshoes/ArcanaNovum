@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
 import com.mojang.logging.LogUtils;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -64,7 +63,7 @@ public class ContainmentCirclet extends ArcanaItem {
       id = ID;
       name = "Containment Circlet";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       vanillaItem = Items.HEART_OF_THE_SEA;
       item = new ContainmentCircletItem();
@@ -192,30 +191,12 @@ public class ContainmentCirclet extends ArcanaItem {
             entity.discard();
             user.displayClientMessage(Component.literal("The Circlet contains the creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
             SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
-            ArcanaNovum.data(user).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CONTAINMENT_CIRCLET_USE)); // Add xp
+            ArcanaNovum.data(user).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CONTAINMENT_CIRCLET_USE)); // Add xp
             buildItemLore(stack,user.level().getServer());
          }
       }
       
       return InteractionResult.SUCCESS_SERVER;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,4);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,4);
-      ArcanaIngredient c = new ArcanaIngredient(Items.IRON_BARS,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.IRON_CHAIN,12);
-      ArcanaIngredient h = new ArcanaIngredient(Items.COBWEB,8);
-      ArcanaIngredient m = new ArcanaIngredient(Items.ENDER_CHEST,4);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

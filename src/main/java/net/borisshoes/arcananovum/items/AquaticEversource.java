@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -70,7 +69,7 @@ public class AquaticEversource extends ArcanaItem {
       id = ID;
       name = "Aquatic Eversource";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.WATER_BUCKET;
       item = new AquaticEversourceItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
@@ -123,23 +122,6 @@ public class AquaticEversource extends ArcanaItem {
             .append(Component.literal("removing ").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal("water.").withStyle(ChatFormatting.AQUA)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.BUCKET,8);
-      ArcanaIngredient b = new ArcanaIngredient(Items.GOLD_INGOT,6);
-      ArcanaIngredient c = new ArcanaIngredient(Items.BLUE_ICE,4);
-      ArcanaIngredient h = new ArcanaIngredient(Items.DIAMOND,2);
-      ArcanaIngredient m = new ArcanaIngredient(Items.HEART_OF_THE_SEA,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,c,h,c,b},
-            {c,h,m,h,c},
-            {b,c,h,c,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -241,12 +223,12 @@ public class AquaticEversource extends ArcanaItem {
                   for(BlockPos floodPos : BlockPos.betweenClosed(blockPos3.offset(-1, 0, -1), blockPos3.offset(1, 0, 1))){
                      if(floodPos.equals(blockPos3)) continue;
                      if(placeFluid(fluid,playerEntity, world, floodPos, null, true) > 0){
-                        ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
+                        ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
                         ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
                      }
                   }
                }
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
                playerEntity.awardStat(Stats.ITEM_USED.get(this));
                playerEntity.getCooldowns().addCooldown(stack,5);

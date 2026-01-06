@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.core.polymer;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -68,7 +67,7 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
          }
          
          if(shooter instanceof ServerPlayer player){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_RUNIC_ARROW_SHOOT));
             ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, 1);
             shooter.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS,volume, 1.0F / (shooter.level().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
          }

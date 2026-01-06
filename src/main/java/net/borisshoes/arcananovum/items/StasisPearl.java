@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.entities.StasisPearlEntity;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -58,7 +57,7 @@ public class StasisPearl extends EnergyItem {
       id = ID;
       name = "Stasis Pearl";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       initEnergy = 60;
       vanillaItem = Items.ENDER_PEARL;
       item = new StasisPearlItem();
@@ -147,24 +146,6 @@ public class StasisPearl extends EnergyItem {
       putProperty(newStack,ACTIVE_TAG,active);
       putProperty(newStack,PEARL_ID_TAG,pearlID);
       return buildItemLore(newStack,server);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_EYE,4);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,12);
-      ArcanaIngredient c = new ArcanaIngredient(Items.NETHERITE_SCRAP,1);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ENDER_PEARL,8);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil());
    }
    
    @Override
@@ -258,7 +239,7 @@ public class StasisPearl extends EnergyItem {
                      putProperty(stack,PEARL_ID_TAG,newPearlID);
                      
                      setEnergy(stack,0);
-                     ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STASIS_PEARL_USE));
+                     ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STASIS_PEARL_USE));
                   }
                }else{
                   playerEntity.getCooldowns().addCooldown(stack, 0);

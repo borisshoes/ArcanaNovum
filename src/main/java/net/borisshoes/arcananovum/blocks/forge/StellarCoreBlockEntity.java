@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -393,7 +392,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
                Containers.dropItemStack(getLevel(), itemSpawnPos.x(),itemSpawnPos.y(),itemSpawnPos.z(), itemStack);
             }
             
-            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STELLAR_CORE_SALVAGE)));
+            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STELLAR_CORE_SALVAGE)));
             
             SoundUtils.playSound(serverWorld, getBlockPos(), SoundEvents.BLAZE_DEATH, SoundSource.BLOCKS, 1, 0.8f);
             SoundUtils.playSound(serverWorld, getBlockPos(), SoundEvents.IRON_GOLEM_HURT, SoundSource.BLOCKS, 1, 1.2f);
@@ -403,7 +402,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
                int returnCount = stack.getCount() * moltenItem.getCount();
                inv.setItem(0, ItemStack.EMPTY);
                int finalReturnCount = returnCount;
-               final int xpPerSmelt = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STELLAR_CORE_SMELT) * ((stack.getItem().getDescriptionId().contains("raw") && stack.getItem().getDescriptionId().contains("block")) ? 9 : 1);
+               final int xpPerSmelt = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STELLAR_CORE_SMELT) * ((stack.getItem().getDescriptionId().contains("raw") && stack.getItem().getDescriptionId().contains("block")) ? 9 : 1);
                
                watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(xpPerSmelt * finalReturnCount));
                ArrayList<ItemStack> items = new ArrayList<>();

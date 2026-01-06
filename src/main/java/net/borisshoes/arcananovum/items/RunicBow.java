@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBowItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -65,7 +64,7 @@ public class RunicBow extends ArcanaItem {
       id = ID;
       name = "Runic Bow";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.BOW;
       item = new RunicBowItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
@@ -143,25 +142,6 @@ public class RunicBow extends ArcanaItem {
    }
    
    @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
-      ArcanaIngredient b = new ArcanaIngredient(Items.AMETHYST_SHARD,32);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.POWER,5));
-      ArcanaIngredient d = new ArcanaIngredient(Items.END_CRYSTAL,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      GenericArcanaIngredient h = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      ArcanaIngredient m = new ArcanaIngredient(Items.BOW,1, true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {b,g,h,g,d},
-            {c,h,m,h,c},
-            {d,g,h,g,b},
-            {a,d,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withFletchery().withEnchanter().withCore()).addCenterpiece(12);
-   }
-   
-   @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
       list.add(List.of(Component.literal("      Runic Bow").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe Runic Bow is truly a masterpiece of adaptive Arcana. The integrated Runic Matrices reconfigure the Bow’s ethereal structure based on the projectile being fired to unlock its Arcane effects.").withStyle(ChatFormatting.BLACK)));
@@ -230,7 +210,7 @@ public class RunicBow extends ArcanaItem {
                   volume = 1.2f;
                }
                
-               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT) * list.size());
+               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_RUNIC_ARROW_SHOOT) * list.size());
                if(playerEntity instanceof ServerPlayer player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, list.size());
             }
             

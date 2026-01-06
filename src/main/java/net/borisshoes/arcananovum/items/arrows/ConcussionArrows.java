@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.NulConstructEntity;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -59,7 +59,7 @@ public class ConcussionArrows extends RunicArrow {
       id = ID;
       name = "Concussion Arrows";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new ConcussionArrowsItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
@@ -139,25 +139,6 @@ public class ConcussionArrows extends RunicArrow {
          SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.PLAYERS, 1, .8f);
          ArcanaEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);
       }
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = ArcanaIngredient.EMPTY;
-      ArcanaIngredient c = new ArcanaIngredient(Items.LINGERING_POTION,1).withPotions(Potions.STRONG_SLOWNESS);
-      ArcanaIngredient g = new ArcanaIngredient(Items.GLOW_INK_SAC,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
-      ArcanaIngredient i = new ArcanaIngredient(Items.INK_SAC,16);
-      ArcanaIngredient k = new ArcanaIngredient(Items.LINGERING_POTION,1).withPotions(Potions.LONG_WEAKNESS);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,a,c,a,a},
-            {a,g,h,i,a},
-            {k,h,m,h,k},
-            {a,i,h,g,a},
-            {a,a,c,a,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withFletchery());
    }
    
    @Override

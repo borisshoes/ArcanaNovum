@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.LeftClickItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -88,7 +87,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       name = "Charm of Cinders";
       initEnergy = 100;
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CHARMS, ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.BLAZE_POWDER;
       item = new CindersCharmItem();
@@ -176,7 +175,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             playerEntity.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
             
             if(playerEntity instanceof ServerPlayer player){
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_TNT)*cinderConsumption); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_IGNITE_TNT)*cinderConsumption); // Add xp
             }
             
             return !playerEntity.isCreative();
@@ -194,7 +193,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             playerEntity.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
             
             if(playerEntity instanceof ServerPlayer player){
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_BLOCK)*cinderConsumption); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_IGNITE_BLOCK)*cinderConsumption); // Add xp
             }
             
             return !playerEntity.isCreative();
@@ -215,7 +214,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          playerEntity.displayClientMessage(Component.literal(message.toString()).withStyle(color), true);
          
          if(playerEntity instanceof ServerPlayer player){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_LIGHT_BLOCK)*cinderConsumption); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_LIGHT_BLOCK)*cinderConsumption); // Add xp
          }
          
          return !playerEntity.isCreative();
@@ -262,7 +261,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
                stack = result;
                
                if(player instanceof ServerPlayer serverPlayer){
-                  ArcanaNovum.data(serverPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_SMELT_PER_CINDER)*energyToConsume); // Add xp
+                  ArcanaNovum.data(serverPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_SMELT_PER_CINDER)*energyToConsume); // Add xp
                   if(recipeOutput.is(Items.GLASS)) ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.GLASSBLOWER.id,stack.getCount());
                }
                return stack;
@@ -316,7 +315,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
                if(entity instanceof Mob) ignited++;
                
                if(playerEntity instanceof ServerPlayer serverPlayer){
-                  ArcanaNovum.data(serverPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_CONE_PER_TARGET)); // Add xp
+                  ArcanaNovum.data(serverPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_CONE_PER_TARGET)); // Add xp
                }
             }
          }
@@ -414,7 +413,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             entity.hurtServer(serverWorld, new DamageSource(entity.damageSources().onFire().typeHolder(),playerEntity),cremation ? 2*dmg : dmg);
             ignited++;
             
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_PYROBLAST_PER_TARGET)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_PYROBLAST_PER_TARGET)); // Add xp
          }
       }
       
@@ -466,7 +465,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             entity.igniteForSeconds((float) consumedEnergy /20);
             entity.hurtServer(serverWorld, new DamageSource(entity.damageSources().onFire().typeHolder(),playerEntity),cremation ? 2*dmg : dmg);
             
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_WEB_PER_TARGET)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_WEB_PER_TARGET)); // Add xp
             hits.add(entity);
          }
          if(hits.size() >= numTargets) break;
@@ -534,24 +533,6 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       ItemStack newStack = super.updateItem(stack,server);
       putProperty(newStack,ACTIVE_TAG, active);
       return buildItemLore(newStack,server);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
-      ArcanaIngredient b = new ArcanaIngredient(Items.BLAZE_ROD,24);
-      ArcanaIngredient c = new ArcanaIngredient(Items.FIRE_CHARGE,32);
-      ArcanaIngredient g = new ArcanaIngredient(Items.MAGMA_CREAM,32);
-      ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      ArcanaIngredient m = new ArcanaIngredient(Items.COAL_BLOCK,32);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withCore().withAnvil());
    }
    
    @Override
@@ -630,10 +611,10 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          
          if(target instanceof Creeper creeper){
             creeper.ignite();
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_CREEPER)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_IGNITE_CREEPER)); // Add xp
          }else{
             target.igniteForSeconds(5);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_ENTITY)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CINDERS_CHARM_IGNITE_ENTITY)); // Add xp
          }
          
          SoundUtils.playSound(player.level(),target.blockPosition(), SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, player.level().getRandom().nextFloat() * 0.4F + 0.8F);

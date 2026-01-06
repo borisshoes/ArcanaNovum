@@ -9,7 +9,8 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -66,7 +67,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Transmutation Altar";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.BLOCKS,TomeGui.TomeFilter.ALTARS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),ArcaneTomeGui.TomeFilter.BLOCKS,ArcaneTomeGui.TomeFilter.ALTARS};
       vanillaItem = Items.DIAMOND_BLOCK;
       block = new TransmutationAltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIAMOND).strength(5.0f,1200.0f).requiresCorrectToolForDrops().sound(SoundType.AMETHYST));
       item = new TransmutationAltarItem(this.block);
@@ -110,7 +111,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static List<TransmutationRecipe> getUnlockedRecipes(ServerPlayer player){
-      return TransmutationRecipes.TRANSMUTATION_RECIPES.stream().filter(recipe -> {
+      return RecipeManager.TRANSMUTATION_RECIPES.stream().filter(recipe -> {
          if(recipe instanceof InfusionTransmutationRecipe r && ArcanaItemUtils.isArcane(r.getOutput()) && !ArcanaNovum.data(player).hasResearched(ArcanaItemUtils.identifyItem(r.getOutput()))){
             return false;
          }
@@ -142,24 +143,6 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       return new Vec3i(-5,0,-5);
    }
    
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.BLACKSTONE,24);
-      ArcanaIngredient c = new ArcanaIngredient(Items.AMETHYST_BLOCK,16);
-      ArcanaIngredient d = new ArcanaIngredient(Items.QUARTZ_BLOCK,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.AMETHYST_SHARD,24);
-      ArcanaIngredient h = new ArcanaIngredient(Items.DIAMOND,16);
-      ArcanaIngredient m = new ArcanaIngredient(Items.DIAMOND_BLOCK,4);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,a,c,d,d},
-            {a,g,h,g,d},
-            {c,h,m,h,c},
-            {d,g,h,g,a},
-            {d,d,c,a,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
-   }
    
    @Override
    public List<List<Component>> getBookLore(){

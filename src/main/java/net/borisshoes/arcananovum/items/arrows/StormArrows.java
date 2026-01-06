@@ -8,7 +8,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -63,7 +63,7 @@ public class StormArrows extends RunicArrow {
       id = ID;
       name = "Storm Arrows";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new StormArrowsItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
@@ -163,23 +163,6 @@ public class StormArrows extends RunicArrow {
          }
       }
       SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS,.1f,2f);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = ArcanaIngredient.EMPTY;
-      ArcanaIngredient c = new ArcanaIngredient(Items.LIGHTNING_ROD,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.CHANNELING,1));
-      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,a,c,a,a},
-            {a,g,h,g,a},
-            {c,h,m,h,c},
-            {a,g,h,g,a},
-            {a,a,c,a,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withFletchery().withEnchanter());
    }
    
    @Override

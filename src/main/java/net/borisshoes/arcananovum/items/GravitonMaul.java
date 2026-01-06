@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -10,7 +9,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerMaceItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -82,7 +81,7 @@ public class GravitonMaul extends ArcanaItem {
       id = ID;
       name = "Graviton Maul";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 0;
       vanillaItem = Items.MACE;
       item = new GravitonMaulItem();
@@ -298,7 +297,7 @@ public class GravitonMaul extends ArcanaItem {
                      totalDmg += radius;
                   }
                }
-               ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_PER_10) * totalDmg / 10,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_CAP)));
+               ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_GRAVITON_MAUL_IMPACT_DAMAGE_PER_10) * totalDmg / 10,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_GRAVITON_MAUL_IMPACT_DAMAGE_CAP)));
                ArcanaEffectUtils.gravitonMaulSlam(player.level(), player.getOnPos(),radius,0);
                player.releaseUsingItem();
                player.getCooldowns().addCooldown(stack,40);
@@ -333,26 +332,6 @@ public class GravitonMaul extends ArcanaItem {
          MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 10, 2, false, false, true);
          player.addEffect(res);
       }
-   }
-   
-   @Override
-   protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,32);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.BREACH,4));
-      ArcanaIngredient g = new ArcanaIngredient(Items.COBWEB,32);
-      ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,3);
-      ArcanaIngredient c = new ArcanaIngredient(Items.BREEZE_ROD,32);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,3);
-      ArcanaIngredient m = new ArcanaIngredient(Items.MACE,1,true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {k,l,m,l,k},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter()).addCenterpiece(12);
    }
    
    @Override

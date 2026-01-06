@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.brainjar.BrainJarGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
@@ -66,7 +65,7 @@ public class BrainJar extends EnergyItem {
       id = ID;
       name = "Brain in a Jar";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.ZOMBIE_HEAD;
       item = new BrainJarItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
@@ -195,24 +194,6 @@ public class BrainJar extends EnergyItem {
       return list;
    }
    
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_CHEST,4);
-      ArcanaIngredient b = new ArcanaIngredient(Items.EXPERIENCE_BOTTLE,8);
-      ArcanaIngredient c = new ArcanaIngredient(Items.SCULK,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.MENDING,1));
-      ArcanaIngredient h = new ArcanaIngredient(Items.SCULK_CATALYST,8);
-      ArcanaIngredient m = new ArcanaIngredient(Items.ZOMBIE_HEAD,1, true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withEnchanter());
-   }
-   
    public class BrainJarItem extends ArcanaPolymerItem {
       public BrainJarItem(){
          super(getThis());
@@ -273,7 +254,7 @@ public class BrainJar extends EnergyItem {
                   int newDura = Mth.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
                   ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR.id,durability-newDura);
                   addEnergy(stack,-1);
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.BRAIN_JAR_MEND_PER_XP));
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BRAIN_JAR_MEND_PER_XP));
                   buildItemLore(stack,player.level().getServer());
                   tool.setDamageValue(newDura);
                }

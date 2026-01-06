@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.gui.starlightforge;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -358,7 +357,7 @@ public class EnhancedForgingGui extends SimpleGui {
          if(percentile >= 0.99 && !enhancedStack.is(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER)){
             ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
          }
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.STARDUST_INFUSION_PER_STARDUST)*finalCost);
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STARDUST_INFUSION_PER_STARDUST)*finalCost);
          Vec3 pos = blockEntity.getBlockPos().getCenter().add(0,2,0);
          Containers.dropItemStack(world,pos.x,pos.y,pos.z,enhancedStack);
       }));

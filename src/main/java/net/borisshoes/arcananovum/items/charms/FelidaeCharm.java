@@ -5,7 +5,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -53,7 +53,7 @@ public class FelidaeCharm extends ArcanaItem {
       id = ID;
       name = "Charm of Felidae";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CHARMS, ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.STRING;
       item = new FelidaeCharmItem();
@@ -95,28 +95,6 @@ public class FelidaeCharm extends ArcanaItem {
             .append(Component.literal("wide berth").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal(".").withStyle(ChatFormatting.GOLD)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.GUNPOWDER,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.STRING,12);
-      ArcanaIngredient c = new ArcanaIngredient(Items.PUFFERFISH,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.PHANTOM_MEMBRANE,4);
-      ArcanaIngredient w = new ArcanaIngredient(Items.SALMON,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.FEATHER_FALLING,4));
-      ArcanaIngredient k = new ArcanaIngredient(Items.COD,16);
-      ArcanaIngredient m = new ArcanaIngredient(Items.CREEPER_HEAD,1, true);
-      ArcanaIngredient o = new ArcanaIngredient(Items.TROPICAL_FISH,16);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {k,h,m,h,o},
-            {b,g,h,g,b},
-            {a,b,w,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter());
-      
    }
    
    @Override

@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.mixins;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -248,7 +247,7 @@ public abstract class LivingEntityMixin {
       if(entity instanceof ServerPlayer player){
          if(source.is(DamageTypeTags.IS_FALL) && !ArcanaUtils.getArcanaItemsWithAug(player,ArcanaRegistry.FELIDAE_CHARM, ArcanaAugments.FELINE_GRACE,4).isEmpty()){
             SoundUtils.playSongToPlayer(player, SoundEvents.CAT_PURREOW, 1,1);
-            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL)*(amount))); // Add xp
+            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_FALL_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_FALL)*(amount))); // Add xp
             if(amount > player.getHealth()) ArcanaAchievements.grant(player,ArcanaAchievements.LAND_ON_FEET.id);
             cir.setReturnValue(false);
          }
@@ -348,7 +347,7 @@ public abstract class LivingEntityMixin {
                   SoundUtils.playSongToPlayer(player, SoundEvents.CAT_PURREOW, 1, 1);
                   float oldReturn = newReturn;
                   newReturn = newReturn * dmgMod < 2 ? 0 : newReturn * dmgMod; // Reduce the damage, if the remaining damage is less than a heart, remove all of it.
-                  ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL) * (oldReturn - newReturn))); // Add xp
+                  ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_FALL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_FALL) * (oldReturn - newReturn))); // Add xp
                   if(oldReturn > player.getHealth() && newReturn < player.getHealth())
                      ArcanaAchievements.grant(player, ArcanaAchievements.LAND_ON_FEET.id);
                   procdFelidae = true; // Make it so multiple charms don't stack
@@ -414,7 +413,7 @@ public abstract class LivingEntityMixin {
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENDER_DRAGON_FLAP, 1, 1.3f);
                   BorisLib.addTickTimerCallback(new GenericTimer(50, () -> player.displayClientMessage(Component.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).withStyle(ChatFormatting.DARK_PURPLE), true)));
                }
-               ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_CUSHION_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_CUSHION)*dmgReduction)); // Add xp
+               ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WINGS_OF_ENDERIA_CUSHION_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WINGS_OF_ENDERIA_CUSHION)*dmgReduction)); // Add xp
                if(source.is(DamageTypes.FLY_INTO_WALL) && newReturn > player.getHealth() && (newReturn - dmgReduction) < player.getHealth())
                   ArcanaAchievements.grant(player, ArcanaAchievements.SEE_GLASS.id);
             }

@@ -8,7 +8,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
@@ -74,7 +74,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Starpath Altar";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.SCULK_CATALYST;
       block = new StarpathAltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(3.0f,1200.0f).lightLevel(state -> 6).sound(SoundType.SCULK_CATALYST));
@@ -153,24 +153,6 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public Vec3i getCheckOffset(){
       return new Vec3i(-5,0,-5);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_EYE,24);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
-      ArcanaIngredient h = new ArcanaIngredient(ArcanaRegistry.STARDUST,8);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient o = new WaystoneIngredient(true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,h,o,h,b},
-            {c,o,m,o,c},
-            {b,h,o,h,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -275,7 +257,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
             if(waystone.isPresent()){
                Waystone.WaystoneTarget target = Waystone.getTarget(waystone.get().getItem());
                altar.setTarget(new StarpathAltarBlockEntity.TargetEntry(
-                     ArcanaUtils.getFormattedDimName(target.world()).getString()+" "+ BlockPos.containing(target.position()).toShortString(),
+                     MinecraftUtils.getFormattedDimName(target.world()).getString()+" "+ BlockPos.containing(target.position()).toShortString(),
                      target.world().identifier().toString(),
                      (int) target.position().x(),
                      (int) target.position().y(),

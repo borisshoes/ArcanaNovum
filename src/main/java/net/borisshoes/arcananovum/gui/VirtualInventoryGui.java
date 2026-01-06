@@ -7,26 +7,15 @@ import net.minecraft.world.inventory.MenuType;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
 
-public class VirtualInventoryGui<I extends Container> extends SimpleGui {
-   protected I inventory;
+public interface VirtualInventoryGui<I extends Container> {
+   I getInventory();
+   ServerPlayer getPlayer();
    
-   public VirtualInventoryGui(MenuType<?> type, ServerPlayer player, boolean manipulatePlayerSlots){
-      super(type, player, manipulatePlayerSlots);
+   default void onVirtualInventoryOpen() {
+      VIRTUAL_INVENTORY_GUIS.put(this, getPlayer());
    }
    
-   public I getInventory(){
-      return inventory;
-   }
-   
-   @Override
-   public void onOpen(){
-      VIRTUAL_INVENTORY_GUIS.put(this,this.player);
-      super.onOpen();
-   }
-   
-   @Override
-   public void onClose(){
+   default void onVirtualInventoryClose() {
       VIRTUAL_INVENTORY_GUIS.remove(this);
-      super.onClose();
    }
 }

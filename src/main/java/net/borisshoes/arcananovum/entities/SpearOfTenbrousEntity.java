@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -235,7 +234,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
             this.doKnockback(livingEntity, damageSource);
             this.doPostHurtEffects(livingEntity);
             
-            if(owner instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SPEAR_OF_TENBROUS_IMPALE));
+            if(owner instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SPEAR_OF_TENBROUS_IMPALE));
          }
       }
       

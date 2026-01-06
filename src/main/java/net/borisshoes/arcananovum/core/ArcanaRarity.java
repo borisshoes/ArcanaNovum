@@ -1,7 +1,8 @@
 package net.borisshoes.arcananovum.core;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -151,14 +152,14 @@ public enum ArcanaRarity {
       };
    }
    
-   public static TomeGui.TomeFilter getTomeFilter(ArcanaRarity rarity){
+   public static ArcaneTomeGui.TomeFilter getTomeFilter(ArcanaRarity rarity){
       return switch(rarity){
-         case MUNDANE -> TomeGui.TomeFilter.MUNDANE;
-         case EMPOWERED -> TomeGui.TomeFilter.EMPOWERED;
-         case EXOTIC -> TomeGui.TomeFilter.EXOTIC;
-         case SOVEREIGN -> TomeGui.TomeFilter.SOVEREIGN;
-         case DIVINE -> TomeGui.TomeFilter.DIVINE;
-         default -> TomeGui.TomeFilter.NONE;
+         case MUNDANE -> ArcaneTomeGui.TomeFilter.MUNDANE;
+         case EMPOWERED -> ArcaneTomeGui.TomeFilter.EMPOWERED;
+         case EXOTIC -> ArcaneTomeGui.TomeFilter.EXOTIC;
+         case SOVEREIGN -> ArcaneTomeGui.TomeFilter.SOVEREIGN;
+         case DIVINE -> ArcaneTomeGui.TomeFilter.DIVINE;
+         default -> ArcaneTomeGui.TomeFilter.NONE;
       };
    }
 }

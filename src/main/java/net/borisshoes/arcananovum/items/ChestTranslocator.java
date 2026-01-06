@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.core.ArcanaItemContainer;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -79,7 +78,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       id = ID;
       name = "Chest Translocator";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       vanillaItem = Items.SPRUCE_BOAT;
       item = new ChestTranslocatorItem();
@@ -175,24 +174,6 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       putProperty(newStack,CONTENTS_TAG,contents);
       putProperty(newStack,STATE_TAG,state);
       return buildItemLore(newStack,server);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CHEST,12);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,2);
-      ArcanaIngredient c = new ArcanaIngredient(Items.BARREL,12);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENDER_EYE,4);
-      ArcanaIngredient h = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_STRENGTH);
-      ArcanaIngredient m = new ArcanaIngredient(Items.ENDER_CHEST,4);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -295,7 +276,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                
                putProperty(stack,CONTENTS_TAG,new CompoundTag());
                putProperty(stack,STATE_TAG,new CompoundTag());
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.CHEST_TRANSLOCATOR_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CHEST_TRANSLOCATOR_USE)); // Add xp
                SoundUtils.playSound(world,placePos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1,1);
             }else{
                player.displayClientMessage(Component.literal("The chest cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);

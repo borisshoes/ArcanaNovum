@@ -565,11 +565,6 @@ public class ArcanaAugments {
          new String[]{"Makes the Harness unbreakable"},
          new ArcanaRarity[]{DIVINE}
    ));
-   public static final ArcanaAugment SALVAGEABLE_FRAME = ArcanaAugments.register(
-         new ArcanaAugment("Salvageable Frame", "salvageable_frame", new ItemStack(Items.NETHERITE_SCRAP), ArcanaRegistry.SPAWNER_HARNESS,
-         new String[]{"Gives Netherite Scrap back when the Spawner Harness breaks"},
-         new ArcanaRarity[]{MUNDANE}
-   ));
    
    // Spawner Infuser
    public static final ArcanaAugment AUGMENTED_APPARATUS = ArcanaAugments.register(
@@ -895,7 +890,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment HASTY_BARGAIN = ArcanaAugments.register(
          new ArcanaAugment("Hasty Bargain", "hasty_bargain", new ItemStack(Items.CLOCK), ArcanaRegistry.TRANSMUTATION_ALTAR,
-         new String[]{"Decreases Altar cooldown by 2 minutes per level","First Level decreases transmutation time by 50%","First Level increases reagent consumption by 50%,","Reagent consumption decreased by 10% per extra level","Reagent consumption cannot go beyond 1 stack"},
+         new String[]{"Decreases Altar cooldown by 2 minutes per level","First Level decreases transmutation time by 50%","First Level increases reagent consumption by 100%,","Reagent consumption decreased by 20% per extra level","Reagent consumption cannot go beyond 1 stack"},
          new ArcanaRarity[]{EXOTIC,MUNDANE,MUNDANE,EMPOWERED,EXOTIC}
    ));
    

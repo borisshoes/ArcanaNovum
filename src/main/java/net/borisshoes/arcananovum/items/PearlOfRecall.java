@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
@@ -61,7 +60,7 @@ public class PearlOfRecall extends EnergyItem {
       id = ID;
       name = "Pearl of Recall";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       initEnergy = 600;
       vanillaItem = Items.ENDER_EYE;
       item = new PearlOfRecallItem();
@@ -208,26 +207,6 @@ public class PearlOfRecall extends EnergyItem {
    }
    
    @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_PEARL,8);
-      ArcanaIngredient b = new ArcanaIngredient(Items.GOLD_INGOT,8);
-      ArcanaIngredient c = new ArcanaIngredient(Items.CLOCK,8);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENDER_EYE,4);
-      ArcanaIngredient h = new WaystoneIngredient(true);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,1);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,l,m,l,c},
-            {b,g,l,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement()).addCenterpiece(7);
-      
-   }
-   
-   @Override
    public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
       ItemStack waystone = inv.getItem(7); // Should be the Waystone
       ItemStack newArcanaItem = getNewItem();
@@ -291,7 +270,7 @@ public class PearlOfRecall extends EnergyItem {
          if(heat == 100){
             teleport(stack,player);
             putProperty(stack,HEAT_TAG, 0);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.PEARL_OF_RECALL_USE)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_PEARL_OF_RECALL_USE)); // Add xp
          }else if(heat > 0){
             putProperty(stack,HEAT_TAG, heat+1);
             ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.position());

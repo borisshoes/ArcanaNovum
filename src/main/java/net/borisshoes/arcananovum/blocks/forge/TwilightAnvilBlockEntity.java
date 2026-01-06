@@ -11,7 +11,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.RenameGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
@@ -97,9 +97,6 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       }else if(screen == 3){
          gui = new RenameGui(player, this);
          ((RenameGui)gui).build();
-      }else if(screen == 4){
-         gui = new TwilightAnvilGui(MenuType.GENERIC_9x6,player,this,screen);
-         TomeGui.buildItemGui(((TwilightAnvilGui)gui),player,data);
       }
       if(gui != null){
          gui.open();

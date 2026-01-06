@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -56,7 +56,7 @@ public class ShieldOfFortitude extends ArcanaItem {
       id = ID;
       name = "Shield of Fortitude";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.SHIELD;
       item = new ShieldOfFortitudeItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
@@ -145,28 +145,6 @@ public class ShieldOfFortitude extends ArcanaItem {
       list.add(List.of(Component.literal("Shield of Fortitude").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\naround myself by invoking all four basic protection enchantments and mimicking the effect of golden apples.\n\nHalf of all damage blocked by the Shield becomes an absorption barrier lasting 10 seconds.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Shield of Fortitude").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nDisabling the Shield with an axe causes the absorption barrier to shatter prematurely.").withStyle(ChatFormatting.BLACK)));
       return list;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient r = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.FIRE_PROTECTION,4));
-      ArcanaIngredient c = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      ArcanaIngredient g = new ArcanaIngredient(Items.GOLDEN_APPLE,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.BLAST_PROTECTION,4));
-      ArcanaIngredient l = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.PROTECTION,4));
-      ArcanaIngredient m = new ArcanaIngredient(Items.SHIELD,1, true);
-      ArcanaIngredient n = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.PROJECTILE_PROTECTION,4));
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,l,m,n,c},
-            {b,g,r,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter()).addCenterpiece(12);
-      
    }
    
    public class ShieldOfFortitudeItem extends ArcanaPolymerItem {

@@ -6,7 +6,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -47,7 +47,7 @@ public class BlinkArrows extends RunicArrow {
       id = ID;
       name = "Blink Arrows";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new BlinkArrowsItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
@@ -112,22 +112,6 @@ public class BlinkArrows extends RunicArrow {
          MobEffectInstance invuln = new MobEffectInstance(MobEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
          player.addEffect(invuln);
       }
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = ArcanaIngredient.EMPTY;
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENDER_PEARL,8);
-      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,a,c,a,a},
-            {a,c,h,c,a},
-            {c,h,m,h,c},
-            {a,c,h,c,a},
-            {a,a,c,a,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withFletchery());
    }
    
    @Override

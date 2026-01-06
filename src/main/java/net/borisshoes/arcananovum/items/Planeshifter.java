@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -75,7 +74,7 @@ public class Planeshifter extends EnergyItem {
       id = ID;
       name = "Planeshifter";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       initEnergy = 600;
       vanillaItem = Items.RECOVERY_COMPASS;
@@ -252,7 +251,7 @@ public class Planeshifter extends EnergyItem {
          directTeleport(player,target);
       }
       
-      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.PLANESHIFTER_USE)); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_PLANESHIFTER_USE)); // Add xp
       setEnergy(stack,0);
       SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL,1,2f);
       ArcanaEffectUtils.recallTeleport(world,player.position());
@@ -270,24 +269,6 @@ public class Planeshifter extends EnergyItem {
    
    public boolean hasDimension(ItemStack stack, ResourceKey<Level> world){
       return getListProperty(stack,DIMENSIONS_TAG).contains(StringTag.valueOf(world.identifier().toString()));
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,12);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENDER_EYE,8);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient h = new ArcanaIngredient(Items.END_CRYSTAL,8);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override

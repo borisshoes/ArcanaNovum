@@ -1,11 +1,11 @@
 package net.borisshoes.arcananovum;
 
+import eu.pb4.sgui.api.elements.BookElementBuilder;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
-import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.borisshoes.borislib.config.ConfigManager;
 import net.borisshoes.borislib.utils.ItemModDataHandler;
 import net.fabricmc.api.ClientModInitializer;
@@ -20,8 +20,9 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -134,5 +135,41 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
          case 3 -> LOGGER.fatal(msg);
          default -> LOGGER.debug(msg);
       }
+   }
+   
+   public static BookElementBuilder getGuideBook(){
+      BookElementBuilder book = new BookElementBuilder();
+      List<Component> pages = new ArrayList<>();
+      
+      pages.add(Component.literal("       Welcome to\n     Arcana Novum!\n\nArcana Novum is a server-sided fabric Magic mod that adds various power Arcana Items to the game. It also includes new game mechanics and multiblocks!").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Introduction\n\nYou are probably reading this in your Tome, which will be your guidebook for the entirety of the mod.\n\nThe first page of the tome is your profile.\nThe profile has 3 main sections to it.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Arcane Level\n\nYour level decides how many Arcana Items you can carry through Concentration\n\nYou gain XP by using and crafting items.\nCrafting an item for the first time gives additional XP.\nArcana Achievements also grant XP.   ").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("     Concentration\n\nArcana Items each take a certain amount of focus to channel Arcana into. Each rarity tier of item takes a different amount of concentration to use.\nIf you go over your concentration limit, your mind will collapse and you will die.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("     Concentration\n\nItems take full concentration while in your inventory, but half concentration in your Ender Chest or Shulker Boxes.\n\nBlocks that are placed down take a quarter of the concentration when loaded in the world.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("       Skill Points\n\nYou get 3 skill points per Arcana level.\nYou also earn skill points by completing Arcana Achievements.\n\nYou can use these points to unlock Augments for items, which can be applied to enhance or change their abilities.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Item Rarities\n\nThere are 5 rarities:\nMundane, Empowered, Exotic, Sovereign, and Divine.\n\nAll Arcana Items above Mundane are immensely powerful, but some are more demanding to wield, which is reflected by their rarity.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("     Mundane Items\n\nConcentration: 0\n\nMundane Items only faintly emit Arcana and are mostly used in conjunction with other Arcana Items, such as being an ingredient in more powerful items, or as a fuel source.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("   Empowered Items\n\nConcentration: 1\n\nEmpowered Items are mostly utility items that offer conveniences in common situations.\n\nThey take a minimal toll to keep in your inventory so feel free to stock up on them!").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Exotic Items\n\nConcentration: 5\n\nExotic Items are more powerful items that can offer unique abilities not gained elsewhere, or provide a significant advantage in troubling situations. They are much more demanding to use.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("    Sovereign Items\n\nConcentration: 20\n\nSovereign Items are Arcanists' best attempts at recreating the power found in Divine Artifacts. However, unlike Divine Items, they lack the presence of Divine Arcana that makes wielding them trivial.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("    Sovereign Items\n\nAs a result, these items take an extraordinary amount of focus to wield.\n\nFortunately, they successfully replicate the incredible abilities of Divine Items in a form craftable by mere mortals.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("       Divine Items\n\nConcentration: 0\n\nDivine Items are made by godlike entities, such as the Aspect of Death. As previously mentioned, they use Divine Arcana, which uses the raw energy of the world itself to power them with no effort by the user.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("       Divine Items\n\nThere is no way to craft them in your forge, which means the only way of getting them is by interacting with these powerful entities.\nThis can be a very dangerous door to be knocking on, but the reward could be worth the risk...").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("    Item Compendium\n\nNow that you are caught up on the types of Arcana Items, you can use your Tome to look through all of the available items and how to use and craft them.\nThe Compendium is accessed by clicking the book in the Profile").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("  Researching Items\n\nBefore crafting an item you need to research it. This is done by completing various tasks, which can be in the form of obtaining an item, or  an Advancement.\n\nCompleting research requires Arcane Paper.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("     Forging Items\n\nIn order to craft Arcana Items you need a Starlight Forge. The recipe for which is viewable in the Compendium after researching it.\n\nThe Starlight Forge will require a structure beneath it which is shown by").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("     Forging Items\n\nright clicking the Forge.\n\nOnce completed, the Forge will allow you to craft better gear, and Arcana Items, by researching and following the recipes in your Tome.\n\nSome recipes may\n").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("     Forging Items\n\nrequire your Forge to be upgraded by crafting Forge Additions and placing them around your Forge.\n\nEach Forge Addon will unlock new recipes along with providing their own unique functionalities. ").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Augmentation\n\nAugments give your items enhanced capabilities or provide their own unique twist on their original purpose.\n\nEvery item has its own Augments you can unlock with Skill Points.\nHowever, there are not enough Skill Points").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Augmentation\n\nto unlock every augment so you much choose carefully.\n\nAugments follow the same rarity as items.\nRarity defines how many skill points they take to unlock and the type of catalyst needed to apply them.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Augmentation\n\nUnlocking an Augment does NOT immediately provide their benefits.\n\nAugments must be applied to an individual item by using an Augmentation Catalyst in the Twilight Anvil Forge Addition.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Augmentation\n\nItems that possess augments that you do not have unlocked will cost additional concentration to wield, so borrowing items from other players may cause you to use more concentration than expected.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("       Conclusion\n\nThose are the basics of the Arcana Novum mod!\n\nIf you have any questions, ideas, or find any bugs with the mod, please make an issue on the GitHub!\n\nEnjoy unlocking the secrets of Arcana!").withStyle(ChatFormatting.BLACK));
+      
+      pages.forEach(book::addPage);
+      book.setAuthor("Arcana Novum");
+      book.setTitle("Arcana Guide");
+      
+      return book;
    }
 }

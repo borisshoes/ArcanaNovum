@@ -43,7 +43,7 @@ public class StarpathAltarGui extends SimpleGui {
          
          if(starcharts){
             StarpathAltarChartsGui gui = new StarpathAltarChartsGui(player,this,blockEntity);
-            gui.buildGui();
+            gui.buildPage();
             gui.open();
          }else{
             StarpathTargetGui gui = new StarpathTargetGui(player,blockEntity,true,this,(obj) -> blockEntity.setTarget((BlockPos) obj));
@@ -110,7 +110,7 @@ public class StarpathAltarGui extends SimpleGui {
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Z: "+target.getZ()).withStyle(ChatFormatting.YELLOW)))));
       if(stargate){
-         locationItem.addLoreLine(Component.literal("Dimension: ").withStyle(ChatFormatting.YELLOW).append(ArcanaUtils.getFormattedDimName(blockEntity.getTargetDimension())));
+         locationItem.addLoreLine(Component.literal("Dimension: ").withStyle(ChatFormatting.YELLOW).append(MinecraftUtils.getFormattedDimName(blockEntity.getTargetDimension())));
       }
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("").withStyle(ChatFormatting.YELLOW)))));

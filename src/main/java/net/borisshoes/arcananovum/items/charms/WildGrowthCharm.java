@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -67,7 +66,7 @@ public class WildGrowthCharm extends ArcanaItem {
       id = ID;
       name = "Charm of Wild Growth";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.CHARMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS, ArcaneTomeGui.TomeFilter.CHARMS};
       itemVersion = 0;
       vanillaItem = Items.DARK_OAK_SAPLING;
       item = new WildGrowthCharmItem();
@@ -111,40 +110,6 @@ public class WildGrowthCharm extends ArcanaItem {
             .append(Component.literal("effect").withStyle(ChatFormatting.GREEN))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.SWEET_BERRIES,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.JUNGLE_SAPLING,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.SEA_PICKLE,16);
-      ArcanaIngredient d = new ArcanaIngredient(Items.ACACIA_SAPLING,16);
-      ArcanaIngredient e = new ArcanaIngredient(Items.CARROT,16);
-      ArcanaIngredient f = new ArcanaIngredient(Items.BIRCH_SAPLING,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.TORCHFLOWER,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.BONE_BLOCK,8);
-      ArcanaIngredient i = new ArcanaIngredient(Items.RED_MUSHROOM,16);
-      ArcanaIngredient j = new ArcanaIngredient(Items.CHERRY_SAPLING,16);
-      ArcanaIngredient k = new ArcanaIngredient(Items.VINE,16);
-      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
-      ArcanaIngredient o = new ArcanaIngredient(Items.BAMBOO,16);
-      ArcanaIngredient p = new ArcanaIngredient(Items.SPRUCE_SAPLING,16);
-      ArcanaIngredient q = new ArcanaIngredient(Items.BROWN_MUSHROOM,16);
-      ArcanaIngredient s = new ArcanaIngredient(Items.PITCHER_PLANT,16);
-      ArcanaIngredient t = new ArcanaIngredient(Items.DARK_OAK_SAPLING,16);
-      ArcanaIngredient u = new ArcanaIngredient(Items.POTATO,16);
-      ArcanaIngredient v = new ArcanaIngredient(Items.OAK_SAPLING,16);
-      ArcanaIngredient w = new ArcanaIngredient(Items.SUGAR_CANE,16);
-      ArcanaIngredient x = new ArcanaIngredient(Items.MANGROVE_PROPAGULE,16);
-      ArcanaIngredient y = new ArcanaIngredient(Items.GLOW_BERRIES,16);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,e},
-            {f,g,h,i,j},
-            {k,h,m,h,o},
-            {p,q,h,s,t},
-            {u,v,w,x,y}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -231,7 +196,7 @@ public class WildGrowthCharm extends ArcanaItem {
                      world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
                      if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMaxAge(world.getBlockState(blockPos))){
                         ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST.id,1);
-                        ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
+                        ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
                      }
                   }else if(bloom && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
                      world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
@@ -287,7 +252,7 @@ public class WildGrowthCharm extends ArcanaItem {
                }
                
                if(count >= 2){
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PASSIVE)); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WILD_GROWTH_CHARM_PASSIVE)); // Add xp
                }
             }
          }catch(Exception ignored){

@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -63,7 +62,7 @@ public class SpawnerHarness extends ArcanaItem {
       id = ID;
       name = "Spawner Harness";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS, ArcaneTomeGui.TomeFilter.BLOCKS};
       itemVersion = 1;
       vanillaItem = Items.SPAWNER;
       item = new SpawnerHarnessItem();
@@ -133,14 +132,6 @@ public class SpawnerHarness extends ArcanaItem {
       return buildItemLore(newStack,server);
    }
    
-   private void giveScrap(Player player){
-      ItemStack stack = new ItemStack(Items.NETHERITE_SCRAP);
-      int reduction = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.INGREDIENT_REDUCTION);
-      int scrapCost = (int) Math.ceil(4.0 / reduction);
-      stack.setCount(scrapCost/2);
-      MinecraftUtils.giveStacks(player,stack);
-   }
-   
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
@@ -148,24 +139,6 @@ public class SpawnerHarness extends ArcanaItem {
       list.add(List.of(Component.literal(" Spawner Harness").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nadditional Arcana to. \n\nThe Harness itself has to be incredibly durable to withstand the Arcana driving the enchant into overdrive, however, even with my best efforts, the Harness can break after use.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Spawner Harness").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nUse the Harness on a spawner to capture the spawner.\n\nThe Harness can then place the spawner elsewhere, with a 15% chance to break after use.\n").withStyle(ChatFormatting.BLACK)));
       return list;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.SILK_TOUCH,1));
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENDER_EYE,4);
-      ArcanaIngredient h = new ArcanaIngredient(Items.IRON_BARS,16);
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withEnchanter().withCore());
    }
    
    public class SpawnerHarnessItem extends ArcanaPolymerItem {
@@ -220,15 +193,13 @@ public class SpawnerHarness extends ArcanaItem {
                      putProperty(stack,SPAWNER_TAG,new CompoundTag());
                      buildItemLore(stack,player.level().getServer());
                   }else{
-                     boolean scrap = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SALVAGEABLE_FRAME.id)) > 0;
                      player.displayClientMessage(Component.literal("The harness shatters upon placing the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.SHIELD_BREAK, 1,.5f);
                      putProperty(stack,SPAWNER_TAG,new CompoundTag());
                      buildItemLore(stack,player.level().getServer());
                      stack.consume(stack.getCount(),player);
-                     if(scrap) giveScrap(player);
                   }
-                  ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SPAWNER_HARNESS_USE)*0.15)); // Add xp
+                  if(!reinforced) ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SPAWNER_HARNESS_USE)*0.15)); // Add xp
                   return InteractionResult.SUCCESS_SERVER;
                }else{
                   player.displayClientMessage(Component.literal("The harness cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);

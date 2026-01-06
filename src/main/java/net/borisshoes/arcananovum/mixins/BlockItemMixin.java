@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -46,7 +45,7 @@ public class BlockItemMixin {
             ArcanaAchievements.progress(player,ArcanaAchievements.TERRAFORMER,amtToRefill);
          }
          
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.GREAVES_OF_GAIALTUS_REFILL_BLOCK_PER_10) * amtToRefill / 10);
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_GREAVES_OF_GAIALTUS_REFILL_BLOCK_PER_10) * amtToRefill / 10);
       }
    }
 }

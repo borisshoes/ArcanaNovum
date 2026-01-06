@@ -15,7 +15,7 @@ public class $CCName extends ArcanaItem {
       id = ID;
       name = "$FName";
       rarity = ArcanaRarity.;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcaneTomeGui.TomeFilter.};
       itemVersion = 0;
       vanillaItem = Items.;
       item = new $CCNameItem(addArcanaItemComponents(new Item.Settings().maxCount(1)

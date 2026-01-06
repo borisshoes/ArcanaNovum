@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -12,8 +11,8 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarGui;
+import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipe;
-import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipes;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
@@ -120,7 +119,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       ItemStack reagent2Stack = reagent2Entity == null ? ItemStack.EMPTY : reagent2Entity.getItem();
       ItemStack aequalisStack = aequalisEntity == null ? ItemStack.EMPTY : aequalisEntity.getItem();
       
-      return TransmutationRecipes.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
+      return RecipeManager.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
    }
    
    public void transmute(@Nullable ServerPlayer player, boolean recursed){
@@ -136,7 +135,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       ItemStack reagent2Stack = reagent2Entity == null ? ItemStack.EMPTY : reagent2Entity.getItem();
       ItemStack aequalisStack = aequalisEntity == null ? ItemStack.EMPTY : aequalisEntity.getItem();
       
-      TransmutationRecipe recipe = TransmutationRecipes.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
+      TransmutationRecipe recipe = RecipeManager.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
       this.setActive(false);
       if(recipe != null){
          List<Tuple<ItemStack,String>> outputs = recipe.doTransmutation(positiveEntity,negativeEntity,reagent1Entity,reagent2Entity,aequalisEntity,this,player);
@@ -158,7 +157,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
             this.getLevel().addFreshEntity(new ItemEntity(this.getLevel(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
          }
          if(transmuteCount > 0 && player != null){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TRANSMUTATION_ALTAR_TRANSMUTE));
             ArcanaAchievements.progress(player,ArcanaAchievements.STATE_ALCHEMIST.id,transmuteCount);
          }
          

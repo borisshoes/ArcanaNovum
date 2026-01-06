@@ -4,6 +4,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -103,7 +104,7 @@ public class StarlightForgeInventoryListener implements ContainerListener {
          }
          ArcanaItem matchedItem = null;
          for(ArcanaItem item : ArcanaRegistry.ARCANA_ITEMS.stream().toList()){
-            ArcanaRecipe recipe = item.getRecipe();
+            ArcanaRecipe recipe = RecipeManager.getRecipeFor(item);
             if(recipe == null)
                continue;
             if(recipe.satisfiesRecipe(curItems,blockEntity)){

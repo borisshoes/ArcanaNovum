@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.callbacks.login.ShieldLoginCallback;
@@ -36,7 +35,7 @@ public class ShieldTimerCallback extends TickTimerCallback {
             float removed = Math.max(0,player1.getAbsorptionAmount()-hearts);
             float diff = hearts - player1.getAbsorptionAmount() + removed;
             if(diff != 0){
-               ArcanaNovum.data(player1).addXP((int) (ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHIELD_OF_FORTITUDE_ABSORB_DAMAGE)*diff)); // Give XP
+               ArcanaNovum.data(player1).addXP((int) (ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHIELD_OF_FORTITUDE_ABSORB_DAMAGE)*diff)); // Give XP
             }
             if(player1.getAbsorptionAmount() != 0){
                SoundUtils.playSongToPlayer(player1, SoundEvents.AMETHYST_CLUSTER_FALL, .3f, .3f);

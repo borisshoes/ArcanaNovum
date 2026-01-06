@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.starlightforge;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -12,10 +13,12 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcanaItemCompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.CompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
@@ -45,61 +48,90 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.function.TriConsumer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.CRAFTING_SLOTS;
-import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.DYNAMIC_SLOTS;
+import static net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui.DYNAMIC_SLOTS;
 
-public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
+public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<SimpleContainer> {
    private final StarlightForgeBlockEntity blockEntity;
    private final Level world;
    private StarlightForgeInventoryListener listener;
    private static final int[] FORGE_SLOTS = new int[]{1,2,3,10,11,12,19,20,21};
    private static final int[] SKILLED_POINTS = new int[]{0,1,2,3,4,5,6,8,10,12,15};
-   private int mode; // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - Compendium (9x6), 5 - Skilled Selection (9x2)
-   private final TomeGui.CompendiumSettings settings;
+   private static final int[] CRAFTING_SLOTS = new int[]{1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
+   private int mode; // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - Deprecated, 5 - Skilled Selection (9x2)
+   private final SimpleContainer inventory;
+   private int skillLvl, resourceLvl;
+   private final ArcaneTomeGui tomeGui;
    
-   public StarlightForgeGui(MenuType<?> type, ServerPlayer player, StarlightForgeBlockEntity blockEntity, Level world, int mode, @Nullable TomeGui.CompendiumSettings settings){
+   public StarlightForgeGui(MenuType<?> type, ServerPlayer player, StarlightForgeBlockEntity blockEntity, Level world, int mode, @Nullable ArcaneTomeGui tomeGui){
       super(type, player, false);
       this.blockEntity = blockEntity;
       this.world = world;
       this.mode = mode;
-      if(settings == null){
-         int skillLvl = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SKILLED.id);
-         int resourceLvl =  ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.RESOURCEFUL.id);
-         this.settings = new TomeGui.CompendiumSettings(skillLvl,resourceLvl);
-      }else{
-         this.settings = settings;
-      }
+      this.skillLvl = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SKILLED.id);
+      this.resourceLvl =  ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.RESOURCEFUL.id);
       this.inventory = new SimpleContainer(25);
       this.listener = new StarlightForgeInventoryListener(this,blockEntity,world,mode);
       inventory.addListener(listener);
+      
+      if(tomeGui == null){
+         this.tomeGui = new ArcaneTomeGui(player, ArcaneTomeGui.TomeMode.COMPENDIUM,null);
+         TriConsumer<CompendiumEntry, Integer, ClickType> consumer = (entry, index, clickType) -> {
+            if(!(entry instanceof ArcanaItemCompendiumEntry arcanaEntry)) return;
+            ArcanaItem arcanaItem = arcanaEntry.getArcanaItem();
+            if(arcanaItem == null) return;
+            if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
+               if(RecipeManager.getRecipeFor(arcanaItem) != null){
+                  this.tomeGui.setReturnGui(null);
+                  blockEntity.openGui(3,player, arcanaItem.getId(),this.tomeGui);
+               }else{
+                  player.displayClientMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED),false);
+               }
+            }else{
+               player.displayClientMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED),false);
+            }
+         };
+         this.tomeGui.addModes(consumer,(a,b,c)->{},(a,b,c)->{},(a,b,c)->{});
+      }else{
+         this.tomeGui = tomeGui;
+      }
    }
    
    public int getMode(){
       return mode;
    }
    
+   public void openRecipeSelectionGui(){
+      tomeGui.setMode(ArcaneTomeGui.TomeMode.COMPENDIUM);
+      this.tomeGui.setGuiFlags(false,false,false,true);
+      if(this.mode != 3 && this.mode != 5){
+         tomeGui.setReturnGui(this);
+      }
+      tomeGui.buildAndOpen();
+   }
+   
    @Override
    public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       if(mode == 0){ // Menu
          if(index == 1){
-            blockEntity.openGui(2,player,"",settings);
+            blockEntity.openGui(2,player,"",tomeGui);
          }else if(index == 3){
-            blockEntity.openGui(1,player,"",settings);
+            blockEntity.openGui(1,player,"",tomeGui);
          }
       }else if(mode == 1){ // Arcana Crafting
          if(index == 7){
             // Go to compendium
             MinecraftUtils.returnItems(inventory,player);
-            blockEntity.openGui(4,player,"",settings);
+            openRecipeSelectionGui();
          }else if(index == 25){
             ItemStack item = this.getSlot(index).getItemStack();
             if(ArcanaItemUtils.isArcane(item)){
                ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-               ArcanaRecipe recipe = arcanaItem.getRecipe();
+               ArcanaRecipe recipe = RecipeManager.getRecipeFor(arcanaItem);
                
                if(!ArcanaNovum.data(player).hasResearched(arcanaItem)){
                   player.displayClientMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED),false);
@@ -139,7 +171,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
          }else if(index == 17){
             // Guide gui
             BookElementBuilder bookBuilder = getGuideBook();
-            LoreGui loreGui = new LoreGui(player,bookBuilder,null,null,null);
+            LoreGui loreGui = new LoreGui(player,bookBuilder,this);
             loreGui.open();
             MinecraftUtils.returnItems(inventory,player);
          }
@@ -150,70 +182,14 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
             return false;
          }
          if(index == 7){
-            blockEntity.openGui(4,player,"",settings);
+            openRecipeSelectionGui();
          }else if(index == 43){
-            blockEntity.openGui(1,player, arcanaItem.getId(),settings);
+            blockEntity.openGui(1,player, arcanaItem.getId(),tomeGui);
          }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
             ItemStack ingredStack = this.getSlot(index).getItemStack();
             ArcanaItem arcanaItem1 = ArcanaItemUtils.identifyItem(ingredStack);
             if(arcanaItem1 != null){
-               blockEntity.openGui(3,player, arcanaItem1.getId(),settings);
-            }
-         }
-      }else if(mode == 4){ // Compendium
-         if(index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8){
-            ItemStack item = this.getSlot(index).getItemStack();
-            if(!item.isEmpty()){
-               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-               if(arcanaItem == null){
-                  return false;
-               }
-               if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
-                  if(arcanaItem.getRecipe() != null){
-                     blockEntity.openGui(3,player, arcanaItem.getId(),settings);
-                  }else{
-                     player.displayClientMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED),false);
-                  }
-               }else{
-                  player.displayClientMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED),false);
-               }
-            }
-         }else if(index == 0){
-            boolean backwards = type == ClickType.MOUSE_RIGHT;
-            boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
-            if(shiftLeft){
-               settings.setSortType(TomeGui.TomeSort.RECOMMENDED);
-            }else{
-               settings.setSortType(TomeGui.TomeSort.cycleSort(settings.getSortType(),backwards));
-            }
-            
-            TomeGui.buildCompendiumGui(this,player,settings);
-         }else if(index == 8){
-            boolean backwards = type == ClickType.MOUSE_RIGHT;
-            boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
-            if(shiftLeft){
-               settings.setFilterType(TomeGui.TomeFilter.NONE);
-            }else{
-               settings.setFilterType(TomeGui.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
-            }
-            
-            List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
-            int numPages = (int) Math.ceil((float)items.size()/28.0);
-            if(settings.getPage() > numPages){
-               settings.setPage(numPages);
-            }
-            TomeGui.buildCompendiumGui(this,player,settings);
-         }else if(index == 45){
-            if(settings.getPage() > 1){
-               settings.setPage(settings.getPage()-1);
-               TomeGui.buildCompendiumGui(this,player,settings);
-            }
-         }else if(index == 53){
-            List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
-            int numPages = (int) Math.ceil((float)items.size()/28.0);
-            if(settings.getPage() < numPages){
-               settings.setPage(settings.getPage()+1);
-               TomeGui.buildCompendiumGui(this,player,settings);
+               blockEntity.openGui(3,player, arcanaItem1.getId(),tomeGui);
             }
          }
       }else if(mode == 5){ // Skilled selection
@@ -238,13 +214,13 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
                   return true;
                }
                
-               ArcanaRecipe recipe = arcanaItem.getRecipe();
+               ArcanaRecipe recipe = RecipeManager.getRecipeFor(arcanaItem);
                ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getStringUUID(),0,player.level().getServer());
                forgeItem(arcanaItem, newArcanaItem, recipe, new Tuple<>(augment,applicableLevel), type == ClickType.MOUSE_LEFT_SHIFT);
                close();
             }
          }else if(index == 40 && arcanaItem != null){
-            ArcanaRecipe recipe = arcanaItem.getRecipe();
+            ArcanaRecipe recipe = RecipeManager.getRecipeFor(arcanaItem);
             ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getStringUUID(),0,player.level().getServer());
             forgeItem(arcanaItem, newArcanaItem, recipe, null, type == ClickType.MOUSE_LEFT_SHIFT);
          }
@@ -265,7 +241,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
       for(int i = 0; i < inventory.getContainerSize(); i++){
          ingredients[i/5][i%5] = inventory.getItem(i);
       }
-      ItemStack[][] remainders = recipe.getRemainders(ingredients, blockEntity, settings.resourceLvl);
+      ItemStack[][] remainders = recipe.getRemainders(ingredients, blockEntity, resourceLvl);
       for(int i = 0; i < inventory.getContainerSize(); i++){
          inventory.setItem(i,remainders[i/5][i%5]);
       }
@@ -292,7 +268,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
       
       if(fastAnim){
          close();
-         blockEntity.openGui(4,player, arcanaItem.getId(), settings);
+         openRecipeSelectionGui();
       }else{
          close();
       }
@@ -301,12 +277,12 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
    private HashMap<ArcanaAugment,Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayer player){
       List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
       HashMap<ArcanaAugment,Integer> options = new HashMap<>();
-      if(settings.skillLvl == 0) return options;
-      ArcanaRarity maxRarity = ArcanaAugments.SKILLED.getTiers()[settings.skillLvl-1];
+      if(skillLvl == 0) return options;
+      ArcanaRarity maxRarity = ArcanaAugments.SKILLED.getTiers()[skillLvl-1];
       
       for(ArcanaAugment augment : augments){
          ArcanaRarity[] tiers = augment.getTiers();
-         int skillPoints = SKILLED_POINTS[settings.skillLvl];
+         int skillPoints = SKILLED_POINTS[skillLvl];
          int applicableLevel = 0;
          int sumCost = 0;
          int unlockedLevel = ArcanaNovum.data(player).getAugmentLevel(augment.id);
@@ -429,7 +405,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
       }
       
       if(itemId != null && !itemId.isEmpty()){
-         ArcanaRecipe recipe = ArcanaItemUtils.getItemFromId(itemId).getRecipe();
+         ArcanaRecipe recipe = RecipeManager.getRecipeFor(ArcanaItemUtils.getItemFromId(itemId));
          ArcanaIngredient[][] ingredients = recipe.getIngredients();
          Container playerInventory = player.getInventory();
          
@@ -508,7 +484,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
          recipeList.setName(Component.literal("Total Ingredients").withStyle(ChatFormatting.DARK_PURPLE));
          recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("-----------------------").withStyle(ChatFormatting.LIGHT_PURPLE)));
          for(Map.Entry<String, Tuple<Integer, ItemStack>> ingred : ingredList.entrySet()){
-            Component ingredStr = TomeGui.getIngredStr(ingred);
+            Component ingredStr = ArcaneTomeGui.getIngredStr(ingred);
             recipeList.addLoreLine(TextUtils.removeItalics(ingredStr));
          }
          recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("")));
@@ -564,7 +540,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
             .append(Component.literal("to return to the Arcana Items page").withStyle(ChatFormatting.LIGHT_PURPLE)))));
       setSlot(7,returnBook);
       
-      ArcanaRecipe recipe = arcanaItem.getRecipe();
+      ArcanaRecipe recipe = RecipeManager.getRecipeFor(arcanaItem);
       
       setSlot(25,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
       
@@ -646,7 +622,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
       recipeList.setName(Component.literal("Total Ingredients").withStyle(ChatFormatting.DARK_PURPLE));
       recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("-----------------------").withStyle(ChatFormatting.LIGHT_PURPLE)));
       for(Map.Entry<String, Tuple<Integer, ItemStack>> ingred : ingredList.entrySet()){
-         Component ingredStr = TomeGui.getIngredStr(ingred);
+         Component ingredStr = ArcaneTomeGui.getIngredStr(ingred);
          recipeList.addLoreLine(TextUtils.removeItalics(ingredStr));
       }
       recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("")));
@@ -778,13 +754,20 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
    @Override
    public void onClose(){
       if(mode == 3){
-         blockEntity.openGui(4,player,"",settings);
+         openRecipeSelectionGui();
       }else if(mode == 4){
-         blockEntity.openGui(1,player,"",settings);
+         blockEntity.openGui(1,player,"",tomeGui);
       }
       
       MinecraftUtils.returnItems(inventory,player);
+      onVirtualInventoryClose();
       super.onClose();
+   }
+   
+   @Override
+   public void onOpen() {
+      onVirtualInventoryOpen();
+      super.onOpen();
    }
    
    @Override
@@ -792,4 +775,9 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleContainer> {
       super.close();
    }
    
+   @Override
+   public SimpleContainer getInventory() { return inventory; }
+   
+   @Override
+   public ServerPlayer getPlayer() { return player; }
 }

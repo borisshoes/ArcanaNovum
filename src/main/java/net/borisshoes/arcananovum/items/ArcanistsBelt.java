@@ -5,7 +5,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.arcanistsbelt.ArcanistsBeltGui;
 import net.borisshoes.arcananovum.gui.arcanistsbelt.ArcanistsBeltSlot;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -62,7 +62,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       id = ID;
       name = "Arcanist's Belt";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.LEAD;
       item = new ArcanistsBeltItem();
@@ -175,24 +175,6 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
          inv.setItem(i,streamList.get(i));
       }
       return new ArcanaItemContainer(inv, size,10, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient b = new ArcanaIngredient(Items.LEATHER,12);
-      ArcanaIngredient c = new ArcanaIngredient(Items.NETHERITE_SCRAP,2);
-      ArcanaIngredient g = new ArcanaIngredient(Items.GOLD_INGOT,24);
-      ArcanaIngredient h = new ArcanaIngredient(Items.CHEST,16);
-      ArcanaIngredient m = new ArcanaIngredient(Items.ENDER_CHEST,8);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil());
    }
    
    @Override

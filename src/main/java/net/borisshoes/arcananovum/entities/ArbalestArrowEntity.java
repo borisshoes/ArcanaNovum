@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -55,7 +54,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
       initFromStack(arrowStack, weaponStack);
       
       if(owner instanceof ServerPlayer player){
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ALCHEMICAL_ARBALEST_SHOOT)); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ALCHEMICAL_ARBALEST_SHOOT)); // Add xp
       }
    }
    

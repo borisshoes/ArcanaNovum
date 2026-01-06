@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import io.github.ladysnake.pal.VanillaAbilities;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -11,7 +10,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventoryListener;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -85,7 +84,7 @@ public class LevitationHarness extends EnergyItem {
       id = ID;
       name = "Levitation Harness";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       initEnergy = 3599; // 1 hour of charge (1 soul + 16 glowstone dust = 60 seconds of flight)
       itemVersion = 1;
       vanillaItem = Items.LEATHER_CHESTPLATE;
@@ -303,25 +302,6 @@ public class LevitationHarness extends EnergyItem {
    }
    
    @Override
-	protected ArcanaRecipe makeRecipe(){
-      ShulkerCoreIngredient m = new ShulkerCoreIngredient(true,500);
-      ArcanaIngredient a = new ArcanaIngredient(Items.GLOWSTONE,32);
-      ArcanaIngredient b = new ArcanaIngredient(Items.SHULKER_SHELL,24);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ELYTRA,1);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHER_STAR,4);
-      ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,4);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,g,h,g,b},
-            {c,h,m,h,c},
-            {b,g,h,g,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withEnchanter().withCore().withAnvil().withSingularity()).addCenterpiece(12);
-      
-   }
-   
-   @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
       list.add(List.of(Component.literal("Levitation Harness").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe sheer amount of effort and research that has gone into this is incomparable. A crowning achievement to be sure. The ability to fly freely through the sky is at my command, albeit fueled by innocent souls.").withStyle(ChatFormatting.BLACK)));
@@ -415,7 +395,7 @@ public class LevitationHarness extends EnergyItem {
                }
                
                ArcanaEffectUtils.harnessFly(serverWorld,player,10);
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.LEVITATION_HARNESS_PER_SECOND));
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LEVITATION_HARNESS_PER_SECOND));
                
                if(world.getServer().getTickCount() % 120 == 0){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_AMBIENT,1f,0.8f);

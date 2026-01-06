@@ -20,6 +20,7 @@ import net.borisshoes.arcananovum.callbacks.login.*;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.datagen.DefaultRecipeGenerator;
 import net.borisshoes.arcananovum.effects.*;
 import net.borisshoes.arcananovum.entities.*;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcanaItemCompendiumEntry;
@@ -34,13 +35,13 @@ import net.borisshoes.arcananovum.items.normal.*;
 import net.borisshoes.arcananovum.lootfunctions.ArcanaBlockEntityLootFunction;
 import net.borisshoes.arcananovum.lootfunctions.ArcaneNotesLootFunction;
 import net.borisshoes.arcananovum.lootfunctions.FoundArcanaItemLootFunction;
+import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.vanilla.AquaticEversourceFillRecipe;
 import net.borisshoes.arcananovum.recipes.vanilla.ArcanaShieldDecoratorRecipe;
 import net.borisshoes.arcananovum.recipes.vanilla.MagmaticEversourceFillRecipe;
 import net.borisshoes.arcananovum.recipes.vanilla.WaystoneCleanseRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipes;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.world.structures.FabricStructurePoolRegistry;
@@ -50,6 +51,7 @@ import net.borisshoes.borislib.config.ConfigSetting;
 import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.config.values.BooleanConfigValue;
 import net.borisshoes.borislib.config.values.IntConfigValue;
+import net.borisshoes.borislib.config.values.StringConfigValue;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -411,12 +413,12 @@ public class ArcanaRegistry {
    public static final LoginCallback VENGEANCE_LOGIN = registerCallback(new VengeanceTotemLoginCallback());
    
    // Config Settings
+   public static final IConfigSetting<?> RECIPE_FOLDER = registerConfigSetting(new ConfigSetting<>(
+         new StringConfigValue("recipeFolder","default", "default","classic"))); // TODO TKeys
    public static final IConfigSetting<?> DO_CONCENTRATION_DAMAGE = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("doConcentrationDamage", true)));
    public static final IConfigSetting<?> ANNOUNCE_ACHIEVEMENTS = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("announceAchievements", true)));
-   public static final IConfigSetting<?> INGREDIENT_REDUCTION = registerConfigSetting(new ConfigSetting<>(
-         new IntConfigValue("ingredientReduction", 1, new IntConfigValue.IntLimits(1,64))));
    
    public static final IConfigSetting<?> XP_STORMCALLER_ALTAR_ACTIVATE = registerConfigSetting(new ConfigSetting<>(
          new IntConfigValue("xpStormcallerAltarActivate", 1000, new IntConfigValue.IntLimits(0))));
@@ -731,7 +733,8 @@ public class ArcanaRegistry {
    
    public static void onServerStarted(MinecraftServer server){
       ARCANA_ITEMS.entrySet().forEach(entry -> entry.getValue().finalizePrefItem(server));
-      TransmutationRecipes.initializeTransmutationRecipes(server);
+      DefaultRecipeGenerator.generateBuiltInRecipes();
+      RecipeManager.refreshRecipes(server);
    }
    
    private static ArcanaItem register(ArcanaItem arcanaItem){

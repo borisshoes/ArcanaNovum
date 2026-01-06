@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -70,7 +69,7 @@ public class LightCharm extends ArcanaItem {
       id = ID;
       name = "Charm of Light";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CHARMS, ArcaneTomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.SUNFLOWER;
       item = new LightCharmItem();
@@ -217,7 +216,7 @@ public class LightCharm extends ArcanaItem {
          }
       }
       
-      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.LIGHT_CHARM_NOVA_PER_LIGHT)*placedCount); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LIGHT_CHARM_NOVA_PER_LIGHT)*placedCount); // Add xp
       SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1f,0.5f);
    }
    
@@ -323,34 +322,6 @@ public class LightCharm extends ArcanaItem {
       return list;
    }
    
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.LONG_NIGHT_VISION);
-      ArcanaIngredient b = new ArcanaIngredient(Items.TORCH,32);
-      ArcanaIngredient c = new ArcanaIngredient(Items.VERDANT_FROGLIGHT,16);
-      ArcanaIngredient d = new ArcanaIngredient(Items.SOUL_LANTERN,32);
-      ArcanaIngredient f = new ArcanaIngredient(Items.REDSTONE_LAMP,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.SEA_LANTERN,8);
-      ArcanaIngredient h = new ArcanaIngredient(Items.GLOWSTONE,8);
-      ArcanaIngredient j = new ArcanaIngredient(Items.CANDLE,16);
-      ArcanaIngredient k = new ArcanaIngredient(Items.PEARLESCENT_FROGLIGHT,16);
-      ArcanaIngredient m = new ArcanaIngredient(Items.BEACON,1, true);
-      ArcanaIngredient o = new ArcanaIngredient(Items.SHROOMLIGHT,16);
-      ArcanaIngredient p = new ArcanaIngredient(Items.JACK_O_LANTERN,16);
-      ArcanaIngredient t = new ArcanaIngredient(Items.COPPER_BULB,16);
-      ArcanaIngredient v = new ArcanaIngredient(Items.LANTERN,32);
-      ArcanaIngredient w = new ArcanaIngredient(Items.OCHRE_FROGLIGHT,16);
-      ArcanaIngredient x = new ArcanaIngredient(Items.SOUL_TORCH,32);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {f,g,h,g,j},
-            {k,h,m,h,o},
-            {p,g,h,g,t},
-            {a,v,w,x,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
-   }
-   
    public class LightCharmItem extends ArcanaPolymerItem {
       public LightCharmItem(){
          super(getThis());
@@ -395,7 +366,7 @@ public class LightCharm extends ArcanaItem {
                   world.setBlock(pos, Blocks.LIGHT.defaultBlockState().setValue(LEVEL,brightness), Block.UPDATE_ALL);
                   world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
                   SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, .3f,2f);
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.LIGHT_CHARM_AUTOMATIC)); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LIGHT_CHARM_AUTOMATIC)); // Add xp
                   ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
                }
             }
@@ -434,7 +405,7 @@ public class LightCharm extends ArcanaItem {
             world.setBlock(pos, Blocks.LIGHT.defaultBlockState().setValue(LEVEL,brightness), Block.UPDATE_ALL);
             world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
             SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, .3f,2f);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.LIGHT_CHARM_MANUAL)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LIGHT_CHARM_MANUAL)); // Add xp
             ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
             return InteractionResult.SUCCESS_SERVER;
          }

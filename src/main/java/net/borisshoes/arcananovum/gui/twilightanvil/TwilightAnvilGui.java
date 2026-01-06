@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.gui.twilightanvil;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.borisshoes.arcananovum.ArcanaConfig;
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -44,7 +45,7 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import java.util.TreeMap;
 
-public class TwilightAnvilGui extends VirtualInventoryGui<SimpleContainer> {
+public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<SimpleContainer> {
    private final TwilightAnvilBlockEntity blockEntity;
    private SimpleContainer inventory;
    private TinkerInventoryListener listener;
@@ -56,6 +57,15 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleContainer> {
       super(type, player, false);
       this.blockEntity = blockEntity;
       this.mode = mode;
+   }
+   
+   public void openTomeItemPage(ArcanaItem item){
+      ArcaneTomeGui gui = new ArcaneTomeGui(player, ArcaneTomeGui.TomeMode.ITEM);
+      gui.addModes();
+      gui.setReturnGui(this);
+      gui.setGuiFlags(false,true,false,false);
+      gui.buildGui(ArcaneTomeGui.TomeMode.ITEM,item,null);
+      gui.buildAndOpen();
    }
    
    @Override
@@ -102,7 +112,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleContainer> {
             if(finalMaxEnhanced && !input1MaxEnhanced && !input2MaxEnhanced){
                ArcanaAchievements.grant(player,ArcanaAchievements.TINKER_TO_THE_TOP.id);
             }
-            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TWILIGHT_ANVIL_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TWILIGHT_ANVIL_PER_10)*points/10.0));
+            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TWILIGHT_ANVIL_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TWILIGHT_ANVIL_PER_10)*points/10.0));
             
             listener.setUpdating();
             inventory.setItem(0, ItemStack.EMPTY);
@@ -182,7 +192,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleContainer> {
             if(arcanaItem != null){
                if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
                   MinecraftUtils.returnItems(inventory,player);
-                  blockEntity.openGui(4,player, arcanaItem.getId());
+                  openTomeItemPage(arcanaItem);
                }else{
                   player.displayClientMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED),false);
                }
@@ -226,39 +236,6 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleContainer> {
                         SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_PLING, 1, (.5f+((float)(curItemLevel+1)/(tiers.length-1))));
                      }
                   }
-               }
-            }
-         }
-      }else if(mode == 4){ // Unlock augments
-         ItemStack item = this.getSlot(4).getItemStack();
-         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-         
-         if(index == 4){
-            close();
-         }else if(index >= 28 && index <= 35){
-            List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
-            int[] augmentSlots = dynamicSlots[augments.size()];
-            ArcanaAugment augment = null;
-            for(int i = 0; i < augmentSlots.length; i++){
-               if(index == 28+augmentSlots[i]){
-                  augment = augments.get(i);
-                  break;
-               }
-            }
-            
-            if(augment != null){
-               IArcanaProfileComponent profile = ArcanaNovum.data(player);
-               int augmentLvl = profile.getAugmentLevel(augment.id);
-               ArcanaRarity[] tiers = augment.getTiers();
-               if(augmentLvl >= tiers.length) return true;
-               int cost = tiers[augmentLvl].rarity+1;
-               int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
-               if(cost <= unallocated){
-                  profile.setAugmentLevel(augment.id,augmentLvl+1);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_PLING, 1, (.5f+((float)(augmentLvl+1)/(tiers.length-1))));
-                  blockEntity.openGui(4,player, arcanaItem.getId());
-               }else{
-                  player.displayClientMessage(Component.literal("Not Enough Skill Points").withStyle(ChatFormatting.RED),false);
                }
             }
          }
@@ -389,7 +366,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleContainer> {
                inventory.setItem(0,item);
                return true;
             }else{
-               ArcanaNovum.log(3,"Error applying augment "+augment.id+" to "+ ArcanaItemUtils.identifyItem(item).getId());
+               ArcanaNovum.log(2,"Error applying augment "+augment.id+" to "+ ArcanaItemUtils.identifyItem(item).getId());
             }
          }if(tinkerSlotType == 1){
             StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.level(),blockEntity.getBlockPos());
@@ -615,16 +592,25 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleContainer> {
    
    @Override
    public void onClose(){
-      if(mode == 4){
-         tinkerSlotType = 0;
-         blockEntity.openGui(2,player,"");
-      }
       MinecraftUtils.returnItems(inventory,player);
+      onVirtualInventoryClose();
       super.onClose();
+   }
+   
+   @Override
+   public void onOpen() {
+      onVirtualInventoryOpen();
+      super.onOpen();
    }
    
    @Override
    public void close(){
       super.close();
    }
+   
+   @Override
+   public SimpleContainer getInventory() { return inventory; }
+   
+   @Override
+   public ServerPlayer getPlayer() { return player; }
 }

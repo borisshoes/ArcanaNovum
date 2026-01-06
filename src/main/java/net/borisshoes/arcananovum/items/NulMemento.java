@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -12,7 +11,7 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.events.NulMementoEvent;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
@@ -72,7 +71,7 @@ public class NulMemento extends EnergyItem {
       id = ID;
       name = "Nul Memento";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
       item = new NulMementoItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
@@ -235,7 +234,7 @@ public class NulMemento extends EnergyItem {
                         .append(Component.literal("Let my gift offer you a second chance.").withStyle(ChatFormatting.DARK_GRAY))
             )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
          }
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.NUL_MEMENTO_PROTECT));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_NUL_MEMENTO_PROTECT));
       }
       
       setEnergy(stack,getMaxEnergy(stack));
@@ -395,7 +394,7 @@ public class NulMemento extends EnergyItem {
             )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
             
             ArcanaNovum.data(player).removeAllAugments();
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.NUL_MEMENTO_DEALLOCATE));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_NUL_MEMENTO_DEALLOCATE));
             ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE.id);
             ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC.id,1);
          }
@@ -678,52 +677,6 @@ public class NulMemento extends EnergyItem {
       
       DialogHelper helper = new DialogHelper(dialogOptions,conditions);
       helper.sendDialog(List.of(player),helper.getWeightedResult(),true);
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Component.literal("In World Recipe").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Build this in the World").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient s = new ExplainIngredient(Items.SOUL_SAND,1,"Soul Sand or Soil")
-            .withName(Component.literal("Soul Sand or Soil").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient k = new ExplainIngredient(Items.WITHER_SKELETON_SKULL,1,"Wither Skeleton Skull")
-            .withName(Component.literal("Wither Skeleton Skull").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient n = new ExplainIngredient(Items.NETHERITE_BLOCK,1,"Netherite Block")
-            .withName(Component.literal("Block of Netherite").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Construct a Wither Base with a heart of Netherite").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient c = new ExplainIngredient(ArcanaRegistry.DIVINE_CATALYST.getItem(),1,"Divine Augment Catalyst")
-            .withName(Component.literal("Divine Augmentation Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
-            .withLore(List.of(
-                  Component.literal("")
-                        .append(Component.literal("Right Click").withStyle(ChatFormatting.BLUE))
-                        .append(Component.literal(" the ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Catalyst").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(" on the ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Netherite Heart").withStyle(ChatFormatting.DARK_RED)),
-                  Component.literal("")
-                        .append(Component.literal("Divine Energy").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(" will flow into the ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Exalted Construct").withStyle(ChatFormatting.DARK_GRAY))
-                        .append(Component.literal(" empowering it").withStyle(ChatFormatting.DARK_PURPLE)),
-                  Component.literal("")
-                        .append(Component.literal("Defeat the ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Exalted Construct").withStyle(ChatFormatting.DARK_GRAY))
-                        .append(Component.literal(" without dying to receive a ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal("Nul Memento").withStyle(ChatFormatting.BLACK)),
-                  Component.literal(""),
-                  Component.literal("WARNING!!! This fight is considerably harder than a Nul Construct. Attempt at your own peril.").withStyle(ChatFormatting.RED)
-            ));
-      
-      ExplainIngredient[][] ingredients = {
-            {a,a,a,a,a},
-            {a,k,k,k,a},
-            {a,s,n,s,c},
-            {a,a,s,a,a},
-            {a,a,a,a,a}};
-      return new ExplainRecipe(this, ingredients);
    }
    
    @Override

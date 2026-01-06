@@ -5,7 +5,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
@@ -90,7 +90,7 @@ public class ArcanistsBeltGui extends SimpleGui {
          if(itemStack.isEmpty()) continue;
          items.set(i, itemStack);
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(itemStack);
-         if(arcanaItem != null && arcanaItem.hasCategory(TomeGui.TomeFilter.CHARMS)) charmCount++;
+         if(arcanaItem != null && arcanaItem.hasCategory(ArcaneTomeGui.TomeFilter.CHARMS)) charmCount++;
       }
       beltStack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(items));
       belt.buildItemLore(beltStack,player.level().getServer());

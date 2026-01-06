@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -62,7 +63,7 @@ public class Waystone extends ArcanaItem {
       id = ID;
       name = "Waystone";
       rarity = ArcanaRarity.MUNDANE;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.IRON_NUGGET;
       item = new Waystone.WaystoneItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
@@ -201,36 +202,6 @@ public class Waystone extends ArcanaItem {
       return new WaystoneTarget(worldKey,new Vec3(x,y,z),yaw,pitch);
    }
    
-   @Override
-   protected ArcanaRecipe makeRecipe(){
-      ExplainIngredient b = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Component.literal("Transmutation Recipe").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Use a Transmutation Altar").withStyle(ChatFormatting.DARK_AQUA)));
-      ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LIGHT_COLOR),1,"",false)
-            .withName(Component.literal("Transmutation Recipe").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Use a Transmutation Altar").withStyle(ChatFormatting.DARK_AQUA)));
-      ExplainIngredient c = new ExplainIngredient(Items.REDSTONE,42,"Redstone Dust")
-            .withName(Component.literal("Redstone Dust").withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Transmutation Reagent").withStyle(ChatFormatting.GOLD)));
-      ExplainIngredient t = new ExplainIngredient(ArcanaRegistry.TRANSMUTATION_ALTAR.getItem(),1,"",false)
-            .withName(Component.literal("Transmutation Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Use a Transmutation Altar").withStyle(ChatFormatting.DARK_AQUA)));
-      ExplainIngredient d = new ExplainIngredient(Items.AMETHYST_SHARD,16,"Amethyst Shard")
-            .withName(Component.literal("Amethyst Shards").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Transmutation Reagent").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient p = new ExplainIngredient(Items.LODESTONE,1,"Lodestone")
-            .withName(Component.literal("Lodestone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Infusion Input").withStyle(ChatFormatting.WHITE)));
-      
-      ExplainIngredient[][] ingredients = {
-            {b,b,p,b,b},
-            {b,b,b,b,w},
-            {c,b,t,w,d},
-            {b,w,w,w,w},
-            {w,w,w,w,w}};
-      return new ExplainRecipe(this, ingredients);
-   }
-   
    public class WaystoneItem extends ArcanaPolymerItem {
       public WaystoneItem(){
          super(getThis());
@@ -256,7 +227,7 @@ public class Waystone extends ArcanaItem {
                WaystoneTarget target = getTarget(context.getItemInHand());
                if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(),ArcanaAugments.STARGATE.id) > 0 || target.world.identifier().equals(context.getLevel().dimension().identifier())){
                   sabe.setTarget(new StarpathAltarBlockEntity.TargetEntry(
-                        ArcanaUtils.getFormattedDimName(target.world).getString()+" "+ BlockPos.containing(target.position()).toShortString(),
+                        MinecraftUtils.getFormattedDimName(target.world).getString()+" "+ BlockPos.containing(target.position()).toShortString(),
                         target.world.identifier().toString(),
                         (int) target.position().x(),
                         (int) target.position().y(),

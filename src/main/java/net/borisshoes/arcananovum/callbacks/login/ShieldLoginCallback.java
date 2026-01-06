@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.callbacks.login;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
@@ -39,7 +38,7 @@ public class ShieldLoginCallback extends LoginCallback {
          float removed = Math.max(0,player.getAbsorptionAmount()-hearts);
          float diff = hearts - player.getAbsorptionAmount() + removed;
          if(diff != 0){
-            ArcanaNovum.data(player).addXP((int) (ArcanaNovum.CONFIG.getInt(ArcanaRegistry.SHIELD_OF_FORTITUDE_ABSORB_DAMAGE)*diff)); // Give XP
+            ArcanaNovum.data(player).addXP((int) (ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHIELD_OF_FORTITUDE_ABSORB_DAMAGE)*diff)); // Give XP
          }
          if(player.getAbsorptionAmount() != 0){
             SoundUtils.playSongToPlayer(player, SoundEvents.AMETHYST_CLUSTER_FALL, .3f, .3f);

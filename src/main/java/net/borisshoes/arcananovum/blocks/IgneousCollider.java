@@ -5,7 +5,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -49,7 +49,7 @@ public class IgneousCollider extends ArcanaBlock {
       id = ID;
       name = "Igneous Collider";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.LODESTONE;
       block = new IgneousColliderBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(3.5f, 1200.0f).sound(SoundType.LODESTONE));
       item = new IgneousColliderItem(this.block);
@@ -99,25 +99,6 @@ public class IgneousCollider extends ArcanaBlock {
             .append(Component.literal("crying obsidian").withColor(0x660066))
             .append(Component.literal(" will be made.").withStyle(ChatFormatting.LIGHT_PURPLE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,12);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.MAGMA_BLOCK,32);
-      ArcanaIngredient h = new ArcanaIngredient(Items.CAULDRON,24);
-      ArcanaIngredient i = new ArcanaIngredient(Items.BLUE_ICE,32);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_PICKAXE,1, true).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.EFFICIENCY,5), new ArcanaIngredient.EnchantmentEntry(Enchantments.UNBREAKING,3));
-      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,a,b,a},
-            {b,g,h,i,b},
-            {a,l,m,l,a},
-            {b,g,h,i,b},
-            {a,b,a,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter());
    }
    
    @Override

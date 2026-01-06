@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
@@ -53,7 +52,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
                }
                
                SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
                return false;
             }
          }

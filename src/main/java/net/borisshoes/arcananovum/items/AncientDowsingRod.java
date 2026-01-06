@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -8,7 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -58,7 +57,7 @@ public class AncientDowsingRod extends EnergyItem {
       id = ID;
       name = "Ancient Dowsing Rod";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.BLAZE_ROD;
       item = new AncientDowsingRodItem();
       displayName =  Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
@@ -107,26 +106,6 @@ public class AncientDowsingRod extends EnergyItem {
    @Override
    public boolean blocksHandInteractions(ItemStack item){
       return true;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.GOLD_INGOT,16);
-      ArcanaIngredient b = new ArcanaIngredient(Items.RED_NETHER_BRICKS,12);
-      ArcanaIngredient c = new ArcanaIngredient(Items.FIRE_CHARGE,16);
-      ArcanaIngredient d = new ArcanaIngredient(Items.BLAZE_ROD,8);
-      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_SCRAP,1);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ANCIENT_DEBRIS,1);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE,1);
-      ArcanaIngredient m = new ArcanaIngredient(Items.BELL,1);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,d,b},
-            {b,g,h,g,d},
-            {h,l,m,l,h},
-            {d,g,h,g,b},
-            {b,d,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
@@ -256,7 +235,7 @@ public class AncientDowsingRod extends EnergyItem {
                         Vec3 end = eyePos.add(blockPos.subtract(eyePos).normalize().scale(1.5+3));
                         ArcanaEffectUtils.dowsingRodArrow(player.level(),start,end,1);
                         
-                        ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
+                        ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ANCIENT_DOWSING_ROD_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
                         SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1f, .5f);
                         
                         if(debris.size() >= 10){

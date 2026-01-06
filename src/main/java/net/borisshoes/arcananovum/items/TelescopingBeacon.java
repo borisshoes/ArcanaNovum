@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,7 +8,7 @@ import net.borisshoes.arcananovum.callbacks.BeaconMiningLaserCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -76,7 +75,7 @@ public class TelescopingBeacon extends ArcanaItem {
       id = ID;
       name = "Telescoping Beacon";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS, ArcaneTomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.BEACON;
       item = new TelescopingBeaconItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
@@ -87,7 +86,7 @@ public class TelescopingBeacon extends ArcanaItem {
       stack.setCount(item.getDefaultMaxStackSize());
       CompoundTag initBlocks = new CompoundTag();
       initBlocks.putString("id", BuiltInRegistries.BLOCK.getKey(Blocks.IRON_BLOCK).toString());
-      initBlocks.putInt("count",164);
+      initBlocks.putInt("count",0);
       ListTag blocks = new ListTag();
       blocks.add(initBlocks);
       putProperty(stack,BLOCKS_TAG,blocks);
@@ -275,7 +274,7 @@ public class TelescopingBeacon extends ArcanaItem {
          
          
          player.teleportTo(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.TELESCOPING_BEACON_PER_BLOCK)*index); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TELESCOPING_BEACON_PER_BLOCK)*index); // Add xp
          
          
          for(int i = 0; i <= tier; i++){
@@ -308,23 +307,6 @@ public class TelescopingBeacon extends ArcanaItem {
          }
       }
       return tiers.length;
-   }
-   
-   @Override
-	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,8);
-      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,8);
-      ArcanaIngredient c = new ArcanaIngredient(Items.PISTON,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.IRON_BLOCK,32, true);
-      ArcanaIngredient m = new ArcanaIngredient(Items.BEACON,1, true);
-      
-      ArcanaIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,c,h,c,b},
-            {c,h,m,h,c},
-            {b,c,h,c,b},
-            {a,b,c,b,a}};
-      return new ArcanaRecipe(this, ingredients,new ForgeRequirement());
    }
    
    @Override
