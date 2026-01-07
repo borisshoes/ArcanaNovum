@@ -105,9 +105,10 @@ public class ShieldOfFortitude extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack shieldStack = inv.getItem(12); // Should be the Sword
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack shieldStack = inv.getItem(centerpieces.getFirst()); // Should be the Sword
       
       if(shieldStack.isEnchanted()){
          EnchantmentHelper.setEnchantments(newArcanaItem,shieldStack.getEnchantments());

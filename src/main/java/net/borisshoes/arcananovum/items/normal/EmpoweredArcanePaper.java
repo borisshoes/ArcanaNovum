@@ -27,22 +27,6 @@ public class EmpoweredArcanePaper extends NormalPolymerItem {
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      ExplainIngredient c = new ExplainIngredient(Items.CRAFTING_TABLE,1,"",false)
-            .withName(Component.literal("Crafting Recipe").withStyle(ChatFormatting.YELLOW))
-            .withLore(List.of(Component.literal("Use a normal crafting table").withStyle(ChatFormatting.GRAY)));
-      ExplainIngredient p = new ExplainIngredient(ArcanaRegistry.MUNDANE_ARCANE_PAPER,1,"Mundane Arcane Paper")
-            .withName(Component.literal("Mundane Arcane Paper").withStyle(ChatFormatting.AQUA));
-      ExplainIngredient a = new ExplainIngredient(Items.AIR,1,"",false);
-      ExplainIngredient b = new ExplainIngredient(Items.ENDER_EYE,1,"Eye of Ender")
-            .withName(Component.literal("Eye of Ender").withStyle(ChatFormatting.DARK_AQUA));
-      
-      ExplainIngredient[][] ingredients = {
-            {c,c,c,c,c},
-            {c,a,p,a,c},
-            {c,p,b,p,c},
-            {c,a,p,a,c},
-            {c,c,c,c,c}};
-      
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.EMPOWERED_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.EMPOWERED_ARCANE_PAPER,4), new ExplainRecipe(BuiltInRegistries.ITEM.getKey(ArcanaRegistry.EMPOWERED_ARCANE_PAPER),ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.EMPOWERED_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.EMPOWERED_ARCANE_PAPER,4), ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
    }
 }

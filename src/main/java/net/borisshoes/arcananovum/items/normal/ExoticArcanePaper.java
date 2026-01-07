@@ -29,22 +29,6 @@ public class ExoticArcanePaper extends NormalPolymerItem {
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
-            .withName(Component.literal("In Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA));
-      ExplainIngredient m = new ExplainIngredient(ArcanaRegistry.MIDNIGHT_ENCHANTER.getItem(),1,"",false)
-            .withName(Component.literal("Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Enchant Empowered Arcane Paper in the Midnight Enchanter").withStyle(ChatFormatting.BLUE)));
-      ExplainIngredient b = new ExplainIngredient(ArcanaRegistry.EMPOWERED_ARCANE_PAPER,1,"Empowered Arcane Paper")
-            .withName(Component.literal("Empowered Arcane Paper").withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN))
-            .withLore(List.of(Component.literal("Enchant Empowered Arcane Paper in the Midnight Enchanter").withStyle(ChatFormatting.LIGHT_PURPLE)));
-      
-      ExplainIngredient[][] ingredients = {
-            {a,a,a,a,a},
-            {a,a,a,a,a},
-            {a,a,b,a,a},
-            {a,a,m,a,a},
-            {a,a,a,a,a}};
-      
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.EXOTIC_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER), new ExplainRecipe(BuiltInRegistries.ITEM.getKey(ArcanaRegistry.EXOTIC_ARCANE_PAPER),ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.EXOTIC_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER), ArcanaRegistry.EXOTIC_ARCANE_PAPER);
    }
 }

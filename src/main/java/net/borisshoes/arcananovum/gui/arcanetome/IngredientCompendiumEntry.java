@@ -6,6 +6,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
 
@@ -15,18 +16,18 @@ import java.util.Optional;
 
 public class IngredientCompendiumEntry extends CompendiumEntry{
    
-   private final ExplainRecipe recipe;
+   private final Item item;
    private final Component name;
    private final Optional<List<List<Component>>> bookLore;
    
-   public IngredientCompendiumEntry(Component name, ItemStack displayStack, ExplainRecipe recipe){
-      this(name,displayStack,recipe,null);
+   public IngredientCompendiumEntry(Component name, ItemStack displayStack, Item item){
+      this(name,displayStack,item,null);
    }
    
-   public IngredientCompendiumEntry(Component name, ItemStack displayStack, ExplainRecipe recipe, List<List<Component>> bookLore){
+   public IngredientCompendiumEntry(Component name, ItemStack displayStack, Item item, List<List<Component>> bookLore){
       super(new ArcaneTomeGui.TomeFilter[]{ArcaneTomeGui.TomeFilter.INGREDIENT}, displayStack);
-      this.recipe = recipe;
       this.name = name;
+      this.item = item;
       this.bookLore = bookLore == null ? Optional.empty() : Optional.of(bookLore);
       ItemLore lore = this.displayStack.getOrDefault(DataComponents.LORE, ItemLore.EMPTY);
       if(!lore.lines().isEmpty()){
@@ -41,8 +42,8 @@ public class IngredientCompendiumEntry extends CompendiumEntry{
       }
    }
    
-   public ExplainRecipe getRecipe(){
-      return recipe;
+   public Item getItem(){
+      return item;
    }
    
    @Override

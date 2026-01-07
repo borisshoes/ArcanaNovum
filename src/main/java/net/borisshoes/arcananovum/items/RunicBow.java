@@ -125,9 +125,10 @@ public class RunicBow extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack bowStack = inv.getItem(12); // Should be the Bow
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack bowStack = inv.getItem(centerpieces.getFirst()); // Should be the Bow
       
       if(bowStack.isEnchanted()){
          EnchantmentHelper.setEnchantments(newArcanaItem,bowStack.getEnchantments());

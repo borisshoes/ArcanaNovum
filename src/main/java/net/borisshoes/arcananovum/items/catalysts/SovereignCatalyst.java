@@ -118,7 +118,7 @@ public class SovereignCatalyst extends ArcanaItem {
             canSpawn = ArcanaNovum.data(serverPlayer).hasResearched(ArcanaRegistry.DIVINE_CATALYST);
          }
          
-         if(state.is(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getMinY() && canSpawn){ // Check construct
+         if(state.is(Blocks.ANCIENT_DEBRIS) && pos.getY() >= world.getMinY() && canSpawn){ // Check construct
             BlockPattern pattern = getConstructPattern();
             BlockPattern.BlockPatternMatch patternResult = pattern.find(world, pos.offset(-1,-1,-1));
             if(patternResult != null){

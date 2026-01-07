@@ -153,22 +153,26 @@ public class BinaryBlades extends EnergyItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack sword1 = inv.getItem(6);
-      ItemStack sword2 = inv.getItem(18);
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
+      ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      
+      ItemStack sword1 = inv.getItem(centerpieces.getFirst());
       ItemStack combinedSword = sword1.copy();
       
-      if(starlightForge.getLevel() instanceof ServerLevel serverWorld){
-         TwilightAnvilBlockEntity twilightAnvil;
-         if((twilightAnvil = (TwilightAnvilBlockEntity) starlightForge.getForgeAddition(serverWorld, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY)) != null){
-            TwilightAnvilBlockEntity.AnvilOutputSet outputSet = twilightAnvil.calculateOutput(sword1,sword2);
-            if(!outputSet.output().isEmpty()){
-               combinedSword = outputSet.output().copy();
+      if(centerpieces.size() > 1){
+         ItemStack sword2 = inv.getItem(centerpieces.get(1));
+         if(starlightForge.getLevel() instanceof ServerLevel serverWorld){
+            TwilightAnvilBlockEntity twilightAnvil;
+            if((twilightAnvil = (TwilightAnvilBlockEntity) starlightForge.getForgeAddition(serverWorld, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY)) != null){
+               TwilightAnvilBlockEntity.AnvilOutputSet outputSet = twilightAnvil.calculateOutput(sword1,sword2);
+               if(!outputSet.output().isEmpty()){
+                  combinedSword = outputSet.output().copy();
+               }
             }
          }
       }
       
-      ItemStack newArcanaItem = getNewItem();
       if(combinedSword.isEnchanted()){
          EnchantmentHelper.setEnchantments(newArcanaItem,combinedSword.getEnchantments());
       }

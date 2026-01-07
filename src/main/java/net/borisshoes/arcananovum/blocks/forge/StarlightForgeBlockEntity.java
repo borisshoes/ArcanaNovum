@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -62,27 +63,34 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       return this.seedUses;
    }
    
-   public void openGui(int screen, ServerPlayer player, String data, ArcaneTomeGui tomeGui){ // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - (Deprecated), 5 - Skilled Selection (9x5)
-      StarlightForgeGui gui = null;
-      if(screen == 0){
-         gui = new StarlightForgeGui(MenuType.HOPPER,player,this,level,screen,tomeGui);
-         gui.buildMenuGui();
-      }else if(screen == 1){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,screen,tomeGui);
-         gui.buildCraftingGui(data);
-      }else if(screen == 2){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x3,player,this,level,screen,tomeGui);
-         gui.buildForgeGui();
-      }else if(screen == 3){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,screen,tomeGui);
-         gui.buildRecipeGui(data);
-      }else if(screen == 5){
-         gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,screen,tomeGui);
-         gui.buildSkilledGui(data);
-      }
-      if(gui != null){
-         gui.open();
-      }
+   public void openMainGui(ServerPlayer player, ArcaneTomeGui tomeGui){
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.HOPPER,player,this,level,0,tomeGui);
+      gui.buildMenuGui();
+      gui.open();
+   }
+   
+   public void openCraftingGui(ServerPlayer player, ArcanaRecipe recipe, ArcaneTomeGui tomeGui){
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,1,tomeGui);
+      gui.buildCraftingGui(recipe);
+      gui.open();
+   }
+   
+   public void openForgeGui(ServerPlayer player, ArcaneTomeGui tomeGui){
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x3,player,this,level,2,tomeGui);
+      gui.buildForgeGui();
+      gui.open();
+   }
+   
+   public void openRecipeGui(ServerPlayer player, ArcanaRecipe recipe, ArcaneTomeGui tomeGui){
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,3,tomeGui);
+      gui.buildRecipeGui(recipe);
+      gui.open();
+   }
+   
+   public void openSkilledGui(ServerPlayer player, ArcanaItem item, ArcanaRecipe recipe, ArcaneTomeGui tomeGui){
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,5,tomeGui);
+      gui.buildSkilledGui(item,recipe);
+      gui.open();
    }
    
    public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){

@@ -207,9 +207,10 @@ public class PearlOfRecall extends EnergyItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack waystone = inv.getItem(7); // Should be the Waystone
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack waystone = inv.getItem(centerpieces.getFirst()); // Should be the Waystone
       
       Waystone.WaystoneTarget target = Waystone.getTarget(waystone);
       if(target != null){

@@ -2,10 +2,14 @@ package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ForgeRequirement {
    
@@ -25,6 +29,17 @@ public class ForgeRequirement {
          player.sendSystemMessage(Component.literal("This Forge does not have the necessary additions nearby").withStyle(ChatFormatting.RED));
       }
       return ret;
+   }
+   
+   public List<ArcanaItem> forgeMissingRequirements(StarlightForgeBlockEntity forge){
+      ArrayList<ArcanaItem> list = new ArrayList<>();
+      if(!(forge.getLevel() instanceof ServerLevel world)) return list;
+      if(fletchery && forge.getForgeAddition(world, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.RADIANT_FLETCHERY);
+      if(anvil && forge.getForgeAddition(world, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.TWILIGHT_ANVIL);
+      if(enchanter && forge.getForgeAddition(world, ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.MIDNIGHT_ENCHANTER);
+      if(core && forge.getForgeAddition(world, ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.STELLAR_CORE);
+      if(singularity && forge.getForgeAddition(world, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.ARCANE_SINGULARITY);
+      return list;
    }
    
    public boolean needsFletchery(){

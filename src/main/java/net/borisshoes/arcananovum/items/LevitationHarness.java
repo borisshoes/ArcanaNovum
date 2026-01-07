@@ -286,10 +286,11 @@ public class LevitationHarness extends EnergyItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
+      ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack coreStack = inv.getItem(centerpieces.getFirst()); // Should be the Core
       // Souls n stuff
-      ItemStack coreStack = inv.getItem(12); // Should be the Core
-      ItemStack newArcanaItem = null;
       if(ArcanaItemUtils.identifyItem(coreStack) instanceof ShulkerCore core){
          newArcanaItem = getNewItem();
          setStone(newArcanaItem,core.getStone(coreStack));

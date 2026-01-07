@@ -7,15 +7,15 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
@@ -34,6 +34,10 @@ public class ArcanaRecipe {
       this(item, ingredients,new ForgeRequirement());
    }
    
+   public ArcanaRecipe(Item item, ArcanaIngredient[][] ingredients){
+      this(BuiltInRegistries.ITEM.getKey(item), ingredients,new ForgeRequirement());
+   }
+   
    public ArcanaRecipe(ArcanaItem item, ArcanaIngredient[][] ingredients, ForgeRequirement forgeRequirement){
       this.itemId = Identifier.fromNamespaceAndPath(MOD_ID,item.getId());
       this.trueIngredients = ingredients;
@@ -42,6 +46,12 @@ public class ArcanaRecipe {
    
    public ArcanaRecipe(Identifier item, ArcanaIngredient[][] ingredients, ForgeRequirement forgeRequirement){
       this.itemId = item;
+      this.trueIngredients = ingredients;
+      this.forgeRequirement = forgeRequirement;
+   }
+   
+   public ArcanaRecipe(Item item, ArcanaIngredient[][] ingredients, ForgeRequirement forgeRequirement){
+      this.itemId = BuiltInRegistries.ITEM.getKey(item);
       this.trueIngredients = ingredients;
       this.forgeRequirement = forgeRequirement;
    }
@@ -80,6 +90,17 @@ public class ArcanaRecipe {
    
    public Identifier getOutputId(){
       return itemId;
+   }
+   
+   public ItemStack getDisplayStack(){
+      if(!BuiltInRegistries.ITEM.containsKey(getOutputId())) return ItemStack.EMPTY.copy();
+      Item item = BuiltInRegistries.ITEM.getValue(getOutputId());
+      ItemStack showStack = new ItemStack(item);
+      Optional<Holder.Reference<ArcanaItem>> arcanaItem = ArcanaRegistry.ARCANA_ITEMS.get(getOutputId());
+      if(arcanaItem.isPresent()){
+         showStack = arcanaItem.get().value().getPrefItem();
+      }
+      return showStack;
    }
    
    public ForgeRequirement getForgeRequirement(){

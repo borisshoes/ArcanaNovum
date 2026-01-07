@@ -194,7 +194,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
          if(forge != null){
             if(playerEntity instanceof ServerPlayer player){
                if(forge.isAssembled()){
-                  forge.openGui(0, player,"",null);
+                  forge.openMainGui(player,null);
                }else{
                   player.sendSystemMessage(Component.literal("Multiblock not constructed."));
                   multiblock.displayStructure(forge.getMultiblockCheck(),player);

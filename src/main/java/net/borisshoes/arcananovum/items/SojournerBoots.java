@@ -178,9 +178,10 @@ public class SojournerBoots extends EnergyItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack bootStack = inv.getItem(12); // Should be the Boots
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack bootStack = inv.getItem(centerpieces.getFirst()); // Should be the Boots
    
       if(bootStack.isEnchanted()){
          EnchantmentHelper.setEnchantments(newArcanaItem,bootStack.getEnchantments());

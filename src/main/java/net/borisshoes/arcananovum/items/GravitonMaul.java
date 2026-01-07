@@ -172,9 +172,10 @@ public class GravitonMaul extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack maceStack = inv.getItem(12); // Should be the Mace
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack maceStack = inv.getItem(centerpieces.getFirst()); // Should be the Mace
       
       newArcanaItem.enchant(MinecraftUtils.getEnchantment(Enchantments.BREACH),5);
       if(maceStack.isEnchanted()){

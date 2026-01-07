@@ -547,7 +547,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          NulConstructDialog.announce(level().getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
       }
       
-      dropItem(level(),(new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1), position());
+      if(isExalted) dropItem(level(),(new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1), position());
       discard();
    }
    

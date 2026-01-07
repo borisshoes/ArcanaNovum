@@ -77,27 +77,6 @@ public class StardustItem extends NormalPolymerItem {
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, 0xff8800),1,"",false)
-            .withName(Component.literal("In Stellar Core").withStyle(ChatFormatting.GOLD));
-      ExplainIngredient b = new ExplainIngredient(Items.BLAZE_POWDER,1,"",false)
-            .withName(Component.literal("Salvage Enchanted Equipment").withStyle(ChatFormatting.GOLD))
-            .withLore(List.of(Component.literal("Use a Stellar Core to salvage enchanted equipment").withStyle(ChatFormatting.YELLOW)));
-      ExplainIngredient m = new ExplainIngredient(Items.MAGMA_BLOCK,1,"",false)
-            .withName(Component.literal("Salvage Enchanted Equipment").withStyle(ChatFormatting.GOLD))
-            .withLore(List.of(Component.literal("Use a Stellar Core to salvage enchanted equipment").withStyle(ChatFormatting.YELLOW)));
-      ItemStack chestplate = new ItemStack(Items.DIAMOND_CHESTPLATE);
-      chestplate.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE,true);
-      ExplainIngredient g = new ExplainIngredient(chestplate,1,"Piece of Enchanted Equipment", true)
-            .withName(Component.literal("Enchanted Equipment").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE))
-            .withLore(List.of(Component.literal("Better enchantments yield more Stardust").withStyle(ChatFormatting.DARK_PURPLE)));
-      
-      ExplainIngredient[][] ingredients = {
-            {a,a,a,a,a},
-            {a,m,b,m,a},
-            {a,b,g,b,a},
-            {a,m,b,m,a},
-            {a,a,a,a,a}};
-
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.STARDUST.getDescriptionId()), new ItemStack(ArcanaRegistry.STARDUST), new ExplainRecipe(BuiltInRegistries.ITEM.getKey(ArcanaRegistry.STARDUST),ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.STARDUST.getDescriptionId()), new ItemStack(ArcanaRegistry.STARDUST), ArcanaRegistry.STARDUST);
    }
 }

@@ -167,10 +167,11 @@ public class EssenceEgg extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
+      ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack soulstoneStack = inv.getItem(centerpieces.getFirst()); // Should be the Soulstone
       // Souls n stuff
-      ItemStack soulstoneStack = inv.getItem(12); // Should be the Soulstone
-      ItemStack newArcanaItem = null;
       if(ArcanaItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
          int uses = (Soulstone.getSouls(soulstoneStack) / Soulstone.tiers[0]);
          String essenceType = Soulstone.getType(soulstoneStack);

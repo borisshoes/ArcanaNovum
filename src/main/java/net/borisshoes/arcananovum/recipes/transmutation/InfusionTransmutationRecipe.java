@@ -193,6 +193,33 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
       return inputCount;
    }
    
+   public ItemStack getExampleInput(){
+      Item first = null;
+      Item second = null;
+      for(Either<Item, TagKey<Item>> either : this.input){
+         if(either.left().isPresent()){
+            first = either.left().get();
+            break;
+         }else if(either.right().isPresent()){
+            TagKey<Item> itemTag = either.right().get();
+            Optional<HolderSet.Named<Item>> opt = BuiltInRegistries.ITEM.get(itemTag);
+            if(opt.isPresent()){
+               for(Holder<Item> holder : opt.get()){
+                  second = holder.value();
+                  break;
+               }
+            }
+         }
+      }
+      if(first != null){
+         return new ItemStack(first,this.inputCount);
+      }
+      if(second != null){
+         return new ItemStack(second,this.inputCount);
+      }
+      return ItemStack.EMPTY.copy();
+   }
+   
    public MutableComponent getInputName(){
       if(inputName != null && !inputName.isBlank()) return Component.translatable(inputName);
       Item first = null;

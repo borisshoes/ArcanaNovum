@@ -131,9 +131,10 @@ public class AlchemicalArbalest extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack bowStack = inv.getItem(12); // Should be the Crossbow
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack bowStack = inv.getItem(centerpieces.getFirst()); // Should be the Crossbow
       if(bowStack.isEnchanted()){
          ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
          ItemEnchantments comp = bowStack.getEnchantments();

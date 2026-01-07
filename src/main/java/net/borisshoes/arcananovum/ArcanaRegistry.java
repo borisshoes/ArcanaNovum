@@ -806,30 +806,8 @@ public class ArcanaRegistry {
    }
    
    private static IngredientCompendiumEntry getCryingObsidianEntry(){
-      ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
-            .withName(Component.literal("Water").withStyle(ChatFormatting.BLUE))
-            .withLore(List.of(Component.literal("Throw the ingredients into water").withStyle(ChatFormatting.AQUA)));
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
-            .withName(Component.literal("In World Recipe").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Do this in the World").withStyle(ChatFormatting.DARK_PURPLE)));
-      ExplainIngredient o = new ExplainIngredient(Items.OBSIDIAN,1,"Obsidian")
-            .withName(Component.literal("Obsidian").withStyle(ChatFormatting.DARK_PURPLE));
-      ExplainIngredient r = new ExplainIngredient(Items.REDSTONE,16,"Redstone Dust")
-            .withName(Component.literal("Redstone Dust").withStyle(ChatFormatting.RED))
-            .withLore(List.of(Component.literal("Use Redstone OR Glowstone Dust").withStyle(ChatFormatting.GOLD)));
-      ExplainIngredient g = new ExplainIngredient(Items.GLOWSTONE_DUST,4,"Glowstone Dust")
-            .withName(Component.literal("Glowstone Dust").withStyle(ChatFormatting.YELLOW))
-            .withLore(List.of(Component.literal("Use Redstone OR Glowstone Dust").withStyle(ChatFormatting.GOLD)));
-      
-      ExplainIngredient[][] ingredients = {
-            {a,a,a,a,a},
-            {a,r,a,g,a},
-            {a,w,o,w,a},
-            {a,w,w,w,a},
-            {a,a,a,a,a}};
-      
       ItemStack displayStack = new ItemStack(Items.CRYING_OBSIDIAN);
       displayStack.set(DataComponents.RARITY, Rarity.UNCOMMON);
-      return new IngredientCompendiumEntry(Component.translatable(Items.CRYING_OBSIDIAN.getDescriptionId()), displayStack, new ExplainRecipe(BuiltInRegistries.ITEM.getKey(Items.CRYING_OBSIDIAN),ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(Items.CRYING_OBSIDIAN.getDescriptionId()), displayStack, Items.CRYING_OBSIDIAN);
    }
 }

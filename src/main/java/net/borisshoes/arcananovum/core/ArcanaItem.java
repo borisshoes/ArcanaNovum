@@ -234,7 +234,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return stack;
    }
    
-   // Origin 0 - Crafted, 1 - Synthesized, 2 - Found, 3 - Earned
+   // Origin: 0 - Crafted, 1 - Synthesized, 2 - Found, 3 - Earned
    public ItemStack addCrafter(ItemStack stack, String player, int origin, MinecraftServer server){
       player = player == null ? "" : player;
       putProperty(stack,CRAFTER_TAG,player);
@@ -366,7 +366,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       }
    }
    
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       return getNewItem();
    }
    

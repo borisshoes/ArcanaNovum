@@ -463,8 +463,9 @@ public class ArcanaCommands {
                return 0;
             }
             
-            ArcanaRecipe recipe = RecipeManager.getRecipeFor(arcanaItem);
-            if(recipe != null){
+            List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(arcanaItem.getItem());
+            if(!recipes.isEmpty()){
+               ArcanaRecipe recipe = recipes.getFirst(); // TODO add index param
                ArcanaIngredient[][] ingreds = recipe.getIngredients();
                for(int x = 0; x < 5; x++){
                   for(int y = 0; y < 5; y++){

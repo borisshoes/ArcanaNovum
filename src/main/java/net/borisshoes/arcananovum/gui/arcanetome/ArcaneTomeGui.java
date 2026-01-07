@@ -66,6 +66,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    
    public static final int[][] DYNAMIC_SLOTS = {{}, {3}, {1, 5}, {1, 3, 5}, {0, 2, 4, 6}, {1, 2, 3, 4, 5}, {0, 1, 2, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6}};
    private static final int[] CRAFTING_SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 38, 39, 40, 41, 42, 47, 48, 49, 50, 51};
+   private static final int[] REQUIREMENT_SLOTS = {9,17,18,26,27,35};
    
    private TomeMode mode = TomeMode.PROFILE;
    private boolean permaCloseFlag = false;
@@ -75,7 +76,8 @@ public class ArcaneTomeGui extends PagedMultiGui {
    private boolean forCache = false;
    private boolean forForge = false;
    private boolean building = false;
-   private ArcanaRecipe selectedRecipe;
+   private int recipeInd;
+   private List<ArcanaRecipe> selectedRecipes;
    private ArcanaItem selectedArcanaItem;
    private SimpleGui returnGui;
    
@@ -253,17 +255,17 @@ public class ArcaneTomeGui extends PagedMultiGui {
          if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
             ArcanaItem arcanaItem = arcanaEntry.getArcanaItem();
             if(!ArcanaNovum.data(player).hasResearched(arcanaItem)){
-               if(forTome) buildGui(TomeMode.RESEARCH, arcanaItem, null);
+               if(forTome) buildGui(TomeMode.RESEARCH, arcanaItem);
             }else{
                if(type == ClickType.MOUSE_RIGHT){
-                  ArcanaRecipe recipe = RecipeManager.getRecipeFor(arcanaItem);
-                  if(recipe != null){
-                     if(forTome) buildGui(TomeMode.RECIPE, arcanaItem, recipe);
+                  List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(arcanaItem.getItem());
+                  if(!recipes.isEmpty()){
+                     if(forTome) buildGui(TomeMode.RECIPE, arcanaItem, recipes, 0);
                   }else{
                      player.displayClientMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED), false);
                   }
                }else{
-                  if(forTome) buildGui(TomeMode.ITEM, arcanaItem, null);
+                  if(forTome) buildGui(TomeMode.ITEM, arcanaItem);
                }
             }
          }else if(entry instanceof IngredientCompendiumEntry ingredientEntry){
@@ -278,7 +280,8 @@ public class ArcaneTomeGui extends PagedMultiGui {
                   player.displayClientMessage(Component.literal("No Lore Found For That Item").withStyle(ChatFormatting.RED), false);
                }
             }else{
-               if(forTome) buildGui(TomeMode.RECIPE, null, ingredientEntry.getRecipe());
+               List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(ingredientEntry.getItem());
+               if(forTome && !recipes.isEmpty()) buildGui(TomeMode.RECIPE, null, recipes, 0);
             }
          }else if(entry instanceof TransmutationRecipesCompendiumEntry){
             TransmutationAltarRecipeGui transmutationGui = new TransmutationAltarRecipeGui(player, this, Optional.empty());
@@ -292,7 +295,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       return (ach, index, clickType) -> {
          ArcanaItem arcanaItem = ach.getArcanaItem();
          if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
-            if(forTome) buildGui(TomeMode.ITEM, arcanaItem, null);
+            if(forTome) buildGui(TomeMode.ITEM, arcanaItem);
          }else{
             player.displayClientMessage(Component.literal("You Have Not Researched This Item").withStyle(ChatFormatting.RED), false);
          }
@@ -325,9 +328,9 @@ public class ArcaneTomeGui extends PagedMultiGui {
          this.returnGui = null;
       }
       if(mode == TomeMode.RECIPE){ // Recipe gui to compendium
-         buildGui(TomeMode.COMPENDIUM, null, null);
+         buildGui(TomeMode.COMPENDIUM);
       }else if(mode == TomeMode.ITEM || mode == TomeMode.RESEARCH){ // Item gui to compendium
-         buildGui(TomeMode.COMPENDIUM, null, null);
+         buildGui(TomeMode.COMPENDIUM);
       }
    }
    
@@ -338,8 +341,25 @@ public class ArcaneTomeGui extends PagedMultiGui {
       this.forForge = forForge;
    }
    
-   public void buildGui(TomeMode mode, ArcanaItem item, ArcanaRecipe recipe){
-      this.selectedRecipe = recipe;
+   public void buildGui(TomeMode mode){
+      this.selectedRecipes = new ArrayList<>();
+      this.recipeInd = 0;
+      this.selectedArcanaItem = null;
+      this.mode = mode;
+      buildPage();
+   }
+   
+   public void buildGui(TomeMode mode, ArcanaItem item){
+      this.selectedRecipes = new ArrayList<>();
+      this.recipeInd = 0;
+      this.selectedArcanaItem = item;
+      this.mode = mode;
+      buildPage();
+   }
+   
+   public void buildGui(TomeMode mode, ArcanaItem item, List<ArcanaRecipe> recipes, int index){
+      this.selectedRecipes = recipes == null ? new ArrayList<>() : recipes;
+      this.recipeInd = index;
       this.selectedArcanaItem = item;
       this.mode = mode;
       buildPage();
@@ -408,7 +428,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
             .append(Component.literal("Click ").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal("to go to the Arcana Items Page").withStyle(ChatFormatting.LIGHT_PURPLE))));
       book.setCallback((type) -> {
-         if(forTome) buildGui(TomeMode.COMPENDIUM, null, null);
+         if(forTome) buildGui(TomeMode.COMPENDIUM);
       });
       setSlot(49, book);
       
@@ -430,7 +450,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
             .append(Component.literal("Click Here").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(" to see the Leaderboard").withStyle(ChatFormatting.DARK_AQUA))));
       lectern.setCallback((type) -> {
-         if(forTome) buildGui(TomeMode.LEADERBOARD, null, null);
+         if(forTome) buildGui(TomeMode.LEADERBOARD);
       });
       setSlot(10, lectern);
       
@@ -471,7 +491,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
             .append(Component.literal("Click Here").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal(" to see all Achievements").withStyle(ChatFormatting.LIGHT_PURPLE))));
       shelf.setCallback((type) -> {
-         if(forTome) buildGui(TomeMode.ACHIEVEMENTS, null, null);
+         if(forTome) buildGui(TomeMode.ACHIEVEMENTS);
       });
       setSlot(19, shelf);
       
@@ -522,14 +542,13 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    private void buildCompendiumGui(){
-      GuiMode<CompendiumEntry> config = getConfig(0);
+      GuiMode<CompendiumEntry> config = getMode(0);
       List<CompendiumEntry> list = new ArrayList<>(RECOMMENDED_LIST);
       if(forForge){
          list.removeIf(entry -> {
             if(!(entry instanceof ArcanaItemCompendiumEntry arcanaEntry)) return true;
-            ArcanaRecipe recipe = RecipeManager.getRecipeFor(arcanaEntry.getArcanaItem());
-            if(recipe == null || recipe instanceof ExplainRecipe) return true;
-            return false;
+            List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(arcanaEntry.getArcanaItem().getItem());
+            return recipes.stream().allMatch(recipe -> recipe instanceof ExplainRecipe);
          });
       }else if(forCache){
          list.removeIf(entry -> !(entry instanceof IngredientCompendiumEntry || entry instanceof ArcanaItemCompendiumEntry));
@@ -548,7 +567,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          head.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Click an item").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to see its recipe").withStyle(ChatFormatting.LIGHT_PURPLE)))));
       }
       head.setCallback((type) -> {
-         if(forTome) buildGui(TomeMode.PROFILE, null, null);
+         if(forTome) buildGui(TomeMode.PROFILE);
       });
       setSlot(4, head);
       
@@ -556,7 +575,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    private void buildAchievementsGui(){
-      GuiMode<ArcanaAchievement> config = getConfig(1);
+      GuiMode<ArcanaAchievement> config = getMode(1);
       config.setItems(new ArrayList<>(ArcanaAchievements.registry.values().stream().toList()));
       
       GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
@@ -569,9 +588,9 @@ public class ArcaneTomeGui extends PagedMultiGui {
       head.setCallback((type) -> {
          if(!forTome) return;
          if(type.isRight){
-            buildGui(TomeMode.COMPENDIUM, null, null);
+            buildGui(TomeMode.COMPENDIUM);
          }else{
-            buildGui(TomeMode.PROFILE, null, null);
+            buildGui(TomeMode.PROFILE);
          }
       });
       setSlot(4, head);
@@ -580,7 +599,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    private void buildLeaderboardGui(){
-      GuiMode<UUID> config = getConfig(2);
+      GuiMode<UUID> config = getMode(2);
       config.setItems(ArcanaNovum.PLAYER_XP_TRACKER.keySet().stream().toList());
       
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
@@ -608,7 +627,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       head.addLoreLine(TextUtils.removeItalics(Component.literal("")));
       head.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to return to the profile page").withStyle(ChatFormatting.LIGHT_PURPLE)))));
       head.setCallback((type) -> {
-         if(forTome) buildGui(TomeMode.PROFILE, null, null);
+         if(forTome) buildGui(TomeMode.PROFILE);
       });
       setSlot(4, head);
       
@@ -679,9 +698,9 @@ public class ArcaneTomeGui extends PagedMultiGui {
             .append(Component.literal("to view this item's recipe!").withStyle(ChatFormatting.LIGHT_PURPLE))));
       table.setCallback((type) -> {
          if(!forTome) return;
-         ArcanaRecipe recipe = RecipeManager.getRecipeFor(selectedArcanaItem);
-         if(recipe != null){
-            buildGui(TomeMode.RECIPE, selectedArcanaItem, recipe);
+         List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(selectedArcanaItem.getItem());
+         if(!recipes.isEmpty()){
+            buildGui(TomeMode.RECIPE, selectedArcanaItem, recipes, 0);
          }else{
             player.displayClientMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED), false);
          }
@@ -690,7 +709,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       GuiElementBuilder item = GuiElementBuilder.from(selectedArcanaItem.getPrefItem()).glow();
       item.setCallback((type) -> {
-         if(forTome) buildGui(TomeMode.COMPENDIUM, null, null);
+         if(forTome) buildGui(TomeMode.COMPENDIUM);
       });
       setSlot(4, item);
       
@@ -829,6 +848,8 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    private void buildRecipeGui(){
+      if(selectedRecipes.isEmpty()) return;
+      ArcanaRecipe selectedRecipe = selectRecipe();
       if(selectedRecipe == null) return;
       Holder<Item> holder = BuiltInRegistries.ITEM.get(selectedRecipe.getOutputId()).orElse(null);
       if(holder == null) return;
@@ -847,11 +868,10 @@ public class ArcaneTomeGui extends PagedMultiGui {
       setSlot(1, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(7, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
-      ItemStack output = holder.value().getDefaultInstance();
+      ItemStack output = selectedRecipe.getDisplayStack();
       ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.getValue(selectedRecipe.getOutputId());
       if(arcanaItem != null){
          this.selectedArcanaItem = arcanaItem;
-         output = arcanaItem.getPrefItem();
          GuiElementBuilder book = new GuiElementBuilder(Items.WRITTEN_BOOK).hideDefaultTooltip();
          book.setName(Component.literal("Item Lore").withStyle(ChatFormatting.DARK_PURPLE));
          book.addLoreLine(TextUtils.removeItalics(Component.literal("")
@@ -882,7 +902,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       GuiElementBuilder outputElem = GuiElementBuilder.from(output);
       outputElem.setCallback((type) -> {
-         if(forTome) buildGui(TomeMode.COMPENDIUM, null, null);
+         if(forTome) buildGui(TomeMode.COMPENDIUM);
       });
       setSlot(4, outputElem);
       
@@ -903,10 +923,10 @@ public class ArcaneTomeGui extends PagedMultiGui {
          if(arcaneIngredient != null){
             craftingElement.glow();
          }
-         ArcanaRecipe otherRecipe = RecipeManager.getRecipeFor(ingredient.getItem());
-         if(otherRecipe != null){
+         List<ArcanaRecipe> otherRecipes = RecipeManager.getRecipesFor(ingredient.getItem());
+         if(!otherRecipes.isEmpty()){
             craftingElement.setCallback((type) -> {
-               buildGui(TomeMode.RECIPE, null, otherRecipe);
+               buildGui(TomeMode.RECIPE, null, otherRecipes, 0);
             });
          }
          setSlot(CRAFTING_SLOTS[i], craftingElement);
@@ -920,7 +940,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          recipeItem.addLoreLine(TextUtils.removeItalics(getIngredStr(ingred)));
       }
       recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
-      int slotCount = 9;
+      int slotCount = 0;
       for(ArcanaItem item : selectedRecipe.getForgeRequirementList()){
          GuiElementBuilder reqItem = GuiElementBuilder.from(item.getPrefItemNoLore()).hideDefaultTooltip().glow();
          MutableComponent requiresText = Component.literal("")
@@ -929,8 +949,8 @@ public class ArcaneTomeGui extends PagedMultiGui {
                .append(item.getTranslatedName().withStyle(ChatFormatting.AQUA));
          recipeItem.addLoreLine(TextUtils.removeItalics(requiresText));
          reqItem.setName(requiresText);
-         setSlot(slotCount, reqItem);
-         slotCount += 9;
+         setSlot(REQUIREMENT_SLOTS[slotCount], reqItem);
+         slotCount++;
       }
       if(!selectedRecipe.getForgeRequirementList().isEmpty())
          recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
@@ -951,6 +971,27 @@ public class ArcaneTomeGui extends PagedMultiGui {
          close();
       });
       setSlot(6, recipeItem);
+      
+      int size = selectedRecipes.size();
+      if(size > 1){
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW));
+         nextPage.setName(Component.translatable("gui.arcananovum.next_recipe", recipeInd+1, size).withColor(this.primaryTextColor));
+         nextPage.addLoreLine(Component.translatable("text.borislib.two_elements", Component.translatable("gui.borislib.click").withColor(this.action1TextColor), Component.translatable("gui.arcananovum.next_recipe_sub").withColor(this.secondaryTextColor)));
+         nextPage.setCallback((type) -> {
+            recipeInd = (recipeInd+1) % size;
+            buildRecipeGui();
+         });
+         setSlot(53,nextPage);
+         
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW));
+         prevPage.setName(Component.translatable("gui.arcananovum.prev_recipe", recipeInd+1, size).withColor(this.primaryTextColor));
+         prevPage.addLoreLine(Component.translatable("text.borislib.two_elements", Component.translatable("gui.borislib.click").withColor(this.action1TextColor), Component.translatable("gui.arcananovum.prev_recipe_sub").withColor(this.secondaryTextColor)));
+         prevPage.setCallback((type) -> {
+            recipeInd = (recipeInd-1) % size;
+            buildRecipeGui();
+         });
+         setSlot(45,prevPage);
+      }
       
       setTitle(Component.literal("Recipe for ").append(output.getItemName().copy().withStyle(s -> s.withItalic(false).withBold(false).withColor(ChatFormatting.BLACK))));
    }
@@ -987,7 +1028,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       for(Tuple<ResearchTask, Integer> pair : taskPair){
          paddedTasks.set(pair.getB(),pair.getA());
       }
-      GuiMode<ResearchTask> config = getConfig(3);
+      GuiMode<ResearchTask> config = getMode(3);
       config.setItems(paddedTasks);
       
       ArcanaRarity rarity = selectedArcanaItem.getRarity();
@@ -998,7 +1039,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       GuiElementBuilder itemElem = GuiElementBuilder.from(selectedArcanaItem.getPrefItem()).glow();
       itemElem.setCallback((type) -> {
-         if(forTome) buildGui(TomeMode.COMPENDIUM, null, null);
+         if(forTome) buildGui(TomeMode.COMPENDIUM);
       });
       setSlot(4, itemElem);
       
@@ -1079,7 +1120,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       notes.setCallback((type) -> {
          if(!forTome) return;
          if(type == ClickType.MOUSE_RIGHT || !profile.hasResearched(selectedArcanaItem)){
-            buildGui(TomeMode.RESEARCH, selectedArcanaItem, null);
+            buildGui(TomeMode.RESEARCH, selectedArcanaItem);
          }else{
             ArcanaRarity rarity = selectedArcanaItem.getRarity();
             Item paperType = ArcanaRarity.getArcanePaper(rarity);
@@ -1184,6 +1225,20 @@ public class ArcaneTomeGui extends PagedMultiGui {
          return structure;
       }
       return null;
+   }
+   
+   private ArcanaRecipe selectRecipe(){
+      ArcanaRecipe found = selectRecipe(recipeInd);
+      this.recipeInd = selectedRecipes.indexOf(found);
+      return found;
+   }
+   
+   private ArcanaRecipe selectRecipe(int index){
+      if(selectedRecipes.isEmpty()) return null;
+      if(index < 0 || index >= selectedRecipes.size()){
+         return selectedRecipes.getFirst();
+      }
+      return selectedRecipes.get(index);
    }
    
    public static MutableComponent getIngredStr(Map.Entry<String, Tuple<Integer, ItemStack>> ingred){

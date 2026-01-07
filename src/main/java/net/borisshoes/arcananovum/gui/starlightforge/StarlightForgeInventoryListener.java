@@ -10,11 +10,15 @@ import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerListener;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -96,23 +100,9 @@ public class StarlightForgeInventoryListener implements ContainerListener {
    
    public void validRecipe(Container inv){
       if(gui.getMode() == 1){
-         ItemStack[][] curItems = new ItemStack[5][5];
-         for(int i = 0; i < 5; i++){
-            for(int j = 0; j < 5; j++){
-               curItems[i][j] = inv.getItem(i * 5 + j);
-            }
-         }
-         ArcanaItem matchedItem = null;
-         for(ArcanaItem item : ArcanaRegistry.ARCANA_ITEMS.stream().toList()){
-            ArcanaRecipe recipe = RecipeManager.getRecipeFor(item);
-            if(recipe == null)
-               continue;
-            if(recipe.satisfiesRecipe(curItems,blockEntity)){
-               matchedItem = item;
-               break;
-            }
-         }
-         if(matchedItem == null){
+         ArcanaRecipe recipe = RecipeManager.getMatchingRecipe(inv,blockEntity);
+         
+         if(recipe == null){
             GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
             table.setName(Component.literal("Forge Item").withStyle(ChatFormatting.DARK_PURPLE));
             table.addLoreLine(TextUtils.removeItalics(Component.literal("")
@@ -122,7 +112,7 @@ public class StarlightForgeInventoryListener implements ContainerListener {
             table.addLoreLine(TextUtils.removeItalics(Component.literal("This slot will show an Arcana Item once a valid recipe is loaded.").withStyle(ChatFormatting.ITALIC, ChatFormatting.AQUA)));
             gui.setSlot(25, table);
          }else{
-            gui.setSlot(25, GuiElementBuilder.from(matchedItem.getPrefItem()).addLoreLine(Component.literal("")).addLoreLine(TextUtils.removeItalics(Component.literal("Click to Forge!").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))).glow());
+            gui.setSlot(25, GuiElementBuilder.from(recipe.getDisplayStack()).addLoreLine(Component.literal("")).addLoreLine(TextUtils.removeItalics(Component.literal("Click to Forge!").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))).glow());
          }
       }else if(gui.getMode() == 2 && world != null){
          ItemStack output = MinecraftUtils.removeLore(getEnhancedStack(inv).copy());

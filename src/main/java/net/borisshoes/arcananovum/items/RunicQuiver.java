@@ -176,9 +176,11 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack quiverStack = inv.getItem(12); // Should be the old quiver
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack quiverStack = inv.getItem(centerpieces.getFirst()); // Should be the old quiver
+
       newArcanaItem.set(DataComponents.CONTAINER,quiverStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
       ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,ArcanaAugments.RUNIC_BOTTOMLESS.id);
       ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.ABUNDANT_AMMO.id,ArcanaAugments.QUIVER_DUPLICATION.id);

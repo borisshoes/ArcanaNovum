@@ -796,5 +796,9 @@
   "gui.arcananovum.abyssal_arcanist": "Abyssal Arcanist",
   "gui.arcananovum.xp_descending_recommended": "XP Descending (Recommended)",
   "gui.arcananovum.achievements_descending": "Achievements Descending",
-  "gui.arcananovum.skill_points_descending": "Skill Points Descending"
+  "gui.arcananovum.skill_points_descending": "Skill Points Descending",
+  "gui.arcananovum.next_recipe": "Next Recipe (%s/%s)",
+  "gui.arcananovum.next_recipe_sub": "to go to the next recipe",
+  "gui.arcananovum.prev_recipe": "Previous Recipe (%s/%s)",
+  "gui.arcananovum.prev_recipe_sub": "to go to the previous recipe"
 }

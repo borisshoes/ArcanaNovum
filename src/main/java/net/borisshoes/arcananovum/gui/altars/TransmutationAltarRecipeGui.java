@@ -52,7 +52,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
       primaryTextColor(ChatFormatting.AQUA.getColor().intValue());
       secondaryTextColor(ChatFormatting.DARK_PURPLE.getColor().intValue());
       
-      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,0x9af7ff)));
+      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,0x9af7ff)).hideTooltip());
       
       addMode(TransmutationAltar.getUnlockedRecipes(player),
             (recipe, index) -> {
@@ -214,7 +214,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
    
    public void enableSelectionMode(ItemStack stack){
       selectionModeStack = stack;
-      GuiMode<TransmutationRecipe> recipeMode = getConfig(0);
+      GuiMode<TransmutationRecipe> recipeMode = getMode(0);
       List<TransmutationRecipe> filtered = TransmutationAltar.getUnlockedRecipes(player);
       filtered.removeIf(recipe -> recipe instanceof AequalisCatalystTransmutationRecipe || recipe instanceof AequalisSkillTransmutationRecipe);
       recipeMode.setItems(new ArrayList<>(filtered));
@@ -225,7 +225,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
    public void buildPage(){
       if(getCurrentModeInd() == 1){
          if(curRecipe == null) return;
-         GuiMode<ItemStack> config = getCurrentConfig();
+         GuiMode<ItemStack> config = getCurrentMode();
          config.setItems(new ArrayList<>(curRecipe.getDisplayStacks()));
       }
       GuiHelper.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR, Component.literal("Transmutation Recipes").withStyle(ChatFormatting.BLUE));
@@ -292,7 +292,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                .append(Component.literal(" to view all Transmutation Recipes").withStyle(ChatFormatting.BLUE)))));
          recipeItem.setCallback((clickType) -> {
             curRecipe = null;
-            getConfig(1).setPageNum(1);
+            getMode(1).setPageNum(1);
             switchMode(0);
          });
          setSlot(49,recipeItem);

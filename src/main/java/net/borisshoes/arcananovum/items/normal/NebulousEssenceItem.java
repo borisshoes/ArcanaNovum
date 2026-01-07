@@ -78,24 +78,6 @@ public class NebulousEssenceItem extends NormalPolymerItem {
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
-            .withName(Component.literal("In Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA));
-      ExplainIngredient m = new ExplainIngredient(ArcanaRegistry.MIDNIGHT_ENCHANTER.getItem(),1,"",false)
-            .withName(Component.literal("Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-            .withLore(List.of(Component.literal("Disenchant an item using the Midnight Enchanter").withStyle(ChatFormatting.BLUE)));
-      ItemStack chestplate = new ItemStack(Items.DIAMOND_CHESTPLATE);
-      chestplate.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE,true);
-      ExplainIngredient b = new ExplainIngredient(chestplate,1,"Enchanted Item", true)
-            .withName(Component.literal("Enchanted Item").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE))
-            .withLore(List.of(Component.literal("Better enchantments yield more Essence").withStyle(ChatFormatting.DARK_PURPLE)));
-      
-      ExplainIngredient[][] ingredients = {
-            {a,a,a,a,a},
-            {a,a,a,a,a},
-            {a,a,b,a,a},
-            {a,a,m,a,a},
-            {a,a,a,a,a}};
-      
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()), new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE), new ExplainRecipe(BuiltInRegistries.ITEM.getKey(ArcanaRegistry.NEBULOUS_ESSENCE),ingredients));
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()), new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE), ArcanaRegistry.NEBULOUS_ESSENCE);
    }
 }

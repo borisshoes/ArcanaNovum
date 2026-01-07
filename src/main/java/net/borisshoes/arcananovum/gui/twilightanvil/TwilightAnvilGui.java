@@ -64,7 +64,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
       gui.addModes();
       gui.setReturnGui(this);
       gui.setGuiFlags(false,true,false,false);
-      gui.buildGui(ArcaneTomeGui.TomeMode.ITEM,item,null);
+      gui.buildGui(ArcaneTomeGui.TomeMode.ITEM,item);
       gui.buildAndOpen();
    }
    

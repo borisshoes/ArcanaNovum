@@ -146,9 +146,10 @@ public class ShadowStalkersGlaive extends EnergyItem {
    }
    
    @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack toolStack = inv.getItem(12); // Should be the Sword
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack toolStack = inv.getItem(centerpieces.getFirst()); // Should be the Sword
       
       if(toolStack.isEnchanted()){
          EnchantmentHelper.setEnchantments(newArcanaItem,toolStack.getEnchantments());

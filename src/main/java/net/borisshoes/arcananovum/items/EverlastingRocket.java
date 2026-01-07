@@ -115,10 +115,10 @@ public class EverlastingRocket extends EnergyItem {
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   @Override
-   public ItemStack forgeItem(Container inv, StarlightForgeBlockEntity starlightForge){
-      ItemStack rocketStack = inv.getItem(12); // Should be the rocket
+   public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
+      if(centerpieces.isEmpty()) return newArcanaItem;
+      ItemStack rocketStack = inv.getItem(centerpieces.getFirst()); // Should be the rocket
       
       Fireworks fireworks = rocketStack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1,List.of()));
       newArcanaItem.set(DataComponents.FIREWORKS,fireworks);

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class EnhancedStatUtils {
-   public static String ENHANCED_STAT_TAG = "stardust_enhanced";
+   public static final String ENHANCED_STAT_TAG = "stardust_enhanced";
    
    public static boolean isItemEnhanceable(ItemStack stack){
       return (stack.is(ItemTags.ARMOR_ENCHANTABLE)) ||
