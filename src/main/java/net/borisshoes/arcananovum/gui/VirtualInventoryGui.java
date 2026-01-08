@@ -1,9 +1,7 @@
 package net.borisshoes.arcananovum.gui;
 
-import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
-import net.minecraft.world.inventory.MenuType;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
 

@@ -26,7 +26,6 @@ public class StarpathTargetGui extends AnvilInputGui {
    private final SimpleGui returnGui;
    private final Consumer<Object> onCompletion;
    
-   // TODO Multi-player access may have made this unsafe
    public StarpathTargetGui(ServerPlayer player, StarpathAltarBlockEntity blockEntity, boolean targetMode, SimpleGui returnGui, Consumer<Object> onCompletion){
       super(player,false);
       this.blockEntity = blockEntity;

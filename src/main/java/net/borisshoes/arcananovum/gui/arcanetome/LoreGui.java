@@ -3,9 +3,7 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.minecraft.server.level.ServerPlayer;
-import org.jetbrains.annotations.Nullable;
 
 public class LoreGui extends BookGui {
    

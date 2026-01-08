@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.gui.arcanetome;
 
-import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;

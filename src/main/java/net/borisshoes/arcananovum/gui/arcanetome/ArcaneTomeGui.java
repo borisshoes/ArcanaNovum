@@ -11,11 +11,11 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarRecipeGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.normal.ArcaneNotesItem;
@@ -29,11 +29,8 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.borislib.gui.GraphicalItem;
-import net.borisshoes.borislib.gui.GuiFilter;
-import net.borisshoes.borislib.gui.GuiHelper;
-import net.borisshoes.borislib.gui.GuiSort;
-import net.borisshoes.borislib.gui.PagedMultiGui;
+import net.borisshoes.borislib.datastorage.DataAccess;
+import net.borisshoes.borislib.gui.*;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -59,6 +56,7 @@ import org.apache.commons.lang3.function.TriConsumer;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static net.borisshoes.arcananovum.ArcanaRegistry.RECOMMENDED_LIST;
 
@@ -108,7 +106,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       return addModes(getDefaultCompendiumClickHandler(), getDefaultAchievementClickHandler(), getDefaultLeaderboardClickHandler(), getDefaultResearchClickHandler());
    }
    
-   public ArcaneTomeGui addModes(TriConsumer<CompendiumEntry, Integer, ClickType> compendiumClickHandler, TriConsumer<ArcanaAchievement, Integer, ClickType> achievementClickHandler, TriConsumer<UUID, Integer, ClickType> leaderboardClickHandler, TriConsumer<ResearchTask, Integer, ClickType> researchClickHandler){
+   public ArcaneTomeGui addModes(TriConsumer<CompendiumEntry, Integer, ClickType> compendiumClickHandler, TriConsumer<ArcanaAchievement, Integer, ClickType> achievementClickHandler, TriConsumer<ArcanaPlayerData, Integer, ClickType> leaderboardClickHandler, TriConsumer<ResearchTask, Integer, ClickType> researchClickHandler){
       addMode(new ArrayList<CompendiumEntry>(),
             (item, index) -> {
                GuiElementBuilder builder = GuiElementBuilder.from(item.getDisplayStack()).glow();
@@ -125,7 +123,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       addMode(new ArrayList<ArcanaAchievement>(),
             (baseAch, index) -> {
-               IArcanaProfileComponent profile = ArcanaNovum.data(player);
+               ArcanaPlayerData profile = ArcanaNovum.data(player);
                ArcanaAchievement profileAchievement = profile.getAchievement(baseAch.getArcanaItem().getId(), baseAch.id);
                ArcanaAchievement achievement = profileAchievement != null ? profileAchievement : baseAch;
                
@@ -151,33 +149,33 @@ public class ArcaneTomeGui extends PagedMultiGui {
                   }
                }
                
-               List<UUID> achPlayers = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
-               if(achPlayers == null || achPlayers.isEmpty()){
+               List<ArcanaPlayerData> allData = DataAccess.allPlayerDataFor(ArcanaPlayerData.KEY).values().stream().filter(p -> p.getXP() > 1).toList();
+               int achPlayers = Math.toIntExact(allData.stream().filter(data -> data.hasAcheivement(achievement)).count());
+               if(achPlayers == 0){
                   achievementItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
                         .append(Component.literal("No Arcanists have achieved this").withStyle(ChatFormatting.DARK_PURPLE))));
                }else{
-                  int allArcanists = (int) ArcanaNovum.PLAYER_XP_TRACKER.values().stream().filter(xp -> xp > 1).count();
-                  int acquiredCount = achPlayers.size();
+                  int allArcanists = allData.size();
                   DecimalFormat df = new DecimalFormat("#0.00");
                   achievementItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
                         .append(Component.literal("Acquired by ").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal(acquiredCount + "").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(achPlayers + "").withStyle(ChatFormatting.LIGHT_PURPLE))
                         .append(Component.literal(" Arcanists (").withStyle(ChatFormatting.DARK_PURPLE))
-                        .append(Component.literal(df.format((100 * (double) acquiredCount) / ((double) allArcanists)) + "%").withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(df.format((100 * (double) achPlayers) / ((double) allArcanists)) + "%").withStyle(ChatFormatting.LIGHT_PURPLE))
                         .append(Component.literal(")").withStyle(ChatFormatting.DARK_PURPLE))));
                }
                
-               if(profile.hasAcheivement(achievement.getArcanaItem().getId(), achievement.id)) achievementItem.glow();
+               if(profile.hasAcheivement(achievement)) achievementItem.glow();
                return achievementItem;
             }, achievementClickHandler,
             AchievementSort.RECOMMENDED, AchievementFilter.NONE
       );
       
-      addMode(new ArrayList<UUID>(),
-            (playerId, index) -> {
-               HashMap<UUID, List<String>> achievementMap = ArcanaAchievements.getInvertedTracker();
+      addMode(new ArrayList<ArcanaPlayerData>(),
+            (data, index) -> {
+               UUID playerId = data.getPlayerId();
                int numAchievements = ArcanaAchievements.registry.size();
-               int playerXp = ArcanaNovum.PLAYER_XP_TRACKER.get(playerId);
+               int playerXp = data.getXP();
                int playerLevel = LevelUtils.levelFromXp(playerXp);
                GameProfile playerGameProf;
                GuiElementBuilder playerItem;
@@ -201,7 +199,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                         .append(Component.literal("/").withStyle(ChatFormatting.DARK_GREEN))
                         .append(Component.literal(LevelUtils.readableInt(LevelUtils.nextLevelNewXp(playerLevel))).withStyle(ChatFormatting.GREEN)))));
                }
-               int playerAchievements = achievementMap.containsKey(playerId) ? achievementMap.get(playerId).size() : 0;
+               int playerAchievements = data.totalAcquiredAchievements();
                playerItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                      .append(Component.literal("Achievements: ").withStyle(ChatFormatting.DARK_AQUA))
                      .append(Component.literal(LevelUtils.readableInt(playerAchievements)).withStyle(ChatFormatting.AQUA))
@@ -302,7 +300,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       };
    }
    
-   public TriConsumer<UUID, Integer, ClickType> getDefaultLeaderboardClickHandler(){
+   public TriConsumer<ArcanaPlayerData, Integer, ClickType> getDefaultLeaderboardClickHandler(){
       return (a, b, c) -> {
       };
    }
@@ -406,7 +404,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    private void buildProfileGui(){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
       setSlot(27, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
@@ -599,10 +597,10 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    private void buildLeaderboardGui(){
-      GuiMode<UUID> config = getMode(2);
-      config.setItems(ArcanaNovum.PLAYER_XP_TRACKER.keySet().stream().toList());
+      GuiMode<ArcanaPlayerData> config = getMode(2);
+      config.setItems(DataAccess.allPlayerDataFor(ArcanaPlayerData.KEY).values().stream().toList());
       
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       int numAchievements = ArcanaAchievements.registry.size();
       
       GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
@@ -635,7 +633,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    private void buildItemGui(){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(selectedArcanaItem == null){
          close();
          return;
@@ -794,6 +792,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       achievePane.setName(Component.literal("Achievements:").withStyle(ChatFormatting.DARK_PURPLE));
       achievePane.addLoreLine(TextUtils.removeItalics(Component.literal("Earning Achievements Grants Skill Points and XP!").withStyle(ChatFormatting.LIGHT_PURPLE)));
       
+      List<ArcanaPlayerData> allData = DataAccess.allPlayerDataFor(ArcanaPlayerData.KEY).values().stream().filter(p -> p.getXP() > 1).toList();
       List<ArcanaAchievement> achievements = ArcanaAchievements.getItemAchievements(selectedArcanaItem);
       int[] achieveSlots = DYNAMIC_SLOTS[achievements.size()];
       for(int i = 0; i < 7; i++){
@@ -823,19 +822,18 @@ public class ArcaneTomeGui extends PagedMultiGui {
             }
          }
          
-         List<UUID> achPlayers = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
-         if(achPlayers == null || achPlayers.isEmpty()){
+         int achPlayers = Math.toIntExact(allData.stream().filter(data -> data.hasAcheivement(achievement)).count());
+         if(achPlayers == 0){
             achievementItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
                   .append(Component.literal("No Arcanists have achieved this").withStyle(ChatFormatting.DARK_PURPLE))));
          }else{
-            int allArcanists = (int) ArcanaNovum.PLAYER_XP_TRACKER.values().stream().filter(xp -> xp > 1).count();
-            int acquiredCount = achPlayers.size();
+            int allArcanists = allData.size();
             DecimalFormat df = new DecimalFormat("#0.00");
             achievementItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
                   .append(Component.literal("Acquired by ").withStyle(ChatFormatting.DARK_PURPLE))
-                  .append(Component.literal(acquiredCount + "").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(Component.literal(achPlayers + "").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(Component.literal(" Arcanists (").withStyle(ChatFormatting.DARK_PURPLE))
-                  .append(Component.literal(df.format((100 * (double) acquiredCount) / ((double) allArcanists)) + "%").withStyle(ChatFormatting.LIGHT_PURPLE))
+                  .append(Component.literal(df.format((100 * (double) achPlayers) / ((double) allArcanists)) + "%").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(Component.literal(")").withStyle(ChatFormatting.DARK_PURPLE))));
          }
          
@@ -997,7 +995,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    private void buildResearchGui(){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(selectedArcanaItem == null){
          close();
          return;
@@ -1093,7 +1091,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    
    private GuiElementBuilder getNotesItem(){
       if(this.selectedArcanaItem == null) return null;
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       int paperCost = profile.getArcanePaperRequirement(selectedArcanaItem.getRarity());
       GuiElementBuilder notes = new GuiElementBuilder(ArcanaRegistry.ARCANE_NOTES).glow().hideDefaultTooltip();
       notes.setName((Component.literal("")
@@ -1391,9 +1389,9 @@ public class ArcaneTomeGui extends PagedMultiGui {
       public static final AchievementFilter NONE = new AchievementFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor(),
             (ach) -> true);
       public static final AchievementFilter ACQUIRED = new AchievementFilter("gui.arcananovum.acquired", ChatFormatting.AQUA.getColor(),
-            (ach) -> ArcanaNovum.data(getPlayer()).hasAcheivement(ach.getArcanaItem().getId(), ach.id));
+            (ach) -> ArcanaNovum.data(getPlayer()).hasAcheivement(ach));
       public static final AchievementFilter NOT_ACQUIRED = new AchievementFilter("gui.arcananovum.not_acquired", ChatFormatting.RED.getColor(),
-            (ach) -> !ArcanaNovum.data(getPlayer()).hasAcheivement(ach.getArcanaItem().getId(), ach.id));
+            (ach) -> !ArcanaNovum.data(getPlayer()).hasAcheivement(ach));
       
       private AchievementFilter(String key, int color, java.util.function.Predicate<ArcanaAchievement> filter){
          super(key, color, filter);
@@ -1401,7 +1399,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       }
       
       public static void setPlayer(ServerPlayer player){
-         TomeFilter.player = player;
+         AchievementFilter.player = player;
       }
       
       public static ServerPlayer getPlayer(){
@@ -1453,19 +1451,19 @@ public class ArcaneTomeGui extends PagedMultiGui {
    // ========== Leaderboard Filters and Sorts ==========
    
    @SuppressWarnings("DataFlowIssue")
-   public static class LeaderboardFilter extends GuiFilter<UUID> {
+   public static class LeaderboardFilter extends GuiFilter<ArcanaPlayerData> {
       public static final List<LeaderboardFilter> FILTERS = new ArrayList<>();
       
       public static final LeaderboardFilter NONE = new LeaderboardFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor(),
-            (uuid) -> true);
+            (data) -> true);
       public static final LeaderboardFilter ARCANIST = new LeaderboardFilter("gui.arcananovum.arcanist", ChatFormatting.LIGHT_PURPLE.getColor(),
-            (uuid) -> ArcanaNovum.PLAYER_XP_TRACKER.get(uuid) > 1);
+            (data) -> data.getXP() > 1);
       public static final LeaderboardFilter MAX_LVL = new LeaderboardFilter("gui.arcananovum.max_level_player", ChatFormatting.GREEN.getColor(),
-            (uuid) -> LevelUtils.levelFromXp(ArcanaNovum.PLAYER_XP_TRACKER.get(uuid)) >= 100);
+            (data) -> LevelUtils.levelFromXp(data.getXP()) >= 100);
       public static final LeaderboardFilter ABYSS = new LeaderboardFilter("gui.arcananovum.abyssal_arcanist", ChatFormatting.DARK_PURPLE.getColor(),
-            (uuid) -> ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(ArcanaAchievements.ALL_ACHIEVEMENTS.id).contains(uuid));
+            (data) -> data.hasAcheivement(ArcanaAchievements.ALL_ACHIEVEMENTS));
       
-      private LeaderboardFilter(String key, int color, java.util.function.Predicate<UUID> filter){
+      private LeaderboardFilter(String key, int color, Predicate<ArcanaPlayerData> filter){
          super(key, color, filter);
          FILTERS.add(this);
       }
@@ -1482,27 +1480,21 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    @SuppressWarnings("DataFlowIssue")
-   public static class LeaderboardSort extends GuiSort<UUID> {
+   public static class LeaderboardSort extends GuiSort<ArcanaPlayerData> {
       public static final List<LeaderboardSort> SORTS = new ArrayList<>();
       
       public static final LeaderboardSort XP_DESC = new LeaderboardSort("gui.arcananovum.xp_descending_recommended", ChatFormatting.LIGHT_PURPLE.getColor(),
-            Comparator.<UUID>comparingInt(uuid -> -ArcanaNovum.PLAYER_XP_TRACKER.getOrDefault(uuid, 0)));
+            Comparator.<ArcanaPlayerData>comparingInt(data -> -data.getXP()));
       public static final LeaderboardSort XP_ASC = new LeaderboardSort("gui.arcananovum.xp_ascending", ChatFormatting.DARK_PURPLE.getColor(),
-            Comparator.<UUID>comparingInt(uuid -> ArcanaNovum.PLAYER_XP_TRACKER.getOrDefault(uuid, 0)));
-//      public static final LeaderboardSort ACHIEVES_DESC = new LeaderboardSort("gui.arcananovum.achievements_descending", ChatFormatting.GREEN.getColor(),
-//            Comparator.<UUID>comparingInt(uuid -> {
-//               int count = 0;
-//               for(List<UUID> achievers : ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.values()){
-//                  if(achievers.contains(uuid)) count++;
-//               }
-//               return -count;
-//            }));
-//      public static final LeaderboardSort SKILL_POINTS_DESC = new LeaderboardSort("gui.arcananovum.skill_points_descending", ChatFormatting.DARK_GREEN.getColor(),
-//            Comparator.<UUID>comparingInt(uuid -> -ArcanaNovum.PLAYER_SKILL_POINT_TRACKER.getOrDefault(uuid, 0)));
-//      public static final LeaderboardSort ALPHABETICAL = new LeaderboardSort("gui.borislib.alphabetical", ChatFormatting.AQUA.getColor(),
-//            Comparator.comparing(uuid -> ArcanaNovum.PLAYER_USERNAME_TRACKER.getOrDefault(uuid, "")));
+            Comparator.<ArcanaPlayerData>comparingInt(ArcanaPlayerData::getXP));
+      public static final LeaderboardSort ACHIEVES_DESC = new LeaderboardSort("gui.arcananovum.achievements_descending", ChatFormatting.GREEN.getColor(),
+            Comparator.<ArcanaPlayerData>comparingInt(data -> -data.totalAcquiredAchievements()));
+      public static final LeaderboardSort SKILL_POINTS_DESC = new LeaderboardSort("gui.arcananovum.skill_points_descending", ChatFormatting.DARK_GREEN.getColor(),
+            Comparator.<ArcanaPlayerData>comparingInt(data -> -data.getTotalSkillPoints()));
+      public static final LeaderboardSort ALPHABETICAL = new LeaderboardSort("gui.borislib.alphabetical", ChatFormatting.AQUA.getColor(),
+            Comparator.comparing(ArcanaPlayerData::getUsername));
       
-      private LeaderboardSort(String key, int color, Comparator<UUID> comparator){
+      private LeaderboardSort(String key, int color, Comparator<ArcanaPlayerData> comparator){
          super(key, color, comparator);
          SORTS.add(this);
       }

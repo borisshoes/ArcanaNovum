@@ -20,6 +20,7 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    boolean completedResearchTask(String id);
    List<String> getResearchedItems();
    Tag getMiscData(String id);
+   HashMap<String,Tag> getMiscDataMap();
    HashMap<String,List<ArcanaAchievement>> getAchievements();
    HashMap<ArcanaAugment,Integer> getAugments();
    int getLevel();

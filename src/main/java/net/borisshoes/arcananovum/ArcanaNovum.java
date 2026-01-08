@@ -3,10 +3,14 @@ package net.borisshoes.arcananovum;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.borisshoes.arcananovum.callbacks.*;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.datastorage.AnchorData;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.config.ConfigManager;
+import net.borisshoes.borislib.datastorage.DataAccess;
+import net.borisshoes.borislib.datastorage.DefaultPlayerData;
 import net.borisshoes.borislib.utils.ItemModDataHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -36,9 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 
 public class ArcanaNovum implements ModInitializer, ClientModInitializer {
@@ -46,8 +48,6 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    private static final Logger LOGGER = LogManager.getLogger("Arcana Novum");
    public static final HashMap<ServerLevel, Long2IntOpenHashMap> ANCHOR_CHUNKS = new HashMap<>();
    public static final HashMap<Tuple<BlockEntity, ArcanaBlockEntity>,Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
-   public static final HashMap<String,List<UUID>> PLAYER_ACHIEVEMENT_TRACKER = new HashMap<>();
-   public static final HashMap<UUID,Integer> PLAYER_XP_TRACKER = new HashMap<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
    public static MinecraftServer SERVER = null;
@@ -89,11 +89,11 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    }
    
    public static boolean addActiveAnchor(ServerLevel world, BlockPos pos){
-      return ACTIVE_ANCHORS.get(world).addAnchor(pos);
+      return DataAccess.getWorld(world.dimension(), AnchorData.KEY).addAnchor(pos);
    }
    
-   public static boolean removeActiveAnchor(ServerLevel targetWorld, BlockPos pos){
-      return ACTIVE_ANCHORS.get(targetWorld).removeAnchor(pos);
+   public static boolean removeActiveAnchor(ServerLevel world, BlockPos pos){
+      return DataAccess.getWorld(world.dimension(), AnchorData.KEY).removeAnchor(pos);
    }
    
    public static boolean addActiveBlock(Tuple<BlockEntity,ArcanaBlockEntity> pair){
@@ -103,17 +103,26 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       return existing.isEmpty();
    }
    
-   public static IArcanaProfileComponent data(Player player){
+   public static ArcanaPlayerData data(UUID player){
       if(player == null){
          return null;
       }
       try{
-         return PLAYER_DATA.get(player);
+         return DataAccess.getPlayer(player,ArcanaPlayerData.KEY);
       }catch(Exception e){
-         log(3,"Failed to get Arcane Profile for "+player.getScoreboardName() + " ("+player.getStringUUID()+")");
+         DefaultPlayerData defaultPlayerData = DataAccess.getPlayer(player, BorisLib.PLAYER_DATA_KEY);
+         String username = defaultPlayerData != null ? defaultPlayerData.getUsername() : "<???>";
+         log(3,"Failed to get Arcane Profile for "+username + " ("+player+")");
          log(3,e.toString());
       }
       return null;
+   }
+   
+   public static ArcanaPlayerData data(Player player){
+      if(player == null){
+         return null;
+      }
+      return data(player.getUUID());
    }
    
    public static void devPrint(String msg){

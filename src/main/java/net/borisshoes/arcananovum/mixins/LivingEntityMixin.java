@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
+import net.borisshoes.arcananovum.datastorage.BossFightData;
 import net.borisshoes.arcananovum.effects.DamageAmpEffect;
 import net.borisshoes.arcananovum.effects.GreaterInvisibilityEffect;
 import net.borisshoes.arcananovum.entities.NulConstructEntity;
@@ -21,11 +22,9 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.timers.TickTimerCallback;
@@ -60,6 +59,7 @@ import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -85,6 +85,14 @@ public abstract class LivingEntityMixin {
    @Shadow protected abstract void playHurtSound(DamageSource source);
    
    @Shadow public abstract void onEnterCombat();
+   
+   @Inject(method = "baseTick", at = @At("HEAD"))
+   private void arcananovum$onTick(CallbackInfo ci){
+      LivingEntity thisEntity = (LivingEntity) (Object) this;
+      if(thisEntity.isDeadOrDying()) return;
+      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.STARDUST_PARTICLES)) return;
+      EnhancedStatUtils.glowInfusedGear(thisEntity);
+   }
    
    @Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;gameEvent(Lnet/minecraft/core/Holder;)V"))
    private void arcananovum$onEntityKilledOther(DamageSource damageSource, CallbackInfo ci, @Local Entity attacker, @Local ServerLevel serverWorld){
@@ -454,7 +462,7 @@ public abstract class LivingEntityMixin {
    
       
       // Enderia Boss health scale
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(entity.level()).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(entity.level().dimension(), BossFightData.KEY).getBossFight();
       int numPlayers = 0;
       if(bossFight != null){
          numPlayers = bossFight.getB().getIntOr("numPlayers", 0);

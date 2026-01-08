@@ -3,17 +3,11 @@ package net.borisshoes.arcananovum.items.normal;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import xyz.nucleoid.packettweaker.PacketContext;
-
-import java.util.List;
 
 public class EmpoweredArcanePaper extends NormalPolymerItem {
    

@@ -2,17 +2,14 @@ package net.borisshoes.arcananovum.recipes;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.serialization.Lifecycle;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.datagen.DefaultRecipeGenerator;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcanaItemCompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.CompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
@@ -23,16 +20,13 @@ import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
-import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.tags.InstrumentTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
@@ -554,7 +548,6 @@ public class RecipeManager {
             for(TransmutationRecipe transRecipe : TRANSMUTATION_RECIPES){
                if(!(transRecipe instanceof InfusionTransmutationRecipe infusion)) continue;
                if(arcanaItem.getItem() != infusion.getOutput().getItem()) continue;
-               System.out.println("Adding recipe for "+infusion.getId());
                ARCANA_RECIPES.add(createInfusionExplainRecipe(infusion));
             }
          }else if(entry instanceof IngredientCompendiumEntry ingEntry){
@@ -562,7 +555,6 @@ public class RecipeManager {
             for(TransmutationRecipe transRecipe : TRANSMUTATION_RECIPES){
                if(!(transRecipe instanceof InfusionTransmutationRecipe infusion)) continue;
                if(!stack.is(infusion.getOutput().getItem())) continue;
-               System.out.println("Adding recipe for "+infusion.getId());
                ARCANA_RECIPES.add(createInfusionExplainRecipe(infusion));
             }
          }

@@ -14,9 +14,6 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.events.BinaryBladesMaxEnergyEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -316,7 +313,7 @@ public class BinaryBlades extends EnergyItem {
          if(fake){
             if(!player.getOffhandItem().equals(stack) || !player.getMainHandItem().is(this)){
                stack.setCount(0);
-               ArcanaNovum.data(player).restoreOffhand();
+               ArcanaNovum.data(player).restoreOffhand(player);
             }else{
                ItemStack mainStack = player.getMainHandItem();
                boolean pulsar1 = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PULSAR_BLADES.id) > 0;
@@ -326,8 +323,8 @@ public class BinaryBlades extends EnergyItem {
                boolean white2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.WHITE_DWARF_BLADES.id) > 0;
                boolean red2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.RED_GIANT_BLADES.id) > 0;
                if(pulsar1 ^ pulsar2 || white1 ^ white2 || red1 ^ red2){
-                  ArcanaNovum.data(player).restoreOffhand();
-                  ArcanaNovum.data(player).storeOffhand(getFakeItem(mainStack));
+                  ArcanaNovum.data(player).restoreOffhand(player);
+                  ArcanaNovum.data(player).storeOffhand(player,getFakeItem(mainStack));
                }
             }
             return;
@@ -342,8 +339,8 @@ public class BinaryBlades extends EnergyItem {
                putProperty(stack,SPLIT_TAG,true);
             }
             if(!player.getOffhandItem().is(this)){
-               ArcanaNovum.data(player).restoreOffhand();
-               ArcanaNovum.data(player).storeOffhand(getFakeItem(stack));
+               ArcanaNovum.data(player).restoreOffhand(player);
+               ArcanaNovum.data(player).storeOffhand(player,getFakeItem(stack));
             }
             
             if(world.getServer().getTickCount() % 40 == 0 || (energy > 0 && energy < getMaxEnergy(stack))){
@@ -450,11 +447,12 @@ public class BinaryBlades extends EnergyItem {
       }
       
       @Override
-      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player player, SlotAccess cursorStackReference){
-         boolean superRet = super.overrideOtherStackedOnMe(stack, otherStack, slot, clickType, player, cursorStackReference);
+      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference){
+         boolean superRet = super.overrideOtherStackedOnMe(stack, otherStack, slot, clickType, playerEntity, cursorStackReference);
+         if(!(playerEntity instanceof ServerPlayer player)) return superRet;
          if(getBooleanProperty(stack,FAKE_TAG)){
             stack.copyAndClear();
-            ArcanaNovum.data(player).restoreOffhand();
+            ArcanaNovum.data(player).restoreOffhand(player);
             return false;
          }
          return superRet;

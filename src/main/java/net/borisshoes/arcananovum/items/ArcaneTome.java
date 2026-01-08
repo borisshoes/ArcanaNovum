@@ -1,19 +1,11 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.recipes.RecipeManager;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -26,7 +18,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;

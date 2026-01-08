@@ -2,8 +2,8 @@ package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
@@ -763,7 +763,7 @@ public class ArcanaAchievements {
    }
    
    public static void grant(ServerPlayer player, String id){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -824,7 +824,7 @@ public class ArcanaAchievements {
    }
    
    public static void setCondition(ServerPlayer player, String id, String condition, boolean set){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ConditionalsAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -849,7 +849,7 @@ public class ArcanaAchievements {
    }
    
    public static void progress(ServerPlayer player, String id, int toAdd){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -886,7 +886,7 @@ public class ArcanaAchievements {
    }
    
    public static int getProgress(ServerPlayer player, String id){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -908,7 +908,7 @@ public class ArcanaAchievements {
    }
    
    public static void revoke(ServerPlayer player, String id){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       ArcanaAchievement achieve = registry.get(id);
       if(achieve != null){
          profile.removeAchievement(achieve.getArcanaItem().getId(), id);
@@ -916,7 +916,7 @@ public class ArcanaAchievements {
    }
    
    public static void reset(ServerPlayer player, String id){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof TimedAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -929,7 +929,7 @@ public class ArcanaAchievements {
    }
    
    public static boolean isTimerActive(ServerPlayer player, String id){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof TimedAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -939,23 +939,5 @@ public class ArcanaAchievements {
          }
       }
       return false;
-   }
-   
-   public static HashMap<UUID,List<String>> getInvertedTracker(){
-      HashMap<UUID,List<String>> invertedAchList = new HashMap<>();
-      for(Map.Entry<String, List<UUID>> listEntry : ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.entrySet()){
-         for(UUID uuid : listEntry.getValue()){
-            if(invertedAchList.containsKey(uuid)){
-               List<String> curList = invertedAchList.get(uuid);
-               curList.add(listEntry.getKey());
-               invertedAchList.put(uuid,curList);
-            }else{
-               List<String> newList = new ArrayList<>();
-               newList.add(listEntry.getKey());
-               invertedAchList.put(uuid,newList);
-            }
-         }
-      }
-      return invertedAchList;
    }
 }

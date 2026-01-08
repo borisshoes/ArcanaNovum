@@ -1,10 +1,17 @@
 package net.borisshoes.arcananovum.bosses;
 
+import com.mojang.serialization.Codec;
+
 public enum BossFights {
    DRAGON("dragon"),
    WARDEN("warden");
    
    public final String label;
+   
+   public static final Codec<BossFights> BOSS_FIGHTS_CODEC = Codec.STRING.xmap(
+         BossFights::fromLabel,
+         BossFights::getLabel
+   );
    
    BossFights(String label){
       this.label = label;

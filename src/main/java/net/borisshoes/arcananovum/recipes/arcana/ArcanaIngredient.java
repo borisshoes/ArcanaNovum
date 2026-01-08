@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;

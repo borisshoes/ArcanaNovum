@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -19,14 +20,17 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
-import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.datastorage.BossFightData;
 import net.borisshoes.arcananovum.gui.arcanetome.*;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
-import net.borisshoes.arcananovum.recipes.arcana.*;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -34,7 +38,7 @@ import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
-import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
@@ -55,7 +59,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
+import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.Util;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -63,6 +69,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -113,12 +120,12 @@ public class ArcanaCommands {
          CommandSourceStack source = ctx.getSource();
       
          for (ServerPlayer player : targets){
-            IArcanaProfileComponent profile = ArcanaNovum.data(player);
+            ArcanaPlayerData profile = ArcanaNovum.data(player);
             
-            IntTag pointsEle = (IntTag) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
+            IntTag pointsEle = (IntTag) profile.getMiscData(ArcanaPlayerData.ADMIN_SKILL_POINTS_TAG);
             int oldPoints = pointsEle == null ? 0 : pointsEle.intValue();
             int newPoints = set ? amount : amount + oldPoints;
-            profile.addMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG, IntTag.valueOf(newPoints));
+            profile.addMiscData(ArcanaPlayerData.ADMIN_SKILL_POINTS_TAG, IntTag.valueOf(newPoints));
          }
       
          if(targets.size() == 1 && set){
@@ -141,8 +148,8 @@ public class ArcanaCommands {
    public static int skillpointsCommandQuery(CommandContext<CommandSourceStack> ctx, ServerPlayer target){
       try{
          CommandSourceStack source = ctx.getSource();
-         IArcanaProfileComponent profile = ArcanaNovum.data(target);
-         IntTag pointsEle = (IntTag) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
+         ArcanaPlayerData profile = ArcanaNovum.data(target);
+         IntTag pointsEle = (IntTag) profile.getMiscData(ArcanaPlayerData.ADMIN_SKILL_POINTS_TAG);
          int adminPoints = pointsEle == null ? 0 : pointsEle.intValue();
          MutableComponent feedback = Component.literal("")
                .append(target.getDisplayName())
@@ -162,7 +169,7 @@ public class ArcanaCommands {
          CommandSourceStack source = ctx.getSource();
          
          for (ServerPlayer player : targets){
-            IArcanaProfileComponent profile = ArcanaNovum.data(player);
+            ArcanaPlayerData profile = ArcanaNovum.data(player);
             int oldValue = points ? profile.getXP() : profile.getLevel();
             int newAmount = set ? Math.max(amount, 0) : Math.max(oldValue + amount, 0);
             if(points){
@@ -320,7 +327,7 @@ public class ArcanaCommands {
    public static int xpCommandQuery(CommandContext<CommandSourceStack> ctx, ServerPlayer target){
       try{
          CommandSourceStack source = ctx.getSource();
-         IArcanaProfileComponent profile = ArcanaNovum.data(target);
+         ArcanaPlayerData profile = ArcanaNovum.data(target);
          MutableComponent feedback = Component.literal("")
                .append(target.getDisplayName())
                .append(Component.literal(" has ").withStyle(ChatFormatting.LIGHT_PURPLE))
@@ -910,7 +917,7 @@ public class ArcanaCommands {
                return;
             }
             if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
-               player.containerMenu.setCarried(arcanaEntry.getArcanaItem().getNewItem());
+               player.containerMenu.setCarried(arcanaEntry.getArcanaItem().addCrafter(arcanaEntry.getArcanaItem().getNewItem(),player.getStringUUID(),1,source.getServer()));
             }else if(entry instanceof IngredientCompendiumEntry ing){
                player.containerMenu.setCarried(ing.getDisplayStack().copyWithCount(ing.getDisplayStack().getMaxStackSize()));
             }
@@ -1030,6 +1037,38 @@ public class ArcanaCommands {
       }
    }
    
+   public static int changeCrafter(CommandContext<CommandSourceStack> ctx, String username, int type){
+      try{
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
+            return -1;
+         }
+         
+         ServerPlayer player = src.getPlayer();
+         ItemStack handItem = player.getMainHandItem();
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(handItem);
+         
+         if(arcanaItem == null){
+            src.sendFailure(Component.literal("Player is not holding a valid Arcana Item"));
+            return -1;
+         }
+         
+         ProfileResolver profileResolver = src.getServer().services().profileResolver();
+         Optional<GameProfile> optional = profileResolver.fetchByName(username);
+         if(optional.isEmpty()){
+            src.sendFailure(Component.translatable("commands.fetchprofile.name.failure", Component.literal(username)));
+            return -1;
+         }
+         arcanaItem.addCrafter(handItem,optional.get().id().toString(),type,src.getServer());
+         src.sendSuccess(() -> Component.translatable("command.arcananovum.change_crafter_success", optional.get().name()),false);
+         return 1;
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
    public static int applyAugment(CommandContext<CommandSourceStack> ctx, String id, int level, ServerPlayer player){
       try{
          CommandSourceStack src = ctx.getSource();
@@ -1130,7 +1169,7 @@ public class ArcanaCommands {
    public static int getResearch(CommandContext<CommandSourceStack> ctx, String id, ServerPlayer target){
       try{
          CommandSourceStack source = ctx.getSource();
-         IArcanaProfileComponent profile = ArcanaNovum.data(target);
+         ArcanaPlayerData profile = ArcanaNovum.data(target);
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
          
          if(arcanaItem == null){
@@ -1199,7 +1238,7 @@ public class ArcanaCommands {
    public static int getAchievement(CommandContext<CommandSourceStack> ctx, String id, ServerPlayer target){
       try{
          CommandSourceStack source = ctx.getSource();
-         IArcanaProfileComponent profile = ArcanaNovum.data(target);
+         ArcanaPlayerData profile = ArcanaNovum.data(target);
          ArcanaAchievement baseAch = ArcanaAchievements.registry.get(id);
          if(baseAch == null){
             source.sendFailure(Component.literal("That is not a valid Achievement"));
@@ -1310,7 +1349,7 @@ public class ArcanaCommands {
          return -1;
       }
       for(ServerLevel world : source.getServer().getAllLevels()){
-         if(BOSS_FIGHT.get(world).getBossFight() != null){
+         if(DataAccess.getWorld(world.dimension(), BossFightData.KEY).getBossFight() != null){
             source.sendSuccess(()-> Component.literal("A Boss Fight is Currently Active"), false);
             return -1;
          }
@@ -1321,7 +1360,7 @@ public class ArcanaCommands {
    
    public static int abortBoss(CommandContext<CommandSourceStack> context){
       MinecraftServer server = context.getSource().getServer();
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(server.getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       context.getSource().sendSuccess(()-> Component.literal("Aborting Boss Fight"),true);
       if(bossFight == null){
          return BossFight.cleanBoss(server);
@@ -1340,7 +1379,7 @@ public class ArcanaCommands {
    
    public static int bossStatus(CommandContext<CommandSourceStack> context){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
@@ -1353,7 +1392,7 @@ public class ArcanaCommands {
    
    public static int bossResetAbilities(CommandContext<CommandSourceStack> context, boolean doAbility){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
@@ -1366,7 +1405,7 @@ public class ArcanaCommands {
    
    public static int bossForceLairAction(CommandContext<CommandSourceStack> context){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
@@ -1379,7 +1418,7 @@ public class ArcanaCommands {
    
    public static int bossForcePlayerCount(CommandContext<CommandSourceStack> context, int playerCount){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
@@ -1399,7 +1438,7 @@ public class ArcanaCommands {
    
    public static int bossTeleport(CommandContext<CommandSourceStack> context, ServerPlayer player, boolean all){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
@@ -1420,7 +1459,7 @@ public class ArcanaCommands {
    }
    
    public static int announceBoss(CommandSourceStack source, String time){
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(source.getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;
@@ -1432,7 +1471,7 @@ public class ArcanaCommands {
    }
    
    public static int beginBoss(CommandContext<CommandSourceStack> context){
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(context.getSource().getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          context.getSource().sendSuccess(()-> Component.literal("No Boss Fight Active"),false);
          return -1;

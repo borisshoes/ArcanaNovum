@@ -4,8 +4,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.*;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -395,7 +395,7 @@ public class ArcanaItemUtils {
       }
       
       public int getAugmentConc(ServerPlayer player){
-         IArcanaProfileComponent profile = ArcanaNovum.data(player);
+         ArcanaPlayerData profile = ArcanaNovum.data(player);
          int adaptability = profile.getAugmentLevel(ArcanaAugments.ADAPTABILITY.id);
          int augmentConc = 0;
          
@@ -409,7 +409,7 @@ public class ArcanaItemUtils {
       }
       
       public double getFocusedConcMod(ServerPlayer player){
-         IArcanaProfileComponent profile = ArcanaNovum.data(player);
+         ArcanaPlayerData profile = ArcanaNovum.data(player);
          int focus = profile.getAugmentLevel(ArcanaAugments.FOCUS.id);
          if(focus == 1){
             boolean isEChest = false;

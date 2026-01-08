@@ -5,10 +5,10 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -183,7 +183,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       int wHaste = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
       int energyGain = 5+(wHaste * 2);
       int maxEnergy = 1000 + 100 * wHaste;
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       
       profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(0));
       IntTag energy = (IntTag) profile.getMiscData(CEPTYUS_ENERGY);
@@ -220,7 +220,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
-         IArcanaProfileComponent profile = ArcanaNovum.data(player);
+         ArcanaPlayerData profile = ArcanaNovum.data(player);
          IntTag energyEle = (IntTag) profile.getMiscData(CEPTYUS_ENERGY);
          int energy = energyEle == null ? 0 : energyEle.intValue();
          
@@ -241,7 +241,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          if(miner instanceof ServerPlayer player){
             int energyGain = 3 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
             int maxEnergy = 1000 + 100 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
-            IArcanaProfileComponent profile = ArcanaNovum.data(player);
+            ArcanaPlayerData profile = ArcanaNovum.data(player);
             
             profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(0));
             IntTag energy = (IntTag) profile.getMiscData(CEPTYUS_ENERGY);

@@ -8,12 +8,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.entities.NulConstructEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -42,7 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstructPattern;
+import static net.borisshoes.arcananovum.entities.NulConstructEntity.getExaltedConstructPattern;
 
 public class DivineCatalyst extends ArcanaItem {
 	public static final String ID = "divine_catalyst";
@@ -124,7 +119,7 @@ public class DivineCatalyst extends ArcanaItem {
          }
          
          if(state.is(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getMinY() && canSpawn){ // Check construct
-            BlockPattern pattern = getConstructPattern();
+            BlockPattern pattern = getExaltedConstructPattern();
             BlockPattern.BlockPatternMatch patternResult = pattern.find(world, pos.offset(-1,-1,-1));
             if(patternResult != null){
                NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, EntitySpawnReason.TRIGGERED);

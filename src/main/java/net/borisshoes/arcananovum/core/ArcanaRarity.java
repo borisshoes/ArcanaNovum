@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.core;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;

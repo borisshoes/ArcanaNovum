@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
@@ -10,10 +9,6 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverSlot;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -43,8 +38,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;

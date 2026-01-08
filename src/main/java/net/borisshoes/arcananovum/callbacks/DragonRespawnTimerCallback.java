@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.datastorage.BossFightData;
+import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.nbt.CompoundTag;
@@ -25,7 +27,7 @@ public class DragonRespawnTimerCallback extends TickTimerCallback {
    @Override
    public void onTimer(){
       try{
-         Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(server.getLevel(Level.END)).getBossFight();
+         Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
          if(bossFight != null && bossFight.getA() == BossFights.DRAGON){
             CompoundTag data = bossFight.getB();
             String state = data.getStringOr("State", "");

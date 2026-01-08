@@ -11,10 +11,10 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -212,7 +212,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                }
                
                if(augment != null){
-                  IArcanaProfileComponent profile = ArcanaNovum.data(player);
+                  ArcanaPlayerData profile = ArcanaNovum.data(player);
                   int augmentLvl = profile.getAugmentLevel(augment.id);
                   ArcanaRarity[] tiers = augment.getTiers();
                   int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment.id);
@@ -421,7 +421,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
          }
          
          if(arcanaItem != null){
-            IArcanaProfileComponent profile = ArcanaNovum.data(player);
+            ArcanaPlayerData profile = ArcanaNovum.data(player);
             
             boolean unlockedItem = profile.hasResearched(arcanaItem);
             if(!unlockedItem){

@@ -6,11 +6,11 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.BinaryBlades;
 import net.borisshoes.arcananovum.items.Soulstone;
@@ -177,7 +177,7 @@ public class ItemEntityMixin {
                   tomeCrafter = stackOwner;
                }
                if(tomeCrafter != null){
-                  IArcanaProfileComponent profile = ArcanaNovum.data(tomeCrafter);
+                  ArcanaPlayerData profile = ArcanaNovum.data(tomeCrafter);
                   tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getStringUUID(),0,itemEntity.level().getServer());
                   if(!profile.addCrafted(tomeStack)){
                      profile.addXP(ArcanaRarity.getFirstCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));

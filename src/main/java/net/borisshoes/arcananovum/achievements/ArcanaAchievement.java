@@ -2,8 +2,8 @@ package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
@@ -164,13 +164,13 @@ public abstract class ArcanaAchievement {
             player.displayClientMessage(msg, false);
          }
       }
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       profile.addXP(xpReward); // Add xp
    
       boolean abyssCheck = true;
       for(ArcanaAchievement achievement : ArcanaAchievements.registry.values()){
          if(ArcanaAchievements.excludedAchievements.contains(achievement)) continue;
-         if(!profile.hasAcheivement(achievement.getArcanaItem().getId(),achievement.id)){
+         if(!profile.hasAcheivement(achievement)){
             abyssCheck = false;
             break;
          }

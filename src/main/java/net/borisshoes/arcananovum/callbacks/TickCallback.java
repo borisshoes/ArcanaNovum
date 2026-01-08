@@ -8,29 +8,29 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
-import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.datastorage.BossFightData;
 import net.borisshoes.arcananovum.events.NulMementoEvent;
 import net.borisshoes.arcananovum.items.LevitationHarness;
 import net.borisshoes.arcananovum.items.NulMemento;
 import net.borisshoes.arcananovum.items.QuiverItem;
 import net.borisshoes.arcananovum.items.ShulkerCore;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.Dialog;
-import net.borisshoes.arcananovum.utils.DialogHelper;
-import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -40,12 +40,15 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -71,14 +74,12 @@ public class TickCallback {
          
          List<ServerPlayer> players = server.getPlayerList().getPlayers();
          for(ServerPlayer player : players){
-            IArcanaProfileComponent arcaneProfile = ArcanaNovum.data(player);
+            ArcanaPlayerData arcaneProfile = ArcanaNovum.data(player);
             
             // Check each player's inventory for arcana items
             Inventory inv = player.getInventory();
             for(int i = 0; i<inv.getContainerSize(); i++){
                ItemStack item = inv.getItem(i);
-               
-               
                
                boolean isArcane = ArcanaItemUtils.isArcane(item);
                if(!isArcane){
@@ -148,7 +149,23 @@ public class TickCallback {
             }
             
             if(!arcaneProfile.getStoredOffhand().isEmpty() && player.getOffhandItem().isEmpty()){
-               arcaneProfile.restoreOffhand();
+               arcaneProfile.restoreOffhand(player);
+            }
+            
+            if(server.getTickCount() % 100 == 0){
+               Tag tag = arcaneProfile.getMiscData(ResearchTasks.BIOMES_VISITED_TAG);
+               Holder<Biome> biome = player.level().getBiome(player.blockPosition());
+               StringTag biomeId = StringTag.valueOf(biome.getRegisteredName());
+               ListTag biomeList = new ListTag();
+               if(tag instanceof ListTag listTag){
+                  biomeList = listTag;
+               }
+               if(!biomeList.contains(biomeId)){
+                  biomeList.add(biomeId);
+                  arcaneProfile.addMiscData(ResearchTasks.BIOMES_VISITED_TAG,biomeList);
+               }else if(biomeList.size() >= 12){
+                  arcaneProfile.setResearchTask(ResearchTasks.VISIT_DOZEN_BIOMES,true);
+               }
             }
          }
          
@@ -172,7 +189,7 @@ public class TickCallback {
    
    private static void bossTickCheck(MinecraftServer server){
       for(ServerLevel world : server.getAllLevels()){
-         Tuple<BossFights, CompoundTag> fight = BOSS_FIGHT.get(world).getBossFight();
+         Tuple<BossFights, CompoundTag> fight = DataAccess.getWorld(world.dimension(), BossFightData.KEY).getBossFight();
          if(fight != null){
             if(fight.getA() == BossFights.DRAGON){
                DragonBossFight.tick(server,fight.getB());
@@ -181,7 +198,7 @@ public class TickCallback {
       }
    }
    
-   private static void concCheck(MinecraftServer server, ServerPlayer player, IArcanaProfileComponent arcaneProfile){
+   private static void concCheck(MinecraftServer server, ServerPlayer player, ArcanaPlayerData arcaneProfile){
       // Check to make sure everyone is under concentration limit
       if(server.getTickCount() % 80 != 0) return;
       int resolve = arcaneProfile.getAugmentLevel(ArcanaAugments.RESOLVE.id);
@@ -189,7 +206,7 @@ public class TickCallback {
       int curConc = ArcanaItemUtils.getUsedConcentration(player);
       if(ArcanaItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT.id);
       if(curConc > maxConc && !player.isCreative() && !player.isSpectator()){
-         int concTick = ((IntTag)arcaneProfile.getMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG)).intValue() + 1;
+         int concTick = ((IntTag)arcaneProfile.getMiscData(ArcanaPlayerData.CONCENTRATION_TICK_TAG)).intValue() + 1;
          if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DO_CONCENTRATION_DAMAGE)){
             player.displayClientMessage(Component.literal("Your mind burns as your Arcana overwhelms you!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC, ChatFormatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL,2,.1f);
@@ -207,9 +224,9 @@ public class TickCallback {
          }else{
             concTick = 0;
          }
-         arcaneProfile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG, IntTag.valueOf(concTick));
+         arcaneProfile.addMiscData(ArcanaPlayerData.CONCENTRATION_TICK_TAG, IntTag.valueOf(concTick));
       }else{
-         arcaneProfile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG, IntTag.valueOf(0));
+         arcaneProfile.addMiscData(ArcanaPlayerData.CONCENTRATION_TICK_TAG, IntTag.valueOf(0));
       }
       
    }
@@ -232,7 +249,7 @@ public class TickCallback {
       
       // Dragon Tower Check
       boolean dragonTowerFly = false;
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(player.level().getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight != null && bossFight.getA() == BossFights.DRAGON){
          List<DragonBossFight.ReclaimState> reclaimStates = DragonBossFight.getReclaimStates();
          if(reclaimStates != null){
@@ -250,7 +267,6 @@ public class TickCallback {
          DRAGON_TOWER_ABILITY.grantTo(player, VanillaAbilities.ALLOW_FLYING);
       }
    }
-   
    
    public static void dragonEggDialog(ServerPlayer player){
       ArrayList<Dialog> dialogOptions = new ArrayList<>();

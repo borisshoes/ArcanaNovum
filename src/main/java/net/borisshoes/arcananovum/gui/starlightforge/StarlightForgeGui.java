@@ -5,26 +5,27 @@ import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcanaItemCompendiumEntry;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.arcanetome.CompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
-import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
@@ -32,12 +33,9 @@ import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
@@ -46,7 +44,6 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -70,7 +67,6 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
    private final int skillLvl;
    private final int resourceLvl;
    private final ArcaneTomeGui tomeGui;
-   private ArcanaRecipe curRecipe;
    
    public StarlightForgeGui(MenuType<?> type, ServerPlayer player, StarlightForgeBlockEntity blockEntity, Level world, int mode, @Nullable ArcaneTomeGui tomeGui){
       super(type, player, false);
@@ -187,8 +183,6 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
       }else if(mode == 3){ // Recipe
          if(index == 7){
             openRecipeSelectionGui();
-         }else if(index == 43){
-            blockEntity.openCraftingGui(player, curRecipe,tomeGui);
          }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
             ItemStack ingredStack = this.getSlot(index).getItemStack();
             List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(ingredStack.getItem());
@@ -625,6 +619,10 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
             table.addLoreLine(TextUtils.removeItalics(req));
          }
          
+         table.setCallback((type) -> {
+            blockEntity.openCraftingGui(player,recipe,tomeGui);
+         });
+         
          setSlot(43,table);
       }
       
@@ -680,7 +678,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
    
    public void buildSkilledGui(ArcanaItem arcanaItem, ArcanaRecipe recipe){
       mode = 5;
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       if(arcanaItem == null){
          close();
          return;

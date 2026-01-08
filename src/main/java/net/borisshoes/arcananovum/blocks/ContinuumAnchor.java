@@ -8,13 +8,11 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.datastorage.AnchorData;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -163,7 +161,7 @@ public class ContinuumAnchor extends ArcanaBlock {
    
    public static void initLoadedChunks(MinecraftServer minecraftServer){
       for(ServerLevel serverWorld : minecraftServer.getAllLevels()){
-         for(BlockPos anchorPos : ACTIVE_ANCHORS.get(serverWorld).getAnchors()){
+         for(BlockPos anchorPos : DataAccess.getWorld(serverWorld.dimension(), AnchorData.KEY).getAnchors()){
             ChunkPos chunkPos = new ChunkPos(anchorPos);
             loadChunks(serverWorld,chunkPos);
          }

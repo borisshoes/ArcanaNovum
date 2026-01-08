@@ -47,7 +47,10 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantEntry> implements ContainerListener, VirtualInventoryGui<SimpleContainer> {

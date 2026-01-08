@@ -3,7 +3,9 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.datastorage.BossFightData;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.ChatFormatting;
@@ -24,7 +26,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentIn
 public class PlayerDeathCallback {
    
    public static void afterRespawn(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive){
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(newPlayer.level().getServer().getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null) return;
       if(bossFight.getA() == BossFights.DRAGON){
          DragonBossFight.playerDied(newPlayer);

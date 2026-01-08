@@ -11,7 +11,6 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
-import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.RenameGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;

@@ -3,8 +3,6 @@ package net.borisshoes.arcananovum.recipes.arcana;
 import com.google.gson.JsonObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Waystone;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
-import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;

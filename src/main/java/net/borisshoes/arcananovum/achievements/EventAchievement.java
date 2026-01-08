@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -34,7 +34,7 @@ public class EventAchievement extends ArcanaAchievement{
    
    @Override
    public MutableComponent[] getStatusDisplay(ServerPlayer player){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       EventAchievement achievement = (EventAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       if(achievement == null) return null;
       

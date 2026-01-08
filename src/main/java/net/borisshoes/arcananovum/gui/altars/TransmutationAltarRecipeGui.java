@@ -5,7 +5,6 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltar;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -15,7 +14,6 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.gui.*;
-import net.borisshoes.borislib.testmod.TestGui;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -23,12 +21,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class TransmutationAltarRecipeGui extends PagedMultiGui {

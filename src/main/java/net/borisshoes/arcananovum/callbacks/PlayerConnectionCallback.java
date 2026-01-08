@@ -4,8 +4,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.login.MaxHealthLoginCallback;
-import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.cardinalcomponents.DataFixer;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.items.QuiverItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -28,9 +28,10 @@ import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
 public class PlayerConnectionCallback {
    public static void onPlayerJoin(ServerGamePacketListenerImpl netHandler, PacketSender sender, MinecraftServer server){
       ServerPlayer player = netHandler.player;
-      //log(player.getEntityName()+" has joined the game");
+      DataFixer.onPlayerJoin(netHandler,sender,server);
    
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
+      profile.setUsername(player.getGameProfile().name());
       if(profile.getLevel() == 0){ // Profile needs initialization
          profile.setLevel(1);
       }
@@ -89,11 +90,11 @@ public class PlayerConnectionCallback {
       if(profile.getMiscData(QuiverItem.ARROW_INV_SLOT_TAG) == null){
          profile.addMiscData(QuiverItem.ARROW_INV_SLOT_TAG, IntTag.valueOf(0));
       }
-      if(profile.getMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG) == null){
-         profile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG, IntTag.valueOf(0));
+      if(profile.getMiscData(ArcanaPlayerData.CONCENTRATION_TICK_TAG) == null){
+         profile.addMiscData(ArcanaPlayerData.CONCENTRATION_TICK_TAG, IntTag.valueOf(0));
       }
-      if(profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG) == null){
-         profile.addMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG, IntTag.valueOf(0));
+      if(profile.getMiscData(ArcanaPlayerData.ADMIN_SKILL_POINTS_TAG) == null){
+         profile.addMiscData(ArcanaPlayerData.ADMIN_SKILL_POINTS_TAG, IntTag.valueOf(0));
       }
    }
    

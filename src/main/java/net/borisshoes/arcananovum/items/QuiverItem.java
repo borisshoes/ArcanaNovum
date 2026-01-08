@@ -4,8 +4,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.DataFixer;
@@ -122,7 +122,7 @@ public abstract class QuiverItem extends ArcanaItem {
    }
    
    public static Tuple<String,Integer> getArrowOption(ServerPlayer player, boolean runic, boolean display){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString().orElse("");
       int invSlot = ((IntTag)profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
    
@@ -139,7 +139,7 @@ public abstract class QuiverItem extends ArcanaItem {
    }
    
    public static Tuple<String,Integer> switchArrowOption(ServerPlayer player, boolean runic, boolean display){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString().orElse("");
       int invSlot = ((IntTag)profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
    

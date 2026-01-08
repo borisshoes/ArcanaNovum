@@ -54,6 +54,7 @@
     "SmithingTransformRecipeMixin",
     "SpawnerBlockEntityMixin",
     "StructureTemplatePoolAccessor",
+    "TameAnimalTriggerMixin",
     "ThrowableItemProjectileAccessor",
     "ThrownTridentAccessor",
     "VoiceChatServerMixin",

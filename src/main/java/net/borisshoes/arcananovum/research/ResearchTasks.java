@@ -27,6 +27,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ResearchTasks {
    public static final Registry<ResearchTask> RESEARCH_TASKS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"research_task")), Lifecycle.stable());
+   public static final String BIOMES_VISITED_TAG = "biomes";
    
    public static final ResourceKey<ResearchTask> OBTAIN_SPONGE = of("obtain_sponge");
    public static final ResourceKey<ResearchTask> OBTAIN_END_CRYSTAL = of("obtain_end_crystal");
@@ -80,6 +81,7 @@ public class ResearchTasks {
    public static final ResourceKey<ResearchTask> USE_ENDER_PEARL = of("use_ender_pearl");
    public static final ResourceKey<ResearchTask> USE_ENDER_EYE = of("use_ender_eye");
    public static final ResourceKey<ResearchTask> USE_ENDER_CHEST = of("use_ender_chest");
+   public static final ResourceKey<ResearchTask> USE_ENCHANTED_GOLDEN_APPLE = of("use_enchanted_golden_apple");
    public static final ResourceKey<ResearchTask> KILL_SLIME = of("kill_slime");
    public static final ResourceKey<ResearchTask> KILL_SQUID = of("kill_squid");
    public static final ResourceKey<ResearchTask> KILL_CONSTRUCT = of("kill_construct");
@@ -87,6 +89,7 @@ public class ResearchTasks {
    public static final ResourceKey<ResearchTask> KILL_MAGMA_CUBE = of("kill_magma_cube");
    public static final ResourceKey<ResearchTask> KILL_EVOKER = of("kill_evoker");
    public static final ResourceKey<ResearchTask> CATCH_FISH = of("catch_fish");
+   public static final ResourceKey<ResearchTask> SPRINT_TEN_KILOMETERS = of("sprint_ten_kilometers");
    public static final ResourceKey<ResearchTask> UNLOCK_AQUATIC_EVERSOURCE = of("unlock_aquatic_eversource");
    public static final ResourceKey<ResearchTask> UNLOCK_RUNIC_MATRIX = of("unlock_runic_matrix");
    public static final ResourceKey<ResearchTask> UNLOCK_STARLIGHT_FORGE = of("unlock_starlight_forge");
@@ -173,6 +176,8 @@ public class ResearchTasks {
    public static final ResourceKey<ResearchTask> INFUSE_ITEM = of("infuse_item");
    public static final ResourceKey<ResearchTask> HONEY_CLEANSE = of("honey_cleanse");
    public static final ResourceKey<ResearchTask> MILK_CLEANSE = of("milk_cleanse");
+   public static final ResourceKey<ResearchTask> VISIT_DOZEN_BIOMES = of("visit_dozen_biomes");
+   public static final ResourceKey<ResearchTask> TAME_CAT = of("tame_cat");
    public static final ResourceKey<ResearchTask> EFFECT_ABSORPTION = of("effect_absorption");
    public static final ResourceKey<ResearchTask> EFFECT_SWIFTNESS = of("effect_swiftness");
    public static final ResourceKey<ResearchTask> EFFECT_JUMP_BOOST = of("effect_jump_boost");
@@ -848,6 +853,19 @@ public class ResearchTasks {
             new ItemStack(Items.ENDER_CHEST), OBTAIN_EYE_OF_ENDER
       ));
       
+      ResearchTasks.register(USE_ENCHANTED_GOLDEN_APPLE, new StatisticResearchTask<>(
+            USE_ENCHANTED_GOLDEN_APPLE.identifier().getPath(), Either.right(new Tuple<>(Stats.ITEM_USED, Items.ENCHANTED_GOLDEN_APPLE)), 1,
+            Component.literal("Eat an Enchanted Golden Apple"),
+            new Component[]{
+                  Component.literal("At last I have found an Enchanted Golden Apple!"),
+                  Component.literal("They say this is the source of some of the most"),
+                  Component.literal(" potent regeneration Arcana in the world."),
+                  Component.literal("I suppose there is only one way to find out..."),
+                  Component.literal("I wonder what it will taste like?")
+            },
+            new ItemStack(Items.ENCHANTED_GOLDEN_APPLE), OBTAIN_ENCHANTED_GOLDEN_APPLE
+      ));
+      
       ResearchTasks.register(KILL_SLIME, new StatisticResearchTask<>(
             KILL_SLIME.identifier().getPath(), Either.right(new Tuple<>(Stats.ENTITY_KILLED, EntityType.SLIME)), 100,
             Component.literal("Hunt 100 Slimes"),
@@ -935,6 +953,17 @@ public class ResearchTasks {
                   Component.literal(" aquatic critters as I catch my new few meals.")
             },
             new ItemStack(Items.FISHING_ROD)
+      ));
+      
+      ResearchTasks.register(SPRINT_TEN_KILOMETERS, new StatisticResearchTask<>(
+            SPRINT_TEN_KILOMETERS.identifier().getPath(), Either.left(Stats.SPRINT_ONE_CM), 1000000,
+            Component.literal("Sprint a Quarter Marathon"),
+            new Component[]{
+                  Component.literal("In this vast world I must travel frequently."),
+                  Component.literal("In the interest of getting better at moving around"),
+                  Component.literal(" I should probably get some better cardio in.")
+            },
+            new ItemStack(Items.GOLDEN_BOOTS)
       ));
       
       
@@ -1698,7 +1727,7 @@ public class ResearchTasks {
                   Component.literal(" forget they are vicious predators!"),
                   Component.literal("I wonder if any mobs are scared of them?")
             },
-            new ItemStack(Items.STRING)
+            new ItemStack(Items.STRING), TAME_CAT
       ));
       
       ResearchTasks.register(RESONATE_BELL, new CustomResearchTask(
@@ -1885,6 +1914,28 @@ public class ResearchTasks {
             new ItemStack(Items.MILK_BUCKET)
       ));
       
+      ResearchTasks.register(VISIT_DOZEN_BIOMES, new CustomResearchTask(
+            VISIT_DOZEN_BIOMES.identifier().getPath(),
+            Component.literal("Explore the World"),
+            new Component[]{
+                  Component.literal("The worlds have such unique biodiversity!"),
+                  Component.literal("I should become acquainted with a handful of"),
+                  Component.literal(" varying biomes to understand them better.")
+            },
+            new ItemStack(Items.COMPASS)
+      ));
+      
+      ResearchTasks.register(TAME_CAT, new CustomResearchTask(
+            TAME_CAT.identifier().getPath(),
+            Component.literal("Obtain a Feline Friend"),
+            new Component[]{
+                  Component.literal("Villages keep these adorable creatures with them."),
+                  Component.literal("I believe they call them 'cats' and they look"),
+                  Component.literal(" to be quite powerful allies to have."),
+                  Component.literal("I should befriend one of my own.")
+            },
+            new ItemStack(Items.SALMON)
+      ));
       
       ResearchTasks.register(EFFECT_ABSORPTION, new EffectResearchTask(
             EFFECT_ABSORPTION.identifier().getPath(), MobEffects.ABSORPTION,

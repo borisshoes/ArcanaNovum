@@ -800,5 +800,10 @@
   "gui.arcananovum.next_recipe": "Next Recipe (%s/%s)",
   "gui.arcananovum.next_recipe_sub": "to go to the next recipe",
   "gui.arcananovum.prev_recipe": "Previous Recipe (%s/%s)",
-  "gui.arcananovum.prev_recipe_sub": "to go to the previous recipe"
+  "gui.arcananovum.prev_recipe_sub": "to go to the previous recipe",
+  "command.arcananovum.change_crafter_success": "Successfully changed crafter to %s",
+  "command.arcananovum.research_enabled.comment": "When enabled, items must be researched in order to be crafted.",
+  "command.arcananovum.research_enabled.getter_setter": "Research Enabled: %s",
+  "command.arcananovum.stardust_particles.getter_setter": "Stardust Particles Enabled: %s",
+  "command.arcananovum.stardust_particles.comment": "Whether Stardust Infused gear emits visible particles to others when worn/held."
 }

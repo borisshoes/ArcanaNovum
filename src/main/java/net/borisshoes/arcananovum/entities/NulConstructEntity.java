@@ -562,7 +562,16 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       world.addFreshEntity(itemEntity);
    }
    
-   public static BlockPattern getConstructPattern(){
+   public static BlockPattern getBaseConstructPattern(){
+      return BlockPatternBuilder.start().aisle("^^^", "#@#", "~#~")
+            .where('#', (pos) -> pos.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS))
+            .where('^', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL))))
+            .where('~', BlockInWorld.hasState(BlockBehaviour.BlockStateBase::isAir))
+            .where('@', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.ANCIENT_DEBRIS)))
+            .build();
+   }
+   
+   public static BlockPattern getExaltedConstructPattern(){
       return BlockPatternBuilder.start().aisle("^^^", "#@#", "~#~")
             .where('#', (pos) -> pos.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS))
             .where('^', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL))))

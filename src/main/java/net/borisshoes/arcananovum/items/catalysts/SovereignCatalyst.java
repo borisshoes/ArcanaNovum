@@ -8,10 +8,6 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.entities.NulConstructEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -41,7 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstructPattern;
+import static net.borisshoes.arcananovum.entities.NulConstructEntity.getBaseConstructPattern;
 
 public class SovereignCatalyst extends ArcanaItem {
 	public static final String ID = "sovereign_catalyst";
@@ -119,7 +115,7 @@ public class SovereignCatalyst extends ArcanaItem {
          }
          
          if(state.is(Blocks.ANCIENT_DEBRIS) && pos.getY() >= world.getMinY() && canSpawn){ // Check construct
-            BlockPattern pattern = getConstructPattern();
+            BlockPattern pattern = getBaseConstructPattern();
             BlockPattern.BlockPatternMatch patternResult = pattern.find(world, pos.offset(-1,-1,-1));
             if(patternResult != null){
                NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, EntitySpawnReason.TRIGGERED);

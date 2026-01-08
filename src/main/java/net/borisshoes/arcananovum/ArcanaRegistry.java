@@ -40,10 +40,7 @@ import net.borisshoes.arcananovum.recipes.vanilla.AquaticEversourceFillRecipe;
 import net.borisshoes.arcananovum.recipes.vanilla.ArcanaShieldDecoratorRecipe;
 import net.borisshoes.arcananovum.recipes.vanilla.MagmaticEversourceFillRecipe;
 import net.borisshoes.arcananovum.recipes.vanilla.WaystoneCleanseRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.world.structures.FabricStructurePoolRegistry;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.LoginCallback;
@@ -56,7 +53,6 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -93,7 +89,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -414,11 +413,15 @@ public class ArcanaRegistry {
    
    // Config Settings
    public static final IConfigSetting<?> RECIPE_FOLDER = registerConfigSetting(new ConfigSetting<>(
-         new StringConfigValue("recipeFolder","default", "default","classic"))); // TODO TKeys
+         new StringConfigValue("recipeFolder","default", "default","classic")));
    public static final IConfigSetting<?> DO_CONCENTRATION_DAMAGE = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("doConcentrationDamage", true)));
    public static final IConfigSetting<?> ANNOUNCE_ACHIEVEMENTS = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("announceAchievements", true)));
+   public static final IConfigSetting<?> RESEARCH_ENABLED = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("researchEnabled", true)));
+   public static final IConfigSetting<?> STARDUST_PARTICLES = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("stardustParticles", true)));
    
    public static final IConfigSetting<?> XP_STORMCALLER_ALTAR_ACTIVATE = registerConfigSetting(new ConfigSetting<>(
          new IntConfigValue("xpStormcallerAltarActivate", 1000, new IntConfigValue.IntLimits(0))));

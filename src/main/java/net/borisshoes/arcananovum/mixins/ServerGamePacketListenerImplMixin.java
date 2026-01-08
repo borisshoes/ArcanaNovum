@@ -4,9 +4,9 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
@@ -79,7 +79,7 @@ public class ServerGamePacketListenerImplMixin {
       ItemStack offHand = player.getOffhandItem();
       if(BinaryBlades.isFakeBlade(offHand)){
          player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
-         ArcanaNovum.data(player).restoreOffhand();
+         ArcanaNovum.data(player).restoreOffhand(player);
       }
    }
    
@@ -130,7 +130,7 @@ public class ServerGamePacketListenerImplMixin {
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          if(arcanaItem instanceof RunicQuiver || arcanaItem instanceof OverflowingQuiver){
             // Quiver found allow switching
-            IArcanaProfileComponent profile = ArcanaNovum.data(player);
+            ArcanaPlayerData profile = ArcanaNovum.data(player);
             
             int cooldown = ((IntTag)profile.getMiscData(QuiverItem.QUIVER_CD_TAG)).intValue();
             if(cooldown <= 0){

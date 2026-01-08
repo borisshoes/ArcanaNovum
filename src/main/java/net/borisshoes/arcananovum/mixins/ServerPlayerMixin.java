@@ -50,7 +50,7 @@ public class ServerPlayerMixin {
    @Inject(method= "die",at=@At("HEAD"))
    private void arcananovum$restoreOffhandOnDeath(CallbackInfo ci){
       ServerPlayer player = (ServerPlayer) (Object) this;
-      ArcanaNovum.data(player).restoreOffhand();
+      ArcanaNovum.data(player).restoreOffhand(player);
    }
    
    @Inject(method= "checkMovementStatistics", at = @At(value="INVOKE",target = "Lnet/minecraft/server/level/ServerPlayer;awardStat(Lnet/minecraft/resources/Identifier;I)V", ordinal = 0))

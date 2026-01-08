@@ -6,7 +6,6 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;

@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.minecraft.ChatFormatting;
@@ -116,7 +116,7 @@ public class TimedAchievement extends ArcanaAchievement{
    
    @Override
    public MutableComponent[] getStatusDisplay(ServerPlayer player){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       TimedAchievement achievement = (TimedAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       if(achievement == null) return null;
    

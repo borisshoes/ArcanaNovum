@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -66,7 +66,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    @Override
    public MutableComponent[] getStatusDisplay(ServerPlayer player){
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
       ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       
       MutableComponent[] text = new MutableComponent[achievement != null && achievement.isAcquired() ? 2 : 1];

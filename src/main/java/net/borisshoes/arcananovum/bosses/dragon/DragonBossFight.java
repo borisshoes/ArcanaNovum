@@ -16,11 +16,13 @@ import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.bosses.dragon.guis.TowerGui;
 import net.borisshoes.arcananovum.callbacks.DragonRespawnTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.BossFightData;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
 import net.borisshoes.arcananovum.entities.DragonWizardEntity;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
+import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MathUtils;
@@ -823,12 +825,12 @@ public class DragonBossFight {
       player.displayClientMessage(Component.literal(""), false);
       player.displayClientMessage(Component.literal("You are now the Game Master, please stay in The End for the duration of the fight. All errors and updates will be sent to you.").withStyle(ChatFormatting.AQUA), false);
       player.displayClientMessage(Component.literal(""), false);
-      BOSS_FIGHT.get(endWorld).setBossFight(BossFights.DRAGON,fightData);
+      DataAccess.getWorld(Level.END, BossFightData.KEY).setBossFight(BossFights.DRAGON,fightData);
       return 0;
    }
    
    public static int abortBoss(MinecraftServer server){
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(server.getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       CompoundTag data = bossFight.getB();
       States state = States.valueOf(data.getStringOr("State", ""));
       ServerPlayer gm = server.getPlayerList().getPlayer(AlgoUtils.getUUID(data.getStringOr("GameMaster", "")));
@@ -962,7 +964,7 @@ public class DragonBossFight {
    }
    
    public static int bossStatus(MinecraftServer server, CommandSourceStack source){
-      Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(server.getLevel(Level.END)).getBossFight();
+      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       CompoundTag data = bossFight.getB();
       States state = States.valueOf(data.getStringOr("State", ""));
       ServerPlayer gm = server.getPlayerList().getPlayer(AlgoUtils.getUUID(data.getStringOr("GameMaster", "")));

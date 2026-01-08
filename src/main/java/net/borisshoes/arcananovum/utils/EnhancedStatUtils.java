@@ -7,10 +7,15 @@ import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -19,6 +24,7 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.phys.Vec3;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -228,6 +234,7 @@ public class EnhancedStatUtils {
    }
    
    public static boolean isEnhanced(ItemStack stack){
+      if(stack.isEmpty()) return false;
       return ArcanaItem.hasProperty(stack,ENHANCED_STAT_TAG);
    }
    
@@ -237,5 +244,56 @@ public class EnhancedStatUtils {
       double magic = 0.07;
       double increased = max + min*((2*magic) / (max*max+magic));
       return Math.min(1,increased);
+   }
+   
+   public static void glowInfusedGear(LivingEntity entity){
+      if(!(entity.level() instanceof ServerLevel world)) return;
+      ItemStack helmet = entity.getItemBySlot(EquipmentSlot.HEAD);
+      ItemStack chest = entity.getItemBySlot(EquipmentSlot.CHEST);
+      ItemStack legs = entity.getItemBySlot(EquipmentSlot.LEGS);
+      ItemStack boots = entity.getItemBySlot(EquipmentSlot.FEET);
+      ItemStack body = entity.getItemBySlot(EquipmentSlot.BODY);
+      ItemStack mainhand = entity.getMainHandItem();
+      ItemStack offhand = entity.getOffhandItem();
+      if(helmet.isEmpty() && chest.isEmpty() && legs.isEmpty() && boots.isEmpty() && body.isEmpty() && mainhand.isEmpty() && offhand.isEmpty()) return;
+      
+      double chance = 0.075;
+      double width = entity.getBbWidth()/3;
+      double leyway = entity.getBbHeight()/12.0;
+      Vec3 pos = entity.position().add(0,leyway,0);
+      double section = (entity.getEyePosition().y - entity.position().y - leyway) / 4.0;
+      ParticleOptions particle = new DustParticleOptions(0xf7ed57,0.61f);
+      ArrayList<Vec3> positions = new ArrayList<>();
+      if(EnhancedStatUtils.isEnhanced(helmet) && entity.random.nextFloat() < chance){
+         positions.add(new Vec3(pos.x,pos.y+(section*4),pos.z));
+      }
+      if((EnhancedStatUtils.isEnhanced(chest) || EnhancedStatUtils.isEnhanced(body)) && entity.random.nextFloat() < chance){
+         positions.add(new Vec3(pos.x,pos.y+(section*3),pos.z));
+      }
+      if(EnhancedStatUtils.isEnhanced(legs) && entity.random.nextFloat() < chance){
+         positions.add(new Vec3(pos.x,pos.y+(section*2),pos.z));
+      }
+      if(EnhancedStatUtils.isEnhanced(boots) && entity.random.nextFloat() < chance){
+         positions.add(new Vec3(pos.x,pos.y+(section*1),pos.z));
+      }
+      if(EnhancedStatUtils.isEnhanced(mainhand) && entity.random.nextFloat() < chance){
+         Vec3 newPos = new Vec3(pos.x,pos.y+(section*2.5),pos.z);
+         Vec3 look = entity.getForward().multiply(1,0,1).normalize().scale(width*1.5);
+         Vec3 handPos = newPos.add(-look.z,0,look.x).add(entity.getForward().multiply(1,0,1).normalize().scale(width*3));
+         positions.add(handPos);
+      }
+      if(EnhancedStatUtils.isEnhanced(offhand) && entity.random.nextFloat() < chance){
+         Vec3 newPos = new Vec3(pos.x,pos.y+(section*2.5),pos.z);
+         Vec3 look = entity.getForward().multiply(1,0,1).normalize().scale(width*1.5);
+         Vec3 handPos = newPos.add(look.z,0,-look.x).add(entity.getForward().multiply(1,0,1).normalize().scale(width*3));
+         positions.add(handPos);
+      }
+      
+      for(ServerPlayer player : world.getPlayers(p -> p.distanceTo(entity) < 25)){
+         if(player.equals(entity)) continue;
+         for(Vec3 poses : positions){
+            world.sendParticles(particle,poses.x,poses.y,poses.z,1,width,leyway,width,0.02);
+         }
+      }
    }
 }

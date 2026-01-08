@@ -1536,7 +1536,16 @@ public class DefaultRecipeGenerator {
                   Items.OXIDIZED_CUT_COPPER, Items.WEATHERED_CUT_COPPER, Items.EXPOSED_CUT_COPPER, Items.CUT_COPPER,
                   Items.OXIDIZED_CUT_COPPER_STAIRS, Items.WEATHERED_CUT_COPPER_STAIRS, Items.EXPOSED_CUT_COPPER_STAIRS, Items.CUT_COPPER_STAIRS,
                   Items.OXIDIZED_CHISELED_COPPER, Items.WEATHERED_CHISELED_COPPER, Items.EXPOSED_CHISELED_COPPER, Items.CHISELED_COPPER,
-                  Items.OXIDIZED_COPPER_GRATE, Items.WEATHERED_COPPER_GRATE, Items.EXPOSED_COPPER_GRATE, Items.COPPER_GRATE)
+                  Items.OXIDIZED_COPPER_GRATE, Items.WEATHERED_COPPER_GRATE, Items.EXPOSED_COPPER_GRATE, Items.COPPER_GRATE,
+                  Items.COPPER_BARS.oxidized(), Items.COPPER_BARS.weathered(), Items.COPPER_BARS.exposed(), Items.COPPER_BARS.unaffected(),
+                  Items.COPPER_CHAIN.oxidized(), Items.COPPER_CHAIN.weathered(), Items.COPPER_CHAIN.exposed(), Items.COPPER_CHAIN.unaffected(),
+                  Items.COPPER_LANTERN.oxidized(), Items.COPPER_LANTERN.weathered(), Items.COPPER_LANTERN.exposed(), Items.COPPER_LANTERN.unaffected(),
+                  Items.OXIDIZED_CUT_COPPER_SLAB, Items.WEATHERED_CUT_COPPER_SLAB, Items.EXPOSED_CUT_COPPER_SLAB, Items.CUT_COPPER_SLAB,
+                  Items.OXIDIZED_COPPER_DOOR, Items.WEATHERED_COPPER_DOOR, Items.EXPOSED_COPPER_DOOR, Items.COPPER_DOOR,
+                  Items.OXIDIZED_COPPER_TRAPDOOR, Items.WEATHERED_COPPER_TRAPDOOR, Items.EXPOSED_COPPER_TRAPDOOR, Items.COPPER_TRAPDOOR,
+                  Items.OXIDIZED_COPPER_BULB, Items.WEATHERED_COPPER_BULB, Items.EXPOSED_COPPER_BULB, Items.COPPER_BULB,
+                  Items.OXIDIZED_COPPER_GOLEM_STATUE, Items.WEATHERED_COPPER_GOLEM_STATUE, Items.EXPOSED_COPPER_GOLEM_STATUE, Items.COPPER_GOLEM_STATUE,
+                  Items.OXIDIZED_COPPER_CHEST, Items.WEATHERED_COPPER_CHEST, Items.EXPOSED_COPPER_CHEST, Items.COPPER_CHEST)
             .withViewStack(new ItemStack(Items.OXIDIZED_COPPER)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("logs", new ItemStack(Items.COPPER_INGOT,3), new ItemStack(Items.EMERALD,2))
@@ -3228,7 +3237,16 @@ public class DefaultRecipeGenerator {
                   Items.OXIDIZED_CUT_COPPER, Items.WEATHERED_CUT_COPPER, Items.EXPOSED_CUT_COPPER, Items.CUT_COPPER,
                   Items.OXIDIZED_CUT_COPPER_STAIRS, Items.WEATHERED_CUT_COPPER_STAIRS, Items.EXPOSED_CUT_COPPER_STAIRS, Items.CUT_COPPER_STAIRS,
                   Items.OXIDIZED_CHISELED_COPPER, Items.WEATHERED_CHISELED_COPPER, Items.EXPOSED_CHISELED_COPPER, Items.CHISELED_COPPER,
-                  Items.OXIDIZED_COPPER_GRATE, Items.WEATHERED_COPPER_GRATE, Items.EXPOSED_COPPER_GRATE, Items.COPPER_GRATE)
+                  Items.OXIDIZED_COPPER_GRATE, Items.WEATHERED_COPPER_GRATE, Items.EXPOSED_COPPER_GRATE, Items.COPPER_GRATE,
+                  Items.COPPER_BARS.oxidized(), Items.COPPER_BARS.weathered(), Items.COPPER_BARS.exposed(), Items.COPPER_BARS.unaffected(),
+                  Items.COPPER_CHAIN.oxidized(), Items.COPPER_CHAIN.weathered(), Items.COPPER_CHAIN.exposed(), Items.COPPER_CHAIN.unaffected(),
+                  Items.COPPER_LANTERN.oxidized(), Items.COPPER_LANTERN.weathered(), Items.COPPER_LANTERN.exposed(), Items.COPPER_LANTERN.unaffected(),
+                  Items.OXIDIZED_CUT_COPPER_SLAB, Items.WEATHERED_CUT_COPPER_SLAB, Items.EXPOSED_CUT_COPPER_SLAB, Items.CUT_COPPER_SLAB,
+                  Items.OXIDIZED_COPPER_DOOR, Items.WEATHERED_COPPER_DOOR, Items.EXPOSED_COPPER_DOOR, Items.COPPER_DOOR,
+                  Items.OXIDIZED_COPPER_TRAPDOOR, Items.WEATHERED_COPPER_TRAPDOOR, Items.EXPOSED_COPPER_TRAPDOOR, Items.COPPER_TRAPDOOR,
+                  Items.OXIDIZED_COPPER_BULB, Items.WEATHERED_COPPER_BULB, Items.EXPOSED_COPPER_BULB, Items.COPPER_BULB,
+                  Items.OXIDIZED_COPPER_GOLEM_STATUE, Items.WEATHERED_COPPER_GOLEM_STATUE, Items.EXPOSED_COPPER_GOLEM_STATUE, Items.COPPER_GOLEM_STATUE,
+                  Items.OXIDIZED_COPPER_CHEST, Items.WEATHERED_COPPER_CHEST, Items.EXPOSED_COPPER_CHEST, Items.COPPER_CHEST)
             .withViewStack(new ItemStack(Items.OXIDIZED_COPPER)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("logs", new ItemStack(Items.COPPER_INGOT,12), new ItemStack(Items.EMERALD,6))

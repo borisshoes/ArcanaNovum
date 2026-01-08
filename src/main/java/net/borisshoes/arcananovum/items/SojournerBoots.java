@@ -12,9 +12,6 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.events.SojournersMaxRunEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
@@ -45,7 +42,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -79,7 +75,7 @@ public class SojournerBoots extends EnergyItem {
       vanillaItem = Items.LEATHER_BOOTS;
       item = new SojournerBootsItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GREEN);
-      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_ADVENTURING_TIME,ResearchTasks.ADVANCEMENT_WALK_ON_POWDER_SNOW_WITH_LEATHER_BOOTS,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_SWIFTNESS,ResearchTasks.EFFECT_JUMP_BOOST,ResearchTasks.UNLOCK_STELLAR_CORE};
+      researchTasks = new ResourceKey[]{ResearchTasks.SPRINT_TEN_KILOMETERS,ResearchTasks.VISIT_DOZEN_BIOMES,ResearchTasks.ADVANCEMENT_WALK_ON_POWDER_SNOW_WITH_LEATHER_BOOTS,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_SWIFTNESS,ResearchTasks.EFFECT_JUMP_BOOST,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);

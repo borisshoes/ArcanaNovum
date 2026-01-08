@@ -1,12 +1,20 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.borisshoes.arcananovum.ArcanaCommands;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.MessageArgument;
+
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -112,6 +120,12 @@ public class CommandRegisterCallback {
                                     .executes(context -> ArcanaCommands.setAugment(context,getString(context, "id"),getInteger(context,"level"),null)))
                                     .then(argument("target",player())
                                           .executes(context -> ArcanaCommands.setAugment(context,getString(context, "id"),getInteger(context,"level"),getPlayer(context,"target"))))))))
+            .then(literal("changeCrafter").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                  .then(argument("username",word()).suggests(CommandRegisterCallback::getPlayerSuggestions)
+                        .then(literal("crafted").executes(context -> ArcanaCommands.changeCrafter(context, getString(context, "username"), 0)))
+                        .then(literal("synthesized").executes(context -> ArcanaCommands.changeCrafter(context, getString(context, "username"), 1)))
+                        .then(literal("earned").executes(context -> ArcanaCommands.changeCrafter(context, getString(context, "username"), 3)))
+                        .then(literal("found").executes(context -> ArcanaCommands.changeCrafter(context, getString(context, "username"), 2)))))
             .then(literal("boss")
                   .then(literal("start").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(literal("dragon").executes(ArcanaCommands::startDragonBoss)))
@@ -168,5 +182,13 @@ public class CommandRegisterCallback {
                                  .then(argument("lore",greedyString()).executes(ctx -> ArcanaCommands.setItemLore(ctx, -1, getString(ctx, "lore")))))))
          );
       }
+   }
+   
+   public static CompletableFuture<Suggestions> getPlayerSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
+      String start = builder.getRemaining().toLowerCase(Locale.ROOT);
+      Set<String> items = new HashSet<>();
+      context.getSource().getOnlinePlayerNames().forEach(name -> items.add(name.toLowerCase(Locale.ROOT)));
+      items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
+      return builder.buildFuture();
    }
 }

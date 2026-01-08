@@ -1,16 +1,11 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -19,6 +14,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -88,7 +84,7 @@ public class BlinkArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayer player){
          Vec3 tpPos = entityHitResult.getLocation();
          if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
-         player.teleport(new TeleportTransition(player.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
+         player.teleport(new TeleportTransition((ServerLevel) arrow.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
          ArcanaEffectUtils.blinkArrowTp(player.level(),player.position());
          SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS,.8f,.9f);
          
@@ -104,7 +100,7 @@ public class BlinkArrows extends RunicArrow {
          Vec3 offset = new Vec3(blockHitResult.getDirection().step());
          Vec3 tpPos = blockHitResult.getLocation().add(offset);
          if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
-         player.teleport(new TeleportTransition(player.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
+         player.teleport(new TeleportTransition((ServerLevel) arrow.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
          ArcanaEffectUtils.blinkArrowTp(player.level(),player.position());
          SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS,.8f,.9f);
          

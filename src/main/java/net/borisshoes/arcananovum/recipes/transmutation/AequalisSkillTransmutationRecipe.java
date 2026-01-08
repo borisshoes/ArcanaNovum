@@ -6,8 +6,8 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
@@ -32,7 +32,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       return List.of(positiveInput,negativeInput,reagent1,reagent2,aequalisInput);
    }
    
-   private Tuple<ArrayList<Tuple<ArcanaAugment,Integer>>,Integer> getCanSell(List<ArcanaAugment> item1Augments, ArcanaItem otherItem, IArcanaProfileComponent profile){
+   private Tuple<ArrayList<Tuple<ArcanaAugment,Integer>>,Integer> getCanSell(List<ArcanaAugment> item1Augments, ArcanaItem otherItem, ArcanaPlayerData profile){
       ArrayList<Tuple<ArcanaAugment,Integer>> canSell = new ArrayList<>();
       int sellingPower = 0;
       for(ArcanaAugment i1aug : item1Augments){
@@ -76,7 +76,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
          ServerPlayer asPlayer = altar.getLevel().getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(aequalis.getCrafter(aequalisStack)));
          if(asPlayer == null) return new ArrayList<>();
          
-         IArcanaProfileComponent profile = ArcanaNovum.data(asPlayer);
+         ArcanaPlayerData profile = ArcanaNovum.data(asPlayer);
          List<ArcanaAugment> item1Augments = ArcanaAugments.getAugmentsForItem(arcanaItem1);
          List<ArcanaAugment> item2Augments = ArcanaAugments.getAugmentsForItem(arcanaItem2);
          
