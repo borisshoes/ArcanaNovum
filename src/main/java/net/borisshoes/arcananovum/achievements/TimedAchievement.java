@@ -21,8 +21,8 @@ public class TimedAchievement extends ArcanaAchievement{
    private boolean active;
    private CompoundTag data;
    
-   public TimedAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description, int goal, int timeFrame){
-      super(name, id, 1, displayItem, arcanaItem, xpReward, pointsReward, description);
+   public TimedAchievement(String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, int goal, int timeFrame){
+      super(id, 1, displayItem, arcanaItem, xpReward, pointsReward);
       this.progress = 0;
       this.goal = goal;
       this.timeFrame = timeFrame;
@@ -94,7 +94,7 @@ public class TimedAchievement extends ArcanaAchievement{
    public CompoundTag toNbt(){
       CompoundTag nbt = new CompoundTag();
       nbt.putBoolean("acquired",isAcquired());
-      nbt.putString("name",name);
+      nbt.putString("id",id);
       nbt.putInt("type",type);
       nbt.putInt("progress", progress);
       nbt.putInt("goal", goal);
@@ -130,6 +130,6 @@ public class TimedAchievement extends ArcanaAchievement{
    
    @Override
    public TimedAchievement makeNew(){
-      return new TimedAchievement(name, id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, getDescription(), goal, timeFrame);
+      return new TimedAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, goal, timeFrame);
    }
 }

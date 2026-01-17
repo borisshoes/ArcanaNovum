@@ -155,7 +155,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
       this.augments = new TreeMap<>();
-      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }

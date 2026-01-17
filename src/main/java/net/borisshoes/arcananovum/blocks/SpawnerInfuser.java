@@ -164,15 +164,6 @@ public class SpawnerInfuser extends ArcanaBlock {
          return Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(BlockStateProperties.CAN_SUMMON,state.getValue(ACTIVE));
       }
       
-      @Nullable
-      public static SpawnerInfuserBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof SpawnerInfuserBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof SpawnerInfuserBlockEntity infuser ? infuser : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new SpawnerInfuserBlockEntity(pos, state);

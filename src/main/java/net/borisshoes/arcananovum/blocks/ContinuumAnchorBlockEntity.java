@@ -208,7 +208,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       this.fuel = view.getIntOr("fuel", 0);
       this.active = view.getBooleanOr("active", false);
       this.augments = new TreeMap<>();
-      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
       this.inventory = new SimpleContainer(getContainerSize());

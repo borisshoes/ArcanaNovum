@@ -565,7 +565,7 @@ public class AequalisScientia extends ArcanaItem {
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(!(entity instanceof ServerPlayer player)) return;
          
          if(Math.random() < 0.0000075){ // 0.0000075
             inventoryDialog(player);

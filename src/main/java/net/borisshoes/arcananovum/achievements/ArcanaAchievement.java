@@ -22,7 +22,6 @@ import java.util.List;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public abstract class ArcanaAchievement {
-   public final String name;
    public final String id;
    public final int type;
    // Types:
@@ -33,17 +32,14 @@ public abstract class ArcanaAchievement {
    private boolean acquired;
    private final ItemStack displayItem;
    private final ArcanaItem arcanaItem;
-   private final String[] description;
    public final int xpReward;
    public final int pointsReward;
    
-   protected ArcanaAchievement(String name, String id, int type, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description){
-      this.name = name;
+   protected ArcanaAchievement(String id, int type, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward){
       this.id = id;
       this.type = type;
       this.displayItem = displayItem;
       this.arcanaItem = arcanaItem;
-      this.description = description;
       this.xpReward = xpReward;
       this.pointsReward = pointsReward;
       this.acquired = false;
@@ -53,8 +49,12 @@ public abstract class ArcanaAchievement {
       return "achievement."+MOD_ID+".name."+this.id;
    }
    
+   public String getDescriptionTranslationKey(){
+      return "achievement."+MOD_ID+".description."+this.id;
+   }
+   
    public MutableComponent getTranslatedName(){
-      return Component.translatableWithFallback(getTranslationKey(),name);
+      return Component.translatable(getTranslationKey());
    }
    
    protected void setAcquired(boolean acquired){
@@ -73,12 +73,14 @@ public abstract class ArcanaAchievement {
       return arcanaItem;
    }
    
-   public String[] getDescription(){
-      return description;
-   }
-   
-   public String getName(){
-      return name;
+   public List<Component> getDescription(){
+      String fullText = Component.translatable(getDescriptionTranslationKey()).getString();
+      String[] lines = fullText.split("\n");
+      List<Component> components = new ArrayList<>();
+      for(String line : lines){
+         components.add(Component.literal(line));
+      }
+      return components;
    }
    
    public abstract CompoundTag toNbt();
@@ -90,13 +92,14 @@ public abstract class ArcanaAchievement {
    public abstract ArcanaAchievement makeNew();
    
    public void announceAcquired(ServerPlayer player){
-      StringBuilder descriptionText = new StringBuilder();
-      for(String d : description){
-         descriptionText.append("\n").append(d);
-      }
-      
       MinecraftServer server = player.level().getServer();
       List<MutableComponent> msgs = new ArrayList<>();
+      MutableComponent descComp = Component.literal("\n");
+      List<Component> descLines = getDescription();
+      for(int i = 0; i < descLines.size(); i++){
+         if(i > 0) descComp.append(Component.literal("\n"));
+         descComp.append(descLines.get(i).copy().withStyle(ChatFormatting.DARK_PURPLE));
+      }
       
       if(id.equals(ArcanaAchievements.ALL_ACHIEVEMENTS.id)){
          msgs.add(Component.literal("=============================================").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE));
@@ -107,7 +110,7 @@ public abstract class ArcanaAchievement {
                .append((Component.literal("[").append(getTranslatedName()).append(Component.literal("]"))).withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(
                            Component.literal("")
                                  .append(getTranslatedName().withStyle(ChatFormatting.DARK_AQUA))
-                                 .append(Component.literal(descriptionText.toString()).withStyle(ChatFormatting.DARK_PURPLE))
+                                 .append(descComp)
                                  .append(Component.literal("")
                                        .append(Component.literal("\n"+LevelUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
@@ -126,7 +129,7 @@ public abstract class ArcanaAchievement {
                .append((Component.literal("[").append(getTranslatedName()).append(Component.literal("]"))).withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(
                            Component.literal("")
                                  .append(getTranslatedName().withStyle(ChatFormatting.DARK_AQUA))
-                                 .append(Component.literal(descriptionText.toString()).withStyle(ChatFormatting.DARK_PURPLE))
+                                 .append(descComp)
                                  .append(Component.literal("")
                                        .append(Component.literal("\n"+LevelUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
@@ -143,7 +146,7 @@ public abstract class ArcanaAchievement {
                .append((Component.literal("[").append(getTranslatedName()).append(Component.literal("]"))).withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(
                            Component.literal("")
                                  .append(getTranslatedName().withStyle(ChatFormatting.AQUA))
-                                 .append(Component.literal(descriptionText.toString()).withStyle(ChatFormatting.LIGHT_PURPLE))
+                                 .append(descComp)
                                  .append(Component.literal("")
                                        .append(Component.literal("\n"+ LevelUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))

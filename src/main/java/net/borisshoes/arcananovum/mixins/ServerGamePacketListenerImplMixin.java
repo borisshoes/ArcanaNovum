@@ -26,6 +26,8 @@ import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
@@ -110,37 +112,41 @@ public class ServerGamePacketListenerImplMixin {
          networkHandler.handleInteract(ServerboundInteractPacket.createAttackPacket(hitEntity.getEntity(),player.isShiftKeyDown()));
       }
       
-      // Quiver arrow swap
-      ItemStack bow = player.getItemInHand(InteractionHand.MAIN_HAND);
-      boolean arbalest = (ArcanaItemUtils.identifyItem(bow) instanceof AlchemicalArbalest);
-      boolean crossbow = bow.is(Items.CROSSBOW) || arbalest;
-      boolean runic = (ArcanaItemUtils.identifyItem(bow) instanceof RunicBow) || (arbalest && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST.id) >= 1);
-      if(!bow.is(Items.BOW) && !runic && !crossbow) return;
-      
-      // Check for and rotate arrow types in quivers
-      Inventory inv = player.getInventory();
-      
-      // Switch to next arrow slot if quiver is found
-      for(int i = 0; i<inv.getContainerSize(); i++){
-         ItemStack item = inv.getItem(i);
-         if(item.isEmpty()){
-            continue;
-         }
+      ItemStack hand = player.getItemInHand(InteractionHand.MAIN_HAND);
+      quiver: {
+         // Quiver arrow swap
+         boolean arbalest = (ArcanaItemUtils.identifyItem(hand) instanceof AlchemicalArbalest);
+         boolean crossbow = (hand.getItem() instanceof CrossbowItem) || arbalest;
+         boolean runic = (ArcanaItemUtils.identifyItem(hand) instanceof RunicBow) || (arbalest && ArcanaAugments.getAugmentOnItem(hand,ArcanaAugments.RUNIC_ARBALEST.id) >= 1);
+         if(!(hand.getItem() instanceof BowItem) && !runic && !crossbow) break quiver;
          
-         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-         if(arcanaItem instanceof RunicQuiver || arcanaItem instanceof OverflowingQuiver){
-            // Quiver found allow switching
-            ArcanaPlayerData profile = ArcanaNovum.data(player);
-            
-            int cooldown = ((IntTag)profile.getMiscData(QuiverItem.QUIVER_CD_TAG)).intValue();
-            if(cooldown <= 0){
-               QuiverItem.switchArrowOption(player,runic,true);
-               profile.addMiscData(QuiverItem.QUIVER_CD_TAG, IntTag.valueOf(3));
+         // Check for and rotate arrow types in quivers
+         Inventory inv = player.getInventory();
+         
+         // Switch to next arrow slot if quiver is found
+         for(int i = 0; i<inv.getContainerSize(); i++){
+            ItemStack item = inv.getItem(i);
+            if(item.isEmpty()){
+               continue;
             }
             
-            return;
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+            if(arcanaItem instanceof RunicQuiver || arcanaItem instanceof OverflowingQuiver){
+               // Quiver found allow switching
+               ArcanaPlayerData profile = ArcanaNovum.data(player);
+               
+               int cooldown = ((IntTag)profile.getMiscData(QuiverItem.QUIVER_CD_TAG)).intValue();
+               if(cooldown <= 0){
+                  QuiverItem.switchArrowOption(player,runic,true);
+                  profile.addMiscData(QuiverItem.QUIVER_CD_TAG, IntTag.valueOf(3));
+               }
+               
+               return;
+            }
          }
       }
+      
+      if(hand.is(ArcanaRegistry.CLOCKWORK_MULTITOOL.getItem())) ClockworkMultitool.ClockworkMultitoolItem.cycleMode(player,hand,player.isShiftKeyDown());
    }
    
    @Inject(method = "teleport(Lnet/minecraft/world/entity/PositionMoveRotation;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)

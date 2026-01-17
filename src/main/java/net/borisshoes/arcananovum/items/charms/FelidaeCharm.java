@@ -32,6 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -118,7 +119,7 @@ public class FelidaeCharm extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
+      public @NonNull ItemStack getDefaultInstance(){
          return prefItem;
       }
       
@@ -133,7 +134,7 @@ public class FelidaeCharm extends ArcanaItem {
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(!(entity instanceof ServerPlayer player)) return;
          if(world.getServer().getTickCount() % 20 == 0 && !player.isSpectator()){
             Vec3 pos = player.position();
             AABB rangeBox = new AABB(pos.x+5,pos.y+3,pos.z+5,pos.x-5,pos.y-3,pos.z-5);

@@ -189,16 +189,6 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
          return state.rotate(mirror.getRotation(state.getValue(HORIZONTAL_FACING)));
       }
       
-      
-      @Nullable
-      public static StellarCoreBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof StellarCoreBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof StellarCoreBlockEntity core ? core : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new StellarCoreBlockEntity(pos, state);

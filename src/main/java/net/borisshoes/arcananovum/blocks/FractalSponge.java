@@ -222,15 +222,6 @@ public class FractalSponge extends ArcanaBlock {
          return createTickerHelper(type, ArcanaRegistry.FRACTAL_SPONGE_BLOCK_ENTITY, FractalSpongeBlockEntity::ticker);
       }
       
-      @Nullable
-      public static FractalSpongeBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof FractalSpongeBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof FractalSpongeBlockEntity sponge ? sponge : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new FractalSpongeBlockEntity(pos, state);

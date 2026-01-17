@@ -228,15 +228,6 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
          return InteractionResult.SUCCESS_SERVER;
       }
       
-      @Nullable
-      public static ArcaneSingularityBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof ArcaneSingularityBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof ArcaneSingularityBlockEntity singularity ? singularity : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new ArcaneSingularityBlockEntity(pos, state);

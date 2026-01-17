@@ -4,6 +4,7 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -51,6 +52,8 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class Waystone extends ArcanaItem {
    public static final String LOCATION_TAG = "location";
+   public static final String GATEWAY_TAG = "gateway";
+   public static final String UNATTUNED_TAG = "unattuned";
    public static final String ID = "waystone";
    
    public Waystone(){
@@ -66,6 +69,7 @@ public class Waystone extends ArcanaItem {
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       putProperty(stack,LOCATION_TAG,getUnattunedTag());
+      putProperty(stack,GATEWAY_TAG,false);
       stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
@@ -137,7 +141,7 @@ public class Waystone extends ArcanaItem {
             
             location = dimensionName + " ("+(int)target.position().x()+","+(int)target.position().y()+","+(int)target.position().z()+")";
             lore.add(Component.literal(""));
-            lore.add(Component.literal("Location - "+location).withStyle(dimColor));
+            lore.add(Component.literal((isForGateway(stack) ? "Astral Gateway" : "Location")+" - "+location).withStyle(dimColor));
          }else{
             lore.add(Component.literal(""));
             lore.add(Component.literal("Unattuned").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
@@ -148,18 +152,29 @@ public class Waystone extends ArcanaItem {
    
    public static CompoundTag getUnattunedTag(){
       CompoundTag newComp = new CompoundTag();
-      newComp.putBoolean("unattuned",true);
+      newComp.putBoolean(UNATTUNED_TAG,true);
       return newComp;
    }
    
    public static void setUnattuned(ItemStack stack){
       putProperty(stack,LOCATION_TAG,getUnattunedTag());
+      putProperty(stack,GATEWAY_TAG,false);
    }
    
    public static boolean isUnattuned(ItemStack stack){
       if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return false;
       CompoundTag comp = ArcanaItem.getCompoundProperty(stack,LOCATION_TAG);
-      return comp.getBooleanOr("unattuned", true) || getTarget(stack) == null;
+      return comp.getBooleanOr(UNATTUNED_TAG, true) || getTarget(stack) == null;
+   }
+   
+   public static boolean isForGateway(ItemStack stack){
+      if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return false;
+      CompoundTag comp = ArcanaItem.getCompoundProperty(stack,GATEWAY_TAG);
+      return comp.getBooleanOr(UNATTUNED_TAG, true) || getTarget(stack) == null;
+   }
+   
+   public static void setForGateway(ItemStack stack){
+      putProperty(stack,GATEWAY_TAG,true);
    }
    
    public static void saveTarget(ItemStack stack, WaystoneTarget target){
@@ -208,7 +223,7 @@ public class Waystone extends ArcanaItem {
             saveTarget(stack,new WaystoneTarget(user.level().dimension(), user.position(), user.getYRot(), user.getXRot()));
             buildItemLore(stack,player.level().getServer());
             SoundUtils.playSongToPlayer(player, SoundEvents.LODESTONE_COMPASS_LOCK, 1, 0.7f);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          }else{
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          }
@@ -216,9 +231,10 @@ public class Waystone extends ArcanaItem {
       
       @Override
       public InteractionResult useOn(UseOnContext context){
-         if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown() && !isUnattuned(context.getItemInHand())){
+         ItemStack stack = context.getItemInHand();
+         if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown() && !isUnattuned(stack)){
             if(context.getLevel().getBlockEntity(context.getClickedPos()) instanceof StarpathAltarBlockEntity sabe){
-               WaystoneTarget target = getTarget(context.getItemInHand());
+               WaystoneTarget target = getTarget(stack);
                if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(),ArcanaAugments.STARGATE.id) > 0 || target.world.identifier().equals(context.getLevel().dimension().identifier())){
                   sabe.setTarget(new StarpathAltarBlockEntity.TargetEntry(
                         MinecraftUtils.getFormattedDimName(target.world).getString()+" "+ BlockPos.containing(target.position()).toShortString(),
@@ -228,8 +244,16 @@ public class Waystone extends ArcanaItem {
                         (int) target.position().z()
                         ));
                   SoundUtils.playSound(context.getPlayer().level(),context.getClickedPos(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS,1,0.7f);
+                  return InteractionResult.SUCCESS_SERVER;
                }
             }
+         }else if(isUnattuned(stack) && context.getLevel().getBlockEntity(context.getClickedPos()) instanceof AstralGatewayBlockEntity gateway){
+            BlockPos pos = context.getClickedPos();
+            saveTarget(stack,new WaystoneTarget(context.getLevel().dimension(), pos.getCenter(), 0, 0));
+            setForGateway(stack);
+            buildItemLore(stack,context.getLevel().getServer());
+            if(context.getPlayer() instanceof ServerPlayer player) SoundUtils.playSongToPlayer(player, SoundEvents.LODESTONE_COMPASS_LOCK, 1, 1.1f);
+            return InteractionResult.SUCCESS_SERVER;
          }
          return super.useOn(context);
       }

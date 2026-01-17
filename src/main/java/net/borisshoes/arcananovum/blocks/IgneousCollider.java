@@ -19,6 +19,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EndPortalBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -122,15 +123,6 @@ public class IgneousCollider extends ArcanaBlock {
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.LODESTONE.defaultBlockState();
-      }
-      
-      @Nullable
-      public static IgneousColliderBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof IgneousColliderBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof IgneousColliderBlockEntity collider ? collider : null;
       }
       
       @Override

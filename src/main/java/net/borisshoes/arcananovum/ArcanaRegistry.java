@@ -12,13 +12,22 @@ import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.AreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.SmokeArrowAreaEffectTracker;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.*;
 import net.borisshoes.arcananovum.blocks.altars.*;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGateway;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayPortalBlock;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayPortalBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.*;
 import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
 import net.borisshoes.arcananovum.callbacks.login.*;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.datagen.DefaultRecipeGenerator;
 import net.borisshoes.arcananovum.effects.*;
@@ -53,6 +62,7 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -86,13 +96,17 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.Map;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -101,7 +115,6 @@ public class ArcanaRegistry {
    public static final Registry<ArcanaItem> ARCANA_ITEMS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"arcana_item")), Lifecycle.stable());
    public static final Registry<Block> BLOCKS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"block")), Lifecycle.stable());
    public static final Registry<Item> ITEMS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"item")), Lifecycle.stable());
-   //public static final Registry<PolymerModelData> MODELS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"model")), Lifecycle.stable());
    public static final Registry<AreaEffectTracker> AREA_EFFECTS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"area_effect")), Lifecycle.stable());
    public static final Registry<IConfigSetting<?>> CONFIG_SETTINGS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"config_settings")), Lifecycle.stable());
    public static final ArrayList<CompendiumEntry> RECOMMENDED_LIST = new ArrayList<>();
@@ -281,6 +294,15 @@ public class ArcanaRegistry {
          .component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(ARCANA_ITEM_IMMUNE_TO)))
    );
    
+   // Normal Blocks
+   public static final Block ASTRAL_GATEWAY_PORTAL_BLOCK = registerBlock("astral_gateway_portal",new AstralGatewayPortalBlock(BlockBehaviour.Properties.of()
+         .mapColor(MapColor.COLOR_BLACK)
+         .noCollision()
+         .lightLevel(blockStatex -> 15)
+         .strength(-1.0F, 3600000.0F)
+         .noLootTable()
+         .pushReaction(PushReaction.BLOCK)));
+   
    // 1.0 Items
    public static final ArcanaItem LEADERSHIP_CHARM = ArcanaRegistry.register(new LeadershipCharm());
    public static final ArcanaItem WINGS_OF_ENDERIA = ArcanaRegistry.register(new WingsOfEnderia());
@@ -377,6 +399,16 @@ public class ArcanaRegistry {
    // 3.2 Items
    public static final ArcanaItem WAYSTONE = ArcanaRegistry.register(new Waystone());
    
+   // 4.0 Items
+   public static final ArcanaItem INTERDICTOR = ArcanaRegistry.register(new Interdictor());
+   public static final ArcanaItem ITINERANTEUR = ArcanaRegistry.register(new Itineranteur());
+   public static final ArcanaItem NEGOTIATION_CHARM = ArcanaRegistry.register(new NegotiationCharm());
+   public static final ArcanaItem ASTRAL_GATEWAY = ArcanaRegistry.register(new AstralGateway());
+   public static final ArcanaItem CLOCKWORK_MULTITOOL = ArcanaRegistry.register(new ClockworkMultitool());
+   public static final ArcanaItem ENDER_CRATE = ArcanaRegistry.register(new EnderCrate());
+   public static final ArcanaItem GEOMANTIC_STELE = ArcanaRegistry.register(new GeomanticStele());
+   
+   
    // Block Entities
    public static final BlockEntityType<? extends BlockEntity> IGNEOUS_COLLIDER_BLOCK_ENTITY = registerBlockEntity(IGNEOUS_COLLIDER.getId(), FabricBlockEntityTypeBuilder.create(IgneousColliderBlockEntity::new,((ArcanaBlock) IGNEOUS_COLLIDER).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> FRACTAL_SPONGE_BLOCK_ENTITY = registerBlockEntity(FRACTAL_SPONGE.getId(), FabricBlockEntityTypeBuilder.create(FractalSpongeBlockEntity::new,((ArcanaBlock) FRACTAL_SPONGE).getBlock()).build());
@@ -392,6 +424,9 @@ public class ArcanaRegistry {
    public static final BlockEntityType<? extends BlockEntity> STELLAR_CORE_BLOCK_ENTITY = registerBlockEntity(STELLAR_CORE.getId(), FabricBlockEntityTypeBuilder.create(StellarCoreBlockEntity::new,((ArcanaBlock) STELLAR_CORE).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> TWILIGHT_ANVIL_BLOCK_ENTITY = registerBlockEntity(TWILIGHT_ANVIL.getId(), FabricBlockEntityTypeBuilder.create(TwilightAnvilBlockEntity::new,((ArcanaBlock) TWILIGHT_ANVIL).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> TRANSMUTATION_ALTAR_BLOCK_ENTITY = registerBlockEntity(TRANSMUTATION_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(TransmutationAltarBlockEntity::new,((ArcanaBlock) TRANSMUTATION_ALTAR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> ASTRAL_GATEWAY_BLOCK_ENTITY = registerBlockEntity(ASTRAL_GATEWAY.getId(), FabricBlockEntityTypeBuilder.create(AstralGatewayBlockEntity::new,((ArcanaBlock) ASTRAL_GATEWAY).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> ASTRAL_GATEWAY_PORTAL_BLOCK_ENTITY = registerBlockEntity("astral_gateway_portal", FabricBlockEntityTypeBuilder.create(AstralGatewayPortalBlockEntity::new, ASTRAL_GATEWAY_PORTAL_BLOCK).build());
+   public static final BlockEntityType<? extends BlockEntity> ENDER_CRATE_BLOCK_ENTITY = registerBlockEntity(ENDER_CRATE.getId(), FabricBlockEntityTypeBuilder.create(EnderCrateBlockEntity::new,((ArcanaBlock) ENDER_CRATE).getBlock()).build());
    
    // Loot Functions / Item Modifiers
    public static final LootItemFunctionType<? extends LootItemFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
@@ -732,6 +767,108 @@ public class ArcanaRegistry {
       
       PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.fromNamespaceAndPath(MOD_ID,"arcana_items"), ARCANA_ITEMS_GROUP);
       PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.fromNamespaceAndPath(MOD_ID,"arcana_ingredients"), ARCANA_INGREDIENTS_GROUP);
+      
+      if(ArcanaNovum.DEV_MODE) writeAchievementAndAugmentIds();
+   }
+   
+   private static void writeAchievementAndAugmentIds(){
+      try{
+         Optional<Optional<Path>> outPathOpt = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/datagen/"));
+         if(outPathOpt.isEmpty() || outPathOpt.get().isEmpty()){
+            ArcanaNovum.log(0, "Error: Could not find datagen directory");
+            return;
+         }
+         String path = outPathOpt.get().get() + "\\keys.txt";
+         PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
+         
+         // Write achievements
+         writer.println("=== ACHIEVEMENTS ===");
+         int totalAchievementPoints = 0;
+         for(Map.Entry<String, ArcanaAchievement> entry : ArcanaAchievements.registry.entrySet()){
+            ArcanaAchievement achievement = entry.getValue();
+//            writer.println("\"achievement.arcananovum.name."+achievement.id+"\" : \""+achievement.name+"\",");
+//            StringBuilder desc = new StringBuilder("\"achievement.arcananovum.description." + achievement.id + "\" : \"");
+//            for(int i = 0; i < achievement.getDescription().length; i++){
+//               desc.append(achievement.getDescription()[i]);
+//               if(i != achievement.getDescription().length - 1){
+//                  desc.append("\\n");
+//               }else{
+//                  desc.append("\",");
+//               }
+//            }
+//            writer.println(desc.toString());
+            if(!achievement.id.equals(ArcanaAchievements.ALL_ACHIEVEMENTS.id)) totalAchievementPoints += achievement.pointsReward;
+         }
+         writer.println();
+         
+         // Write augments
+         writer.println("=== AUGMENTS ===");
+         int totalAugmentCost = 0;
+         Set<String> countedLinkedGroups = new HashSet<>();
+         
+         for(Map.Entry<String, ArcanaAugment> entry : ArcanaAugments.registry.entrySet()){
+            ArcanaAugment augment = entry.getValue();
+//            writer.println("\"augment.arcananovum.name."+augment.id+"\" : \""+augment.name+"\",");
+//            StringBuilder desc = new StringBuilder("\"augment.arcananovum.description." + augment.id + "\" : \"");
+//            for(int i = 0; i < augment.getDescription().length; i++){
+//               desc.append(augment.getDescription()[i]);
+//               if(i != augment.getDescription().length - 1){
+//                  desc.append("\\n");
+//               }else{
+//                  desc.append("\",");
+//               }
+//            }
+//            writer.println(desc.toString());
+            
+            // Calculate cost for this augment, taking linked augments into account
+            if(ArcanaAugments.linkedAugments.containsKey(augment)){
+               String linkedId = ArcanaAugments.linkedAugments.get(augment);
+               if(!countedLinkedGroups.contains(linkedId)){
+                  countedLinkedGroups.add(linkedId);
+                  // Count the cost for this linked group
+                  ArcanaRarity[] tiers = augment.getTiers();
+                  for(int i = 0; i < tiers.length; i++){
+                     totalAugmentCost += tiers[i].rarity + 1;
+                  }
+               }
+            }else{
+               // Not a linked augment, count normally
+               ArcanaRarity[] tiers = augment.getTiers();
+               for(int i = 0; i < tiers.length; i++){
+                  totalAugmentCost += tiers[i].rarity + 1;
+               }
+            }
+         }
+         
+         
+//         writer.println("=== RESEARCH ===");
+//         for(Map.Entry<ResourceKey<ResearchTask>, ResearchTask> entry : ResearchTasks.RESEARCH_TASKS.entrySet()){
+//            ResearchTask task = entry.getValue();
+//            writer.println("\"research.arcananovum.name." + task.id + "\" : \"" + task.getName().getString() + "\",");
+//            StringBuilder desc = new StringBuilder("\"research.arcananovum.description." + task.id + "\" : \"");
+//            for(int i = 0; i < task.getDescription().length; i++){
+//               desc.append(task.getDescription()[i].getString());
+//               if(i != task.getDescription().length - 1){
+//                  desc.append("\\n");
+//               }else{
+//                  desc.append("\",");
+//               }
+//            }
+//            writer.println(desc.toString());
+//         }
+//
+//         writer.close();
+         
+         // Log the absolute file path
+         ArcanaNovum.log(0, "Keys file written to: " + new java.io.File(path).getAbsolutePath());
+         
+         // Log the totals
+         ArcanaNovum.log(0, "Total Skill Points Available from Achievements: " + totalAchievementPoints);
+         ArcanaNovum.log(0, "Total Skill Points That Can Be Spent on Augments: " + totalAugmentCost);
+      }catch(Exception e){
+         ArcanaNovum.log(2, "Error writing achievement and augment IDs: " + e.getMessage());
+         e.printStackTrace();
+      }
    }
    
    public static void onServerStarted(MinecraftServer server){
@@ -751,9 +888,10 @@ public class ArcanaRegistry {
       return item;
    }
    
-   private static void registerBlock(String id, Block block){
+   private static Block registerBlock(String id, Block block){
       Identifier identifier = Identifier.fromNamespaceAndPath(MOD_ID,id);
       Registry.register(BLOCKS, identifier, Registry.register(BuiltInRegistries.BLOCK, identifier, block));
+      return block;
    }
    
    public static BlockEntityType<? extends BlockEntity> registerBlockEntity(String id, BlockEntityType<? extends BlockEntity> blockEntityType){

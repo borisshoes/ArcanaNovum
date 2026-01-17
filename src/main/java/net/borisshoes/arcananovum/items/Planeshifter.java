@@ -91,11 +91,10 @@ public class Planeshifter extends EnergyItem {
    public List<Component> getItemLore(@Nullable ItemStack itemStack){
       List<MutableComponent> lore = new ArrayList<>();
       lore.add(Component.literal("")
-            .append(Component.literal("A handheld ").withStyle(ChatFormatting.DARK_PURPLE))
-            .append(Component.literal("End").withStyle(ChatFormatting.DARK_AQUA))
-            .append(Component.literal(" and ").withStyle(ChatFormatting.DARK_PURPLE))
-            .append(Component.literal("Nether ").withStyle(ChatFormatting.RED))
-            .append(Component.literal("Portal").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal("A handheld device that rips ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("rifts").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" in reality like a ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("portal").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
       lore.add(Component.literal("")
             .append(Component.literal("The ").withStyle(ChatFormatting.DARK_PURPLE))

@@ -186,7 +186,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(!(entity instanceof ServerPlayer player)) return;
          if(world.getServer().getTickCount() % (20) == 0){
             
             String targetID = getStringProperty(stack,TETHER_TARGET_TAG);

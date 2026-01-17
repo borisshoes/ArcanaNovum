@@ -449,9 +449,11 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                   GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
                   augmentItem1.hideDefaultTooltip().setName(augment.getTranslatedName().withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
                   
-                  for(String s : augment.getDescription()){
-                     augmentItem1.addLoreLine(TextUtils.removeItalics(Component.literal(s).withStyle(ChatFormatting.GRAY)));
+                  List<Component> descLines = augment.getDescription();
+                  for(Component descLine : descLines){
+                     augmentItem1.addLoreLine(TextUtils.removeItalics(descLine.copy().withStyle(ChatFormatting.GRAY)));
                   }
+                  
                   if(augmentLvl > 0) augmentItem1.glow();
                   
                   int curItemLevel = ArcanaAugments.getAugmentOnItem(item,augment.id);

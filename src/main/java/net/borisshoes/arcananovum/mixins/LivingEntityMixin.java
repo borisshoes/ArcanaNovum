@@ -54,6 +54,8 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
+import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
@@ -636,6 +638,9 @@ public abstract class LivingEntityMixin {
       }
       if(livingEntity.getType().is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS) && target instanceof NulConstructEntity){
          return false;
+      }
+      if(target instanceof ServerPlayer player && livingEntity instanceof AbstractPiglin){
+         if(ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NEGOTIATION_CHARM.getItem())) return false;
       }
       return original;
    }

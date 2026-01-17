@@ -15,15 +15,15 @@ public class StatisticResearchTask<T> extends ResearchTask{
    private final int threshold;
    private final Either<Identifier, Tuple<StatType<T>,T>> data;
    
-   public StatisticResearchTask(String id, Either<Identifier, Tuple<StatType<T>,T>> data, int threshold, Component name, Component[] description, ItemStack displayItem){
-      super(id, Type.STATISTIC, name, description, displayItem);
+   public StatisticResearchTask(String id, Either<Identifier, Tuple<StatType<T>,T>> data, int threshold, ItemStack displayItem){
+      super(id, Type.STATISTIC, displayItem);
       this.data = data;
       this.threshold = threshold;
       
    }
    
-   public StatisticResearchTask(String id, Either<Identifier, Tuple<StatType<T>,T>> data, int threshold, Component name, Component[] description, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
-      super(id, Type.STATISTIC, name, description, displayItem, prerequisites);
+   public StatisticResearchTask(String id, Either<Identifier, Tuple<StatType<T>,T>> data, int threshold, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
+      super(id, Type.STATISTIC, displayItem, prerequisites);
       this.data = data;
       this.threshold = threshold;
       

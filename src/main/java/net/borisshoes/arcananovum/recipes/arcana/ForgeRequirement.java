@@ -86,4 +86,24 @@ public class ForgeRequirement {
       this.singularity = true;
       return this;
    }
+   
+   public String getCodeString(){
+      StringBuilder builder = new StringBuilder("new ForgeRequirement()");
+      if(needsAnvil()){
+         builder.append(".withAnvil()");
+      }
+      if(needsEnchanter()){
+         builder.append(".withEnchanter()");
+      }
+      if(needsCore()){
+         builder.append(".withCore()");
+      }
+      if(needsFletchery()){
+         builder.append(".withFletchery()");
+      }
+      if(needsSingularity()){
+         builder.append(".withSingularity()");
+      }
+      return builder.toString();
+   }
 }

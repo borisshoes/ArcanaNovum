@@ -10,14 +10,17 @@ import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.SpearOfTenbrousEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -162,6 +165,7 @@ public class SpearOfTenbrous extends ArcanaItem {
       public SpearOfTenbrousItem(){
          super(getThis(),getEquipmentArcanaItemComponents()
                .component(DataComponents.TOOL, new Tool(List.of(), 1.0F, 2, false))
+               .component(DataComponents.WEAPON, new Weapon(1))
                .component(DataComponents.ATTACK_RANGE,new AttackRange(1.0f,4.75f,1.0f,6.75f,0.1375f,0.5f))
                .component(DataComponents.DAMAGE_TYPE, new EitherHolder<>(ArcanaDamageTypes.ARCANE_LIGHTNING))
                .component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0f)
@@ -184,7 +188,7 @@ public class SpearOfTenbrous extends ArcanaItem {
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(!(entity instanceof ServerPlayer player)) return;
          if(slot == null){
             stack.remove(DataComponents.KINETIC_WEAPON);
             stack.remove(DataComponents.CONSUMABLE);
@@ -272,7 +276,14 @@ public class SpearOfTenbrous extends ArcanaItem {
       
       @Override
       public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-         stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
+         if(attacker.level() instanceof ServerLevel serverWorld){
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> attacker.position().add(0,attacker.getBbHeight()/2,0), () -> target.position().add(0,target.getBbHeight()/2,0), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+                  8, 1, 0, 1, false, 0, 5);
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, target::position, () -> target.position().add(0,target.getEyeHeight(),0), (int)(5 + 2*target.getEyeHeight()), target.getBbWidth(), ParticleTypes.COMPOSTER,
+                  8, 1, 0, 1, false, 0, 5);
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> target.position().add(0,target.getEyeHeight(),0), target::position, (int)(5 + 2*target.getEyeHeight()), target.getBbWidth(), ParticleTypes.COMPOSTER,
+                  8, 1, 0, 1, false, 0, 5);
+         }
       }
       
       @Override

@@ -194,15 +194,6 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
          return InteractionResult.SUCCESS_SERVER;
       }
       
-      @Nullable
-      public static TwilightAnvilBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof TwilightAnvilBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof TwilightAnvilBlockEntity anvil ? anvil : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new TwilightAnvilBlockEntity(pos, state);

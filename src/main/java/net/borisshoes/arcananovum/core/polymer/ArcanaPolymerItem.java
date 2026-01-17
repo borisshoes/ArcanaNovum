@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.core.polymer;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;

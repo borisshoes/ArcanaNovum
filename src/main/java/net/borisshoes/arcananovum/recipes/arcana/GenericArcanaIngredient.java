@@ -4,7 +4,10 @@ import com.google.gson.JsonObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.Locale;
 
 public class GenericArcanaIngredient extends ArcanaIngredient {
    
@@ -47,6 +50,15 @@ public class GenericArcanaIngredient extends ArcanaIngredient {
       if(other == this) return true;
       if(!(other instanceof GenericArcanaIngredient o)) return false;
       return (o.item.getId().equals(item.getId()) && o.getCount() == count);
+   }
+   
+   @Override
+   public String getCodeString(char character){
+      StringBuilder builder = new StringBuilder(character + " = new GenericArcanaIngredient(ArcanaRegistry.");
+      String id = item.getId().toUpperCase(Locale.ROOT);
+      builder.append(id).append(", ").append(this.exampleStack.getCount());
+      builder.append(");");
+      return builder.toString();
    }
    
    public JsonObject toJson(){

@@ -152,7 +152,7 @@ public class WingsOfEnderia extends EnergyItem {
       
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
-         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(!(entity instanceof ServerPlayer player)) return;
          ItemStack item = player.getItemBySlot(EquipmentSlot.CHEST);
          if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
             if(player.isFallFlying()){ // Wings of Enderia

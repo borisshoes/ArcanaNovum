@@ -169,6 +169,13 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
          if(blindRage){
             living.addEffect(blind);
          }
+         
+         if(living.level() instanceof ServerLevel serverWorld){
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, hitEntity::position, () -> hitEntity.position().add(0,hitEntity.getEyeHeight(),0), (int)(5 + 2*hitEntity.getEyeHeight()), hitEntity.getBbWidth(), ParticleTypes.COMPOSTER,
+                  8, 1, 0, 1, false, 0, 5);
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> hitEntity.position().add(0,hitEntity.getEyeHeight(),0), hitEntity::position, (int)(5 + 2*hitEntity.getEyeHeight()), hitEntity.getBbWidth(), ParticleTypes.COMPOSTER,
+                  8, 1, 0, 1, false, 0, 5);
+         }
       }
       
       if(voidStorm && level() instanceof ServerLevel serverWorld){

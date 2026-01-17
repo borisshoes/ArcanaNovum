@@ -721,8 +721,9 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
          
          int applicableLevel = getSkilledOptions(arcanaItem,player).getOrDefault(augment,0);
          
-         for(String s : augment.getDescription()){
-            augmentItem1.addLoreLine(TextUtils.removeItalics(Component.literal(s).withStyle(ChatFormatting.GRAY)));
+         List<Component> descLines = augment.getDescription();
+         for(Component descLine : descLines){
+            augmentItem1.addLoreLine(TextUtils.removeItalics(descLine.copy().withStyle(ChatFormatting.GRAY)));
          }
          
          augmentItem1.addLoreLine(Component.literal(""));

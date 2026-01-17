@@ -19,8 +19,8 @@ public class ProgressAchievement extends ArcanaAchievement{
    private int goal;
    private int progress;
    
-   public ProgressAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description, int goal){
-      super(name, id, 1, displayItem, arcanaItem, xpReward, pointsReward, description);
+   public ProgressAchievement(String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, int goal){
+      super(id, 1, displayItem, arcanaItem, xpReward, pointsReward);
       this.progress = 0;
       this.goal = goal;
       setAcquired(false);
@@ -49,7 +49,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    public CompoundTag toNbt(){
       CompoundTag nbt = new CompoundTag();
       nbt.putBoolean("acquired",isAcquired());
-      nbt.putString("name",name);
+      nbt.putString("id",id);
       nbt.putInt("type",type);
       nbt.putInt("progress", progress);
       nbt.putInt("goal", goal);
@@ -88,6 +88,6 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    @Override
    public ProgressAchievement makeNew(){
-      return new ProgressAchievement(name, id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, getDescription(), goal);
+      return new ProgressAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, goal);
    }
 }

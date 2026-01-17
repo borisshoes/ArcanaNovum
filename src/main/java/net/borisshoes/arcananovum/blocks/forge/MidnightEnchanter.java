@@ -155,15 +155,6 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
          return Blocks.ENCHANTING_TABLE.defaultBlockState();
       }
       
-      @Nullable
-      public static MidnightEnchanterBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof MidnightEnchanterBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof MidnightEnchanterBlockEntity enchanter ? enchanter : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new MidnightEnchanterBlockEntity(pos, state);

@@ -26,7 +26,7 @@ public class WaystoneCleanseRecipe extends CampfireCookingRecipe {
    
    public static class WaystoneCleanseRecipeSerializer <T extends AbstractCookingRecipe> extends AbstractCookingRecipe.Serializer<T> implements PolymerObject {
       public WaystoneCleanseRecipeSerializer(net.minecraft.world.item.crafting.AbstractCookingRecipe.Factory<T> factory){
-         super(factory, 6000);
+         super(factory, 1200);
       }
    }
 }

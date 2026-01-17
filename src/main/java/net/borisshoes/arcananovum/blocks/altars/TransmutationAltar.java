@@ -180,15 +180,6 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       }
       
       @Nullable
-      public static TransmutationAltarBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof TransmutationAltarBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof TransmutationAltarBlockEntity altar ? altar : null;
-      }
-      
-      @Nullable
       @Override
       public BlockState getStateForPlacement(BlockPlaceContext ctx){
          return this.defaultBlockState().setValue(HORIZONTAL_FACING,ctx.getHorizontalDirection().getOpposite()).setValue(ACTIVATABLE,false);

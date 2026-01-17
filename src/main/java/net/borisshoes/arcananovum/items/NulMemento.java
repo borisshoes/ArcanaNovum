@@ -715,7 +715,7 @@ public class NulMemento extends EnergyItem {
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(!(entity instanceof ServerPlayer player)) return;
          
          boolean nowOnHead = player.getItemBySlot(EquipmentSlot.HEAD).equals(stack);
          boolean wasOnHead = getBooleanProperty(stack,HEAD_TAG);

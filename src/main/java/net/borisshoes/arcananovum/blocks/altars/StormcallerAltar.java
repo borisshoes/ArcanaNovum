@@ -154,15 +154,6 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       }
       
       @Nullable
-      public static StormcallerAltarBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof StormcallerAltarBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof StormcallerAltarBlockEntity altar ? altar : null;
-      }
-      
-      @Nullable
       @Override
       public BlockState getStateForPlacement(BlockPlaceContext ctx){
          return this.defaultBlockState().setValue(ACTIVATABLE,false);

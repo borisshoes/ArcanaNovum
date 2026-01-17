@@ -53,6 +53,165 @@ public class DefaultRecipeGenerator {
       ArcanaIngredient a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
       ArcanaIngredient[][] ingredients;
       
+      
+      // ===================================
+      //         CHARM OF NEGOTIATION
+      // ===================================
+      a = new ArcanaIngredient(Items.EXPERIENCE_BOTTLE, 1);
+      b = new ArcanaIngredient(Items.GOLD_NUGGET, 4);
+      c = new ArcanaIngredient(Items.GOLD_INGOT, 4);
+      d = new ArcanaIngredient(Items.GOLD_BLOCK, 1);
+      e = new ArcanaIngredient(Items.EMERALD, 4);
+      f = new ArcanaIngredient(Items.EMERALD_BLOCK, 1);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {c,e,f,e,c},
+            {b,d,e,d,b},
+            {a,b,c,b,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.NEGOTIATION_CHARM, ingredients, new ForgeRequirement()));
+      
+      
+      // ===================================
+      //           CLOCKWORK MULTITOOL
+      // ===================================
+      a = new ArcanaIngredient(Items.CRAFTER, 1);
+      b = new ArcanaIngredient(Items.GOLD_INGOT, 1);
+      c = new ArcanaIngredient(Items.IRON_CHAIN, 2);
+      d = new ArcanaIngredient(Items.CLOCK, 2);
+      e = new ArcanaIngredient(Items.SMITHING_TABLE, 1);
+      f = new ArcanaIngredient(Items.GRINDSTONE, 1);
+      g = new ArcanaIngredient(Items.CARTOGRAPHY_TABLE, 1);
+      h = new ArcanaIngredient(Items.REDSTONE_BLOCK, 4);
+      i = new ArcanaIngredient(Items.CRAFTING_TABLE, 1);
+      j = new ArcanaIngredient(Items.STONECUTTER, 1);
+      k = new ArcanaIngredient(Items.LOOM, 1);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,f,b},
+            {c,g,h,i,c},
+            {b,j,k,d,b},
+            {a,b,c,b,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.CLOCKWORK_MULTITOOL, ingredients, new ForgeRequirement()));
+      
+      
+      // ===================================
+      //           ITINERANTEUR
+      // ===================================
+      a = new ArcanaIngredient(Items.IRON_NUGGET, 4);
+      b = new ArcanaIngredient(Items.IRON_INGOT, 2);
+      c = new ArcanaIngredient(Items.IRON_CHAIN, 4);
+      d = new ArcanaIngredient(Items.BLAZE_ROD, 2);
+      e = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.LONG_SWIFTNESS);
+      f = new ArcanaIngredient(Items.GLASS, 4);
+      g = new ArcanaIngredient(Items.BLAZE_POWDER, 4);
+      h = new ArcanaIngredient(Items.LANTERN, 4);
+      i = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.STRONG_SWIFTNESS);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {f,g,h,g,f},
+            {b,d,i,d,b},
+            {a,b,c,b,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ITINERANTEUR, ingredients, new ForgeRequirement().withEnchanter()));
+      
+      
+      // ===================================
+      //           GEOMANTIC STELE
+      // ===================================
+      a = new ArcanaIngredient(Items.OBSIDIAN, 8);
+      b = new ArcanaIngredient(Items.CHISELED_TUFF, 12);
+      c = new ArcanaIngredient(Items.CHISELED_STONE_BRICKS, 8);
+      d = new ArcanaIngredient(Items.DEEPSLATE_TILES, 16);
+      e = new ArcanaIngredient(Items.NETHERITE_INGOT, 1);
+      f = new ArcanaIngredient(Items.AMETHYST_BLOCK, 8);
+      g = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX, 1);
+      h = new ArcanaIngredient(Items.NETHER_STAR, 1);
+      i = new ArcanaIngredient(Items.CHISELED_TUFF_BRICKS, 16);
+      j = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 8);
+      k = new ArcanaIngredient(Items.QUARTZ, 16);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {f,g,h,g,f},
+            {a,d,e,d,a},
+            {i,j,k,j,i}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.GEOMANTIC_STELE, ingredients, new ForgeRequirement().withAnvil().withCore()));
+      
+      
+      // ===================================
+      //           INTERDICTOR
+      // ===================================
+      a = new ArcanaIngredient(Items.PURPUR_PILLAR, 4);
+      b = new ArcanaIngredient(Items.END_STONE_BRICKS, 2);
+      c = new ArcanaIngredient(Items.ENDER_EYE, 2);
+      d = new ArcanaIngredient(Items.ENDER_PEARL, 8);
+      e = new ArcanaIngredient(Items.NETHER_STAR, 1);
+      f = new ArcanaIngredient(Items.END_CRYSTAL, 4);
+      g = new ArcanaIngredient(Items.BEACON, 1);
+      h = new ArcanaIngredient(Items.OBSIDIAN, 4);
+      i = new GenericArcanaIngredient(ArcanaRegistry.EXOTIC_MATTER, 1);
+      j = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 4);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {c,f,g,f,c},
+            {b,h,i,h,b},
+            {a,j,j,j,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.INTERDICTOR, ingredients, new ForgeRequirement()));
+      
+      
+      // ===================================
+      //           ASTRAL GATEWAY
+      // ===================================
+      a = new ArcanaIngredient(Items.END_STONE_BRICKS, 4);
+      b = new ArcanaIngredient(ArcanaRegistry.STARDUST, 2);
+      c = new ArcanaIngredient(Items.ENDER_EYE, 4);
+      d = new ArcanaIngredient(Items.OBSIDIAN, 4);
+      e = new ArcanaIngredient(Items.NETHER_STAR, 1);
+      f = new ArcanaIngredient(Items.ENDER_PEARL, 8);
+      g = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 4);
+      h = new GenericArcanaIngredient(ArcanaRegistry.EXOTIC_MATTER, 1);
+      i = new ArcanaIngredient(Items.IRON_INGOT, 4);
+      j = new ArcanaIngredient(Items.NETHERITE_INGOT, 1);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {f,g,h,g,f},
+            {i,d,j,d,i},
+            {a,i,c,i,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ASTRAL_GATEWAY, ingredients, new ForgeRequirement().withAnvil().withCore()));
+      
+      
+      // ===================================
+      //           ASTRAL GATEWAY
+      // ===================================
+      a = new ArcanaIngredient(Items.END_STONE_BRICKS, 4);
+      b = new ArcanaIngredient(ArcanaRegistry.STARDUST, 2);
+      c = new ArcanaIngredient(Items.ENDER_EYE, 4);
+      d = new ArcanaIngredient(Items.OBSIDIAN, 4);
+      e = new ArcanaIngredient(Items.NETHER_STAR, 1);
+      f = new ArcanaIngredient(Items.ENDER_PEARL, 8);
+      g = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 4);
+      h = new GenericArcanaIngredient(ArcanaRegistry.EXOTIC_MATTER, 1);
+      i = new ArcanaIngredient(Items.IRON_INGOT, 4);
+      j = new ArcanaIngredient(Items.NETHERITE_INGOT, 1);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {f,g,h,g,f},
+            {i,d,j,d,i},
+            {a,i,c,i,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ASTRAL_GATEWAY, ingredients, new ForgeRequirement().withAnvil().withCore()));
+      
+      
       // ===================================
       //          ALCHEMICAL ARBALEST
       // ===================================
@@ -63,7 +222,7 @@ public class DefaultRecipeGenerator {
       e = new ArcanaIngredient(Items.NETHER_WART,8);
       f = new ArcanaIngredient(Items.SPECTRAL_ARROW,8);
       g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
-      h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1);
+      h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.MULTISHOT, 1));
       i = new ArcanaIngredient(Items.NETHER_STAR,1);
       j = new ArcanaIngredient(Items.CROSSBOW,1, true);
       
@@ -1876,6 +2035,160 @@ public class DefaultRecipeGenerator {
       List<ArcanaRecipe> arcanaRecipes = new ArrayList<>();
       ArcanaIngredient a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
       ArcanaIngredient[][] ingredients;
+      
+      // ===================================
+      //         CHARM OF NEGOTIATION
+      // ===================================
+      a = new ArcanaIngredient(Items.EXPERIENCE_BOTTLE, 4);
+      b = new ArcanaIngredient(Items.GOLD_NUGGET, 64);
+      c = new ArcanaIngredient(Items.GOLD_INGOT, 32);
+      d = new ArcanaIngredient(Items.GOLD_BLOCK, 4);
+      e = new ArcanaIngredient(Items.EMERALD, 16);
+      f = new ArcanaIngredient(Items.EMERALD_BLOCK, 16);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {c,e,f,e,c},
+            {b,d,e,d,b},
+            {a,b,c,b,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.NEGOTIATION_CHARM, ingredients, new ForgeRequirement()));
+      
+      
+      // ===================================
+      //           CLOCKWORK MULTITOOL
+      // ===================================
+      a = new ArcanaIngredient(Items.CRAFTER, 4);
+      b = new ArcanaIngredient(Items.GOLD_INGOT, 16);
+      c = new ArcanaIngredient(Items.IRON_CHAIN, 16);
+      d = new ArcanaIngredient(Items.CLOCK, 16);
+      e = new ArcanaIngredient(Items.SMITHING_TABLE, 4);
+      f = new ArcanaIngredient(Items.GRINDSTONE, 4);
+      g = new ArcanaIngredient(Items.CARTOGRAPHY_TABLE, 4);
+      h = new ArcanaIngredient(Items.REDSTONE_BLOCK, 8);
+      i = new ArcanaIngredient(Items.CRAFTING_TABLE, 4);
+      j = new ArcanaIngredient(Items.STONECUTTER, 4);
+      k = new ArcanaIngredient(Items.LOOM, 4);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,f,b},
+            {c,g,h,i,c},
+            {b,j,k,d,b},
+            {a,b,c,b,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.CLOCKWORK_MULTITOOL, ingredients, new ForgeRequirement()));
+      
+      
+      // ===================================
+      //           ITINERANTEUR
+      // ===================================
+      a = new ArcanaIngredient(Items.IRON_NUGGET, 64);
+      b = new ArcanaIngredient(Items.IRON_INGOT, 8);
+      c = new ArcanaIngredient(Items.IRON_CHAIN, 32);
+      d = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.LONG_SWIFTNESS);
+      e = new ArcanaIngredient(Items.BLAZE_ROD, 16);
+      f = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.STRONG_SWIFTNESS);
+      g = new ArcanaIngredient(Items.GLASS, 16);
+      h = new ArcanaIngredient(Items.BLAZE_POWDER, 16);
+      i = new ArcanaIngredient(Items.LANTERN, 16);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,f,b},
+            {g,h,i,h,g},
+            {b,f,e,d,b},
+            {a,b,c,b,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ITINERANTEUR, ingredients, new ForgeRequirement().withEnchanter()));
+      
+      
+      // ===================================
+      //           GEOMANTIC STELE
+      // ===================================
+      a = new ArcanaIngredient(Items.OBSIDIAN, 32);
+      b = new ArcanaIngredient(Items.CHISELED_TUFF, 64);
+      c = new ArcanaIngredient(Items.CHISELED_STONE_BRICKS, 32);
+      d = new ArcanaIngredient(Items.DEEPSLATE_TILES, 32);
+      e = new ArcanaIngredient(Items.NETHER_STAR, 4);
+      f = new ArcanaIngredient(Items.AMETHYST_BLOCK, 32);
+      g = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX, 1);
+      h = new ArcanaIngredient(Items.NETHERITE_INGOT, 4);
+      i = new ArcanaIngredient(Items.CHISELED_TUFF_BRICKS, 64);
+      j = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 64);
+      k = new ArcanaIngredient(Items.QUARTZ, 48);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {f,g,h,g,f},
+            {a,d,e,d,a},
+            {i,j,k,j,i}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.GEOMANTIC_STELE, ingredients, new ForgeRequirement().withAnvil().withCore()));
+      
+      
+      // ===================================
+      //           INTERDICTOR
+      // ===================================
+      a = new ArcanaIngredient(Items.PURPUR_PILLAR, 16);
+      b = new ArcanaIngredient(Items.END_STONE_BRICKS, 12);
+      c = new ArcanaIngredient(Items.ENDER_EYE, 12);
+      d = new ArcanaIngredient(Items.ENDER_PEARL, 8);
+      e = new ArcanaIngredient(Items.NETHER_STAR, 2);
+      f = new ArcanaIngredient(Items.END_CRYSTAL, 12);
+      g = new ArcanaIngredient(Items.BEACON, 4);
+      h = new ArcanaIngredient(Items.OBSIDIAN, 24);
+      i = new GenericArcanaIngredient(ArcanaRegistry.EXOTIC_MATTER, 1);
+      j = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 24);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {c,f,g,f,c},
+            {b,h,i,h,b},
+            {a,j,j,j,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.INTERDICTOR, ingredients, new ForgeRequirement()));
+      
+      
+      // ===================================
+      //           ASTRAL GATEWAY
+      // ===================================
+      a = new ArcanaIngredient(Items.END_STONE_BRICKS, 16);
+      b = new ArcanaIngredient(ArcanaRegistry.STARDUST, 16);
+      c = new ArcanaIngredient(Items.ENDER_EYE, 16);
+      d = new ArcanaIngredient(Items.OBSIDIAN, 8);
+      e = new ArcanaIngredient(Items.NETHER_STAR, 2);
+      f = new ArcanaIngredient(Items.ENDER_PEARL, 16);
+      g = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 16);
+      h = new GenericArcanaIngredient(ArcanaRegistry.EXOTIC_MATTER, 1);
+      i = new ArcanaIngredient(Items.IRON_INGOT, 16);
+      j = new ArcanaIngredient(Items.NETHERITE_INGOT, 2);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {f,g,h,g,f},
+            {i,d,j,d,i},
+            {a,i,c,i,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ASTRAL_GATEWAY, ingredients, new ForgeRequirement().withAnvil().withCore()));
+      
+      
+      // ===================================
+      //           ENDER CRATE
+      // ===================================
+      a = new ArcanaIngredient(Items.SPRUCE_WOOD, 16);
+      b = new ArcanaIngredient(Items.OBSIDIAN, 8);
+      c = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 8);
+      d = new ArcanaIngredient(Items.ENDER_EYE, 8);
+      e = new ArcanaIngredient(Items.BARREL, 12);
+      f = new ArcanaIngredient(Items.ENDER_CHEST, 4);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,a},
+            {b,d,e,d,b},
+            {c,e,f,e,c},
+            {b,d,e,d,b},
+            {a,b,c,b,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ENDER_CRATE, ingredients, new ForgeRequirement()));
+      
       
       // ===================================
       //          ALCHEMICAL ARBALEST

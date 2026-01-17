@@ -12,15 +12,15 @@ import net.minecraft.world.item.ItemStack;
 
 public class EventAchievement extends ArcanaAchievement{
    
-   public EventAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description){
-      super(name, id, 0, displayItem, arcanaItem, xpReward, pointsReward, description);
+   public EventAchievement(String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward){
+      super(id, 0, displayItem, arcanaItem, xpReward, pointsReward);
    }
    
    @Override
    public CompoundTag toNbt(){
       CompoundTag nbt = new CompoundTag();
       nbt.putBoolean("acquired",isAcquired());
-      nbt.putString("name",name);
+      nbt.putString("id",id);
       nbt.putInt("type",type);
       return nbt;
    }
@@ -44,6 +44,6 @@ public class EventAchievement extends ArcanaAchievement{
    
    @Override
    public EventAchievement makeNew(){
-      return new EventAchievement(name, id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, getDescription());
+      return new EventAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward);
    }
 }

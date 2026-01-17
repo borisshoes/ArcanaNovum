@@ -18,8 +18,8 @@ import java.util.Map;
 public class ConditionalsAchievement extends ArcanaAchievement{
    private final HashMap<String,Boolean> conditions;
    
-   public ConditionalsAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description, String[] conditions){
-      super(name, id, 2, displayItem, arcanaItem, xpReward, pointsReward, description);
+   public ConditionalsAchievement(String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] conditions){
+      super(id, 2, displayItem, arcanaItem, xpReward, pointsReward);
       this.conditions = new HashMap<>();
       for(String cond : conditions){
          this.conditions.put(cond,false);
@@ -45,7 +45,7 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    public CompoundTag toNbt(){
       CompoundTag nbt = new CompoundTag();
       nbt.putBoolean("acquired",isAcquired());
-      nbt.putString("name",name);
+      nbt.putString("id",id);
       nbt.putInt("type",type);
       CompoundTag condsTag = new CompoundTag();
       for(Map.Entry<String, Boolean> entry : conditions.entrySet()){
@@ -95,6 +95,6 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    
    @Override
    public ConditionalsAchievement makeNew(){
-      return new ConditionalsAchievement(name, id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, getDescription(), conditions.keySet().toArray(new String[0]));
+      return new ConditionalsAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, conditions.keySet().toArray(new String[0]));
    }
 }

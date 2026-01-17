@@ -1,0 +1,8 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "arcananovum:item/clockwork_multitool_cutter",
+	"layer1": "arcananovum:item/clockwork_multitool_case"
+  }
+}
+

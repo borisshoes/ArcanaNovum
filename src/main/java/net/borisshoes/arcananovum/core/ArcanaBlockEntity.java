@@ -1,12 +1,17 @@
 package net.borisshoes.arcananovum.core;
 
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.blocks.EnderCrate;
+import net.borisshoes.arcananovum.blocks.EnderCrateBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltar;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGateway;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularity;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -87,6 +92,15 @@ public interface ArcanaBlockEntity {
       }
       if(arcanaBlockEntity instanceof StarlightForgeBlockEntity forge){
          ArcanaItem.putProperty(stack, StarlightForge.SEED_USES_TAG,forge.getSeedUses());
+      }
+      if(arcanaBlockEntity instanceof AstralGatewayBlockEntity gateway){
+         ArcanaItem.putProperty(stack, AstralGateway.WAYSTONES_TAG,gateway.saveStones(world.registryAccess()));
+         ArcanaItem.putProperty(stack, AstralGateway.STARDUST_TAG,gateway.getStardust());
+      }
+      if(arcanaBlockEntity instanceof EnderCrateBlockEntity crate){
+         EnderCrateChannel channel = crate.getChannel();
+         ArcanaItem.putProperty(stack, EnderCrate.CHANNEL_TAG, EnderCrate.colorsToTag(channel.getColors()));
+         ArcanaItem.putProperty(stack, EnderCrate.LOCK_TAG, channel.isLocked() ? channel.getIdLock().toString() : "");
       }
       
       arcanaItem.buildItemLore(stack,world.getServer());

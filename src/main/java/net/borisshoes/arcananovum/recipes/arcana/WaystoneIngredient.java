@@ -115,6 +115,11 @@ public class WaystoneIngredient extends ArcanaIngredient {
       }
    }
    
+   @Override
+   public String getCodeString(char character){
+      return character + " = new WaystoneIngredient();";
+   }
+   
    public JsonObject toJson(){
       JsonObject json = new JsonObject();
       json.addProperty("type", "arcananovum:waystone_ingredient");

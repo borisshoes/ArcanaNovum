@@ -12,13 +12,13 @@ public class EffectResearchTask extends ResearchTask {
    
    private final Holder<MobEffect> effect;
    
-   public EffectResearchTask(String id, Holder<MobEffect> effect, Component name, Component[] description, ItemStack displayItem){
-      super(id, Type.CUSTOM_EVENT, name, description, displayItem);
+   public EffectResearchTask(String id, Holder<MobEffect> effect, ItemStack displayItem){
+      super(id, Type.CUSTOM_EVENT, displayItem);
       this.effect = effect;
    }
    
-   public EffectResearchTask(String id, Holder<MobEffect> effect, Component name, Component[] description, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
-      super(id, Type.CUSTOM_EVENT, name, description, displayItem, prerequisites);
+   public EffectResearchTask(String id, Holder<MobEffect> effect, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
+      super(id, Type.CUSTOM_EVENT, displayItem, prerequisites);
       this.effect = effect;
    }
    

@@ -286,7 +286,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
       
       
       this.augments = new TreeMap<>();
-      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
       this.inventory = new SimpleContainer(getContainerSize());

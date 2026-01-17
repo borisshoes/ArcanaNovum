@@ -8,12 +8,12 @@ import net.minecraft.world.item.ItemStack;
 
 public class CustomResearchTask extends ResearchTask {
    
-   public CustomResearchTask(String id, Component name, Component[] description, ItemStack displayItem){
-      super(id, Type.CUSTOM_EVENT, name, description, displayItem);
+   public CustomResearchTask(String id, ItemStack displayItem){
+      super(id, Type.CUSTOM_EVENT, displayItem);
    }
    
-   public CustomResearchTask(String id, Component name, Component[] description, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
-      super(id, Type.CUSTOM_EVENT, name, description, displayItem, prerequisites);
+   public CustomResearchTask(String id, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
+      super(id, Type.CUSTOM_EVENT, displayItem, prerequisites);
    }
    
    @Override

@@ -179,15 +179,6 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
          return state.rotate(mirror.getRotation(state.getValue(HORIZONTAL_FACING)));
       }
       
-      @Nullable
-      public static CelestialAltarBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof CelestialAltarBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof CelestialAltarBlockEntity altar ? altar : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new CelestialAltarBlockEntity(pos, state);

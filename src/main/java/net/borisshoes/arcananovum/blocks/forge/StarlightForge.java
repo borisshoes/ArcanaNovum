@@ -164,15 +164,6 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
          return Blocks.SMITHING_TABLE.defaultBlockState();
       }
       
-      @Nullable
-      public static StarlightForgeBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof StarlightForgeBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof StarlightForgeBlockEntity forge ? forge : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new StarlightForgeBlockEntity(pos, state);

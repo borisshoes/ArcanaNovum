@@ -9,76 +9,75 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class $CCName extends ArcanaItem {
    public static final String ID = "$SCName";
 
-   private static final String TXT = "item/$SCName";
-
    public $CCName(){
       id = ID;
       name = "$FName";
       rarity = ArcanaRarity.;
-      categories = new ArcaneTomeGui.TomeFilter[]{ArcaneTomeGui.TomeFilter.};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.};
       itemVersion = 0;
       vanillaItem = Items.;
-      item = new $CCNameItem(addArcanaItemComponents(new Item.Settings().maxCount(1)
-            .component(DataComponentTypes.ITEM_NAME, Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted($NameFormat))
-      ));
-      researchTasks = new RegistryKey[]{};  // TODO
+      item = new $CCNameItem();
+	  displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.);
+      researchTasks = new ResourceKey[]{};  // TODO
 
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      stack.setCount(item.getMaxCount());
+      stack.setCount(item.getDefaultMaxStackSize());
       //putProperty(stack,TAG,);
       setPrefStack(stack);
    }
 
    @Override
-   public List<Text> getItemLore(@Nullable ItemStack itemStack){
-      List<MutableText> lore = new ArrayList<>();
+   public List<Component> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableComponent> lore = new ArrayList<>();
       $LoreText
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
 
    @Override
-	protected ArcanaRecipe makeRecipe(){
-      // TODO: Generate Recipe
-      return null;
-   }
-
-   @Override
-   public List<List<Text>> getBookLore(){
-      List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("TODO").formatted(Formatting.BLACK))); // TODO
+   public List<List<Component>> getBookLore(){
+      List<List<Component>> list = new ArrayList<>();
+      list.add(List.of(Component.literal("TODO").withStyle(ChatFormatting.BLACK))); // TODO
       return list;
    }
 
    public class $CCNameItem extends ArcanaPolymerItem {
-      public $CCNameItem(Item.Settings settings){
-         super(getThis(),settings);
+      public $CCNameItem(){
+         super(getThis());
       }
 
       @Override
-      public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
-         return ArcanaRegistry.getModelData(TXT);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
+
+         List<String> stringList = new ArrayList<>();
+         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.) >= 1){
+            stringList.add("");
+         }
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
 
       @Override
-      public ItemStack getDefaultStack(){
+      public @NonNull ItemStack getDefaultInstance(){
          return prefItem;
       }
 
       @Override
-      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
+      public void inventoryTick(@NonNull ItemStack stack, @NonNull ServerLevel world, @NonNull Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(!(entity instanceof ServerPlayer player)) return;
 
 
       }
 
       @Override
-      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+      public @NonNull InteractionResult use(@NonNull Level world, Player playerEntity, @NonNull InteractionHand hand){
+         ItemStack stack = playerEntity.getItemInHand(hand);
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
 
-         return ActionResult.PASS;
+         return InteractionResult.PASS;
       }
    }
 }

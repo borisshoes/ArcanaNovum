@@ -202,15 +202,6 @@ public class ContinuumAnchor extends ArcanaBlock {
          return Blocks.RESPAWN_ANCHOR.defaultBlockState().setValue(CHARGES,state.getValue(CHARGES));
       }
       
-      @Nullable
-      public static ContinuumAnchorBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof ContinuumAnchorBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof ContinuumAnchorBlockEntity anchor ? anchor : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new ContinuumAnchorBlockEntity(pos, state);

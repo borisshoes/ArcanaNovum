@@ -627,7 +627,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerLevel && entity instanceof ServerPlayer player)) return;
+         if(!(entity instanceof ServerPlayer player)) return;
          boolean cremation = ArcanaAugments.getAugmentOnItem(stack,"cremation") >= 1;
          ChatFormatting color = cremation ? ChatFormatting.AQUA : ChatFormatting.RED;
          int oldEnergy = getEnergy(stack);

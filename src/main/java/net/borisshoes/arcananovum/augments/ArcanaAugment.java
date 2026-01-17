@@ -8,22 +8,21 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ArcanaAugment implements Comparable<ArcanaAugment>{
-   public final String name;
    public final String id;
    private final ItemStack displayItem;
    private final ArcanaItem arcanaItem;
-   private final String[] description;
    private final ArcanaRarity[] tiers;
    
-   protected ArcanaAugment(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, String[] description, ArcanaRarity[] tiers){
-      this.name = name;
+   protected ArcanaAugment(String id, ItemStack displayItem, ArcanaItem arcanaItem, ArcanaRarity... tiers){
       this.id = id;
       this.displayItem = displayItem;
       this.arcanaItem = arcanaItem;
-      this.description = description;
       this.tiers = tiers;
    }
    
@@ -31,8 +30,12 @@ public class ArcanaAugment implements Comparable<ArcanaAugment>{
       return "augment."+MOD_ID+".name."+this.id;
    }
    
+   public String getDescriptionTranslationKey(){
+      return "augment."+MOD_ID+".description."+this.id;
+   }
+   
    public MutableComponent getTranslatedName(){
-      return Component.translatableWithFallback(getTranslationKey(),name);
+      return Component.translatable(getTranslationKey());
    }
    
    public ItemStack getDisplayItem(){
@@ -43,8 +46,14 @@ public class ArcanaAugment implements Comparable<ArcanaAugment>{
       return arcanaItem;
    }
    
-   public String[] getDescription(){
-      return description;
+   public List<Component> getDescription(){
+      String fullText = Component.translatable(getDescriptionTranslationKey()).getString();
+      String[] lines = fullText.split("\n");
+      List<Component> components = new ArrayList<>();
+      for(String line : lines){
+         components.add(Component.literal(line));
+      }
+      return components;
    }
    
    public MutableComponent getTierDisplay(){

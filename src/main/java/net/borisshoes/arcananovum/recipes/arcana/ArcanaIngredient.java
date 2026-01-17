@@ -180,6 +180,40 @@ public class ArcanaIngredient {
       return ignoresResourceful;
    }
    
+   public String getCodeString(char character){
+      if(this.exampleStack.isEmpty()) return character+" = ArcanaIngredient.EMPTY;";
+      StringBuilder builder = new StringBuilder(character+" = new ArcanaIngredient(Items.");
+      String id = BuiltInRegistries.ITEM.getKey(this.exampleStack.getItem()).getPath().toUpperCase(Locale.ROOT);
+      builder.append(id).append(", ").append(this.exampleStack.getCount());
+      if(this.ignoresResourceful){
+         builder.append(", true");
+      }
+      builder.append(")");
+      
+      if(!this.enchantments.isEmpty()){
+         builder.append(".withEnchantments(");
+         for(Tuple<ResourceKey<Enchantment>, Integer> enchantment : this.enchantments){
+            builder.append("new ArcanaIngredient.EnchantmentEntry(Enchantments.");
+            builder.append(enchantment.getA().identifier().getPath().toUpperCase(Locale.ROOT));
+            builder.append(", ");
+            builder.append(enchantment.getB());
+            builder.append(")");
+            if(this.enchantments.indexOf(enchantment) < this.enchantments.size()-1){
+               builder.append(", ");
+            }
+         }
+         builder.append(")");
+      }
+      
+      if(this.potion != null){
+         builder.append(".withPotion(Potions.");
+         builder.append(this.potion.unwrapKey().get().identifier().getPath().toUpperCase(Locale.ROOT));
+         builder.append(")");
+      }
+      
+      return builder.append(";").toString();
+   }
+   
    @Override
    public boolean equals(Object other){
       if(other == this) return true;

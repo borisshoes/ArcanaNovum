@@ -138,15 +138,6 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
          return Blocks.FLETCHING_TABLE.defaultBlockState();
       }
       
-      @Nullable
-      public static RadiantFletcheryBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof RadiantFletcheryBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof RadiantFletcheryBlockEntity fletchery ? fletchery : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new RadiantFletcheryBlockEntity(pos, state);

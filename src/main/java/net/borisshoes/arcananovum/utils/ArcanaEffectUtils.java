@@ -6,6 +6,9 @@ import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGateway;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
+import net.borisshoes.arcananovum.blocks.astralgateway.GatewayState;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.borislib.BorisLib;
@@ -22,6 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -32,6 +36,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SculkShriekerBlock;
+import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -41,10 +46,74 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class ArcanaEffectUtils extends ParticleEffectUtils {
    
    public static final double PHI = (1 + Math.sqrt(5)) / 2.0;
+   
+   public static void astralGatewayWarmup(AstralGatewayBlockEntity gateway, ServerLevel world, List<Vec3> points, int totalStarTicks, int animDuration, int tick){
+      if(gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.WARMUP) return;
+      if(tick < animDuration){
+         int finalTotalStarTicks = totalStarTicks;
+         int finalTick = tick;
+         BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> astralGatewayWarmup(gateway,world,points, finalTotalStarTicks,animDuration, finalTick +1)));
+      }else{
+         SoundUtils.playSound(world, gateway.getBlockPos(), SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 0.25f, 0.75f);
+      }
+      if(tick == 0) SoundUtils.playSound(world, gateway.getBlockPos(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 2, 0.1f);
+      if(tick < 20){
+         return;
+      }
+      totalStarTicks -= 20;
+      tick -= 20;
+      Vec3 op = gateway.getFrame().getAxis().getPositive().getUnitVec3().scale(0.55);
+      Vec3 on = gateway.getFrame().getAxis().getNegative().getUnitVec3().scale(0.55);
+      List<Tuple<Vec3,Vec3>> lines = new ArrayList<>();
+      int pointSize = points.size();
+      double pointsPerTick = (double) pointSize / totalStarTicks;
+      int starTick = Math.min(tick,totalStarTicks);
+      int shownPoints = (int) Math.min(points.size(),pointsPerTick*starTick);
+      if(tick % 4 == 0){
+         for(int i = 0; i < shownPoints; i++){
+            Vec3 point = points.get(i);
+            Vec3 pp = point.add(op);
+            Vec3 pn = point.add(on);
+            world.sendParticles(ParticleTypes.END_ROD,pp.x,pp.y,pp.z,1,0,0,0,0);
+            world.sendParticles(ParticleTypes.END_ROD,pn.x,pn.y,pn.z,1,0,0,0,0);
+         }
+      }
+      for(int i = 0; i < shownPoints; i++){
+         int ind1 = i;
+         int ind2 = (i+1) % shownPoints;
+         if(ind2 != 0 || i == pointSize-1) lines.add(new Tuple<>(points.get(ind1),points.get(ind2)));
+         int prev5 = i-5 < 0 ? (i-5)+pointSize : i-5;
+         if(pointSize > 5 && prev5 < shownPoints) lines.add(new Tuple<>(points.get(ind1),points.get(prev5)));
+      }
+      
+      int oldStarTick = Math.min(tick-1,totalStarTicks);
+      int oldShownPoints = (int) Math.min(points.size(),pointsPerTick*oldStarTick);
+      if(starTick < totalStarTicks && oldShownPoints != shownPoints){
+         SoundUtils.playSound(world, gateway.getBlockPos(), SoundEvents.AMETHYST_BLOCK_HIT, SoundSource.BLOCKS, 1.5f, 2f);
+         SoundUtils.playSound(world, gateway.getBlockPos(), SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 1f, 1f);
+      }
+      if(starTick == totalStarTicks-1){
+         SoundUtils.playSound(world, gateway.getBlockPos(), SoundEvents.PORTAL_TRIGGER, SoundSource.BLOCKS, 0.25f, 0.75f);
+      }
+      if(tick % 2 == 0){
+         lines = ArcanaUtils.mergeColinearLines(lines);
+         DustParticleOptions dust = new DustParticleOptions(0xffffff,0.65f);
+         for(Tuple<Vec3, Vec3> line : lines){
+            int intervals = (int) (line.getA().distanceTo(line.getB())*6+(tick%3));
+            Vec3 pp1 = line.getA().add(op);
+            Vec3 pn1 = line.getA().add(on);
+            Vec3 pp2 = line.getB().add(op);
+            Vec3 pn2 = line.getB().add(on);
+            ParticleEffectUtils.line(world,null,pp1,pp2,dust,intervals,1,0,0);
+            ParticleEffectUtils.line(world,null,pn1,pn2,dust,intervals,1,0,0);
+         }
+      }
+   }
    
    public static void pulsarBladeShoot(ServerLevel world, Vec3 p1, Vec3 p2, int tick){
       Vec3 diff = p2.subtract(p1);

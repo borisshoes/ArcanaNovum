@@ -8,6 +8,11 @@
     "arcananovum:starlight_forge",
     "arcananovum:stellar_core",
     "arcananovum:twilight_anvil",
-    "arcananovum:transmutation_altar"
+    "arcananovum:transmutation_altar",
+    "arcananovum:astral_gateway",
+    "arcananovum:interdictor",
+    "arcananovum:itineranteur",
+    "arcananovum:ender_crate",
+    "arcananovum:geomantic_stele"
   ]
 }

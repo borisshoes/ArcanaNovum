@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ContainmentCirclet;
+import net.borisshoes.arcananovum.items.charms.NegotiationCharm;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -21,6 +22,8 @@ public class EntityUseCallback {
          if(entity instanceof LivingEntity living){
             if(arcanaItem instanceof ContainmentCirclet circlet){
                return circlet.useOnEntity(playerEntity,living,hand);
+            }else if(arcanaItem instanceof NegotiationCharm charm){
+               return charm.useOnEntity(playerEntity,living,hand);
             }
          }
          

@@ -8,6 +8,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
+
 public class SoulstoneIngredient extends ArcanaIngredient {
    
    private final int souls;
@@ -83,6 +85,11 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          name += " ("+souls+"+ "+ EntityType.byString(type).get().getDescription().getString()+")";
       }
       return name;
+   }
+   
+   @Override
+   public String getCodeString(char character){
+      return character + " = new SoulstoneIngredient();";
    }
    
    @Override

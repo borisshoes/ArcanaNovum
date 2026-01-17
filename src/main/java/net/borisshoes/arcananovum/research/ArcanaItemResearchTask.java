@@ -11,13 +11,13 @@ public class ArcanaItemResearchTask extends ResearchTask{
    
    private final ArcanaItem arcanaItem;
    
-   public ArcanaItemResearchTask(String id, ArcanaItem arcanaItem, Component name, Component[] description, ItemStack displayItem){
-      super(id, Type.ARCANA_ITEM_UNLOCK, name, description, displayItem);
+   public ArcanaItemResearchTask(String id, ArcanaItem arcanaItem, ItemStack displayItem){
+      super(id, Type.ARCANA_ITEM_UNLOCK, displayItem);
       this.arcanaItem = arcanaItem;
    }
    
-   public ArcanaItemResearchTask(String id, ArcanaItem arcanaItem, Component name, Component[] description, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
-      super(id, Type.ARCANA_ITEM_UNLOCK, name, description, displayItem, prerequisites);
+   public ArcanaItemResearchTask(String id, ArcanaItem arcanaItem, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
+      super(id, Type.ARCANA_ITEM_UNLOCK, displayItem, prerequisites);
       this.arcanaItem = arcanaItem;
    }
    

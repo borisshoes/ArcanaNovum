@@ -1,0 +1,76 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "crafting",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_crafting"
+                }
+            },
+            {
+                "when": "smithing",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_smithing"
+                }
+            },
+            {
+                "when": "cartography",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_cartography"
+                }
+            },
+            {
+                "when": "loom",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_loom"
+                }
+            },
+            {
+                "when": "grindstone",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_grind"
+                }
+            },
+            {
+                "when": "stonecutter",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_cutter"
+                }
+            },
+            {
+                "when": "enderchest",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_enderchest"
+                }
+            },
+            {
+                "when": "enchanting",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_enchanting"
+                }
+            },
+            {
+                "when": "anvil",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/clockwork_multitool_anvil"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/clockwork_multitool_crafting"
+        }
+    },
+    "hand_animation_on_swap": false
+}

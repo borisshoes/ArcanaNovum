@@ -138,8 +138,9 @@ public class ArcaneTomeGui extends PagedMultiGui {
                            .append(Component.literal("" + achievement.pointsReward).withStyle(ChatFormatting.AQUA))
                            .append(Component.literal(achievement.pointsReward != 1 ? " Skill Points" : " Skill Point").withStyle(ChatFormatting.DARK_AQUA))));
                
-               for(String s : achievement.getDescription()){
-                  achievementItem.addLoreLine(TextUtils.removeItalics(Component.literal(s).withStyle(ChatFormatting.GRAY)));
+               List<Component> descLines = achievement.getDescription();
+               for(Component descLine : descLines){
+                  achievementItem.addLoreLine(TextUtils.removeItalics(descLine.copy().withStyle(ChatFormatting.GRAY)));
                }
                
                MutableComponent[] statusText = achievement.getStatusDisplay(player);
@@ -227,11 +228,11 @@ public class ArcaneTomeGui extends PagedMultiGui {
                   taskItem.addLoreLine(TextUtils.removeItalics(Component.literal("Completed").withStyle(ChatFormatting.AQUA)));
                }else{
                   if(hasPreReqs){
-                     boolean colorSwitch = false;
-                     for(Component text : task.getDescription()){
-                        if(!text.getString().isEmpty() && text.getString().charAt(0) != ' ') colorSwitch = !colorSwitch;
-                        taskItem.addLoreLine(TextUtils.removeItalics(MutableComponent.create(text.getContents())).withColor(colorSwitch ? 0xe6d9bc : 0xb5a684));
+                     List<MutableComponent> descLines = task.getColoredDescription();
+                     for(Component descLine : descLines){
+                        taskItem.addLoreLine(TextUtils.removeItalics(descLine));
                      }
+                     
                   }else{
                      taskItem.setName(Component.literal("???").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC));
                   }
@@ -406,6 +407,9 @@ public class ArcaneTomeGui extends PagedMultiGui {
    private void buildProfileGui(){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
       GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
+      for(int i = 1; i < 8; i++){
+         setSlot(27+i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      }
       setSlot(27, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
@@ -734,8 +738,9 @@ public class ArcaneTomeGui extends PagedMultiGui {
          GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
          augmentItem1.hideDefaultTooltip().setName(augment.getTranslatedName().withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
          
-         for(String s : augment.getDescription()){
-            augmentItem1.addLoreLine(TextUtils.removeItalics(Component.literal(s).withStyle(ChatFormatting.GRAY)));
+         List<Component> descLines = augment.getDescription();
+         for(Component descLine : descLines){
+            augmentItem1.addLoreLine(TextUtils.removeItalics(descLine.copy().withStyle(ChatFormatting.GRAY)));
          }
          if(augmentLvl > 0) augmentItem1.glow();
          
@@ -805,14 +810,15 @@ public class ArcaneTomeGui extends PagedMultiGui {
          GuiElementBuilder achievementItem = GuiElementBuilder.from(achievement.getDisplayItem());
          achievementItem.hideDefaultTooltip().setName(achievement.getTranslatedName().withStyle(ChatFormatting.LIGHT_PURPLE))
                .addLoreLine(TextUtils.removeItalics(Component.literal("")
-                     .append(Component.literal(LevelUtils.readableInt(achievement.xpReward)).withStyle(ChatFormatting.AQUA))
-                     .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
-                     .append(Component.literal("  |  ").withStyle(ChatFormatting.DARK_AQUA))
-                     .append(Component.literal("" + achievement.pointsReward).withStyle(ChatFormatting.AQUA))
-                     .append(Component.literal(achievement.pointsReward != 1 ? " Skill Points" : " Skill Point").withStyle(ChatFormatting.DARK_AQUA))));
+                    .append(Component.literal(LevelUtils.readableInt(achievement.xpReward)).withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
+                    .append(Component.literal("  |  ").withStyle(ChatFormatting.DARK_AQUA))
+                    .append(Component.literal("" + achievement.pointsReward).withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal(achievement.pointsReward != 1 ? " Skill Points" : " Skill Point").withStyle(ChatFormatting.DARK_AQUA))));
          
-         for(String s : achievement.getDescription()){
-            achievementItem.addLoreLine(TextUtils.removeItalics(Component.literal(s).withStyle(ChatFormatting.GRAY)));
+         List<Component> descLines = achievement.getDescription();
+         for(Component descLine : descLines){
+            achievementItem.addLoreLine(TextUtils.removeItalics(descLine.copy().withStyle(ChatFormatting.GRAY)));
          }
          
          MutableComponent[] statusText = achievement.getStatusDisplay(player);
@@ -986,6 +992,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          prevPage.addLoreLine(Component.translatable("text.borislib.two_elements", Component.translatable("gui.borislib.click").withColor(this.action1TextColor), Component.translatable("gui.arcananovum.prev_recipe_sub").withColor(this.secondaryTextColor)));
          prevPage.setCallback((type) -> {
             recipeInd = (recipeInd-1) % size;
+            if(recipeInd < 0) recipeInd = size-1;
             buildRecipeGui();
          });
          setSlot(45,prevPage);
@@ -1430,7 +1437,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       public static final AchievementSort XP_DESC = new AchievementSort("gui.arcananovum.xp_descending", ChatFormatting.DARK_PURPLE.getColor(),
             Comparator.<ArcanaAchievement>comparingInt(ach -> -ach.pointsReward).thenComparingInt(ach -> -ach.xpReward));
       public static final AchievementSort ALPHABETICAL = new AchievementSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor(),
-            Comparator.comparing(ach -> ach.name));
+            Comparator.comparing(ach -> ach.getTranslatedName().getString()));
       
       private AchievementSort(String key, int color, Comparator<ArcanaAchievement> comparator){
          super(key, color, comparator);

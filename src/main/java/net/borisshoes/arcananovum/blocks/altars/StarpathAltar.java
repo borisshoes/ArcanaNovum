@@ -183,15 +183,6 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
          return Blocks.SCULK_CATALYST.defaultBlockState().setValue(BLOOM,state.getValue(BLOOM));
       }
       
-      @Nullable
-      public static StarpathAltarBlockEntity getEntity(Level world, BlockPos pos){
-         BlockState state = world.getBlockState(pos);
-         if(!(state.getBlock() instanceof StarpathAltarBlock)){
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof StarpathAltarBlockEntity altar ? altar : null;
-      }
-      
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new StarpathAltarBlockEntity(pos, state);

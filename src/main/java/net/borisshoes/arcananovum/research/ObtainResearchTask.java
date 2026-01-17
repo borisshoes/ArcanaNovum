@@ -11,13 +11,13 @@ public class ObtainResearchTask extends ResearchTask{
    
    private final Item item;
    
-   public ObtainResearchTask(String id, Item item, Component name, Component[] description, ItemStack displayItem){
-      super(id, Type.OBTAIN_ITEM, name, description, displayItem);
+   public ObtainResearchTask(String id, Item item, ItemStack displayItem){
+      super(id, Type.OBTAIN_ITEM, displayItem);
       this.item = item;
    }
    
-   public ObtainResearchTask(String id, Item item, Component name, Component[] description, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
-      super(id, Type.OBTAIN_ITEM, name, description, displayItem, prerequisites);
+   public ObtainResearchTask(String id, Item item, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
+      super(id, Type.OBTAIN_ITEM, displayItem, prerequisites);
       this.item = item;
    }
    
