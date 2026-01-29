@@ -130,14 +130,14 @@ public class TotemOfVengeance extends ArcanaItem {
    
    public ItemStack upgradeLevel(ItemStack stack, boolean byPlayer){
       if(!(ArcanaItemUtils.identifyItem(stack) instanceof TotemOfVengeance)) return stack;
-      int furyLevel = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RETALIATIVE_FURY.id));
+      int furyLevel = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RETALIATIVE_FURY));
       stack.set(DataComponents.DEATH_PROTECTION, getTotemComponent(furyLevel, byPlayer));
       return stack;
    }
    
    public void triggerTotem(ItemStack stack, LivingEntity living, DamageSource source){
       if(living instanceof ServerPlayer player){
-         int furyLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RETALIATIVE_FURY.id));
+         int furyLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RETALIATIVE_FURY));
          Entity attacker = source.getEntity() != null ? source.getEntity() : player.getKillCredit() != null ? player.getKillCredit() : null;
          boolean byPlayer = attacker instanceof Player;
          stack.set(DataComponents.DEATH_PROTECTION, getTotemComponent(furyLvl, byPlayer));
@@ -145,10 +145,10 @@ public class TotemOfVengeance extends ArcanaItem {
          player.level().sendParticles(ParticleTypes.ANGRY_VILLAGER,player.position().x,player.position().y+player.getBbHeight()/2,player.position().z,25,.5,.6,.5,0.05);
          
          if(source.is(ArcanaDamageTypes.VENGEANCE_TOTEM)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.REVENGEANCE.id);
+            ArcanaAchievements.grant(player,ArcanaAchievements.REVENGEANCE);
          }
          
-         ArcanaAchievements.progress(player,ArcanaAchievements.TOO_ANGRY_TO_DIE.id,0); // Start the timer
+         ArcanaAchievements.progress(player,ArcanaAchievements.TOO_ANGRY_TO_DIE,0); // Start the timer
          ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TOTEM_OF_VENGEANCE_ACTIVATE));
       }
    }

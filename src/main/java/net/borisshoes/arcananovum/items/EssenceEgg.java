@@ -210,7 +210,7 @@ public class EssenceEgg extends ArcanaItem {
                BlockEntity blockEntity;
                BlockState blockState = world.getBlockState(blockPos);
                if(blockState.is(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof Spawner spawner){
-                  int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WILLING_CAPTIVE.id));
+                  int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WILLING_CAPTIVE));
                   if(getUses(stack) >= 5-captiveLevel){
                      EntityType<?> entityType = EntityType.byString(getType(stack)).get();
                      spawner.setEntityId(entityType, world.getRandom());
@@ -222,13 +222,13 @@ public class EssenceEgg extends ArcanaItem {
                         SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
                         int xp = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ESSENCE_EGG_CONVERT);
                         ArcanaNovum.data(playerEntity).addXP(Math.min(0,xp-(xp/5)*captiveLevel)); // Add xp
-                        ArcanaAchievements.grant(player,ArcanaAchievements.SOUL_CONVERSION.id);
+                        ArcanaAchievements.grant(player,ArcanaAchievements.SOUL_CONVERSION);
                      }
                      addUses(stack, -5+captiveLevel);
                   }
                }else{
-                  int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT.id));
-                  int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT.id));
+                  int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT));
+                  int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT));
                   if(getUses(stack) > 0){
                      ServerLevel serverWorld = world.getServer().getLevel(world.dimension());
                      Vec3 summonPos = context.getClickLocation().add(0,0.5,0);
@@ -254,7 +254,7 @@ public class EssenceEgg extends ArcanaItem {
                      if(playerEntity instanceof ServerPlayer player){
                         SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
                         ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ESSENCE_EGG_SPAWN)); // Add xp
-                        ArcanaAchievements.progress(player,ArcanaAchievements.SOUL_FOR_SOUL.id,1);
+                        ArcanaAchievements.progress(player,ArcanaAchievements.SOUL_FOR_SOUL,1);
                      }
                   }
                }

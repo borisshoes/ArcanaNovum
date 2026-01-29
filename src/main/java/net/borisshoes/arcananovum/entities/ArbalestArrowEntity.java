@@ -106,7 +106,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
       
       if(entityHitResult.getEntity().getType() == EntityType.PHANTOM && !entityHitResult.getEntity().isAlive()){
          if(getOwner() instanceof ServerPlayer player){
-            ArcanaAchievements.progress(player,ArcanaAchievements.MANY_BIRDS_MANY_ARROWS.id, 1);
+            ArcanaAchievements.progress(player,ArcanaAchievements.MANY_BIRDS_MANY_ARROWS, 1);
          }
       }
    }

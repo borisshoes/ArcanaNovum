@@ -37,7 +37,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       int sellingPower = 0;
       for(ArcanaAugment i1aug : item1Augments){
          boolean linked = false;
-         List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(i1aug.id);
+         List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(i1aug);
          for(ArcanaAugment linkedAugment : linkedAugments){
             if(linkedAugment.getArcanaItem().getId().equals(otherItem.getId())){
                linked = true;
@@ -46,7 +46,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
          }
          if(linked) continue;
          
-         int curLvl = profile.getAugmentLevel(i1aug.id);
+         int curLvl = profile.getAugmentLevel(i1aug);
          if(curLvl > 0){
             canSell.add(new Tuple<>(i1aug,curLvl));
             for(int i = 1; i <= i1aug.getTiers().length; i++){
@@ -61,7 +61,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public List<Tuple<ItemStack,String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
-      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
+      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN);
       ItemStack input1Stack = input1Entity != null ? input1Entity.getItem() : ItemStack.EMPTY;
       ItemStack input2Stack = input2Entity != null ? input2Entity.getItem() : ItemStack.EMPTY;
       ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
@@ -90,10 +90,10 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
             int cheapestBuy = Integer.MAX_VALUE;
             for(ArcanaAugment i2aug : item2Augments){
                int maxLvl = i2aug.getTiers().length;
-               int curLvl = profile.getAugmentLevel(i2aug.id);
+               int curLvl = profile.getAugmentLevel(i2aug);
                
                boolean linked = false;
-               List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(i2aug.id);
+               List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(i2aug);
                for(ArcanaAugment linkedAugment : linkedAugments){
                   if(linkedAugment.getArcanaItem().getId().equals(arcanaItem1.getId())){
                      linked = true;
@@ -128,7 +128,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
                   Tuple<ArcanaAugment,Integer> toSell = canSell.getFirst();
                   ArcanaAugment sellAug = toSell.getA();
                   int sellLvl = toSell.getB();
-                  profile.setAugmentLevel(sellAug.id,sellLvl-1);
+                  profile.setAugmentLevel(sellAug,sellLvl-1);
                   liquidated += sellAug.getTiers()[sellLvl-1].rarity+1;
                   
                   canSellRet = getCanSell(item1Augments, arcanaItem2,profile);
@@ -140,21 +140,21 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
                }
                if(cantSell) continue;
                
-               profile.setAugmentLevel(buyAug.id,buyLvl);
+               profile.setAugmentLevel(buyAug,buyLvl);
                liquidated -= buyAug.getTiers()[buyLvl-1].rarity+1;
                break;
             }
          }
          
          if(arcanaItem1.getId().equals(arcanaItem2.getId())){
-            ArcanaAchievements.grant(asPlayer,ArcanaAchievements.QUESTIONABLE_EXCHANGE.id);
+            ArcanaAchievements.grant(asPlayer,ArcanaAchievements.QUESTIONABLE_EXCHANGE);
          }
       }catch(Exception e){
          return new ArrayList<>();
       }
       
       if(aequalisEntity != null){
-         boolean timeless = ArcanaAugments.getAugmentOnItem(aequalisStack,ArcanaAugments.TIMELESS_WISDOM.id) > 0;
+         boolean timeless = ArcanaAugments.getAugmentOnItem(aequalisStack,ArcanaAugments.TIMELESS_WISDOM) > 0;
          int uses = ArcanaItem.getIntProperty(aequalisStack,AequalisScientia.USES_TAG);
          if(!timeless && uses <= 1){
             aequalisEntity.discard();
@@ -203,7 +203,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public boolean canTransmute(ItemStack input1, ItemStack input2, ItemStack reagent1Input, ItemStack reagent2Input, ItemStack aequalisInput, TransmutationAltarBlockEntity altar){
-      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
+      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN);
       boolean reagentCheck1 = validReagent1(reagent1Input,bargainLvl) && validReagent2(reagent2Input,bargainLvl);
       boolean reagentCheck2 = validReagent1(reagent2Input,bargainLvl) && validReagent2(reagent1Input,bargainLvl);
       if (!(reagentCheck1 || reagentCheck2)) return false;

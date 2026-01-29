@@ -71,6 +71,7 @@ public class ResearchTasks {
    public static final ResourceKey<ResearchTask> OBTAIN_PICKAXE_OF_CEPTYUS = of("obtain_pickaxe_of_ceptyus");
    public static final ResourceKey<ResearchTask> OBTAIN_SPEAR_OF_TENBROUS = of("obtain_spear_of_tenbrous");
    public static final ResourceKey<ResearchTask> OBTAIN_GREAVES_OF_GAIALTUS = of("obtain_pickaxe_of_gaialtus");
+   public static final ResourceKey<ResearchTask> OBTAIN_LANTERN = of("obtain_lantern");
    public static final ResourceKey<ResearchTask> BREAK_SCULK = of("break_sculk");
    public static final ResourceKey<ResearchTask> BREAK_SPAWNER = of("break_spawner");
    public static final ResourceKey<ResearchTask> BREAK_OBSIDIAN = of("break_obsidian");
@@ -90,6 +91,7 @@ public class ResearchTasks {
    public static final ResourceKey<ResearchTask> KILL_EVOKER = of("kill_evoker");
    public static final ResourceKey<ResearchTask> CATCH_FISH = of("catch_fish");
    public static final ResourceKey<ResearchTask> SPRINT_TEN_KILOMETERS = of("sprint_ten_kilometers");
+   public static final ResourceKey<ResearchTask> WALK_ONE_KILOMETER = of("walk_one_kilometer");
    public static final ResourceKey<ResearchTask> UNLOCK_AQUATIC_EVERSOURCE = of("unlock_aquatic_eversource");
    public static final ResourceKey<ResearchTask> UNLOCK_RUNIC_MATRIX = of("unlock_runic_matrix");
    public static final ResourceKey<ResearchTask> UNLOCK_STARLIGHT_FORGE = of("unlock_starlight_forge");
@@ -158,6 +160,7 @@ public class ResearchTasks {
    public static final ResourceKey<ResearchTask> ADVANCEMENT_ENTER_END = of("advancement_enter_end");
    public static final ResourceKey<ResearchTask> ADVANCEMENT_FURIOUS_COCKTAIL = of("advancement_furious_cocktail");
    public static final ResourceKey<ResearchTask> ADVANCEMENT_OVER_OVERKILL = of("advancement_over_overkill");
+   public static final ResourceKey<ResearchTask> ADVANCEMENT_BARTER_PIGLIN = of("advancement_barter_piglin");
    public static final ResourceKey<ResearchTask> DIMENSION_TRAVEL = of("dimension_travel");
    public static final ResourceKey<ResearchTask> CAT_SCARE = of("cat_scare");
    public static final ResourceKey<ResearchTask> RESONATE_BELL = of("resonate_bell");
@@ -404,6 +407,11 @@ public class ResearchTasks {
             ArcanaRegistry.GREAVES_OF_GAIALTUS.getPrefItemNoLore()
       ));
       
+      ResearchTasks.register(OBTAIN_LANTERN, new ObtainResearchTask(
+            OBTAIN_LANTERN.identifier().getPath(), Items.LANTERN,
+            new ItemStack(Items.LANTERN)
+      ));
+      
       ResearchTasks.register(BREAK_SCULK, new StatisticResearchTask<>(
             BREAK_SCULK.identifier().getPath(), Either.right(new Tuple<>(Stats.BLOCK_MINED, Blocks.SCULK)), 1,
             new ItemStack(Items.SCULK)
@@ -496,7 +504,12 @@ public class ResearchTasks {
       
       ResearchTasks.register(SPRINT_TEN_KILOMETERS, new StatisticResearchTask<>(
             SPRINT_TEN_KILOMETERS.identifier().getPath(), Either.left(Stats.SPRINT_ONE_CM), 1000000,
-            new ItemStack(Items.GOLDEN_BOOTS)
+            new ItemStack(Items.GOLDEN_BOOTS), WALK_ONE_KILOMETER
+      ));
+      
+      ResearchTasks.register(WALK_ONE_KILOMETER, new StatisticResearchTask<>(
+            WALK_ONE_KILOMETER.identifier().getPath(), Either.left(Stats.WALK_ONE_CM), 100000,
+            new ItemStack(Items.LEATHER_BOOTS)
       ));
       
       
@@ -839,6 +852,11 @@ public class ResearchTasks {
       ResearchTasks.register(ADVANCEMENT_OVER_OVERKILL, new AdvancementResearchTask(
             ADVANCEMENT_OVER_OVERKILL.identifier().getPath(), "adventure/overoverkill",
             new ItemStack(Items.MACE), OBTAIN_MACE
+      ));
+      
+      ResearchTasks.register(ADVANCEMENT_BARTER_PIGLIN, new AdvancementResearchTask(
+            ADVANCEMENT_BARTER_PIGLIN.identifier().getPath(), "nether/distract_piglin",
+            new ItemStack(Items.GOLD_INGOT), ADVANCEMENT_FIND_BASTION, OBTAIN_GOLD_INGOT
       ));
       
       

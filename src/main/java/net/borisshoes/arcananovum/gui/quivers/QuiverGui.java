@@ -86,7 +86,7 @@ public class QuiverGui extends SimpleGui {
                if(!tippedTypes.contains(color)) tippedTypes.add(color);
             }
          }
-         if(tippedTypes.size() == 9) ArcanaAchievements.grant(player,ArcanaAchievements.DIVERSE_ARSENAL.id);
+         if(tippedTypes.size() == 9) ArcanaAchievements.grant(player,ArcanaAchievements.DIVERSE_ARSENAL);
       }
       quiver.buildItemLore(item,player.level().getServer());
    }

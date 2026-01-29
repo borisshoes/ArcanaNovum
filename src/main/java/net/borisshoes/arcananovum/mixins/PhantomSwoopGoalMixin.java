@@ -4,6 +4,9 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
@@ -34,7 +37,16 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    
    @ModifyReturnValue(method = "canContinueToUse", at = @At(value = "RETURN"))
    private boolean arcananovum$shouldContinue(boolean original){
+      if(field_7333 instanceof DragonPhantomEntity) return true; // Guardian Phantoms immune to Felidae Charm
       if(original && field_7333.getTarget() instanceof ServerPlayer player){
+         GeomanticSteleBlockEntity.SteleZone felidaeStele = GeomanticSteleBlockEntity.getZoneAtEntity(player,(item) -> item.is(ArcanaRegistry.FELIDAE_CHARM.getItem()));
+         if(felidaeStele != null){
+            SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
+            felidaeStele.getBlockEntity().giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_SCARE_PHANTOM));
+            return false;
+         }
+         
          Inventory inv = player.getInventory();
          for(int i = 0; i<inv.getContainerSize(); i++){
             ItemStack item = inv.getItem(i);
@@ -47,10 +59,6 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
                continue; // Item not arcane, skip
          
             if(ArcanaItemUtils.identifyItem(item) instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item, ArcanaRegistry.FELIDAE_CHARM.getItem())){
-               if(field_7333 instanceof DragonPhantomEntity){
-                  return true; // Guardian Phantoms immune to Felidae Charm
-               }
-               
                SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
                return false;

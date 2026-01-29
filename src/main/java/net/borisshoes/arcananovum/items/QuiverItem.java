@@ -82,16 +82,16 @@ public abstract class QuiverItem extends ArcanaItem {
       
       ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_QUIVER_REFILL)); // Add xp
       if(this instanceof OverflowingQuiver){
-         ArcanaAchievements.progress(player,ArcanaAchievements.SPARE_STOCK.id,1);
+         ArcanaAchievements.progress(player,ArcanaAchievements.SPARE_STOCK,1);
       }else if(this instanceof RunicQuiver){
-         ArcanaAchievements.progress(player,ArcanaAchievements.UNLIMITED_STOCK.id,1);
+         ArcanaAchievements.progress(player,ArcanaAchievements.UNLIMITED_STOCK,1);
       }
       buildItemLore(item,player.level().getServer());
    }
    
    public boolean shootArrow(ItemStack item, int slot, ServerPlayer player, ItemStack bow){
       ItemContainerContents arrowComp = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-      boolean runic = ArcanaItemUtils.identifyItem(bow) instanceof RunicBow || (bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST.id) >= 1);
+      boolean runic = ArcanaItemUtils.identifyItem(bow) instanceof RunicBow || (bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST) >= 1);
       
       NonNullList<ItemStack> arrows = NonNullList.withSize(9, ItemStack.EMPTY);
       arrowComp.copyInto(arrows);

@@ -193,14 +193,6 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
          return InteractionResult.SUCCESS_SERVER;
       }
       
-      @Override
-      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
-         BlockEntity entity = world.getBlockEntity(pos);
-         if(entity instanceof StormcallerAltarBlockEntity altar){
-            initializeArcanaBlock(stack,altar);
-         }
-      }
-      
       private void tryActivate(BlockState state, Level world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof StormcallerAltarBlockEntity altar && world instanceof ServerLevel serverWorld){

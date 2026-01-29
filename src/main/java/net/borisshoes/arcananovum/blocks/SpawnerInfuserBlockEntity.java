@@ -251,7 +251,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
       if(!(this.level instanceof ServerLevel serverWorld)) return;
       
       NonNullList<ItemStack> drops = NonNullList.create();
-      int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
+      int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS));
       int points = this.getPoints();
       if(points > 0){
          while(points/ratio > 64){
@@ -414,15 +414,15 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
          ItemStack soulstoneSlot = inv.getItem(0);
          ItemStack extraPoints = ItemStack.EMPTY;
          int points = getPoints();
-         int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.SOUL_RESERVOIR.id)];
-         int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
+         int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.SOUL_RESERVOIR)];
+         int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.AUGMENTED_APPARATUS));
          
          if(!soulstoneSlot.isEmpty()){
             setSoulstone(soulstoneSlot);
             if(!prevStone){
                watchingPlayers.keySet().forEach(player -> SoundUtils.soulSounds(player,1,20));
                if(Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot)) == Soulstone.tiers.length){
-                  watchingPlayers.keySet().forEach(player -> ArcanaAchievements.grant(player, ArcanaAchievements.INNOCENT_SOULS.id));
+                  watchingPlayers.keySet().forEach(player -> ArcanaAchievements.grant(player, ArcanaAchievements.INNOCENT_SOULS));
                }
             }
             
@@ -443,8 +443,8 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
                   watchingPlayers.keySet().forEach(player -> {
                      SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, 1, (.8f+((float)curPoints/maxPoints)));
                      if(curPoints == maxPoints)SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1, 2f);
-                     if(curPoints >= 512) ArcanaAchievements.grant(player,ArcanaAchievements.ARCHLICH.id);
-                     if(curPoints >= 1024) ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OVERWHELMING.id);
+                     if(curPoints >= 512) ArcanaAchievements.grant(player,ArcanaAchievements.ARCHLICH);
+                     if(curPoints >= 1024) ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OVERWHELMING);
                   });
                }
             }

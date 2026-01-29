@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.items.charms;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticStele;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -12,7 +14,9 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -20,6 +24,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -27,12 +33,16 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.ConduitBlockEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -42,7 +52,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class CetaceaCharm extends ArcanaItem {
+public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interaction{
    public static final String ID = "cetacea_charm";
    
    public CetaceaCharm(){
@@ -111,6 +121,41 @@ public class CetaceaCharm extends ArcanaItem {
       list.add(List.of(Component.literal(" Charm of Cetacea").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nmaneuverability as dolphins.\n\nSneak Using the Charm toggles the aquatic buffs.\n").withStyle(ChatFormatting.BLACK)));
       
       return list;
+   }
+   
+   @Override
+   public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
+      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range),stele.getBlockPos().getCenter().add(range));
+      List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class,box);
+      boolean delphinidae = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.DELPHINIDAE) > 0;
+      boolean gills = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.GILLS) > 0;
+      for(LivingEntity living: inRangeEntities){
+         if(living.isSpectator()) continue;
+         if(living.isInWater()){
+            MobEffectInstance grace = new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 110, delphinidae ? 1 : 0, false, false, true);
+            living.addEffect(grace);
+            
+            if(living instanceof ServerPlayer player && world.getServer().getTickCount() % 20 == 0){
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CETACEA_CHARM_PER_SECOND));
+               stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CETACEA_CHARM_PER_SECOND));
+            }
+         }
+         if(living.isUnderWater() && gills){
+            MobEffectInstance waterBreath = new MobEffectInstance(MobEffects.WATER_BREATHING, 110, 0, false, false, true);
+            living.addEffect(waterBreath);
+         }
+      }
+      
+      if(world.random.nextFloat() < 0.15){
+         Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+         world.sendParticles(ParticleTypes.NAUTILUS,stackPos.x(),stackPos.y()+1,stackPos.z(),5,0.25,0.25,0.25,1);
+         world.sendParticles(ParticleTypes.DRIPPING_WATER,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,1);
+      }
+   }
+   
+   @Override
+   public Vec3 getBaseRange(){
+      return new Vec3(20,20,20);
    }
    
    public class CetaceaCharmItem extends ArcanaPolymerItem {

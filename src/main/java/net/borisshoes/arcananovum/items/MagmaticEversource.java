@@ -4,6 +4,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticStele;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -16,6 +18,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -38,6 +41,7 @@ import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,6 +51,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -56,7 +61,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class MagmaticEversource extends EnergyItem {
+public class MagmaticEversource extends EnergyItem implements GeomanticStele.Interaction{
 	public static final String ID = "magmatic_eversource";
    
    public static final String USES_TAG = "charges";
@@ -141,13 +146,13 @@ public class MagmaticEversource extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // 30 second recharge time
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ERUPTION.id));
+      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ERUPTION));
       return 30 - 8*cdLvl;
    }
    
    public int getMaxCharges(ItemStack item){
       int[] chargeCount = new int[]{1, 3, 5, 10, 25};
-      return chargeCount[Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.VOLCANIC_CHAMBER.id))];
+      return chargeCount[Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.VOLCANIC_CHAMBER))];
    }
    
    @Override
@@ -157,6 +162,75 @@ public class MagmaticEversource extends EnergyItem {
       list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nA limitless realm of molten rock that I can pull from through a microscopic portal. The only downside is that it takes time to siphon lava through the portal. The Magmatic Eversource functions exactly like the Aquatic  ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nEversource, however it takes time to recharge after creating lava.\n\nUsing the Eversource will generate or drain lava.\nSneak Using will switch the mode of the Eversource.\n").withStyle(ChatFormatting.BLACK)));
       return list;
+   }
+   
+   @Override
+   public Vec3 getBaseRange(){
+      return new Vec3(0,0,0);
+   }
+   
+   @Override
+   public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
+      Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      
+      if(world.random.nextFloat() < 0.15){
+         world.sendParticles(ParticleTypes.DRIPPING_LAVA,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+      }
+      if(world.random.nextFloat() < 0.15){
+         world.sendParticles(ParticleTypes.FALLING_LAVA,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+      }
+      
+      int charges = getIntProperty(stack,USES_TAG);
+      if(world.getServer().getTickCount() % 20 == 0){
+         int maxCharges = getMaxCharges(stack);
+         if(charges < maxCharges){
+            addEnergy(stack, 1); // Recharge
+            if(getEnergy(stack) >= getMaxEnergy(stack)){
+               setEnergy(stack,0);
+               putProperty(stack,USES_TAG,charges+1);
+               buildItemLore(stack, world.getServer());
+            }
+         }
+      }
+      
+      BlockPos geyserPos = stele.getBlockPos().above(5);
+      if(world.getFluidState(geyserPos).isSource() && world.getFluidState(geyserPos).is(Fluids.LAVA)) return;
+      if(charges > 0 && placeFluid(Fluids.LAVA,null, world, geyserPos, null, true)){
+         stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MAGMATIC_EVERSOURCE_USE));
+         putProperty(stack,USES_TAG,charges-1);
+         buildItemLore(stack, world.getServer());
+      }
+   }
+   
+   public static boolean placeFluid(Fluid fluid, @Nullable Player player, Level world, BlockPos pos, @Nullable BlockHitResult hitResult, boolean silent){
+      boolean bl2;
+      if(!(fluid instanceof FlowingFluid flowableFluid)){
+         return false;
+      }
+      BlockState blockState = world.getBlockState(pos);
+      Block block = blockState.getBlock();
+      boolean bl = blockState.canBeReplaced(fluid);
+      bl2 = blockState.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, pos, blockState, fluid);
+      if(!bl2){
+         return hitResult != null && placeFluid(fluid,player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null, silent);
+      }
+      if(block instanceof LiquidBlockContainer fluidFillable){
+         if(fluid == Fluids.LAVA){
+            fluidFillable.placeLiquid(world, pos, blockState, flowableFluid.getSource(false));
+            if(!silent) world.playSound(player, pos, SoundEvents.BUCKET_EMPTY_LAVA, SoundSource.BLOCKS, 1.0f, 1.0f);
+            world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
+            return true;
+         }
+      }
+      if(!world.isClientSide() && bl && !blockState.liquid()){
+         world.destroyBlock(pos, true);
+      }
+      if(world.setBlock(pos, fluid.defaultFluidState().createLegacyBlock(), Block.UPDATE_ALL_IMMEDIATE) || blockState.getFluidState().isSource()){
+         if(!silent) world.playSound(player, pos, SoundEvents.BUCKET_EMPTY_LAVA, SoundSource.BLOCKS, 1.0f, 1.0f);
+         world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
+         return true;
+      }
+      return false;
    }
    
    public class MagmaticEversourceItem extends ArcanaPolymerItem {
@@ -199,7 +273,6 @@ public class MagmaticEversource extends EnergyItem {
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerLevel)) return;
          if(world.getServer().getTickCount() % 20 == 0){
             int charges = getIntProperty(stack,USES_TAG);
             int maxCharges = getMaxCharges(stack);
@@ -267,9 +340,9 @@ public class MagmaticEversource extends EnergyItem {
             }
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer ? blockPos : blockPos2;
-            if(placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult)){
+            if(placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult, false)){
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MAGMATIC_EVERSOURCE_USE)); // Add xp
-               ArcanaAchievements.progress(player,ArcanaAchievements.HELLGATE.id,1);
+               ArcanaAchievements.progress(player,ArcanaAchievements.HELLGATE,1);
                putProperty(stack,USES_TAG,charges-1);
                buildItemLore(stack, playerEntity.level().getServer());
                playerEntity.awardStat(Stats.ITEM_USED.get(this));
@@ -278,38 +351,6 @@ public class MagmaticEversource extends EnergyItem {
             return InteractionResult.FAIL;
          }
          return InteractionResult.PASS;
-      }
-      
-      
-      public boolean placeFluid(Fluid fluid, @Nullable Player player, Level world, BlockPos pos, @Nullable BlockHitResult hitResult){
-         boolean bl2;
-         if(!(fluid instanceof FlowingFluid flowableFluid)){
-            return false;
-         }
-         BlockState blockState = world.getBlockState(pos);
-         Block block = blockState.getBlock();
-         boolean bl = blockState.canBeReplaced(fluid);
-         bl2 = blockState.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, pos, blockState, fluid);
-         if(!bl2){
-            return hitResult != null && placeFluid(fluid,player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null);
-         }
-         if(block instanceof LiquidBlockContainer fluidFillable){
-            if(fluid == Fluids.LAVA){
-               fluidFillable.placeLiquid(world, pos, blockState, flowableFluid.getSource(false));
-               world.playSound(player, pos, SoundEvents.BUCKET_EMPTY_LAVA, SoundSource.BLOCKS, 1.0f, 1.0f);
-               world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
-               return true;
-            }
-         }
-         if(!world.isClientSide() && bl && !blockState.liquid()){
-            world.destroyBlock(pos, true);
-         }
-         if(world.setBlock(pos, fluid.defaultFluidState().createLegacyBlock(), Block.UPDATE_ALL_IMMEDIATE) || blockState.getFluidState().isSource()){
-            world.playSound(player, pos, SoundEvents.BUCKET_EMPTY_LAVA, SoundSource.BLOCKS, 1.0f, 1.0f);
-            world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
-            return true;
-         }
-         return false;
       }
    }
 }

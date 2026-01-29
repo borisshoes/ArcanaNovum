@@ -88,7 +88,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    public boolean startTransmute(@Nullable ServerPlayer player){
       if(this.getCooldown() > 0 || this.checkTransmute() == null || !(this.getLevel() instanceof ServerLevel serverWorld)) return false;
       this.resetCooldown();
-      boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.HASTY_BARGAIN.id) > 0;
+      boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.HASTY_BARGAIN) > 0;
       double speedMod = hastyBargain ? 2 : 1;
       int castTime = (int) (500.0 / speedMod);
       this.setActive(true);
@@ -147,24 +147,24 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
             transmuteCount += output.getCount();
             if(output.is(ArcanaRegistry.DIVINE_CATALYST.getItem()) && player != null){
                ArcanaNovum.data(player).addCraftedSilent(output);
-               ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_TRANSMUTATION.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_TRANSMUTATION);
             }
             if(output.is(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()) && player != null){
                ArcanaNovum.data(player).addCraftedSilent(output);
-               ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE);
             }
             
             this.getLevel().addFreshEntity(new ItemEntity(this.getLevel(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
          }
          if(transmuteCount > 0 && player != null){
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TRANSMUTATION_ALTAR_TRANSMUTE));
-            ArcanaAchievements.progress(player,ArcanaAchievements.STATE_ALCHEMIST.id,transmuteCount);
+            ArcanaAchievements.progress(player,ArcanaAchievements.STATE_ALCHEMIST,transmuteCount);
          }
          
-         boolean canRecurse = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.TRADE_AGREEMENT.id) > 0;
+         boolean canRecurse = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.TRADE_AGREEMENT) > 0;
          if(canRecurse && checkTransmute() == recipe && this.getLevel() instanceof ServerLevel serverWorld){
             this.resetCooldown();
-            boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.HASTY_BARGAIN.id) > 0;
+            boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.HASTY_BARGAIN) > 0;
             double speedMod = hastyBargain ? 2 : 1;
             int castTime = (int) (500.0 / speedMod);
             this.setActive(true);
@@ -290,7 +290,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    public void resetCooldown(){
-      this.cooldown = 13200 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.HASTY_BARGAIN.id) * 2400;
+      this.cooldown = 13200 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.HASTY_BARGAIN) * 2400;
    }
    
    public void refundCooldown(){

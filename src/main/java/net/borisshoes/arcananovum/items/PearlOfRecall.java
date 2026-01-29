@@ -166,7 +166,7 @@ public class PearlOfRecall extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RECALL_ACCELERATION.id));
+      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RECALL_ACCELERATION));
       return 600 - cdReduction[cdLvl];
    }
    
@@ -199,8 +199,8 @@ public class PearlOfRecall extends EnergyItem {
       
       player.teleport(new TeleportTransition(to, new Vec3(x,y,z), Vec3.ZERO, yaw, pitch, TeleportTransition.PLACE_PORTAL_TICKET));
       setEnergy(item,0);
-      if(to.dimension().identifier().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,ArcanaAchievements.BACK_TO_HELL.id);
-      if(to.dimension().identifier().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,ArcanaAchievements.ASCENDING_TO_HEAVEN.id);
+      if(to.dimension().identifier().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,ArcanaAchievements.BACK_TO_HELL);
+      if(to.dimension().identifier().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,ArcanaAchievements.ASCENDING_TO_HEAVEN);
       SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL,1,2f);
       ArcanaEffectUtils.recallTeleport(to,player.position());
    }
@@ -304,7 +304,7 @@ public class PearlOfRecall extends EnergyItem {
       @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack item = playerEntity.getItemInHand(hand);
-         boolean canClear = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CHRONO_TEAR.id) >= 1;
+         boolean canClear = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CHRONO_TEAR) >= 1;
          if(playerEntity instanceof ServerPlayer player){
             CompoundTag locNbt = getCompoundProperty(item,LOCATION_TAG);
             String dim = locNbt.getStringOr("dim", "");

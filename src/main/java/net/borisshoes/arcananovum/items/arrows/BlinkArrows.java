@@ -83,12 +83,12 @@ public class BlinkArrows extends RunicArrow {
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayer player){
          Vec3 tpPos = entityHitResult.getLocation();
-         if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
+         if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME);
          player.teleport(new TeleportTransition((ServerLevel) arrow.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
          ArcanaEffectUtils.blinkArrowTp(player.level(),player.position());
          SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS,.8f,.9f);
          
-         int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN.id);
+         int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN);
          MobEffectInstance invuln = new MobEffectInstance(MobEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
          player.addEffect(invuln);
       }
@@ -99,12 +99,12 @@ public class BlinkArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayer player){
          Vec3 offset = new Vec3(blockHitResult.getDirection().step());
          Vec3 tpPos = blockHitResult.getLocation().add(offset);
-         if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
+         if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME);
          player.teleport(new TeleportTransition((ServerLevel) arrow.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
          ArcanaEffectUtils.blinkArrowTp(player.level(),player.position());
          SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS,.8f,.9f);
          
-         int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN.id);
+         int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN);
          MobEffectInstance invuln = new MobEffectInstance(MobEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
          player.addEffect(invuln);
       }

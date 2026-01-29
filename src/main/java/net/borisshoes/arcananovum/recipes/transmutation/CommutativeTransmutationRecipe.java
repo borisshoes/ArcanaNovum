@@ -82,7 +82,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public List<Tuple<ItemStack,String>> doTransmutation(ItemEntity sourceEntity, ItemEntity focusEntity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
-      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
+      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN);
       ItemStack sourceStack = sourceEntity != null ? sourceEntity.getItem() : ItemStack.EMPTY;
       ItemStack focusStack = focusEntity != null ? focusEntity.getItem() : ItemStack.EMPTY;
       ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
@@ -130,7 +130,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public boolean canTransmute(ItemStack sourceInput, ItemStack focusInput, ItemStack reagent1Input, ItemStack reagent2Input, ItemStack aequalisInput, TransmutationAltarBlockEntity altar){
-      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
+      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN);
       boolean reagentCheck1 = validReagent1(reagent1Input,bargainLvl) && validReagent2(reagent2Input,bargainLvl);
       boolean reagentCheck2 = validReagent1(reagent2Input,bargainLvl) && validReagent2(reagent1Input,bargainLvl);
       if (!(reagentCheck1 || reagentCheck2)) return false;

@@ -282,13 +282,13 @@ public class TelescopingBeacon extends ArcanaItem {
          if(blockTotals.size() == 1 && blockTotals.get(blockKey) >= 164){
             BlockState blockType = blocks.get(0);
             if(blockType.is(Blocks.DIAMOND_BLOCK)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.BEJEWELED.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.BEJEWELED);
             }else if(blockType.is(Blocks.EMERALD_BLOCK)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.ART_OF_THE_DEAL.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.ART_OF_THE_DEAL);
             }else if(blockType.is(Blocks.GOLD_BLOCK)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.ACQUISITION_RULES.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.ACQUISITION_RULES);
             }else if(blockType.is(Blocks.NETHERITE_BLOCK)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.CLINICALLY_INSANE.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.CLINICALLY_INSANE);
             }
          }
       }catch(Exception e){
@@ -362,8 +362,8 @@ public class TelescopingBeacon extends ArcanaItem {
             placePos = placePos.offset(0,tier,0);
             
             if(hasSpace(world, placePos, tier) && world.getBlockState(placePos).canBeReplaced(new BlockPlaceContext(playerEntity, hand, stack, new BlockHitResult(context.getClickLocation(),context.getClickedFace(),context.getClickedPos(),context.isInside())))){
-               boolean careful = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION.id) >= 1;
-               boolean mining = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MINING_LASER.id) >= 1;
+               boolean careful = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION) >= 1;
+               boolean mining = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MINING_LASER) >= 1;
                if(careful && !getCompoundProperty(stack,DATA_TAG).isEmpty()){
                   placeBeacon(player, world, placePos, tier, blocks,getCompoundProperty(stack,DATA_TAG),mining);
                }else{
@@ -390,7 +390,7 @@ public class TelescopingBeacon extends ArcanaItem {
             // Scan for support blocks
             List<Tuple<BlockPos, BlockState>> baseBlocks = getBaseBlocks(world,placePos);
             int tier = blocksToTier(baseBlocks.size());
-            boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION.id)) >= 1;
+            boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION)) >= 1;
             // Remove support blocks and add them to NBT
             blocks = new ListTag();
             if(tier != 0){

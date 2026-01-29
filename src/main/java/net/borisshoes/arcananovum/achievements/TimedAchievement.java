@@ -106,7 +106,7 @@ public class TimedAchievement extends ArcanaAchievement{
    
    @Override
    public TimedAchievement fromNbt(String id, CompoundTag nbt){
-      TimedAchievement ach = (TimedAchievement) ArcanaAchievements.registry.get(id).makeNew();
+      TimedAchievement ach = (TimedAchievement) ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(id).makeNew();
       ach.setProgress(nbt.getIntOr("progress", 0));
       ach.setActive(nbt.getBooleanOr("active", false));
       ach.setAcquired(nbt.getBooleanOr("acquired", false));
@@ -117,7 +117,7 @@ public class TimedAchievement extends ArcanaAchievement{
    @Override
    public MutableComponent[] getStatusDisplay(ServerPlayer player){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      TimedAchievement achievement = (TimedAchievement) profile.getAchievement(getArcanaItem().getId(), id);
+      TimedAchievement achievement = (TimedAchievement) profile.getAchievement(this);
       if(achievement == null) return null;
    
       if(achievement.isAcquired()){
@@ -130,6 +130,8 @@ public class TimedAchievement extends ArcanaAchievement{
    
    @Override
    public TimedAchievement makeNew(){
-      return new TimedAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, goal, timeFrame);
+      TimedAchievement ach = new TimedAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, goal, timeFrame);
+      ach.setHidden(hidden);
+      return ach;
    }
 }

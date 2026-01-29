@@ -171,7 +171,7 @@ public class ContainmentCirclet extends ArcanaItem {
          return InteractionResult.SUCCESS_SERVER;
       }
       
-      boolean hostiles = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CONFINEMENT.id) > 0;
+      boolean hostiles = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CONFINEMENT) > 0;
       
       if(entity instanceof Enemy && !hostiles){
          user.displayClientMessage(Component.literal("This Circlet cannot capture hostile creatures").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
@@ -215,7 +215,7 @@ public class ContainmentCirclet extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          CompoundTag contents = getCompoundProperty(itemStack,CONTENTS_TAG);
-         boolean confinement = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CONFINEMENT.id) >= 1;
+         boolean confinement = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CONFINEMENT) >= 1;
          
          List<String> stringList = new ArrayList<>();
          if(confinement){
@@ -265,7 +265,7 @@ public class ContainmentCirclet extends ArcanaItem {
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
                   
                   if(newEntity instanceof TamableAnimal tameable && tameable.isOwnedBy(player)){
-                     ArcanaAchievements.grant(player,ArcanaAchievements.I_CHOOSE_YOU.id);
+                     ArcanaAchievements.grant(player,ArcanaAchievements.I_CHOOSE_YOU);
                   }
                }
                buildItemLore(stack,serverWorld.getServer());
@@ -283,7 +283,7 @@ public class ContainmentCirclet extends ArcanaItem {
          
          float hp = getFloatProperty(stack,HP_TAG);
          float maxHp = getFloatProperty(stack,MAX_HP_TAG);
-         boolean heals = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HEALING_CIRCLET.id) > 0;
+         boolean heals = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HEALING_CIRCLET) > 0;
          
          if(heals && player.level().getServer().getTickCount() % 1200 == 0){
             putProperty(stack,HP_TAG,Math.min(maxHp,hp+1));

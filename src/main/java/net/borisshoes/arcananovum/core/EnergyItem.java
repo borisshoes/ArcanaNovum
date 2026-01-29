@@ -17,7 +17,7 @@ public abstract class EnergyItem extends ArcanaItem {
       return buildItemLore(newStack,server);
    }
    
-   public int getEnergy(ItemStack item){
+   public static int getEnergy(ItemStack item){
       return getIntProperty(item,ENERGY_TAG);
    }
    

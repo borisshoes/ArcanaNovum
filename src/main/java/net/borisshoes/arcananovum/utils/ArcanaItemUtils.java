@@ -6,7 +6,9 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.*;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.datastorage.EnderCrateChannels;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
+import net.borisshoes.borislib.datastorage.DataAccess;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -160,7 +162,12 @@ public class ArcanaItemUtils {
          BlockPos pos = blockEntity.getBlockPos();
          String posStr = " ("+pos.getX()+","+pos.getY()+","+pos.getZ()+")";
          
-         ArcanaItemContainer worldContainer = new ArcanaItemContainer(new SimpleContainer(1),1,1000,"World",dimensionName+posStr,0.25);
+         ArcanaItemContainer worldContainer = new ArcanaItemContainer(
+               Identifier.withDefaultNamespace("in_world"),
+               new SimpleContainer(1), 1,1000,
+               Component.literal("World"),
+               Component.literal(dimensionName+posStr),
+               0.25);
          ArcanaInvItem invItem = new ArcanaInvItem(arcanaBlockEntity.getArcanaItem(),1,arcanaBlockEntity.getAugments(),new ArrayList<>(List.of(worldContainer)));
          arcanaInv.add(invItem);
       }
@@ -172,8 +179,17 @@ public class ArcanaItemUtils {
       List<ArcanaInvItem> arcanaInv = new ArrayList<>();
       Inventory inv = player.getInventory();
       PlayerEnderChestContainer eChest = player.getEnderChestInventory();
+      ArcanaItemContainer eChestCont = new ArcanaItemContainer(
+            Identifier.withDefaultNamespace("ender_chest"),
+            player.getEnderChestInventory(), player.getEnderChestInventory().getContainerSize(),100,
+            Component.literal("EC"),
+            Items.ENDER_CHEST.getName().copy(),
+            0.5);
       arcanaInvHelper(inv,arcanaInv,new ArrayList<>());
-      arcanaInvHelper(eChest,arcanaInv,new ArrayList<>(List.of(new ArcanaItemContainer(player.getEnderChestInventory(),player.getEnderChestInventory().getContainerSize(),100,"EC","Ender Chest",0.5))));
+      arcanaInvHelper(eChest,arcanaInv,new ArrayList<>(List.of(eChestCont)));
+      for(ArcanaItemContainer arcanaItemContainer : DataAccess.getGlobal(EnderCrateChannels.KEY).arcanaInventoriesForPlayer(player.getUUID())){
+         arcanaInvHelper(arcanaItemContainer.getInventory(),arcanaInv,new ArrayList<>(List.of(arcanaItemContainer)));
+      }
       arcanaInv.addAll(getActiveArcanaBlocks(player));
       return arcanaInv;
    }
@@ -195,7 +211,12 @@ public class ArcanaItemUtils {
                index++;
             }
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
-            containersCopy.add(new ArcanaItemContainer(bundleInv,bundleInv.getContainerSize(),5,"BD","Bundle",1));
+            containersCopy.add(new ArcanaItemContainer(
+                  Identifier.withDefaultNamespace("bundle"),
+                  bundleInv, bundleInv.getContainerSize(),5,
+                  Component.literal("BD"),
+                  item.getItemName().copy(),
+                  1));
             arcanaInvHelper(bundleInv,arcanaInv,containersCopy);
          }else if(isBox && !isArcane){
             ItemContainerContents comp = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
@@ -206,7 +227,12 @@ public class ArcanaItemUtils {
                shulkerInv.setItem(j,shulkerItems.get(j));
             }
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
-            containersCopy.add(new ArcanaItemContainer(shulkerInv,shulkerInv.getContainerSize(),50,"SB","Shulker Box",0.5));
+            containersCopy.add(new ArcanaItemContainer(
+                  Identifier.withDefaultNamespace("shulker_box"),
+                  shulkerInv, shulkerInv.getContainerSize(),50,
+                  Component.literal("SB"),
+                  item.getItemName().copy(),
+                  0.5));
             arcanaInvHelper(shulkerInv,arcanaInv,containersCopy);
          }
          if(!isArcane){
@@ -242,7 +268,6 @@ public class ArcanaItemUtils {
          double containerMod = arcanaInvItem.getFocusedConcMod(player);
          concSum += (int) (Math.ceil(arcanaInvItem.count/(double)prefCount) * Math.ceil(containerMod*(ArcanaRarity.getConcentration(arcanaItem.getRarity())+ arcanaInvItem.getAugmentConc(player))));
       }
-      
       return concSum;
    }
    
@@ -269,12 +294,12 @@ public class ArcanaItemUtils {
          int itemConc = multiplier * (int)Math.ceil(containerMod*(ArcanaRarity.getConcentration(arcanaItem.getRarity())+ arcanaInvItem.getAugmentConc(player)));
          
          String multStr = multiplier > 1 ? " x"+multiplier : "";
-         String contStr = arcanaInvItem.getContainerString();
+         MutableComponent contStr = arcanaInvItem.getContainerString();
          MutableComponent line = Component.literal("")
                .append((Component.literal("- ").append(arcanaItem.getTranslatedName())).withStyle(ChatFormatting.DARK_AQUA))
                .append(Component.literal(multStr).withStyle(ChatFormatting.BLUE))
-               .append(Component.literal(" ("+itemConc+")").withStyle(ChatFormatting.DARK_GREEN))
-               .append(Component.literal(" "+contStr).withStyle(ChatFormatting.DARK_PURPLE));
+               .append(Component.literal(" ("+itemConc+") ").withStyle(ChatFormatting.DARK_GREEN))
+               .append(contStr.withStyle(ChatFormatting.DARK_PURPLE));
          list.add(line);
       }
       
@@ -353,7 +378,7 @@ public class ArcanaItemUtils {
          
          concMod = 1;
          sortMod = 0;
-         containers.sort(Comparator.comparing(ArcanaItemContainer::getConcModStr));
+         containers.sort(Comparator.comparing(ArcanaItemContainer::getSortMod));
          StringBuilder contHash = new StringBuilder();
          for(ArcanaItemContainer container : containers){
             contHash.append(container.getConcModStr());
@@ -396,13 +421,13 @@ public class ArcanaItemUtils {
       
       public int getAugmentConc(ServerPlayer player){
          ArcanaPlayerData profile = ArcanaNovum.data(player);
-         int adaptability = profile.getAugmentLevel(ArcanaAugments.ADAPTABILITY.id);
+         int adaptability = profile.getAugmentLevel(ArcanaAugments.ADAPTABILITY);
          int augmentConc = 0;
          
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
             ArcanaAugment aug = entry.getKey();
             int itemLvl = entry.getValue();
-            int profileLvl = profile.getAugmentLevel(aug.id);
+            int profileLvl = profile.getAugmentLevel(aug);
             augmentConc += Math.max(0,itemLvl-profileLvl);
          }
          return Math.max(0,augmentConc-adaptability);
@@ -410,30 +435,30 @@ public class ArcanaItemUtils {
       
       public double getFocusedConcMod(ServerPlayer player){
          ArcanaPlayerData profile = ArcanaNovum.data(player);
-         int focus = profile.getAugmentLevel(ArcanaAugments.FOCUS.id);
+         int focus = profile.getAugmentLevel(ArcanaAugments.FOCUS);
          if(focus == 1){
             boolean isEChest = false;
             boolean isShulker = false;
    
             for(ArcanaItemContainer container : containers){
-               if(container.getContainerName().equals("Ender Chest")){
+               if(container.getId().equals(Identifier.withDefaultNamespace("ender_chest"))){
                   isEChest = true;
-               }else if(container.getContainerName().equals("Shulker Box")){
+               }else if(container.getId().equals(Identifier.withDefaultNamespace("shulker_box"))){
                   isShulker = true;
                }
             }
             return isShulker && isEChest ? 0 : getConcMod();
          }else if(focus == 2){
             for(ArcanaItemContainer container : containers){
-               if(container.getContainerName().equals("Ender Chest")){
+               if(container.getId().equals(Identifier.withDefaultNamespace("ender_chest"))){
                   return 0;
                }
             }
          }else if(focus == 3){
             for(ArcanaItemContainer container : containers){
-               if(container.getContainerName().equals("Ender Chest")){
+               if(container.getId().equals(Identifier.withDefaultNamespace("ender_chest"))){
                   return 0;
-               }else if(container.getContainerName().equals("Shulker Box")){
+               }else if(container.getId().equals(Identifier.withDefaultNamespace("shulker_box"))){
                   return 0;
                }
             }
@@ -441,25 +466,31 @@ public class ArcanaItemUtils {
          return getConcMod();
       }
    
-      public String getShortContainerString(){
-         if(containers.isEmpty()) return "Inv";
-         StringBuilder str = new StringBuilder();
-         for(ArcanaItemContainer container : containers){
-            str.append(container.getConcModStr()).append("+");
+      public MutableComponent getShortContainerString(){
+         if(containers.isEmpty()) return Component.literal("Inv");
+         MutableComponent comp = Component.literal("");
+         for(int i = 0; i < containers.size(); i++){
+            comp.append(containers.get(i).getConcModStr());
+            if(i != containers.size()-1){
+               comp.append("+");
+            }
          }
-         return (str.substring(0,str.length()-1));
+         return comp;
       }
       
-      public String getContainerString(){
-         if(containers.isEmpty()) return "";
-         StringBuilder str = new StringBuilder("[");
-         for(ArcanaItemContainer container : containers){
-            str.append(container.getContainerName()).append(" + ");
+      public MutableComponent getContainerString(){
+         if(containers.isEmpty()) return Component.literal("");
+         MutableComponent comp = Component.literal("[");
+         for(int i = 0; i < containers.size(); i++){
+            comp.append(containers.get(i).getContainerName());
+            if(i != containers.size()-1){
+               comp.append(" + ");
+            }
          }
-         if(str.length() > 30){
-            return "[" + getShortContainerString() + "]";
+         if(comp.getString().length() > 30 && !(containers.size() == 1 && containers.getFirst().getId().equals(Identifier.fromNamespaceAndPath(MOD_ID,ArcanaRegistry.ENDER_CRATE.getId())))){
+            return Component.literal("[").append(getShortContainerString()).append("]");
          }else{
-            return (str.substring(0,str.length()-3) + "]");
+            return comp.append("]");
          }
       }
       

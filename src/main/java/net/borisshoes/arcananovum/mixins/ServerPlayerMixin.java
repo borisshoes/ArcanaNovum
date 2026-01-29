@@ -4,8 +4,11 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
+import net.borisshoes.arcananovum.blocks.ItineranteurBlockEntity;
 import net.borisshoes.arcananovum.callbacks.EntityKilledCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.entities.StasisPearlEntity;
 import net.borisshoes.arcananovum.items.SojournerBoots;
 import net.borisshoes.arcananovum.research.EffectResearchTask;
@@ -13,6 +16,11 @@ import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -26,6 +34,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -33,6 +42,35 @@ import java.util.Map;
 
 @Mixin(ServerPlayer.class)
 public class ServerPlayerMixin {
+   
+   @ModifyArg(method = "checkMovementStatistics", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;causeFoodExhaustion(F)V"), index = 0)
+   private float arcananovum$itineranteurFeedRun(float in, @Local int cm){
+      ServerPlayer player = (ServerPlayer) (Object) this;
+      ArcanaPlayerData data = ArcanaNovum.data(player);
+      Tag fedTag = data.getMiscData(ItineranteurBlockEntity.FED_TAG);
+      Tag uuidTag = data.getMiscData(ItineranteurBlockEntity.CRAFTER_TAG);
+      if(uuidTag instanceof StringTag stringTag && !stringTag.asString().orElse("").isEmpty()){
+         ArcanaAchievements.progress(AlgoUtils.getUUID(stringTag.asString().get()),ArcanaAchievements.ARCANA_BOULEVARD,cm);
+         if(player.random.nextFloat() < 0.1) player.level().sendParticles(ParticleTypes.END_ROD,player.getX(),player.getY()+0.1,player.getZ(),1,player.getBbWidth()/2.0,0.05,player.getBbWidth()/2.0,0.025);
+      }
+      if(fedTag instanceof ByteTag byteTag && byteTag.byteValue() != 0){
+         return in*0.0f;
+      }else{
+         return in;
+      }
+   }
+   
+   @ModifyArg(method = "jumpFromGround", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;causeFoodExhaustion(F)V"), index = 0)
+   private float arcananovum$itineranteurFeedJump(float in){
+      ServerPlayer player = (ServerPlayer) (Object) this;
+      ArcanaPlayerData data = ArcanaNovum.data(player);
+      Tag fedTag = data.getMiscData(ItineranteurBlockEntity.FED_TAG);
+      if(fedTag instanceof ByteTag byteTag && byteTag.byteValue() != 0){
+         return in*0.0f;
+      }else{
+         return in;
+      }
+   }
    
    @Inject(method = "loadAndSpawnEnderPearl", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;placeEnderPearlTicket(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/ChunkPos;)J"))
    private void arcananovum$readStasisPearl(ValueInput view, CallbackInfo ci, @Local Entity entity){
@@ -57,12 +95,13 @@ public class ServerPlayerMixin {
    private void arcananovum$swimStats(double deltaX, double deltaY, double deltaZ, CallbackInfo ci){
       ServerPlayer player = (ServerPlayer) (Object) this;
       boolean hasCetacea = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, null, 0).stream().anyMatch(stack -> ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG));
-      if(hasCetacea){
+      boolean cetaceaStele = GeomanticSteleBlockEntity.isEntityInZone(player,(item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()));
+      if(hasCetacea || cetaceaStele){
          int i = Math.round((float)Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) * 100.0F);
          if(i > 0){
-            ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_MIGRATION.id, i);
+            ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_MIGRATION, i);
             LivingEntity entity = player.level().getNearestEntity(Dolphin.class, TargetingConditions.forNonCombat().range(10.0).ignoreLineOfSight(), player, player.getX(), player.getY(), player.getZ(), player.getBoundingBox().inflate(20.0));
-            if(entity != null) ArcanaAchievements.progress(player, ArcanaAchievements.CEPHALOS_IN_A_POD.id, i);
+            if(entity != null) ArcanaAchievements.progress(player, ArcanaAchievements.CEPHALOS_IN_A_POD, i);
          }
       }
    }
@@ -74,7 +113,7 @@ public class ServerPlayerMixin {
       if(ArcanaItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
          if(player.isSprinting()){
             int i = Math.round((float)Math.sqrt(dx * dx + dz * dz) * 100.0f);
-            ArcanaAchievements.progress(player, ArcanaAchievements.PHEIDIPPIDES.id, i);
+            ArcanaAchievements.progress(player, ArcanaAchievements.PHEIDIPPIDES, i);
          }
       }
    }

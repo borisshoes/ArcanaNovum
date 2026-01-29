@@ -78,7 +78,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
          for(String achieveKey : itemAchsTag.keySet()){
             CompoundTag achTag = itemAchsTag.getCompoundOrEmpty(achieveKey);
-            ArcanaAchievement ach = ArcanaAchievements.registry.get(achieveKey);
+            ArcanaAchievement ach = ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(achieveKey);
             if(ach == null) continue;
             itemAchs.add(ach.makeNew().fromNbt(achieveKey,achTag));
          }
@@ -232,7 +232,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          ArcanaAugment augment = entry.getKey();
          if(counted.contains(augment)) continue;
          if(ArcanaAugments.linkedAugments.containsKey(augment)){
-            counted.addAll(ArcanaAugments.getLinkedAugments(augment.id));
+            counted.addAll(ArcanaAugments.getLinkedAugments(augment));
          }
          
          ArcanaRarity[] tiers = augment.getTiers();
@@ -470,7 +470,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(level < 0 || baseAugment.getTiers().length < level) return false;
       
       if(ArcanaAugments.linkedAugments.containsKey(baseAugment)){
-         return setLinkedAugmentLevel(id,level);
+         return setLinkedAugmentLevel(baseAugment,level);
       }
       
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
@@ -483,8 +483,8 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       return false;
    }
    
-   private boolean setLinkedAugmentLevel(String id, int level){
-      List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(id);
+   private boolean setLinkedAugmentLevel(ArcanaAugment aug, int level){
+      List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(aug);
       if(linkedAugments.isEmpty()) return false;
       
       boolean had = false;

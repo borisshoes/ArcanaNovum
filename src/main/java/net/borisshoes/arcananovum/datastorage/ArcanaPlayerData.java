@@ -67,7 +67,7 @@ public class ArcanaPlayerData {
                
                for(String achieveKey : itemAchsTag.keySet()){
                   CompoundTag achTag = itemAchsTag.getCompoundOrEmpty(achieveKey);
-                  ArcanaAchievement ach = ArcanaAchievements.registry.get(achieveKey);
+                  ArcanaAchievement ach = ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(achieveKey);
                   if(ach == null) continue;
                   itemAchs.add(ach.makeNew().fromNbt(achieveKey, achTag));
                }
@@ -129,7 +129,7 @@ public class ArcanaPlayerData {
    );
    
    public static final Codec<ArcanaPlayerData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-         CodecUtils.UUID_CODEC.fieldOf("playerID").forGetter(data -> data.playerId),
+         CodecUtils.UUID_CODEC.optionalFieldOf("playerID").forGetter(data -> Optional.ofNullable(data.playerId)),
          Codec.STRING.optionalFieldOf("username","").forGetter(data -> data.username),
          CodecUtils.STRING_LIST.optionalFieldOf("crafted", new ArrayList<>()).forGetter(data -> data.crafted),
          CodecUtils.STRING_LIST.optionalFieldOf("researchedItems", new ArrayList<>()).forGetter(data -> data.researchedItems),
@@ -139,8 +139,12 @@ public class ArcanaPlayerData {
          AUGMENTS_CODEC.optionalFieldOf("augments", new HashMap<>()).forGetter(data -> data.augments),
          Codec.INT.optionalFieldOf("level", 0).forGetter(data -> data.level),
          Codec.INT.optionalFieldOf("xp", 0).forGetter(data -> data.xp),
-         ItemStack.CODEC.optionalFieldOf("storedOffhand", ItemStack.EMPTY).forGetter(data -> data.storedOffhand)
-   ).apply(instance, ArcanaPlayerData::new));
+         ItemStack.OPTIONAL_CODEC.optionalFieldOf("storedOffhand", ItemStack.EMPTY).forGetter(data -> data.storedOffhand)
+   ).apply(instance, ArcanaPlayerData::fromCodec));
+   
+   private static ArcanaPlayerData fromCodec(Optional<UUID> playerId, String username, List<String> crafted, List<String> researchedItems, List<String> researchTasks, HashMap<String, Tag> miscData, HashMap<String, List<ArcanaAchievement>> achievements, HashMap<ArcanaAugment, Integer> augments, int level, int xp, ItemStack storedOffhand){
+      return new ArcanaPlayerData(playerId.orElse(null), username, crafted, researchedItems, researchTasks, miscData, achievements, augments, level, xp, storedOffhand);
+   }
    
    public static final DataKey<ArcanaPlayerData> KEY = DataRegistry.register(DataKey.ofPlayer(Identifier.fromNamespaceAndPath(MOD_ID, "playerdata"), CODEC,ArcanaPlayerData::new));
    
@@ -163,6 +167,7 @@ public class ArcanaPlayerData {
    }
    
    private ServerPlayer findPlayer(){
+      if(BorisLib.SERVER == null || playerId == null) return null;
       return BorisLib.SERVER.getPlayerList().getPlayer(playerId);
    }
    
@@ -259,7 +264,7 @@ public class ArcanaPlayerData {
          ArcanaAugment augment = entry.getKey();
          if(counted.contains(augment)) continue;
          if(ArcanaAugments.linkedAugments.containsKey(augment)){
-            counted.addAll(ArcanaAugments.getLinkedAugments(augment.id));
+            counted.addAll(ArcanaAugments.getLinkedAugments(augment));
          }
          
          ArcanaRarity[] tiers = augment.getTiers();
@@ -325,7 +330,7 @@ public class ArcanaPlayerData {
       }
       
       SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
-      int resolve = getAugmentLevel(ArcanaAugments.RESOLVE.id);
+      int resolve = getAugmentLevel(ArcanaAugments.RESOLVE);
       player.displayClientMessage(Component.literal(""),false);
       player.displayClientMessage(Component.literal("Your Arcana has levelled up to level "+newLevel+"!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD),false);
       player.displayClientMessage(Component.literal("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel,resolve)+"!").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC),false);
@@ -370,7 +375,11 @@ public class ArcanaPlayerData {
       return added;
    }
    
-   public boolean setAchievement(String item, ArcanaAchievement achievement){
+   public boolean setAchievement(ArcanaAchievement achievement){
+      return setAchievement(achievement.getArcanaItem().getId(),achievement);
+   }
+   
+   private boolean setAchievement(String item, ArcanaAchievement achievement){
       if(achievements.containsKey(item)){
          List<ArcanaAchievement> itemAchs = achievements.get(item);
          boolean removed = itemAchs.removeIf(itemAch -> itemAch.id.equals(achievement.id));
@@ -401,12 +410,16 @@ public class ArcanaPlayerData {
       return crafted.removeIf(i -> i.equalsIgnoreCase(item));
    }
    
-   public boolean removeAchievement(String item, String achievementId){
+   public boolean removeAchievement(ArcanaAchievement ach){
+      return removeAchievement(ach.getArcanaItem().getId(),ach);
+   }
+   
+   private boolean removeAchievement(String item, ArcanaAchievement ach){
       boolean found = false;
       if(achievements.containsKey(item)){
          List<ArcanaAchievement> itemAchs = achievements.get(item);
          for(ArcanaAchievement itemAch : itemAchs){
-            if(itemAch.id.equals(achievementId)){
+            if(itemAch.id.equals(ach.id)){
                itemAchs.remove(itemAch);
                found = true;
                break;
@@ -431,14 +444,14 @@ public class ArcanaPlayerData {
    }
    
    public boolean hasAcheivement(ArcanaAchievement ach){
-      return hasAcheivement(ach.getArcanaItem().getId(), ach.id);
+      return hasAcheivement(ach.getArcanaItem().getId(), ach);
    }
    
-   public boolean hasAcheivement(String item, String achievementId){
+   private boolean hasAcheivement(String item, ArcanaAchievement ach){
       if(achievements.containsKey(item)){
          List<ArcanaAchievement> itemAchs = achievements.get(item);
          for(ArcanaAchievement itemAch : itemAchs){
-            if(itemAch.id.equals(achievementId)){
+            if(itemAch.id.equals(ach.id)){
                return itemAch.isAcquired();
             }
          }
@@ -446,11 +459,15 @@ public class ArcanaPlayerData {
       return false;
    }
    
-   public ArcanaAchievement getAchievement(String item, String achievementId){
+   public ArcanaAchievement getAchievement(ArcanaAchievement ach){
+      return getAchievement(ach.getArcanaItem().getId(),ach);
+   }
+   
+   private ArcanaAchievement getAchievement(String item, ArcanaAchievement ach){
       if(achievements.containsKey(item)){
          List<ArcanaAchievement> itemAchs = achievements.get(item);
          for(ArcanaAchievement itemAch : itemAchs){
-            if(itemAch.id.equals(achievementId)){
+            if(itemAch.id.equals(ach.id)){
                return itemAch;
             }
          }
@@ -470,9 +487,9 @@ public class ArcanaPlayerData {
       return count;
    }
    
-   public int getAugmentLevel(String id){
+   public int getAugmentLevel(ArcanaAugment augment){
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-         if(entry.getKey().id.equals(id)){
+         if(entry.getKey() == augment){
             return entry.getValue();
          }
       }
@@ -480,39 +497,37 @@ public class ArcanaPlayerData {
    }
    
    // Returns whether the player already had that augment or not
-   public boolean setAugmentLevel(String id, int level){
-      ArcanaAugment baseAugment = ArcanaAugments.registry.get(id);
-      if(baseAugment == null) return false;
-      if(level < 0 || baseAugment.getTiers().length < level) return false;
+   public boolean setAugmentLevel(ArcanaAugment augment, int level){
+      if(level < 0 || augment.getTiers().length < level) return false;
       
-      if(ArcanaAugments.linkedAugments.containsKey(baseAugment)){
-         return setLinkedAugmentLevel(id,level);
+      if(ArcanaAugments.linkedAugments.containsKey(augment)){
+         return setLinkedAugmentLevel(augment,level);
       }
       
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-         if(entry.getKey().id.equals(id)){
+         if(entry.getKey() == augment){
             entry.setValue(level);
             return true;
          }
       }
-      augments.put(baseAugment,level);
+      augments.put(augment,level);
       return false;
    }
    
-   private boolean setLinkedAugmentLevel(String id, int level){
-      List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(id);
+   private boolean setLinkedAugmentLevel(ArcanaAugment augment, int level){
+      List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(augment);
       if(linkedAugments.isEmpty()) return false;
       
       boolean had = false;
       int[] levels = new int[linkedAugments.size()];
       for(int i = 0; i < linkedAugments.size(); i++){
-         ArcanaAugment augment = linkedAugments.get(i);
-         levels[i] = getAugmentLevel(augment.id);
+         ArcanaAugment aug = linkedAugments.get(i);
+         levels[i] = getAugmentLevel(aug);
          
          if(levels[i] != 0){
             had = true;
             for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-               if(entry.getKey().id.equals(augment.id)){
+               if(entry.getKey() == aug){
                   entry.setValue(level);
                   break;
                }
@@ -526,9 +541,9 @@ public class ArcanaPlayerData {
    }
    
    // Returns if the operation was successful or not
-   public boolean removeAugment(String id){
-      if(augments.entrySet().stream().noneMatch(e -> e.getKey().id.equals(id))) return false;
-      return augments.entrySet().removeIf(e -> e.getKey().id.equals(id));
+   public boolean removeAugment(ArcanaAugment augment){
+      if(augments.entrySet().stream().noneMatch(e -> e.getKey() == augment)) return false;
+      return augments.entrySet().removeIf(e -> e.getKey() == augment);
    }
    
    public void removeAllAugments(){

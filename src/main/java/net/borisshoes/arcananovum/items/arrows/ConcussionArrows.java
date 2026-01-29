@@ -84,13 +84,13 @@ public class ConcussionArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK.id);
+      int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK);
       concuss(arrow, arrow.level(),entityHitResult.getLocation(), lvl);
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK.id);
+      int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK);
       concuss(arrow, arrow.level(),blockHitResult.getLocation(), lvl);
    }
    
@@ -129,7 +129,7 @@ public class ConcussionArrows extends RunicArrow {
             }
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_AWE.id);
+      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_AWE);
       if(world instanceof ServerLevel serverWorld){
          SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.PLAYERS, 1, .8f);
          ArcanaEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);

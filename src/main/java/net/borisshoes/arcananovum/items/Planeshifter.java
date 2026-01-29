@@ -181,7 +181,7 @@ public class Planeshifter extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PLANAR_FLOW.id));
+      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PLANAR_FLOW));
       return 600 - cdReduction[cdLvl];
    }
    
@@ -209,7 +209,7 @@ public class Planeshifter extends EnergyItem {
          BlockPos blockPos = new BlockPos(player.getBlockX(),y,player.getBlockZ());
          BlockState state = destWorld.getBlockState(blockPos);
          if(state.is(Blocks.LAVA)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.UNFORTUNATE_MATERIALIZATION.id);
+            ArcanaAchievements.grant(player,ArcanaAchievements.UNFORTUNATE_MATERIALIZATION);
             break;
          }else if(!(state.isAir() || state.getCollisionShape(destWorld,blockPos).isEmpty())){
             break;
@@ -225,15 +225,15 @@ public class Planeshifter extends EnergyItem {
       boolean inOverworld = world.dimension().identifier().equals(ServerLevel.OVERWORLD.identifier());
       boolean inEnd = world.dimension().identifier().equals(ServerLevel.END.identifier());
       boolean inNether = world.dimension().identifier().equals(ServerLevel.NETHER.identifier());
-      if(inNether) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "From The Nether",true);
-      if(inEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"From The End",true);
-      if(inOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"From The Overworld",true);
+      if(inNether) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER, "From The Nether",true);
+      if(inEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER,"From The End",true);
+      if(inOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER,"From The Overworld",true);
       boolean destOverworld = target.dimension().identifier().equals(ServerLevel.OVERWORLD.identifier());
       boolean destEnd = target.dimension().identifier().equals(ServerLevel.END.identifier());
       boolean destNether = target.dimension().identifier().equals(ServerLevel.NETHER.identifier());
-      if(destNether) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Nether",true);
-      if(destEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"To The End",true);
-      if(destOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"To The Overworld",true);
+      if(destNether) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER, "To The Nether",true);
+      if(destEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER,"To The End",true);
+      if(destOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER,"To The Overworld",true);
       
       if(inNether && destOverworld){
          findPortalAndTeleport(player,target,false);

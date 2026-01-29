@@ -5,7 +5,9 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.component.DataComponents;
@@ -46,7 +48,7 @@ public class RenameGui extends AnvilInputGui {
    
    public void build(){
       setTitle(Component.literal("Rename Item"));
-      setSlot(1, GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultInstance()).setName(Component.literal("")).hideTooltip());
+      setSlot(1, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)).hideTooltip());
       
       inv = new SimpleContainer(2);
       listener = new TinkerInventoryListener(this,1,blockEntity);
@@ -65,7 +67,7 @@ public class RenameGui extends AnvilInputGui {
             }else{
                item.set(DataComponents.CUSTOM_NAME,newName);
                if(ArcanaItemUtils.isArcane(item)){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.TOUCH_OF_PERSONALITY.id);
+                  ArcanaAchievements.grant(player,ArcanaAchievements.TOUCH_OF_PERSONALITY);
                }
             }
             SoundUtils.playSound(player.level(),blockEntity.getBlockPos(), SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));

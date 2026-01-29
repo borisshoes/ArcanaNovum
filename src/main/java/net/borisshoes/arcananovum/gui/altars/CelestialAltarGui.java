@@ -35,7 +35,7 @@ public class CelestialAltarGui extends SimpleGui {
       super(MenuType.HOPPER, player, false);
       this.blockEntity = blockEntity;
       setTitle(Component.literal("Celestial Altar"));
-      control = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STELLAR_CONTROL.id) >= 1;
+      control = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STELLAR_CONTROL) >= 1;
    }
    
    

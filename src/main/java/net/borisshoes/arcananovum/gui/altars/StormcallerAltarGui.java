@@ -32,7 +32,7 @@ public class StormcallerAltarGui  extends SimpleGui {
       super(MenuType.HOPPER, player, false);
       this.blockEntity = blockEntity;
       setTitle(Component.literal("Altar of the Stormcaller"));
-      tempest = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PERSISTENT_TEMPEST.id) >= 1;
+      tempest = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PERSISTENT_TEMPEST) >= 1;
    }
    
    @Override

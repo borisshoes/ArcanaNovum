@@ -117,7 +117,7 @@ public class ServerGamePacketListenerImplMixin {
          // Quiver arrow swap
          boolean arbalest = (ArcanaItemUtils.identifyItem(hand) instanceof AlchemicalArbalest);
          boolean crossbow = (hand.getItem() instanceof CrossbowItem) || arbalest;
-         boolean runic = (ArcanaItemUtils.identifyItem(hand) instanceof RunicBow) || (arbalest && ArcanaAugments.getAugmentOnItem(hand,ArcanaAugments.RUNIC_ARBALEST.id) >= 1);
+         boolean runic = (ArcanaItemUtils.identifyItem(hand) instanceof RunicBow) || (arbalest && ArcanaAugments.getAugmentOnItem(hand,ArcanaAugments.RUNIC_ARBALEST) >= 1);
          if(!(hand.getItem() instanceof BowItem) && !runic && !crossbow) break quiver;
          
          // Check for and rotate arrow types in quivers

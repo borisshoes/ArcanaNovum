@@ -84,13 +84,13 @@ public class ExpulsionArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
-         boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
+         boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST) > 0;
          if(evict){
             double range = Mth.clamp(arrow.getDeltaMovement().length()*2,1,5);
             BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,entityHitResult.getLocation(),range)));
          }else{
             int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20); // Measured in quarter seconds
-            double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
+            double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION);
             expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
          }
       }
@@ -99,13 +99,13 @@ public class ExpulsionArrows extends RunicArrow {
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
-         boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
+         boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST) > 0;
          if(evict){
             double range = Mth.clamp(arrow.getDeltaMovement().length()*2,1,5);
             BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,blockHitResult.getLocation(),range)));
          }else{
             int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20); // Measured in quarter seconds
-            double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
+            double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION);
             expulsionPulse(arrow, serverWorld,blockHitResult.getLocation(),null,duration,range,0);
          }
       }
@@ -122,7 +122,7 @@ public class ExpulsionArrows extends RunicArrow {
          if(entity1 instanceof ServerPlayer player){
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
             
-            if(arrow.getOwner() != null && arrow.getOwner().getUUID().equals(player.getUUID()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD.id);
+            if(arrow.getOwner() != null && arrow.getOwner().getUUID().equals(player.getUUID()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD);
          }
       }
       
@@ -144,7 +144,7 @@ public class ExpulsionArrows extends RunicArrow {
          if(entity1 instanceof ServerPlayer player){
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
             
-            if(arrow.getOwner() != null && arrow.getOwner().getUUID().equals(player.getUUID()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD.id);
+            if(arrow.getOwner() != null && arrow.getOwner().getUUID().equals(player.getUUID()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD);
          }
       }
       

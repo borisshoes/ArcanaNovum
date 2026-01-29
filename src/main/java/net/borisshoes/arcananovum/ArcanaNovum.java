@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum;
 
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import net.borisshoes.arcananovum.blocks.ItineranteurBlockEntity;
 import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.datastorage.AnchorData;
@@ -19,10 +20,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -48,6 +46,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    private static final Logger LOGGER = LogManager.getLogger("Arcana Novum");
    public static final HashMap<ServerLevel, Long2IntOpenHashMap> ANCHOR_CHUNKS = new HashMap<>();
    public static final HashMap<Tuple<BlockEntity, ArcanaBlockEntity>,Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
+   public static final HashMap<ServerPlayer, ItineranteurBlockEntity> ITINERANTEUR_USERS = new HashMap<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
    public static MinecraftServer SERVER = null;
@@ -68,6 +67,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       ServerTickEvents.END_SERVER_TICK.register(TickCallback::onTick);
       UseEntityCallback.EVENT.register(EntityUseCallback::useEntity);
       AttackBlockCallback.EVENT.register(BlockAttackCallback::attackBlock);
+      UseBlockCallback.EVENT.register(BlockUseCallback::useBlock);
       PlayerBlockBreakEvents.BEFORE.register(BlockBreakCallback::breakBlock);
       AttackEntityCallback.EVENT.register(EntityAttackCallback::attackEntity);
       ServerPlayConnectionEvents.JOIN.register(PlayerConnectionCallback::onPlayerJoin);
@@ -97,6 +97,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    }
    
    public static boolean addActiveBlock(Tuple<BlockEntity,ArcanaBlockEntity> pair){
+      if(pair.getB().getUuid() == null) return false;
       List<Tuple<BlockEntity,ArcanaBlockEntity>> existing = ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(p -> p.getB().getUuid().equals(pair.getB().getUuid())).toList();
       existing.forEach(ACTIVE_ARCANA_BLOCKS::remove);
       ACTIVE_ARCANA_BLOCKS.put(pair,30);
@@ -113,7 +114,8 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
          DefaultPlayerData defaultPlayerData = DataAccess.getPlayer(player, BorisLib.PLAYER_DATA_KEY);
          String username = defaultPlayerData != null ? defaultPlayerData.getUsername() : "<???>";
          log(3,"Failed to get Arcane Profile for "+username + " ("+player+")");
-         log(3,e.toString());
+         log(3,e.getMessage());
+         e.printStackTrace();
       }
       return null;
    }

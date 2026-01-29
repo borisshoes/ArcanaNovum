@@ -39,7 +39,7 @@ public class DamageAmpEffect extends MobEffect implements PolymerStatusEffect {
       if(AMP_TRACKER.containsKey(target)){
          if(target.hasEffect(ArcanaRegistry.DAMAGE_AMP_EFFECT) && AMP_TRACKER.get(target) instanceof ServerPlayer player){
             float buffDmg = buffDamage(damage,level) - damage;
-            ArcanaAchievements.progress(player,ArcanaAchievements.SPECTRAL_SUPPORT.id, (int) buffDmg);
+            ArcanaAchievements.progress(player,ArcanaAchievements.SPECTRAL_SUPPORT, (int) buffDmg);
             ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_DAMAGE_AMP_CAP),(int) (ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_DAMAGE_AMP_PER_10)*buffDmg/10.0))); // Add xp
          }else{
             AMP_TRACKER.remove(target);

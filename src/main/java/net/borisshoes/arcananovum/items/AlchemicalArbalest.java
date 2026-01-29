@@ -171,7 +171,7 @@ public class AlchemicalArbalest extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.RUNIC_ARBALEST.id) > 0){
+         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.RUNIC_ARBALEST) > 0){
             stringList.add("runic");
          }
          baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
@@ -186,8 +186,8 @@ public class AlchemicalArbalest extends ArcanaItem {
       public void verifyEnchantments(ItemStack stack){
          boolean hasMulti = EnchantmentHelper.has(stack, EnchantmentEffectComponents.PROJECTILE_COUNT);
          boolean hasPierce = EnchantmentHelper.has(stack, EnchantmentEffectComponents.PROJECTILE_PIERCING);
-         boolean hasScatter = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SCATTERSHOT.id) > 0;
-         boolean hasRunic = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RUNIC_ARBALEST.id) > 0;
+         boolean hasScatter = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SCATTERSHOT) > 0;
+         boolean hasRunic = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RUNIC_ARBALEST) > 0;
          
          ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
          ItemEnchantments comp = stack.getEnchantments();

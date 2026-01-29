@@ -120,7 +120,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       Block type = world.getBlockState(pos).getBlock();
       if(!world.getBlockState(pos).is(ArcanaRegistry.CEPTYUS_VEIN_MINEABLE)) return;
       
-      int veinLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.WITH_THE_DEPTHS.id));
+      int veinLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.WITH_THE_DEPTHS));
       int maxDepth = 8 + 2*veinLevel;
       int maxBlocks = 64 + 32*veinLevel;
       
@@ -154,7 +154,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          }
       }
       
-      int greedLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.GREED.id));
+      int greedLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.GREED));
       final int[] greed = {0,1,3,5};
       
       List<ItemStack> drops = new ArrayList<>();
@@ -176,11 +176,11 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       for(ItemStack stack : drops){
          Block.popResource(world, pos, stack);
       }
-      if(toMine.size() >= 12 && (type == Blocks.DIAMOND_ORE || type == Blocks.DEEPSLATE_DIAMOND_ORE) && player instanceof ServerPlayer serverPlayer) ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.MINE_DIAMONDS.id);
+      if(toMine.size() >= 12 && (type == Blocks.DIAMOND_ORE || type == Blocks.DEEPSLATE_DIAMOND_ORE) && player instanceof ServerPlayer serverPlayer) ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.MINE_DIAMONDS);
    }
    
    public void mining(ServerPlayer player, ItemStack stack){
-      int wHaste = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
+      int wHaste = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE));
       int energyGain = 5+(wHaste * 2);
       int maxEnergy = 1000 + 100 * wHaste;
       ArcanaPlayerData profile = ArcanaNovum.data(player);
@@ -232,15 +232,15 @@ public class PickaxeOfCeptyus extends ArcanaItem {
             
             MobEffectInstance haste = new MobEffectInstance(MobEffects.HASTE, 100, speed, false, false, false);
             player.addEffect(haste);
-            if(speed == 10) ArcanaAchievements.progress(player,ArcanaAchievements.BACK_IN_THE_MINE.id,1);
+            if(speed == 10) ArcanaAchievements.progress(player,ArcanaAchievements.BACK_IN_THE_MINE,1);
          }
       }
       
       @Override
       public boolean mineBlock(ItemStack stack, Level world, BlockState state, BlockPos pos, LivingEntity miner){
          if(miner instanceof ServerPlayer player){
-            int energyGain = 3 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
-            int maxEnergy = 1000 + 100 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
+            int energyGain = 3 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE));
+            int maxEnergy = 1000 + 100 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE));
             ArcanaPlayerData profile = ArcanaNovum.data(player);
             
             profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(0));

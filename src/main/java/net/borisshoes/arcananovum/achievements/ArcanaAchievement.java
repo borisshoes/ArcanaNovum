@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -18,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
@@ -34,6 +36,7 @@ public abstract class ArcanaAchievement {
    private final ArcanaItem arcanaItem;
    public final int xpReward;
    public final int pointsReward;
+   public boolean hidden;
    
    protected ArcanaAchievement(String id, int type, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward){
       this.id = id;
@@ -43,6 +46,12 @@ public abstract class ArcanaAchievement {
       this.xpReward = xpReward;
       this.pointsReward = pointsReward;
       this.acquired = false;
+      this.hidden = false;
+   }
+   
+   public ArcanaAchievement setHidden(boolean hidden){
+      this.hidden = hidden;
+      return this;
    }
    
    public String getTranslationKey(){
@@ -63,6 +72,10 @@ public abstract class ArcanaAchievement {
    
    public boolean isAcquired(){
       return acquired;
+   }
+   
+   public boolean isHidden(){
+      return hidden;
    }
    
    public ItemStack getDisplayItem(){
@@ -91,21 +104,27 @@ public abstract class ArcanaAchievement {
    
    public abstract ArcanaAchievement makeNew();
    
-   public void announceAcquired(ServerPlayer player){
-      MinecraftServer server = player.level().getServer();
+   public void announceAcquired(UUID playerId){
+      ArcanaPlayerData data = ArcanaNovum.data(playerId);
+      MinecraftServer server = BorisLib.SERVER;
+      ServerPlayer player = server.getPlayerList().getPlayer(playerId);
       List<MutableComponent> msgs = new ArrayList<>();
       MutableComponent descComp = Component.literal("\n");
-      List<Component> descLines = getDescription();
-      for(int i = 0; i < descLines.size(); i++){
-         if(i > 0) descComp.append(Component.literal("\n"));
-         descComp.append(descLines.get(i).copy().withStyle(ChatFormatting.DARK_PURPLE));
+      if(hidden){
+         descComp.append(Component.literal("???")).withStyle(ChatFormatting.DARK_PURPLE);
+      }else{
+         List<Component> descLines = getDescription();
+         for(int i = 0; i < descLines.size(); i++){
+            if(i > 0) descComp.append(Component.literal("\n"));
+            descComp.append(descLines.get(i).copy().withStyle(ChatFormatting.DARK_PURPLE));
+         }
       }
       
       if(id.equals(ArcanaAchievements.ALL_ACHIEVEMENTS.id)){
          msgs.add(Component.literal("=============================================").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE));
          msgs.add(Component.literal("")
                .append(Component.literal("=== ").withStyle(ChatFormatting.OBFUSCATED, ChatFormatting.BOLD, ChatFormatting.BLACK))
-               .append(player.getDisplayName())
+               .append(player == null ? Component.literal(data.getUsername()).withStyle(ChatFormatting.LIGHT_PURPLE) : player.getDisplayName())
                .append(Component.literal(" has mastered all Arcana Achievements and became ").withStyle(ChatFormatting.DARK_PURPLE))
                .append((Component.literal("[").append(getTranslatedName()).append(Component.literal("]"))).withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(
                            Component.literal("")
@@ -121,10 +140,10 @@ public abstract class ArcanaAchievement {
                .append(Component.literal("!!!").withStyle(ChatFormatting.DARK_PURPLE))
                .append(Component.literal(" ===").withStyle(ChatFormatting.OBFUSCATED, ChatFormatting.BOLD, ChatFormatting.BLACK)));
          msgs.add(Component.literal("=============================================").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE));
-         SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
+         if(player != null) SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
       }else if(pointsReward >= 5){
          msgs.add(Component.literal("")
-               .append(player.getDisplayName())
+               .append(player == null ? Component.literal(data.getUsername()).withStyle(ChatFormatting.LIGHT_PURPLE) : player.getDisplayName())
                .append(Component.literal(" has made the Arcana Achievement ").withStyle(ChatFormatting.DARK_PURPLE))
                .append((Component.literal("[").append(getTranslatedName()).append(Component.literal("]"))).withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(
                            Component.literal("")
@@ -138,10 +157,10 @@ public abstract class ArcanaAchievement {
                                        .append(Component.literal(" Skill Points").withStyle(ChatFormatting.DARK_AQUA)))))
                      .withColor(ChatFormatting.DARK_AQUA).withBold(true)))
                .append(Component.literal("!!!").withStyle(ChatFormatting.DARK_PURPLE)));
-         SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
+         if(player != null)  SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
       }else{
          msgs.add(Component.literal("")
-               .append(player.getDisplayName())
+               .append(player == null ? Component.literal(data.getUsername()).withStyle(ChatFormatting.LIGHT_PURPLE) : player.getDisplayName())
                .append(Component.literal(" has made the Arcana Achievement ").withStyle(ChatFormatting.LIGHT_PURPLE))
                .append((Component.literal("[").append(getTranslatedName()).append(Component.literal("]"))).withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(
                            Component.literal("")
@@ -156,31 +175,32 @@ public abstract class ArcanaAchievement {
                      .withColor(ChatFormatting.AQUA)))
                .append(Component.literal("!").withStyle(ChatFormatting.LIGHT_PURPLE)));
          
-         SoundUtils.playSongToPlayer(player, SoundEvents.PLAYER_LEVELUP,1,1);
+         if(player != null) SoundUtils.playSongToPlayer(player, SoundEvents.PLAYER_LEVELUP,1,1);
       }
       if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
          for(MutableComponent msg : msgs){
             server.getPlayerList().broadcastSystemMessage(msg, false);
          }
       }else{
-         for(MutableComponent msg : msgs){
-            player.displayClientMessage(msg, false);
+         if(player != null){
+            for(MutableComponent msg : msgs){
+               player.displayClientMessage(msg, false);
+            }
          }
       }
-      ArcanaPlayerData profile = ArcanaNovum.data(player);
-      profile.addXP(xpReward); // Add xp
+      data.addXP(xpReward); // Add xp
    
       boolean abyssCheck = true;
-      for(ArcanaAchievement achievement : ArcanaAchievements.registry.values()){
-         if(ArcanaAchievements.excludedAchievements.contains(achievement)) continue;
-         if(!profile.hasAcheivement(achievement)){
+      for(ArcanaAchievement achievement : ArcanaAchievements.ARCANA_ACHIEVEMENTS.values()){
+         if(ArcanaAchievements.EXCLUDED_ACHIEVEMENTS.contains(achievement)) continue;
+         if(!data.hasAcheivement(achievement)){
             abyssCheck = false;
             break;
          }
       }
       if(abyssCheck){
-         for(ArcanaAchievement achievement : ArcanaAchievements.excludedAchievements){
-            ArcanaAchievements.grant(player,achievement.id);
+         for(ArcanaAchievement achievement : ArcanaAchievements.EXCLUDED_ACHIEVEMENTS){
+            ArcanaAchievements.grant(playerId,achievement);
          }
       }
    }

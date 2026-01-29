@@ -137,7 +137,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
                if(contributor instanceof ServerPlayer player && player.getUUID().equals(e.getUUID())) withOwner = true;
             }
          }
-         if(contributor instanceof ServerPlayer player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,ArcanaAchievements.SMOKE_SCREEN.id);
+         if(contributor instanceof ServerPlayer player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,ArcanaAchievements.SMOKE_SCREEN);
          
          SoundUtils.playSound(world,getBlockPos(), SoundEvents.CAMPFIRE_CRACKLE, SoundSource.PLAYERS,.5f,1);
       }

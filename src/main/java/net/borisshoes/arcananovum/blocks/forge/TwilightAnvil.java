@@ -198,14 +198,6 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new TwilightAnvilBlockEntity(pos, state);
       }
-      
-      @Override
-      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
-         BlockEntity entity = world.getBlockEntity(pos);
-         if(entity instanceof TwilightAnvilBlockEntity anvil){
-            initializeArcanaBlock(stack,anvil);
-         }
-      }
    }
 }
 

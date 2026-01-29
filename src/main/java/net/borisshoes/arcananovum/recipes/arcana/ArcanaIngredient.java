@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -48,6 +50,14 @@ public class ArcanaIngredient {
       this.exampleStack = new ItemStack(itemType,count);
       this.acceptedItems.add(Either.left(itemType));
       this.itemPredicate = (stack) -> acceptedItems.stream().anyMatch(e -> (e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get())));
+   }
+   
+   public ArcanaIngredient(TagKey<Item> itemType, int count){
+      this.count = count;
+      this.exampleStack = new ItemStack(MinecraftUtils.getFirstItemFromTag(itemType),count);
+      this.acceptedItems.add(Either.right(itemType));
+      this.itemPredicate = (stack) -> acceptedItems.stream().anyMatch(e -> (e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get())));
+      this.ignoresResourceful = false;
    }
    
    public ArcanaIngredient(Item itemType, int count){
@@ -301,7 +311,9 @@ public class ArcanaIngredient {
       boolean ignoresResourceful = json.has("ignores_resourceful") && json.get("ignores_resourceful").getAsBoolean();
       
       // Get the first item for the example stack
-      Item exampleItem = acceptedItems.getFirst().left().orElse(Items.AIR);
+      Either<Item, TagKey<Item>> firstEntry = acceptedItems.getFirst();
+      Item exampleItem = firstEntry.left().orElseGet(() ->
+            firstEntry.right().map(MinecraftUtils::getFirstItemFromTag).orElse(Items.AIR));
       ItemStack exampleStack = new ItemStack(exampleItem, count);
       
       // Build the base predicate

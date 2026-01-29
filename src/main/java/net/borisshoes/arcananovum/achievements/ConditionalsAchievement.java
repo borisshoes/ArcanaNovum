@@ -57,7 +57,7 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    
    @Override
    public ConditionalsAchievement fromNbt(String id, CompoundTag nbt){
-      ConditionalsAchievement ach = (ConditionalsAchievement) ArcanaAchievements.registry.get(id).makeNew();
+      ConditionalsAchievement ach = (ConditionalsAchievement) ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(id).makeNew();
       ach.conditions.clear();
       ach.setAcquired(nbt.getBooleanOr("acquired", false));
       CompoundTag condsTag = nbt.getCompoundOrEmpty("conditions");
@@ -70,7 +70,7 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    @Override
    public MutableComponent[] getStatusDisplay(ServerPlayer player){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(getArcanaItem().getId(), id);
+      ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(this);
       
       if(achievement != null && achievement.isAcquired()){
          return new MutableComponent[]{Component.literal("Achieved!").withStyle(ChatFormatting.AQUA)};
@@ -95,6 +95,8 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    
    @Override
    public ConditionalsAchievement makeNew(){
-      return new ConditionalsAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, conditions.keySet().toArray(new String[0]));
+      ConditionalsAchievement ach = new ConditionalsAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, conditions.keySet().toArray(new String[0]));
+      ach.setHidden(hidden);
+      return ach;
    }
 }

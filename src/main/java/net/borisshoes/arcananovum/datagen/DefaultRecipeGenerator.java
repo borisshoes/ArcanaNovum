@@ -107,7 +107,7 @@ public class DefaultRecipeGenerator {
       e = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.LONG_SWIFTNESS);
       f = new ArcanaIngredient(Items.GLASS, 4);
       g = new ArcanaIngredient(Items.BLAZE_POWDER, 4);
-      h = new ArcanaIngredient(Items.LANTERN, 4);
+      h = new ArcanaIngredient(ItemTags.LANTERNS, 4);
       i = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.STRONG_SWIFTNESS);
       
       ingredients = new ArcanaIngredient[][]{
@@ -116,7 +116,7 @@ public class DefaultRecipeGenerator {
             {f,g,h,g,f},
             {b,d,i,d,b},
             {a,b,c,b,a}};
-      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ITINERANTEUR, ingredients, new ForgeRequirement().withEnchanter()));
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ITINERANTEUR, ingredients, new ForgeRequirement().withEnchanter()).addCenterpiece(12));
       
       
       // ===================================
@@ -190,26 +190,22 @@ public class DefaultRecipeGenerator {
       
       
       // ===================================
-      //           ASTRAL GATEWAY
+      //           ENDER CRATE
       // ===================================
-      a = new ArcanaIngredient(Items.END_STONE_BRICKS, 4);
-      b = new ArcanaIngredient(ArcanaRegistry.STARDUST, 2);
-      c = new ArcanaIngredient(Items.ENDER_EYE, 4);
-      d = new ArcanaIngredient(Items.OBSIDIAN, 4);
-      e = new ArcanaIngredient(Items.NETHER_STAR, 1);
-      f = new ArcanaIngredient(Items.ENDER_PEARL, 8);
-      g = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 4);
-      h = new GenericArcanaIngredient(ArcanaRegistry.EXOTIC_MATTER, 1);
-      i = new ArcanaIngredient(Items.IRON_INGOT, 4);
-      j = new ArcanaIngredient(Items.NETHERITE_INGOT, 1);
+      a = new ArcanaIngredient(ItemTags.LOGS, 2);
+      b = new ArcanaIngredient(Items.OBSIDIAN, 1);
+      c = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 2);
+      d = new ArcanaIngredient(Items.ENDER_EYE, 2);
+      e = new ArcanaIngredient(Items.BARREL, 4);
+      f = new ArcanaIngredient(Items.ENDER_CHEST, 1);
       
       ingredients = new ArcanaIngredient[][]{
             {a,b,c,b,a},
             {b,d,e,d,b},
-            {f,g,h,g,f},
-            {i,d,j,d,i},
-            {a,i,c,i,a}};
-      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ASTRAL_GATEWAY, ingredients, new ForgeRequirement().withAnvil().withCore()));
+            {c,e,f,e,c},
+            {b,d,e,d,b},
+            {a,b,c,b,a}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ENDER_CRATE, ingredients, new ForgeRequirement()));
       
       
       // ===================================
@@ -2090,7 +2086,7 @@ public class DefaultRecipeGenerator {
       f = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.STRONG_SWIFTNESS);
       g = new ArcanaIngredient(Items.GLASS, 16);
       h = new ArcanaIngredient(Items.BLAZE_POWDER, 16);
-      i = new ArcanaIngredient(Items.LANTERN, 16);
+      i = new ArcanaIngredient(ItemTags.LANTERNS, 16);
       
       ingredients = new ArcanaIngredient[][]{
             {a,b,c,b,a},
@@ -2098,7 +2094,7 @@ public class DefaultRecipeGenerator {
             {g,h,i,h,g},
             {b,f,e,d,b},
             {a,b,c,b,a}};
-      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ITINERANTEUR, ingredients, new ForgeRequirement().withEnchanter()));
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.ITINERANTEUR, ingredients, new ForgeRequirement().withEnchanter()).addCenterpiece(12));
       
       
       // ===================================
@@ -2174,7 +2170,7 @@ public class DefaultRecipeGenerator {
       // ===================================
       //           ENDER CRATE
       // ===================================
-      a = new ArcanaIngredient(Items.SPRUCE_WOOD, 16);
+      a = new ArcanaIngredient(ItemTags.LOGS, 16);
       b = new ArcanaIngredient(Items.OBSIDIAN, 8);
       c = new ArcanaIngredient(Items.CRYING_OBSIDIAN, 8);
       d = new ArcanaIngredient(Items.ENDER_EYE, 8);

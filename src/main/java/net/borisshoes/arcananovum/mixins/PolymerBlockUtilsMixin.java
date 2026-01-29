@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.minecraft.core.BlockPos;
@@ -21,6 +22,10 @@ public class PolymerBlockUtilsMixin {
    @ModifyReturnValue(method = "shouldMineServerSide", at = @At("RETURN"))
    private static boolean arcananovum$overrideServerMining(boolean original, ServerPlayer player, BlockPos pos, BlockState state){
       if(!original){
+         boolean cetaceaStele = GeomanticSteleBlockEntity.isEntityInZone(player,(item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARINERS_GRACE) > 0);
+         if(cetaceaStele){
+            return true;
+         }
          List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
          for(ItemStack stack : stacks){
             boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);

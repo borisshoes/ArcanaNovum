@@ -90,14 +90,23 @@ public class TransmutationAltarGui extends SimpleGui {
       
       setSlot(2,recipeItem);
       
-
-      GuiElementBuilder activateItem = new GuiElementBuilder(Items.DIAMOND);
-      activateItem.setName((Component.literal("")
-            .append(Component.literal("Activate Altar").withStyle(ChatFormatting.LIGHT_PURPLE))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("Click").withStyle(ChatFormatting.BLUE))
-            .append(Component.literal(" to begin a Transmutation").withStyle(ChatFormatting.DARK_PURPLE)))));
-      setSlot(4,activateItem);
+      
+      if(blockEntity.getCooldown() <= 0){
+         GuiElementBuilder activateItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ORB, ArcanaColors.EQUAYUS_COLOR));
+         activateItem.setName((Component.literal("")
+               .append(Component.literal("Activate Altar").withStyle(ChatFormatting.LIGHT_PURPLE))));
+         activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal("Click").withStyle(ChatFormatting.BLUE))
+               .append(Component.literal(" to begin a Transmutation").withStyle(ChatFormatting.DARK_PURPLE)))));
+         setSlot(4,activateItem);
+      }else{
+         GuiElementBuilder activateItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.CANCEL_COLOR, ArcanaColors.EQUAYUS_COLOR));
+         activateItem.setName((Component.literal("")
+               .append(Component.literal("Altar Recharging").withStyle(ChatFormatting.BLUE))));
+         activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
+               .append(Component.literal((blockEntity.getCooldown()/20)+" Seconds").withStyle(ChatFormatting.DARK_PURPLE)))));
+         setSlot(4,activateItem);
+      }
    }
    
    @Override

@@ -5,6 +5,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticStele;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -16,7 +18,9 @@ import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -29,6 +33,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -41,6 +48,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -50,7 +59,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class BrainJar extends EnergyItem {
+public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
 	public static final String ID = "brain_jar";
    public static final int[] capacities = {1000000,2000000,4000000,6000000,8000000,10000000};
    private static final Item textureItem = Items.TINTED_GLASS;
@@ -116,7 +125,7 @@ public class BrainJar extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      int capLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.UNENDING_WISDOM.id));
+      int capLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.UNENDING_WISDOM));
       return capacities[capLvl];
    }
    
@@ -168,7 +177,7 @@ public class BrainJar extends EnergyItem {
       }
       addEnergy(stack,xpToStore);
       player.giveExperiencePoints(-xpToStore);
-      if(xpToStore > 0 && getEnergy(stack) >= getMaxEnergy(stack)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
+      if(xpToStore > 0 && getEnergy(stack) >= getMaxEnergy(stack)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK);
       
       gui.makeGui();
       buildItemLore(stack,player.level().getServer());
@@ -186,6 +195,109 @@ public class BrainJar extends EnergyItem {
       list.add(List.of(Component.literal("   Brain in a Jar").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nknowledge using the storage capabilities of Ender Chests, it should hold enough XP for practical use.\n\nThere should also be a way to incorporate the use of the Mending enchantment to have direct access to the storage.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Brain in a Jar").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nUse the Brain in a Jar to open its internal storage, where you can deposit or withdraw XP.\n \nSneak Use to toggle the Jar’s Mending interaction.\n\nThe Jar can store 1 million XP Points.\n").withStyle(ChatFormatting.BLACK)));
       return list;
+   }
+   
+   @Override
+   public Vec3 getBaseRange(){
+      return new Vec3(16,8,16);
+   }
+   
+   @Override
+   public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
+      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
+      Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      
+      if(world.random.nextFloat() < 0.25){
+         world.sendParticles(ParticleTypes.SCRAPE,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+      }
+      if(world.random.nextFloat() < 0.25){
+         world.sendParticles(ParticleTypes.GLOW,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.0);
+      }
+      
+      if(world.getServer().getTickCount() % 10 == 0){
+         List<ExperienceOrb> attractXP = world.getEntitiesOfClass(ExperienceOrb.class,box);
+         int xpCount = 0;
+         for(ExperienceOrb xp : attractXP){
+            double x = stackPos.x() - xp.getX();
+            double y = stackPos.y() - xp.getY();
+            double z = stackPos.z() - xp.getZ();
+            double speed = .06;
+            double heightMod = .04;
+            xp.setDeltaMovement(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+            if(xpCount >= 100){
+               break;
+            }else{
+               xpCount++;
+            }
+         }
+      }
+      
+      if(world.getServer().getTickCount() % 4 == 0){
+         List<ExperienceOrb> absorbXP = world.getEntitiesOfClass(ExperienceOrb.class, new AABB(BlockPos.containing(stackPos)).inflate(2));
+         for(ExperienceOrb xp : absorbXP){
+            addEnergy(stack,xp.getValue()*xp.count);
+            xp.discard();
+         }
+      }
+      
+      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+      if(active && getEnergy(stack) > 0){
+         List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class,box);
+         for(LivingEntity living : inRangeEntities){
+            if(living.isSpectator()) continue;
+            // Check each player's inventory for gear that needs repairing
+            List<ItemStack> inventory = new ArrayList<>();
+            if(living instanceof ServerPlayer player){
+               Inventory inv = player.getInventory();
+               for(int i = 0; i < inv.getContainerSize(); i++){
+                  ItemStack equipment = inv.getItem(i);
+                  if(equipment.isEmpty())
+                     continue;
+                  if(!equipment.isEnchanted())
+                     continue;
+                  boolean hasMending = EnchantmentHelper.has(equipment, EnchantmentEffectComponents.REPAIR_WITH_XP);
+                  if(hasMending){
+                     inventory.add(equipment);
+                  }
+               }
+            }else{
+               for(EquipmentSlot value : EquipmentSlot.values()){
+                  ItemStack equipment = living.getItemBySlot(value);
+                  if(equipment.isEmpty())
+                     continue;
+                  if(!equipment.isEnchanted())
+                     continue;
+                  boolean hasMending = EnchantmentHelper.has(equipment, EnchantmentEffectComponents.REPAIR_WITH_XP);
+                  if(hasMending){
+                     inventory.add(equipment);
+                  }
+               }
+            }
+            
+            for(ItemStack tool : inventory){
+               int durability = tool.getDamageValue();
+               int repairAmount = (int) Math.ceil((EnchantmentHelper.modifyDurabilityToRepairFromXp(world, tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL)))));
+               if(durability <= 0 || !tool.isDamageableItem())
+                  continue;
+               int newDura = Mth.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
+               if(living instanceof ServerPlayer player){
+                  ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR,durability-newDura);
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BRAIN_JAR_MEND_PER_XP));
+               }
+               stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BRAIN_JAR_MEND_PER_XP));
+               addEnergy(stack,-1);
+               buildItemLore(stack,world.getServer());
+               tool.setDamageValue(newDura);
+            }
+         }
+      }
+      
+      if(world.getServer().getTickCount() % 2400 == 0 && getEnergy(stack) < getMaxEnergy(stack)){
+         double interestRate = .002 * Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.KNOWLEDGE_BANK));
+         int beforeEnergy = getEnergy(stack);
+         addEnergy(stack, (int) (interestRate*beforeEnergy));
+         buildItemLore(stack,world.getServer());
+      }
    }
    
    public class BrainJarItem extends ArcanaPolymerItem {
@@ -242,11 +354,11 @@ public class BrainJar extends EnergyItem {
                
                if(hasMending){
                   int durability = tool.getDamageValue();
-                  int repairAmount = (int) Math.ceil((EnchantmentHelper.modifyDurabilityToRepairFromXp(player.level(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id)))));
+                  int repairAmount = (int) Math.ceil((EnchantmentHelper.modifyDurabilityToRepairFromXp(player.level(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL)))));
                   if(durability <= 0 || !tool.isDamageableItem())
                      continue;
                   int newDura = Mth.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
-                  ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR.id,durability-newDura);
+                  ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR,durability-newDura);
                   addEnergy(stack,-1);
                   ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BRAIN_JAR_MEND_PER_XP));
                   buildItemLore(stack,player.level().getServer());
@@ -256,11 +368,11 @@ public class BrainJar extends EnergyItem {
          }
          
          if(world.getServer().getTickCount() % 1200 == 0 && getEnergy(stack) < getMaxEnergy(stack)){
-            double interestRate = .002 * Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.KNOWLEDGE_BANK.id));
+            double interestRate = .002 * Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.KNOWLEDGE_BANK));
             int beforeEnergy = getEnergy(stack);
             addEnergy(stack, (int) (interestRate*beforeEnergy));
             if(beforeEnergy < getMaxEnergy(stack) && getEnergy(stack) >= getMaxEnergy(stack)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK);
             }
             buildItemLore(stack,player.level().getServer());
          }

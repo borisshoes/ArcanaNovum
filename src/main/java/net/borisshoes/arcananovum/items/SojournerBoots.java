@@ -126,7 +126,7 @@ public class SojournerBoots extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // +250% speed base
-      int boostLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARATHON_RUNNER.id));
+      int boostLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARATHON_RUNNER));
       return 250 + 50*boostLvl;
    }
    
@@ -163,7 +163,7 @@ public class SojournerBoots extends EnergyItem {
       }
       
       if(active){
-         double height = 0.65 + Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS.id));
+         double height = 0.65 + Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS));
          attributeList.add(new ItemAttributeModifiers.Entry(Attributes.STEP_HEIGHT,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,STEP_TAG),height, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.FEET));
       }
       
@@ -265,7 +265,7 @@ public class SojournerBoots extends EnergyItem {
                if(player.isSprinting()){
                   if(player.onGround()){
                      int curEnergy = getEnergy(stack);
-                     int sprintLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPRINTER.id));
+                     int sprintLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPRINTER));
                      addEnergy(stack,2*(1+sprintLvl));
                      int newEnergy = getEnergy(stack);
                      if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)

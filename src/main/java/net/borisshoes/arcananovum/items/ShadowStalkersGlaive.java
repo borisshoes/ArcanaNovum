@@ -211,7 +211,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                boolean recharge = false;
                if(energy < 20){
                   recharge = true;
-               }else if(energy < getMaxEnergy(stack) && ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.BLOODLETTER.id) >= 1 && player.getHealth() > 2){
+               }else if(energy < getMaxEnergy(stack) && ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.BLOODLETTER) >= 1 && player.getHealth() > 2){
                   recharge = true;
                   if(!player.isCreative() && !player.isSpectator()) player.setHealth(player.getHealth() - 2);
                }
@@ -258,19 +258,19 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
                   ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
                   
-                  if(target instanceof ServerPlayer || target instanceof Warden) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,0);
+                  if(target instanceof ServerPlayer || target instanceof Warden) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA,0);
                   if(target instanceof Mob){
-                     if(ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id)){
-                        if(ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY.id) % 2 == 1){
-                           ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,1);
+                     if(ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY)){
+                        if(ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY) % 2 == 1){
+                           ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY,1);
                         }
                      }else{
-                        ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,0);
+                        ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY,0);
                      }
                   }
                   
-                  int blindDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PARANOIA.id))];
-                  int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE.id))];
+                  int blindDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PARANOIA))];
+                  int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE))];
                   MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                   player.addEffect(invis);
                   if(target instanceof LivingEntity living){
@@ -302,7 +302,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
                
-               int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE.id))];
+               int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE))];
                MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                player.addEffect(invis);
                

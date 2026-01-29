@@ -41,7 +41,7 @@ public class BaseSpawnerMixin {
          BlockEntity be = world.getBlockEntity(infuserPos);
          if(be instanceof SpawnerInfuserBlockEntity infuser){
             if(infuser.isActive()){
-               boolean emulator = ArcanaAugments.getAugmentFromMap(infuser.getAugments(),ArcanaAugments.SPIRIT_EMULATOR.id) >= 1;
+               boolean emulator = ArcanaAugments.getAugmentFromMap(infuser.getAugments(),ArcanaAugments.SPIRIT_EMULATOR) >= 1;
                if(emulator){
                   return true;
                }

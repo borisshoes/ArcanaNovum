@@ -25,7 +25,23 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
    private static final Map<Item, ItemStack> FILLABLE = Map.ofEntries(
          entry(Items.DIRT, Items.MUD.getDefaultInstance()),
          entry(Items.GLASS_BOTTLE, PotionContents.createItemStack(Items.POTION, Potions.WATER)),
-         entry(Items.BUCKET, Items.WATER_BUCKET.getDefaultInstance())
+         entry(Items.BUCKET, Items.WATER_BUCKET.getDefaultInstance()),
+         entry(Items.WHITE_CONCRETE_POWDER, Items.WHITE_CONCRETE.getDefaultInstance()),
+         entry(Items.ORANGE_CONCRETE_POWDER, Items.ORANGE_CONCRETE.getDefaultInstance()),
+         entry(Items.MAGENTA_CONCRETE_POWDER, Items.MAGENTA_CONCRETE.getDefaultInstance()),
+         entry(Items.LIGHT_BLUE_CONCRETE_POWDER, Items.LIGHT_BLUE_CONCRETE.getDefaultInstance()),
+         entry(Items.YELLOW_CONCRETE_POWDER, Items.YELLOW_CONCRETE.getDefaultInstance()),
+         entry(Items.LIME_CONCRETE_POWDER, Items.LIME_CONCRETE.getDefaultInstance()),
+         entry(Items.PINK_CONCRETE_POWDER, Items.PINK_CONCRETE.getDefaultInstance()),
+         entry(Items.GRAY_CONCRETE_POWDER, Items.GRAY_CONCRETE.getDefaultInstance()),
+         entry(Items.LIGHT_GRAY_CONCRETE_POWDER, Items.LIGHT_GRAY_CONCRETE.getDefaultInstance()),
+         entry(Items.CYAN_CONCRETE_POWDER, Items.CYAN_CONCRETE.getDefaultInstance()),
+         entry(Items.PURPLE_CONCRETE_POWDER, Items.PURPLE_CONCRETE.getDefaultInstance()),
+         entry(Items.BLUE_CONCRETE_POWDER, Items.BLUE_CONCRETE.getDefaultInstance()),
+         entry(Items.BROWN_CONCRETE_POWDER, Items.BROWN_CONCRETE.getDefaultInstance()),
+         entry(Items.GREEN_CONCRETE_POWDER, Items.GREEN_CONCRETE.getDefaultInstance()),
+         entry(Items.RED_CONCRETE_POWDER, Items.RED_CONCRETE.getDefaultInstance()),
+         entry(Items.BLACK_CONCRETE_POWDER, Items.BLACK_CONCRETE.getDefaultInstance())
    );
    
    public AquaticEversourceFillRecipe(CraftingBookCategory craftingRecipeCategory){

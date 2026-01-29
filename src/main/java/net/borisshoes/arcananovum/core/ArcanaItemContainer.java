@@ -1,16 +1,20 @@
 package net.borisshoes.arcananovum.core;
 
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
 public class ArcanaItemContainer {
    
+   private final Identifier id;
    private final Container inventory;
    private final int size, sortMod;
-   private final String concModStr, name;
+   private final MutableComponent concModStr, name;
    private final double concMod;
    
-   public ArcanaItemContainer(Container inventory, int size, int sortMod, String concModStr, String name, double concMod){
+   public ArcanaItemContainer(Identifier id, Container inventory, int size, int sortMod, MutableComponent concModStr, MutableComponent name, double concMod){
+      this.id = id;
       this.inventory = inventory;
       this.size = size;
       this.sortMod = sortMod;
@@ -31,11 +35,15 @@ public class ArcanaItemContainer {
       return sortMod;
    }
    
-   public String getConcModStr(){
+   public Identifier getId(){
+      return id;
+   }
+   
+   public MutableComponent getConcModStr(){
       return concModStr;
    }
    
-   public String getContainerName(){
+   public MutableComponent getContainerName(){
       return name;
    }
    

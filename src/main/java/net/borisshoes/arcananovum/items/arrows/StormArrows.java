@@ -92,9 +92,9 @@ public class StormArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION.id);
-      int chainLvl = arrow.getAugment(ArcanaAugments.CHAIN_LIGHTNING.id);
-      int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK.id);
+      int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION);
+      int chainLvl = arrow.getAugment(ArcanaAugments.CHAIN_LIGHTNING);
+      int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK);
       strike(arrow,entityHitResult.getLocation(),stableLvl,shockLvl);
       if(chainLvl > 0) chainLightning(arrow,entityHitResult.getEntity(),chainLvl);
       entityHitResult.getEntity().invulnerableTime = 1;
@@ -102,8 +102,8 @@ public class StormArrows extends RunicArrow {
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION.id);
-      int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK.id);
+      int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION);
+      int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK);
       strike(arrow,blockHitResult.getLocation(),stableLvl,shockLvl);
    }
    
@@ -116,7 +116,7 @@ public class StormArrows extends RunicArrow {
          
          if(arrow.getOwner() instanceof ServerPlayer player){
             BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2, () -> {
-               if(lightning.getHitEntities().anyMatch(e -> e instanceof MushroomCow)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY.id);
+               if(lightning.getHitEntities().anyMatch(e -> e instanceof MushroomCow)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY);
             }));
          }
          

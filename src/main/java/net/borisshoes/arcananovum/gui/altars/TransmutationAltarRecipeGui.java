@@ -43,7 +43,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
       super(MenuType.GENERIC_9x6, player);
       this.blockEntity = altarOpt.orElse(null);
       this.returnGui = returnGui;
-      this.costMode = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
+      this.costMode = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN);
       setTitle(Component.literal("Transmutation Altar"));
       
       action1TextColor(ChatFormatting.LIGHT_PURPLE.getColor().intValue());

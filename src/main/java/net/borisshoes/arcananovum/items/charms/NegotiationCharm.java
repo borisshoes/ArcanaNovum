@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -53,12 +54,11 @@ public class NegotiationCharm extends ArcanaItem {
       vanillaItem = Items.YELLOW_DYE;
       item = new NegotiationCharmItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{};  // TODO
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_BARTER_PIGLIN,ResearchTasks.ADVANCEMENT_FIND_BASTION,ResearchTasks.ADVANCEMENT_TRADE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      //putProperty(stack,TAG,);
       setPrefStack(stack);
    }
    
@@ -92,7 +92,9 @@ public class NegotiationCharm extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("TODO").withStyle(ChatFormatting.BLACK))); // TODO
+      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal("\nVillagers and Piglins have one thing in common, they strike a hard bargain. This gilded emerald lapel should soften that bargain. They will be so enamoured with its ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\ndisplay of wealth that they won't notice the subtle Arcana warping their minds.\n\nVillagers under the Charm's influence will give me high discounts and will 'forgive' a transgression or two. ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nPiglins that barter near the influence of the Charm will see my gold as more valuable and give more items in return, in addition to being neutral to my presence.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    

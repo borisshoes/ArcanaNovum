@@ -122,10 +122,10 @@ public class ShieldOfFortitude extends ArcanaItem {
    }
    
    public void shieldBlock(LivingEntity entity, ItemStack item, double amount){
-      float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_FAITH.id));
+      float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_FAITH));
       float curAbs = entity.getAbsorptionAmount();
       float addedAbs = (float) Math.min(maxAbs,amount*.5);
-      int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
+      int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE));
       if(entity instanceof ServerPlayer player){
          BorisLib.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
          SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 1.8f);

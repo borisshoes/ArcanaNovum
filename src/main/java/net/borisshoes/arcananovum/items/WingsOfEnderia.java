@@ -157,15 +157,15 @@ public class WingsOfEnderia extends EnergyItem {
          if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
             if(player.isFallFlying()){ // Wings of Enderia
                wings.addEnergy(item,1); // Add 1 energy for each tick of flying
-               if(wings.getEnergy(item) % 1000 == 999)
-                  player.displayClientMessage(Component.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).withStyle(ChatFormatting.DARK_PURPLE),true);
+               if(EnergyItem.getEnergy(item) % 1000 == 999)
+                  player.displayClientMessage(Component.literal("Wing Energy Stored: "+ (EnergyItem.getEnergy(item) + 1)).withStyle(ChatFormatting.DARK_PURPLE),true);
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WINGS_OF_ENDERIA_FLY)); // Add xp
             }
             CompoundTag leftShoulder = player.getShoulderEntityLeft();
             CompoundTag rightShoulder = player.getShoulderEntityRight();
-            if(leftShoulder != null && rightShoulder != null && leftShoulder.contains("id") && rightShoulder.contains("id")){
+            if(leftShoulder.contains("id") && rightShoulder.contains("id")){
                if(leftShoulder.getStringOr("id", "").equals(EntityType.getKey(EntityType.PARROT).toString()) && rightShoulder.getStringOr("id", "").equals(EntityType.getKey(EntityType.PARROT).toString())){
-                  ArcanaAchievements.grant(player, ArcanaAchievements.CROW_FATHER.id);
+                  ArcanaAchievements.grant(player, ArcanaAchievements.CROW_FATHER);
                }
             }
          }

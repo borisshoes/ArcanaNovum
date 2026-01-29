@@ -194,7 +194,7 @@ public class AequalisScientia extends ArcanaItem {
       
       if(itemStack != null){
          int uses = getIntProperty(itemStack, USES_TAG);
-         String useStr = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.TIMELESS_WISDOM.id) > 0 ? "∞" : uses+"";
+         String useStr = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.TIMELESS_WISDOM) > 0 ? "∞" : uses+"";
          lore.add(Component.literal(""));
          lore.add(Component.literal("")
                .append(Component.literal("Reallocation Uses").withStyle(ChatFormatting.AQUA))
@@ -699,7 +699,7 @@ public class AequalisScientia extends ArcanaItem {
                      for(ItemStack result : results){
                         if(result.is(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())){
                            ArcanaNovum.data(player).addCraftedSilent(result);
-                           ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE.id);
+                           ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE);
                         }
                         Containers.dropItemStack(world, center.x,center.y,center.z,result);
                      }

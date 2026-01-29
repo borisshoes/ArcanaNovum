@@ -93,7 +93,7 @@ public class ExoticMatter extends EnergyItem {
    @Override
    public int getMaxEnergy(ItemStack item){
       // Maximum seconds of chunk loading per exotic matter fuel (1 week baseline)
-      int level = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TIME_IN_A_BOTTLE.id));
+      int level = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TIME_IN_A_BOTTLE));
       return (int) (600000 * lvlMultiplier[level]);
    }
    

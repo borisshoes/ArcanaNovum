@@ -535,9 +535,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, dropped, !dropped, isExalted, !isExalted});
       
       if(summoner instanceof ServerPlayer player){
-         ArcanaAchievements.grant(player,ArcanaAchievements.CONSTRUCT_DECONSTRUCTED.id);
+         ArcanaAchievements.grant(player,ArcanaAchievements.CONSTRUCT_DECONSTRUCTED);
          if(dropped){
-            ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_FAVOR.id);
+            ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_FAVOR);
          }
       }
    }

@@ -108,8 +108,8 @@ public class FractalSponge extends ArcanaBlock {
    }
    
    private int absorb(ItemStack item, Level world, BlockPos pos){
-      int depthLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MANDELBROT.id));
-      int absorbLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.SIERPINSKI.id));
+      int depthLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MANDELBROT));
+      int absorbLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.SIERPINSKI));
       int maxDepth = 16 + depthLevel*2;
       int maxBlocks = 512 + 256*absorbLevel;
       
@@ -181,7 +181,7 @@ public class FractalSponge extends ArcanaBlock {
          SoundUtils.playSound(world,pos, SoundEvents.ELDER_GUARDIAN_HURT, SoundSource.BLOCKS,1,.8f);
          if(placer instanceof ServerPlayer player){
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
-            ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_CLEANUP.id, absorbed);
+            ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_CLEANUP, absorbed);
          }
       }
       return absorbed;
@@ -236,7 +236,7 @@ public class FractalSponge extends ArcanaBlock {
             try{
                int absorbed = absorbHelper(placer,world,stack,pos,false);
                
-               boolean cantor = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CANTOR.id)) >= 1;
+               boolean cantor = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CANTOR)) >= 1;
                if(cantor && absorbed > 0){
                   BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(50, () -> absorbHelper(placer,world,stack,pos,true)));
                   BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> absorbHelper(placer,world,stack,pos,true)));

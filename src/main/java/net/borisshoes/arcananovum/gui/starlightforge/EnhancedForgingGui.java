@@ -355,7 +355,7 @@ public class EnhancedForgingGui extends SimpleGui {
       
       BorisLib.addTickTimerCallback(world, new GenericTimer(fast ? (int) (350 / 1.75) : 350, () -> {
          if(percentile >= 0.99 && !enhancedStack.is(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
+            ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN);
          }
          ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STARDUST_INFUSION_PER_STARDUST)*finalCost);
          Vec3 pos = blockEntity.getBlockPos().getCenter().add(0,2,0);

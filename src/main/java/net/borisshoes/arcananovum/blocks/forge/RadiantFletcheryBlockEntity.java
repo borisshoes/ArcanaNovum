@@ -88,7 +88,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
    }
    
    public int getPotionRatio(){
-      int lvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.ALCHEMICAL_EFFICIENCY.id);
+      int lvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.ALCHEMICAL_EFFICIENCY);
       return efficiency[lvl];
    }
    
@@ -242,7 +242,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
                inv.setItem(2,outputStack);
             }
             
-            watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.FINALLY_USEFUL_2.id));
+            watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.FINALLY_USEFUL_2));
             watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_RADIANT_FLETCHERY_TIP_ARROWS)));
          }
          

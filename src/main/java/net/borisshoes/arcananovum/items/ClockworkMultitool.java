@@ -1,21 +1,24 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.blocks.EnderCrate;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.gui.clockworkmultitool.ClockworkMultitoolEnderGui;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -40,7 +43,6 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -48,7 +50,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class ClockworkMultitool extends EnergyItem {
    public static final String ID = "clockwork_multitool";
    
-   public static final String SAVED_KEY = "saved";
+   public static final String SAVED_TAG = "saved";
    
    public ClockworkMultitool(){
       id = ID;
@@ -59,20 +61,31 @@ public class ClockworkMultitool extends EnergyItem {
       vanillaItem = Items.CLOCK;
       item = new ClockworkMultitoolItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{};  // TODO
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_GOLD_INGOT,ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
       putProperty(stack,MODE_TAG,"crafting");
+      putProperty(stack,SAVED_TAG,"");
+      putProperty(stack,EnderCrate.CHANNEL_TAG,EnderCrate.colorsToTag(EnderCrate.DEFAULT_CHANNEL));
+      putProperty(stack,EnderCrate.LOCK_TAG,"");
       setPrefStack(stack);
    }
    
-   // TODO
-//   @Override
-//   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-//      return super.updateItem(stack, server);
-//   }
+   @Override
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
+      String curMode = getStringProperty(stack,MODE_TAG);
+      String saved = getStringProperty(stack, SAVED_TAG);
+      ListTag channel = getListProperty(stack, EnderCrate.CHANNEL_TAG);
+      String lock = getStringProperty(stack,EnderCrate.LOCK_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack,MODE_TAG,curMode);
+      putProperty(newStack,SAVED_TAG,saved);
+      putProperty(newStack,EnderCrate.CHANNEL_TAG,channel);
+      putProperty(newStack,EnderCrate.LOCK_TAG,lock);
+      return buildItemLore(newStack,server);
+   }
    
    @Override
    public List<Component> getItemLore(@Nullable ItemStack itemStack){
@@ -125,7 +138,9 @@ public class ClockworkMultitool extends EnergyItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("TODO").withStyle(ChatFormatting.BLACK))); // TODO
+      list.add(List.of(Component.literal("Clockwork Multitool").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal("\nCarrying crafting tables around has always been a chore, even more so if I need something like a grindstone or stonecutter. \n\nIf I adapt the mechanism of some ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Clockwork Multitool").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\ncrafting devices, I can use a touch of Arcana to make a portable all-in-one tool to suit my needs.\n\nPunching will cycle the current worktable, and Sneaking will reverse the cycle.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Clockwork Multitool").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nUsing the Multitool will open its selected worktable.\n\nSneak Using the Multitool in my Offhand will favorite the current worktable, and doing so in my Mainhand will open my favorite worktable.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -174,20 +189,20 @@ public class ClockworkMultitool extends EnergyItem {
          setEnergy(stack,0);
          if(hand == InteractionHand.OFF_HAND && player.isShiftKeyDown()){
             MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack,MODE_TAG));
-            putProperty(stack,SAVED_KEY,mode.getName());
+            putProperty(stack, SAVED_TAG,mode.getName());
             SoundUtils.playSongToPlayer(player, SoundEvents.SPYGLASS_USE,0.75f,1.25f+player.random.nextFloat()*0.25f);
             player.sendSystemMessage(Component.literal("Set favorite mode to ").withStyle(ChatFormatting.GOLD).append(mode.getBlock().getName()),true);
             return InteractionResult.SUCCESS_SERVER;
          }else if(player.isShiftKeyDown()){
-            MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack,SAVED_KEY));
+            MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack, SAVED_TAG));
             putProperty(stack,MODE_TAG,mode.getName());
             SoundUtils.playSongToPlayer(player, SoundEvents.SPYGLASS_USE,0.75f,0.2f+player.random.nextFloat()*0.25f);
             player.sendSystemMessage(Component.literal("Reconfigured to ").withStyle(ChatFormatting.GOLD).append(mode.getBlock().getName()),true);
-            openGui(player,mode);
+            openGui(player,stack,mode);
             return InteractionResult.SUCCESS_SERVER;
          }else{
             MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack,MODE_TAG));
-            openGui(player,mode);
+            openGui(player,stack,mode);
             SoundUtils.playSongToPlayer(player, SoundEvents.SPYGLASS_USE,0.75f,0.2f+player.random.nextFloat()*0.25f);
             return InteractionResult.SUCCESS_SERVER;
          }
@@ -195,7 +210,7 @@ public class ClockworkMultitool extends EnergyItem {
       
       public static void cycleMode(ServerPlayer player, ItemStack stack, boolean backwards){
          if(!(ArcanaItemUtils.identifyItem(stack) instanceof ClockworkMultitool multitool)) return;
-         if(multitool.getEnergy(stack) != multitool.getMaxEnergy(stack)) return;
+         if(EnergyItem.getEnergy(stack) != multitool.getMaxEnergy(stack)) return;
          MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack,MODE_TAG));
          boolean enchant = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENCHANTMENT_MECHANISM) > 0;
          boolean anvil = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REPAIRING_MECHANISM) > 0;
@@ -208,7 +223,13 @@ public class ClockworkMultitool extends EnergyItem {
          ArcanaAchievements.progress(player,ArcanaAchievements.FIDGET_TOY,1);
       }
       
-      private void openGui(ServerPlayer player, MultitoolMode mode){
+      private void openGui(ServerPlayer player, ItemStack stack, MultitoolMode mode){
+         if(mode == MultitoolMode.ENDERCHEST && ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENDER_MECHANISM) > 1){
+            ClockworkMultitoolEnderGui gui = new ClockworkMultitoolEnderGui(player, stack);
+            gui.build();
+            gui.open();
+            return;
+         }
          ContainerLevelAccess access = ContainerLevelAccess.create(player.level(),player.blockPosition());
          MenuProvider provider = switch(mode){
             case CRAFTING -> new SimpleMenuProvider((i, inventory, p) -> new CraftingMenu(i, inventory, access), Component.translatable("container.crafting"));

@@ -1,7 +1,41 @@
 {
     "model": {
-        "type": "minecraft:model",
-        "model": "minecraft:item/lantern"
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "yellow",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/lantern"
+                }
+            },
+            {
+                "when": "blue",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/soul_lantern"
+                }
+            },
+            {
+                "when": "copper",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/copper_lantern"
+                }
+            },
+            {
+                "when": "green",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/oxidized_copper_lantern"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/lantern"
+        }
     },
     "hand_animation_on_swap": false
 }

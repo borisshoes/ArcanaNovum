@@ -190,7 +190,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
                if(enhanced1 && enhanced2){ // Perform combination calculation
                   double stat1 = ArcanaItem.getDoubleProperty(input1,EnhancedStatUtils.ENHANCED_STAT_TAG);
                   double stat2 = ArcanaItem.getDoubleProperty(input2,EnhancedStatUtils.ENHANCED_STAT_TAG);
-                  double combined = Math.min(1,EnhancedStatUtils.combineStats(stat1,stat2) + 0.025*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ENHANCED_ENHANCEMENTS.id));
+                  double combined = Math.min(1,EnhancedStatUtils.combineStats(stat1,stat2) + 0.025*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ENHANCED_ENHANCEMENTS));
                   EnhancedStatUtils.enhanceItem(output,combined);
                   runningLevelCost += (int) (40*combined);
                }else if(enhanced2){ // Enhance output with stats of 2nd slot

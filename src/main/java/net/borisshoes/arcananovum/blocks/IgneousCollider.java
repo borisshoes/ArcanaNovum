@@ -136,13 +136,6 @@ public class IgneousCollider extends ArcanaBlock {
          return createTickerHelper(type, ArcanaRegistry.IGNEOUS_COLLIDER_BLOCK_ENTITY, IgneousColliderBlockEntity::ticker);
       }
       
-      @Override
-      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
-         BlockEntity entity = world.getBlockEntity(pos);
-         if(entity instanceof IgneousColliderBlockEntity collider){
-            initializeArcanaBlock(stack,collider);
-         }
-      }
    }
 }
 

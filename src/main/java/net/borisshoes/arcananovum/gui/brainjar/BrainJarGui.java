@@ -4,6 +4,7 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.items.BrainJar;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -61,13 +62,13 @@ public class BrainJarGui extends SimpleGui {
       bottle.addLoreLine(TextUtils.removeItalics(Component.literal("")));
       bottle.addLoreLine(TextUtils.removeItalics(Component.literal("")
             .append(Component.literal("Right click to take all (").withStyle(ChatFormatting.GREEN))
-            .append(Component.literal(""+jar.getEnergy(stack)).withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(""+ EnergyItem.getEnergy(stack)).withStyle(ChatFormatting.AQUA))
             .append(Component.literal(")").withStyle(ChatFormatting.GREEN))
             .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))));
       setSlot(4,bottle);
       
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Component.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
-      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Component.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Component.literal(LevelUtils.readableInt(EnergyItem.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
+      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Component.literal(LevelUtils.readableInt(EnergyItem.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
       
       if(!active){
          GuiElementBuilder notmending = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL));

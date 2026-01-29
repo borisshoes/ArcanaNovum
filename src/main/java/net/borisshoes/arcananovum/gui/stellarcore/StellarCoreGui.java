@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.gui.stellarcore;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.forge.StellarCoreBlockEntity;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.gui.GuiHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,22 +34,8 @@ public class StellarCoreGui extends SimpleGui {
    }
    
    public void buildGui(){
-      GuiElementBuilder magmaItem = new GuiElementBuilder(Items.MAGMA_BLOCK).hideDefaultTooltip();
-      magmaItem.setName((Component.literal("")
-            .append(Component.literal("Insert Item to Salvage It").withStyle(ChatFormatting.GOLD))));
-      setSlot(0,magmaItem);
-      setSlot(2,magmaItem);
-      setSlot(6,magmaItem);
-      setSlot(8,magmaItem);
-      
-      GuiElementBuilder fireItem = new GuiElementBuilder(Items.BLAZE_POWDER).hideDefaultTooltip();
-      fireItem.setName((Component.literal("")
-            .append(Component.literal("Insert Item to Salvage It").withStyle(ChatFormatting.GOLD))));
-      setSlot(1,fireItem);
-      setSlot(3,fireItem);
-      setSlot(5,fireItem);
-      setSlot(7,fireItem);
-      
+      GuiHelper.outlineGUI(this, 0xffaa00,Component.literal("Insert Item to Salvage It").withStyle(ChatFormatting.GOLD));
+      clearSlot(4);
       Container inv = blockEntity.getInventory();
       setSlotRedirect(4,new Slot(inv,0,0,0));
    }

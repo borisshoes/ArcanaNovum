@@ -4,9 +4,14 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.EnderCrateBlockEntity;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
+import net.borisshoes.arcananovum.gui.NoArcanaSlot;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 
 public class EnderCrateGui extends SimpleGui {
@@ -28,7 +33,11 @@ public class EnderCrateGui extends SimpleGui {
    
    public void build(){
       for(int i = 0; i < size; i++){
-         setSlotRedirect(i,new Slot(channel.getInventory(),i,i%9,i/9));
+         if(channel.isLocked()){
+            setSlotRedirect(i,new Slot(channel.getInventory(),i,i%9,i/9));
+         }else{
+            setSlotRedirect(i,new NoArcanaSlot(channel.getInventory(),i,i%9,i/9));
+         }
       }
    }
    
@@ -49,5 +58,13 @@ public class EnderCrateGui extends SimpleGui {
          }
       }
       super.onTick();
+   }
+   
+   @Override
+   public void onClose(){
+      super.onClose();
+      if(block != null){
+         SoundUtils.playSound(block.getLevel(),block.getBlockPos(), SoundEvents.ENDER_CHEST_CLOSE, SoundSource.BLOCKS,1,1.2f);
+      }
    }
 }

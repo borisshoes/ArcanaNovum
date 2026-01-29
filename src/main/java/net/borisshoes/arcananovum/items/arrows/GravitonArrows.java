@@ -89,7 +89,7 @@ public class GravitonArrows extends RunicArrow {
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
          int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20);// Measured in quarter seconds
-         double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL.id);
+         double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL);
          gravitonPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
       }
    }
@@ -98,7 +98,7 @@ public class GravitonArrows extends RunicArrow {
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
          int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20); // Measured in quarter seconds
-         double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL.id);
+         double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL);
          gravitonPulse(arrow, serverWorld,blockHitResult.getLocation(),null,duration,range,0);
       }
    }
@@ -127,7 +127,7 @@ public class GravitonArrows extends RunicArrow {
             e.addEffect(slowness);
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.BRING_TOGETHER.id);
+      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.BRING_TOGETHER);
       
       ArcanaEffectUtils.gravitonArrowEmit(world,pos,entities);
       if(calls % 10 == 1){

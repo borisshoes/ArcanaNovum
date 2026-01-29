@@ -108,7 +108,7 @@ public class TetherArrows extends RunicArrow {
          ArcanaEffectUtils.tetherArrowGrapple(player.level(),player,blockHitResult.getLocation());
          SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_2, SoundSource.PLAYERS,.8f,.6f);
          
-         if(motion.y >= 12) ArcanaAchievements.progress(player,ArcanaAchievements.SPIDERMAN.id,1);
+         if(motion.y >= 12) ArcanaAchievements.progress(player,ArcanaAchievements.SPIDERMAN,1);
       }
       
    }

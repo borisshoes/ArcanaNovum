@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.InterdictorBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -122,5 +124,13 @@ public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implement
    @Override
    protected MapCodec<? extends BaseEntityBlock> codec(){
       return null;
+   }
+   
+   @Override
+   public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
+      BlockEntity entity = world.getBlockEntity(pos);
+      if(entity instanceof ArcanaBlockEntity abe){
+         initializeArcanaBlock(stack, abe);
+      }
    }
 }

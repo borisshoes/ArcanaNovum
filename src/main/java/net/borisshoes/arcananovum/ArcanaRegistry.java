@@ -23,7 +23,6 @@ import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
 import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayPortalBlock;
 import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayPortalBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.*;
-import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
 import net.borisshoes.arcananovum.callbacks.login.*;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -294,14 +293,8 @@ public class ArcanaRegistry {
          .component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(ARCANA_ITEM_IMMUNE_TO)))
    );
    
-   // Normal Blocks
-   public static final Block ASTRAL_GATEWAY_PORTAL_BLOCK = registerBlock("astral_gateway_portal",new AstralGatewayPortalBlock(BlockBehaviour.Properties.of()
-         .mapColor(MapColor.COLOR_BLACK)
-         .noCollision()
-         .lightLevel(blockStatex -> 15)
-         .strength(-1.0F, 3600000.0F)
-         .noLootTable()
-         .pushReaction(PushReaction.BLOCK)));
+   // Normal Blocks (registered in initialize())
+   public static Block ASTRAL_GATEWAY_PORTAL_BLOCK;
    
    // 1.0 Items
    public static final ArcanaItem LEADERSHIP_CHARM = ArcanaRegistry.register(new LeadershipCharm());
@@ -424,9 +417,12 @@ public class ArcanaRegistry {
    public static final BlockEntityType<? extends BlockEntity> STELLAR_CORE_BLOCK_ENTITY = registerBlockEntity(STELLAR_CORE.getId(), FabricBlockEntityTypeBuilder.create(StellarCoreBlockEntity::new,((ArcanaBlock) STELLAR_CORE).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> TWILIGHT_ANVIL_BLOCK_ENTITY = registerBlockEntity(TWILIGHT_ANVIL.getId(), FabricBlockEntityTypeBuilder.create(TwilightAnvilBlockEntity::new,((ArcanaBlock) TWILIGHT_ANVIL).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> TRANSMUTATION_ALTAR_BLOCK_ENTITY = registerBlockEntity(TRANSMUTATION_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(TransmutationAltarBlockEntity::new,((ArcanaBlock) TRANSMUTATION_ALTAR).getBlock()).build());
+   public static BlockEntityType<? extends BlockEntity> ASTRAL_GATEWAY_PORTAL_BLOCK_ENTITY; // Initialized in initialize()
    public static final BlockEntityType<? extends BlockEntity> ASTRAL_GATEWAY_BLOCK_ENTITY = registerBlockEntity(ASTRAL_GATEWAY.getId(), FabricBlockEntityTypeBuilder.create(AstralGatewayBlockEntity::new,((ArcanaBlock) ASTRAL_GATEWAY).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> ASTRAL_GATEWAY_PORTAL_BLOCK_ENTITY = registerBlockEntity("astral_gateway_portal", FabricBlockEntityTypeBuilder.create(AstralGatewayPortalBlockEntity::new, ASTRAL_GATEWAY_PORTAL_BLOCK).build());
    public static final BlockEntityType<? extends BlockEntity> ENDER_CRATE_BLOCK_ENTITY = registerBlockEntity(ENDER_CRATE.getId(), FabricBlockEntityTypeBuilder.create(EnderCrateBlockEntity::new,((ArcanaBlock) ENDER_CRATE).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> INTERDICTOR_BLOCK_ENTITY = registerBlockEntity(INTERDICTOR.getId(), FabricBlockEntityTypeBuilder.create(InterdictorBlockEntity::new,((ArcanaBlock) INTERDICTOR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> ITINERANTEUR_BLOCK_ENTITY = registerBlockEntity(ITINERANTEUR.getId(), FabricBlockEntityTypeBuilder.create(ItineranteurBlockEntity::new,((ArcanaBlock) ITINERANTEUR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> GEOMANTIC_STELE_BLOCK_ENTITY = registerBlockEntity(GEOMANTIC_STELE.getId(), FabricBlockEntityTypeBuilder.create(GeomanticSteleBlockEntity::new,((ArcanaBlock) GEOMANTIC_STELE).getBlock()).build());
    
    // Loot Functions / Item Modifiers
    public static final LootItemFunctionType<? extends LootItemFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
@@ -439,10 +435,6 @@ public class ArcanaRegistry {
    
    // Login Callbacks
    public static final LoginCallback SHIELD_LOGIN = registerCallback(new ShieldLoginCallback());
-   public static final LoginCallback ANCHOR_LOGIN = registerCallback(new AnchorTimeLoginCallback());
-   public static final LoginCallback COLLIDER_LOGIN = registerCallback(new ColliderLoginCallback());
-   public static final LoginCallback XP_LOGIN = registerCallback(new XPLoginCallback());
-   public static final LoginCallback ACHIEVEMENT_LOGIN = registerCallback(new AchievementLoginCallback());
    public static final LoginCallback MAX_HP_LOGIN = registerCallback(new MaxHealthLoginCallback());
    public static final LoginCallback VENGEANCE_LOGIN = registerCallback(new VengeanceTotemLoginCallback());
    
@@ -626,6 +618,19 @@ public class ArcanaRegistry {
          new IntConfigValue("xpSpearOfTenbrousImpale", 50, new IntConfigValue.IntLimits(0))));
    
    public static void initialize(){
+      // Register normal (non-Arcana) blocks first
+      ASTRAL_GATEWAY_PORTAL_BLOCK = registerBlock("astral_gateway_portal", new AstralGatewayPortalBlock(BlockBehaviour.Properties.of()
+            .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID,"astral_gateway_portal")))
+            .mapColor(MapColor.COLOR_BLACK)
+            .noCollision()
+            .lightLevel(blockStatex -> 15)
+            .strength(-1.0F, 3600000.0F)
+            .noLootTable()
+            .pushReaction(PushReaction.BLOCK)));
+      
+      // Register the block entity after the block
+      ASTRAL_GATEWAY_PORTAL_BLOCK_ENTITY = registerBlockEntity("astral_gateway_portal", FabricBlockEntityTypeBuilder.create(AstralGatewayPortalBlockEntity::new, ASTRAL_GATEWAY_PORTAL_BLOCK).build());
+      
       PolymerResourcePackUtils.addModAssets(MOD_ID);
       FabricDefaultAttributeRegistry.register(DRAGON_WIZARD_ENTITY, DragonWizardEntity.createWizardAttributes());
       FabricDefaultAttributeRegistry.register(DRAGON_PHANTOM_ENTITY, DragonPhantomEntity.createPhantomAttributes());
@@ -662,12 +667,15 @@ public class ArcanaRegistry {
             EmpoweredArcanePaper.getCompendiumEntry(),
             new ArcanaItemCompendiumEntry(ARCANE_TOME),
             new ArcanaItemCompendiumEntry(STARLIGHT_FORGE),
+            new ArcanaItemCompendiumEntry(CLOCKWORK_MULTITOOL),
             new ArcanaItemCompendiumEntry(MAGNETISM_CHARM),
+            new ArcanaItemCompendiumEntry(NEGOTIATION_CHARM),
             new ArcanaItemCompendiumEntry(TELESCOPING_BEACON),
             new ArcanaItemCompendiumEntry(ANCIENT_DOWSING_ROD),
             new ArcanaItemCompendiumEntry(AQUATIC_EVERSOURCE),
             new ArcanaItemCompendiumEntry(CONTAINMENT_CIRCLET),
             new ArcanaItemCompendiumEntry(CHEST_TRANSLOCATOR),
+            new ArcanaItemCompendiumEntry(ENDER_CRATE),
             new ArcanaItemCompendiumEntry(FRACTAL_SPONGE),
             new ArcanaItemCompendiumEntry(CETACEA_CHARM),
             new ArcanaItemCompendiumEntry(LIGHT_CHARM),
@@ -678,6 +686,7 @@ public class ArcanaRegistry {
             new ArcanaItemCompendiumEntry(FELIDAE_CHARM),
             new ArcanaItemCompendiumEntry(FEASTING_CHARM),
             new ArcanaItemCompendiumEntry(ARCANISTS_BELT),
+            new ArcanaItemCompendiumEntry(ITINERANTEUR),
             new ArcanaItemCompendiumEntry(MAGMATIC_EVERSOURCE),
             new ArcanaItemCompendiumEntry(TEMPORAL_MOMENT),
             new ArcanaItemCompendiumEntry(WILD_GROWTH_CHARM),
@@ -695,6 +704,10 @@ public class ArcanaRegistry {
             new ArcanaItemCompendiumEntry(CINDERS_CHARM),
             new ArcanaItemCompendiumEntry(SOULSTONE),
             new ArcanaItemCompendiumEntry(ESSENCE_EGG),
+            new ArcanaItemCompendiumEntry(EXOTIC_MATTER),
+            new ArcanaItemCompendiumEntry(CONTINUUM_ANCHOR),
+            new ArcanaItemCompendiumEntry(INTERDICTOR),
+            new ArcanaItemCompendiumEntry(ASTRAL_GATEWAY),
             new ArcanaItemCompendiumEntry(STORMCALLER_ALTAR),
             new ArcanaItemCompendiumEntry(CELESTIAL_ALTAR),
             new ArcanaItemCompendiumEntry(STARPATH_ALTAR),
@@ -702,9 +715,8 @@ public class ArcanaRegistry {
             new TransmutationRecipesCompendiumEntry(),
             new ArcanaItemCompendiumEntry(WAYSTONE),
             DivineArcanePaper.getCompendiumEntry(),
-            new ArcanaItemCompendiumEntry(EXOTIC_MATTER),
-            new ArcanaItemCompendiumEntry(CONTINUUM_ANCHOR),
             new ArcanaItemCompendiumEntry(RUNIC_MATRIX),
+            new ArcanaItemCompendiumEntry(GEOMANTIC_STELE),
             new ArcanaItemCompendiumEntry(RADIANT_FLETCHERY),
             new ArcanaItemCompendiumEntry(OVERFLOWING_QUIVER),
             new ArcanaItemCompendiumEntry(BINARY_BLADES),
@@ -784,7 +796,7 @@ public class ArcanaRegistry {
          // Write achievements
          writer.println("=== ACHIEVEMENTS ===");
          int totalAchievementPoints = 0;
-         for(Map.Entry<String, ArcanaAchievement> entry : ArcanaAchievements.registry.entrySet()){
+         for(Map.Entry<String, ArcanaAchievement> entry : ArcanaAchievements.ARCANA_ACHIEVEMENTS.entrySet()){
             ArcanaAchievement achievement = entry.getValue();
 //            writer.println("\"achievement.arcananovum.name."+achievement.id+"\" : \""+achievement.name+"\",");
 //            StringBuilder desc = new StringBuilder("\"achievement.arcananovum.description." + achievement.id + "\" : \"");

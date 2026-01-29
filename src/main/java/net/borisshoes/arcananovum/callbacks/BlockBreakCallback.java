@@ -24,7 +24,7 @@ public class BlockBreakCallback {
             pick.veinMine(world,playerEntity,tool,blockPos);
          }
          if(playerEntity instanceof ServerPlayer player && blockState.is(BlockTags.BASE_STONE_OVERWORLD)){
-            ArcanaAchievements.progress(player,ArcanaAchievements.DIGGY_HOLE.id, 1);
+            ArcanaAchievements.progress(player,ArcanaAchievements.DIGGY_HOLE, 1);
          }
       }else if(ArcanaItemUtils.identifyItem(tool) instanceof GravitonMaul maul){
          if(!playerEntity.isShiftKeyDown()){

@@ -72,7 +72,7 @@ public class EnchantmentHelperMixin {
    
    @Inject(method = "processProjectileCount",at=@At("RETURN"), cancellable = true)
    private static void arcananovum$modifyProjectileCount(ServerLevel world, ItemStack stack, Entity user, int baseProjectileCount, CallbackInfoReturnable<Integer> cir){
-      if(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SCATTERSHOT.id) > 0 && cir.getReturnValueI() < 5){
+      if(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SCATTERSHOT) > 0 && cir.getReturnValueI() < 5){
          cir.setReturnValue(5);
       }
    }

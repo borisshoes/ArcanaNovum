@@ -22,4 +22,5 @@ public class ArcanaColors {
    public static final int CELESTIAL_DAY_COLOR = 0xf7d10f;
    public static final int CELESTIAL_NIGHT_COLOR = 0x365aad;
    public static final int STARPATH_COLOR = 0x1a0136;
+   public static final int ENDER_COLOR = 0x1c6351;
 }

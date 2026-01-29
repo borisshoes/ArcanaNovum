@@ -6,11 +6,9 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
-import net.borisshoes.arcananovum.callbacks.login.ColliderLoginCallback;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
@@ -20,7 +18,6 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Tuple;
@@ -42,6 +39,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
+import java.util.UUID;
 
 public class IgneousColliderBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    
@@ -62,7 +60,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
       this.uuid = uuid;
       this.origin = origin;
       this.customName = customName == null ? "" : customName;
-      int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION.id);
+      int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION);
       this.cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
    }
    
@@ -90,7 +88,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
          BlockPos hasInventory = null;
          BlockPos hasNetherite = null;
          Container output = null;
-         boolean canUseIce = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CRYOGENIC_COOLING.id) >= 1;
+         boolean canUseIce = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CRYOGENIC_COOLING) >= 1;
          
          Direction[] dirs = Direction.values();
          int numDirs = dirs.length;
@@ -165,7 +163,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
             }
             
             // Remove Source Blocks
-            int efficiencyLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.THERMAL_EXPANSION.id);
+            int efficiencyLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.THERMAL_EXPANSION);
             if(Math.random() >= .1*efficiencyLvl){
                if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
                   serverWorld.setBlock(hasLava, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -180,20 +178,16 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
             }
             
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
-               if(player == null){
-                  BorisLib.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
-                  BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_IGNEOUS_COLLIDER_PRODUCE)));
-               }else{
-                  ArcanaAchievements.progress(player,ArcanaAchievements.ENDLESS_EXTRUSION.id,1);
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_IGNEOUS_COLLIDER_PRODUCE));
-                  if(obby.is(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(player,ArcanaAchievements.EXPENSIVE_INFUSION.id);
-               }
+               UUID parsedId = AlgoUtils.getUUID(crafterId);
+               ArcanaPlayerData profile = ArcanaNovum.data(parsedId);
+               ArcanaAchievements.progress(parsedId,ArcanaAchievements.ENDLESS_EXTRUSION,1);
+               profile.addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_IGNEOUS_COLLIDER_PRODUCE));
+               if(obby.is(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(parsedId,ArcanaAchievements.EXPENSIVE_INFUSION);
             }
             
             SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.ZOMBIE_VILLAGER_CURE, SoundSource.BLOCKS, 1, .6f);
             level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
-            int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION.id);
+            int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION);
             cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
          }
       }

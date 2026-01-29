@@ -119,7 +119,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
             if(crafterId != null && !crafterId.isEmpty()){
                ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player != null){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.NIDAVELLIR.id);
+                  ArcanaAchievements.grant(player,ArcanaAchievements.NIDAVELLIR);
                }
             }
          }
@@ -131,7 +131,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public BlockPos getForgeRange(){
-      return ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STELLAR_RANGE.id) >= 1 ? new BlockPos(15, 8, 15) : new BlockPos(8, 5, 8);
+      return ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STELLAR_RANGE) >= 1 ? new BlockPos(15, 8, 15) : new BlockPos(8, 5, 8);
    }
    
    public ArcanaBlockEntity getForgeAddition(ServerLevel world, BlockEntityType<? extends BlockEntity> additionBlockEntity){
@@ -214,7 +214,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    
    public int getPlanetCount(){
       int planetCount = 2;
-      if(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOONLIT_FORGE.id) >= 1){
+      if(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOONLIT_FORGE) >= 1){
          long timeOfDay = level.getDayTime();
          int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
@@ -237,7 +237,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    
    public int getStarCount(){
       int starCount = 2;
-      if(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOONLIT_FORGE.id) >= 1){
+      if(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOONLIT_FORGE) >= 1){
          long timeOfDay = level.getDayTime();
          int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;

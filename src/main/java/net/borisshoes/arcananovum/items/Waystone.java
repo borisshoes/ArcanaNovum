@@ -235,7 +235,7 @@ public class Waystone extends ArcanaItem {
          if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown() && !isUnattuned(stack)){
             if(context.getLevel().getBlockEntity(context.getClickedPos()) instanceof StarpathAltarBlockEntity sabe){
                WaystoneTarget target = getTarget(stack);
-               if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(),ArcanaAugments.STARGATE.id) > 0 || target.world.identifier().equals(context.getLevel().dimension().identifier())){
+               if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(),ArcanaAugments.STARGATE) > 0 || target.world.identifier().equals(context.getLevel().dimension().identifier())){
                   sabe.setTarget(new StarpathAltarBlockEntity.TargetEntry(
                         MinecraftUtils.getFormattedDimName(target.world).getString()+" "+ BlockPos.containing(target.position()).toShortString(),
                         target.world.identifier().toString(),

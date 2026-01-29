@@ -62,7 +62,7 @@ public class ItemEntityMixin {
       if(!(itemEntity.level() instanceof ServerLevel serverWorld)) return;
       
       if(arcanaItem instanceof Soulstone){
-         boolean hasAnnihilation = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_ANNIHILATION.id) > 0;
+         boolean hasAnnihilation = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_ANNIHILATION) > 0;
          if(hasAnnihilation){
             BlockState state = world.getBlockState(itemEntity.blockPosition());
             if(state.is(Blocks.SOUL_FIRE)){

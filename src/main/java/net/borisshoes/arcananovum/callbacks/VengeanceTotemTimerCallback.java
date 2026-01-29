@@ -4,12 +4,16 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.callbacks.login.VengeanceTotemLoginCallback;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.TickTimerCallback;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 public class VengeanceTotemTimerCallback extends TickTimerCallback {
    
@@ -28,7 +32,7 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback {
          if(player1 == null){
             if(attacker != null){
                if(avenged){
-                  BorisLib.addLoginCallback(new XPLoginCallback(player.level().getServer(),player.getStringUUID(),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TOTEM_OF_VENGEANCE_SURVIVE))); // Give XP
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TOTEM_OF_VENGEANCE_SURVIVE)); // Give XP
                }else{
                   BorisLib.addLoginCallback(new VengeanceTotemLoginCallback(player));
                }

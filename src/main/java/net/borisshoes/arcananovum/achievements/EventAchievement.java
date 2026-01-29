@@ -27,7 +27,7 @@ public class EventAchievement extends ArcanaAchievement{
    
    @Override
    public EventAchievement fromNbt(String id, CompoundTag nbt){
-      EventAchievement ach = (EventAchievement) ArcanaAchievements.registry.get(id).makeNew();
+      EventAchievement ach = (EventAchievement) ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(id).makeNew();
       ach.setAcquired(nbt.getBooleanOr("acquired", false));
       return ach;
    }
@@ -35,7 +35,7 @@ public class EventAchievement extends ArcanaAchievement{
    @Override
    public MutableComponent[] getStatusDisplay(ServerPlayer player){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      EventAchievement achievement = (EventAchievement) profile.getAchievement(getArcanaItem().getId(), id);
+      EventAchievement achievement = (EventAchievement) profile.getAchievement(this);
       if(achievement == null) return null;
       
       return new MutableComponent[]{Component.literal("")
@@ -44,6 +44,8 @@ public class EventAchievement extends ArcanaAchievement{
    
    @Override
    public EventAchievement makeNew(){
-      return new EventAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward);
+      EventAchievement ach = new EventAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward);
+      ach.setHidden(hidden);
+      return ach;
    }
 }

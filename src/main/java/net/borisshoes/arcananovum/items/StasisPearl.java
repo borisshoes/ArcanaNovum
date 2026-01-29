@@ -131,7 +131,7 @@ public class StasisPearl extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // 1 minute base recharge time
-      return 60 - 10*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.STASIS_ACCELERATION.id));
+      return 60 - 10*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.STASIS_ACCELERATION));
    }
    
    @Override
@@ -220,7 +220,7 @@ public class StasisPearl extends EnergyItem {
          ItemStack stack = playerEntity.getItemInHand(hand);
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);
          String pearlID = getStringProperty(stack,PEARL_ID_TAG);
-         boolean canDelete = playerEntity.isShiftKeyDown() && Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPATIAL_FOLD.id)) >= 1;
+         boolean canDelete = playerEntity.isShiftKeyDown() && Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPATIAL_FOLD)) >= 1;
          
          try{
             if(pearlID.isEmpty()){ // Throw new pearl

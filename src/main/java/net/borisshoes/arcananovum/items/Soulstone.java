@@ -134,7 +134,7 @@ public class Soulstone extends ArcanaItem {
       
       String entityTypeId = EntityType.getKey(dead.getType()).toString();
       
-      int toAdd = new int[]{1,2,3,4,5,10}[Math.max(0,ArcanaAugments.getAugmentOnItem(stone,ArcanaAugments.SOUL_REAPER.id))];
+      int toAdd = new int[]{1,2,3,4,5,10}[Math.max(0,ArcanaAugments.getAugmentOnItem(stone,ArcanaAugments.SOUL_REAPER))];
       if(weapon.is(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem())){
          if(ArcanaAugments.getAugmentOnItem(weapon,ArcanaAugments.ETERNAL_CRUELTY) > 0){
             toAdd *= 2;

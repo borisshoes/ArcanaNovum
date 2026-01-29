@@ -19,6 +19,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -158,13 +159,13 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    
    @Override
    protected int getRefillMod(ItemStack item){ // Ticks between arrow refill, once per minute
-      int refillLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"quiver_duplication"));
+      int refillLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.QUIVER_DUPLICATION));
       return 1200 - refillReduction[refillLvl];
    }
    
    @Override
    protected double getEfficiencyMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
-      int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"runic_bottomless"));
+      int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RUNIC_BOTTOMLESS));
       return efficiencyChance[effLvl];
    }
    
@@ -175,8 +176,8 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       ItemStack quiverStack = inv.getItem(centerpieces.getFirst()); // Should be the old quiver
 
       newArcanaItem.set(DataComponents.CONTAINER,quiverStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
-      ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,ArcanaAugments.RUNIC_BOTTOMLESS.id);
-      ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.ABUNDANT_AMMO.id,ArcanaAugments.QUIVER_DUPLICATION.id);
+      ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS,ArcanaAugments.RUNIC_BOTTOMLESS);
+      ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.ABUNDANT_AMMO,ArcanaAugments.QUIVER_DUPLICATION);
       return newArcanaItem;
    }
    
@@ -201,9 +202,14 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       for(int i = 0; i < streamList.size(); i++){
          inv.setItem(i,streamList.get(i));
       }
-      double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES.id) > 0 ? 0.25 : 0.5;
+      double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES) > 0 ? 0.25 : 0.5;
       
-      return new ArcanaItemContainer(inv, size,20, "RQ", "Runic Quiver", concMod);
+      return new ArcanaItemContainer(
+            Identifier.fromNamespaceAndPath(MOD_ID,this.id),
+            inv, size,20,
+            Component.literal("RQ"),
+            getTranslatedName(),
+            concMod);
    }
    
    public class RunicQuiverItem extends ArcanaPolymerItem {

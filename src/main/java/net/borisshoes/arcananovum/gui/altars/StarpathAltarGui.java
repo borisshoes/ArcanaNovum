@@ -30,8 +30,8 @@ public class StarpathAltarGui extends SimpleGui {
    public StarpathAltarGui(ServerPlayer player, StarpathAltarBlockEntity blockEntity){
       super(MenuType.HOPPER, player, false);
       this.blockEntity = blockEntity;
-      starcharts = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STAR_CHARTS.id) > 0;
-      stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE.id) > 0;
+      starcharts = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STAR_CHARTS) > 0;
+      stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE) > 0;
       
       setTitle(Component.literal("Starpath Altar"));
    }

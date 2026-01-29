@@ -88,11 +88,11 @@ public class SiphoningArrows extends RunicArrow {
          
          if(player.getHealth() < 1.5f){
             BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2, () -> {
-               if(entityHitResult.getEntity() instanceof Mob mob && mob.isDeadOrDying()) ArcanaAchievements.grant(player,ArcanaAchievements.CIRCLE_OF_LIFE.id);
+               if(entityHitResult.getEntity() instanceof Mob mob && mob.isDeadOrDying()) ArcanaAchievements.grant(player,ArcanaAchievements.CIRCLE_OF_LIFE);
             }));
          }
          
-         int overhealLvl = arrow.getAugment(ArcanaAugments.OVERHEAL.id);
+         int overhealLvl = arrow.getAugment(ArcanaAugments.OVERHEAL);
          float overheal = (float) Mth.clamp((damage+player.getHealth()) - player.getMaxHealth(),0,overhealCap[overhealLvl]);
          if(overheal > 0){
             float curAbs = player.getAbsorptionAmount();

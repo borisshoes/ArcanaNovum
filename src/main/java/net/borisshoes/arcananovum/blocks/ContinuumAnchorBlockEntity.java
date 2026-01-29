@@ -6,13 +6,12 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
-import net.borisshoes.arcananovum.callbacks.login.AnchorTimeLoginCallback;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.EnergyItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.ExoticMatter;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
@@ -20,7 +19,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Tuple;
@@ -41,6 +39,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
+import java.util.UUID;
 
 public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, WorldlyContainer, ContainerListener {
    private static final double[] anchorEfficiency = {0,.05,.1,.15,.2,.5};
@@ -118,7 +117,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       //Add Fuel
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(inventory.isEmpty() && arcanaItem instanceof ExoticMatter matter){
-         fuel = matter.getEnergy(stack);
+         fuel = EnergyItem.getEnergy(stack);
          inventory.addItem(stack.copy());
          player.getInventory().removeItem(stack);
          setChanged();
@@ -147,7 +146,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
          }
          
          if(active && serverWorld.getServer().getTickCount() % 20 == 0){
-            int lvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.TEMPORAL_RELATIVITY.id);
+            int lvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.TEMPORAL_RELATIVITY);
             if(Math.random() >= anchorEfficiency[lvl]){
                fuel = Math.max(0, fuel - 1);
                
@@ -158,14 +157,10 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
             }
             
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
-               if(player == null){
-                  BorisLib.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
-                  if(serverWorld.getServer().getTickCount() % 1200 == 0) BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CONTINUUM_ANCHOR_PER_MINUTE)));
-               }else{
-                  ArcanaAchievements.progress(player,ArcanaAchievements.TIMEY_WIMEY.id, 1);
-                  if(serverWorld.getServer().getTickCount() % 1200 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CONTINUUM_ANCHOR_PER_MINUTE));
-               }
+               UUID parsedId = AlgoUtils.getUUID(crafterId);
+               ArcanaPlayerData profile = ArcanaNovum.data(parsedId);
+               ArcanaAchievements.progress(parsedId,ArcanaAchievements.TIMEY_WIMEY, 1);
+               if(serverWorld.getServer().getTickCount() % 1200 == 0) profile.addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CONTINUUM_ANCHOR_PER_MINUTE));
             }
          }
          int fuelMarks = (int)Math.min(Math.ceil(4.0*fuel/600000.0),4);

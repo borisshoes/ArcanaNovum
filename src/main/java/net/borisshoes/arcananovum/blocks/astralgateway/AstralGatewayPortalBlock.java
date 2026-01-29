@@ -3,48 +3,27 @@ package net.borisshoes.arcananovum.blocks.astralgateway;
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
-import eu.pb4.polymer.core.api.utils.PolymerSyncedObject;
-import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.borislib.BorisLib;
-import net.borisshoes.borislib.timers.GenericTimer;
-import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class AstralGatewayPortalBlock extends BaseEntityBlock implements PolymerBlock {
    
    public AstralGatewayPortalBlock(BlockBehaviour.Properties properties){
-      super(properties.setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID,"astral_gateway_portal"))));
+      super(properties);
    }
    
    @Override
@@ -52,11 +31,7 @@ public class AstralGatewayPortalBlock extends BaseEntityBlock implements Polymer
       return null;
    }
    
-   @Override
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder){
-      super.createBlockStateDefinition(builder);
-   }
-   
+
    @Override
    public BlockState getPolymerBlockState(BlockState blockState, PacketContext packetContext){
       return Blocks.END_GATEWAY.defaultBlockState();

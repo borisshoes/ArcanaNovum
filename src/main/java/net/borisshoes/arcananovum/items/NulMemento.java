@@ -186,7 +186,7 @@ public class NulMemento extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      return 36000 - 12000*Math.max(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TEMPO_MORTUUS.id),0); // 30 minutes - 10 per level
+      return 36000 - 12000*Math.max(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TEMPO_MORTUUS),0); // 30 minutes - 10 per level
    }
    
    public boolean protectFromDeath(ItemStack stack, LivingEntity living, DamageSource source, boolean constructInterference){
@@ -205,7 +205,7 @@ public class NulMemento extends EnergyItem {
          DialogHelper dialogHelper = new DialogHelper();
          
          if(isActive(stack)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.DEATHS_DOOR.id);
+            ArcanaAchievements.grant(player,ArcanaAchievements.DEATHS_DOOR);
             
             dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                   Component.literal("\n")
@@ -261,7 +261,7 @@ public class NulMemento extends EnergyItem {
       player.addEffect(weakness);
       
       final boolean[] cont = {true};
-      int resolve = ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.RESOLVE.id);
+      int resolve = ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.RESOLVE);
       final int maxConc = LevelUtils.concFromXp(ArcanaNovum.data(player).getXP(),resolve);
       DialogHelper dialogHelper = new DialogHelper();
       
@@ -391,8 +391,8 @@ public class NulMemento extends EnergyItem {
             
             ArcanaNovum.data(player).removeAllAugments();
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_NUL_MEMENTO_DEALLOCATE));
-            ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE.id);
-            ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC.id,1);
+            ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE);
+            ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC,1);
          }
       }));
    }

@@ -102,7 +102,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       if(assembled && seenForge){
          Direction dir = serverWorld.getBlockState(worldPosition).getValue(ArcaneSingularity.ArcaneSingularityBlock.HORIZONTAL_FACING);
          Vec3 center = worldPosition.offset(dir.getUnitVec3i().multiply(-1)).getCenter().add(0,2.5,0);
-         double fillPercent = (0.75+0.05*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE.id)) * ((double) getNumBooks() / getCapacity());
+         double fillPercent = (0.75+0.05*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE)) * ((double) getNumBooks() / getCapacity());
          ArcanaEffectUtils.arcaneSingularityAnim(serverWorld,center,ticks % 300,dir,fillPercent);
          
          if(Math.random() < 0.001){
@@ -315,7 +315,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    }
    
    public int getCapacity(){
-      return (7*4*4)*(1 + ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE.id)); // 4 pages per level
+      return (7*4*4)*(1 + ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE)); // 4 pages per level
    }
    
    public void openGui(ServerPlayer player){

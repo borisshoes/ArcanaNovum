@@ -235,7 +235,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       private void tryActivate(BlockState state, Level world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof StarpathAltarBlockEntity altar && world instanceof ServerLevel serverWorld){
-            boolean stargate = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.STARGATE.id) > 0;
+            boolean stargate = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.STARGATE) > 0;
             Optional<ItemEntity> waystone = serverWorld.getEntitiesOfClass(ItemEntity.class,new AABB(pos.above()), e ->
                   e.getItem().is(ArcanaRegistry.WAYSTONE.getItem())
                         && Waystone.getTarget(e.getItem()) != null

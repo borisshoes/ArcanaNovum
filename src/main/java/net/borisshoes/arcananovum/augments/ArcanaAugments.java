@@ -876,7 +876,7 @@ public class ArcanaAugments {
          ));
    public static final ArcanaAugment METAMORPHIC_ALIGNMENT = ArcanaAugments.register(
          new ArcanaAugment("metamorphic_alignment", new ItemStack(Items.QUARTZ), ArcanaRegistry.GEOMANTIC_STELE,
-               DIVINE
+               EXOTIC
          ));
    
    // Interdictor
@@ -890,7 +890,7 @@ public class ArcanaAugments {
          ));
    public static final ArcanaAugment DECOALESCENCE = ArcanaAugments.register(
          new ArcanaAugment("decoalescence", new ItemStack(Items.RED_STAINED_GLASS), ArcanaRegistry.INTERDICTOR,
-               DIVINE
+               SOVEREIGN
          ));
    public static final ArcanaAugment PRECISION_INTERDICTION = ArcanaAugments.register(
          new ArcanaAugment("precision_interdiction", new ItemStack(Items.LIGHT_BLUE_STAINED_GLASS), ArcanaRegistry.INTERDICTOR,
@@ -910,7 +910,7 @@ public class ArcanaAugments {
    // Astral Gateway
    public static final ArcanaAugment ASTRAL_STABILIZERS = ArcanaAugments.register(
          new ArcanaAugment("astral_stabilizers", new ItemStack(Items.REINFORCED_DEEPSLATE), ArcanaRegistry.ASTRAL_GATEWAY,
-               SOVEREIGN, SOVEREIGN
+               EXOTIC, EXOTIC
          ));
    public static final ArcanaAugment STARLIGHT_RECYCLERS = ArcanaAugments.register(
          new ArcanaAugment("starlight_recyclers", MinecraftUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultInstance()), ArcanaRegistry.ASTRAL_GATEWAY,
@@ -924,15 +924,15 @@ public class ArcanaAugments {
    // Clockwork Multitool
    public static final ArcanaAugment ENCHANTMENT_MECHANISM = ArcanaAugments.register(
          new ArcanaAugment("enchantment_mechanism", new ItemStack(Items.ENCHANTING_TABLE), ArcanaRegistry.CLOCKWORK_MULTITOOL,
-               SOVEREIGN
+               EXOTIC
          ));
    public static final ArcanaAugment REPAIRING_MECHANISM = ArcanaAugments.register(
          new ArcanaAugment("repairing_mechanism", new ItemStack(Items.ANVIL), ArcanaRegistry.CLOCKWORK_MULTITOOL,
-               SOVEREIGN
+               EXOTIC
          ));
    public static final ArcanaAugment ENDER_MECHANISM = ArcanaAugments.register(
          new ArcanaAugment("ender_mechanism", new ItemStack(Items.ENDER_CHEST), ArcanaRegistry.CLOCKWORK_MULTITOOL,
-               SOVEREIGN, DIVINE
+               SOVEREIGN, DIVINE, SOVEREIGN, SOVEREIGN, SOVEREIGN
          ));
    
    // Negotiation Charm
@@ -950,7 +950,14 @@ public class ArcanaAugments {
          new ArcanaAugment("thoroughfare", new ItemStack(Items.DIRT_PATH), ArcanaRegistry.ITINERANTEUR,
                EMPOWERED, EMPOWERED, EXOTIC, SOVEREIGN
          ));
-   
+   public static final ArcanaAugment ROAD_SNACKS = ArcanaAugments.register(
+         new ArcanaAugment("road_snacks", new ItemStack(Items.COOKED_PORKCHOP), ArcanaRegistry.ITINERANTEUR,
+               SOVEREIGN
+         ));
+   public static final ArcanaAugment PAVED_WARMTH = ArcanaAugments.register(
+         new ArcanaAugment("paved_warmth", new ItemStack(Items.POLISHED_ANDESITE), ArcanaRegistry.ITINERANTEUR,
+               EMPOWERED, EXOTIC, SOVEREIGN
+         ));
    
    // Linked and exclusive augments
    static{
@@ -998,9 +1005,7 @@ public class ArcanaAugments {
       return augment;
    }
    
-   public static List<ArcanaAugment> getLinkedAugments(String id){
-      if(!registry.containsKey(id)) return new ArrayList<>();
-      ArcanaAugment augment = registry.get(id);
+   public static List<ArcanaAugment> getLinkedAugments(ArcanaAugment augment){
       ArrayList<ArcanaAugment> linked = new ArrayList<>();
       if(!linkedAugments.containsKey(augment)){
          linked.add(augment);
@@ -1053,12 +1058,11 @@ public class ArcanaAugments {
       arcanaItem.buildItemLore(stack, BorisLib.SERVER);
    }
    
-   public static boolean isIncompatible(ItemStack item, String id){
+   public static boolean isIncompatible(ItemStack item, ArcanaAugment augment){
       TreeMap<ArcanaAugment, Integer> curAugments = getAugmentsOnItem(item);
       if(curAugments == null) return true;
-      if(!registry.containsKey(id)) return true;
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-      ArcanaAugment augment = registry.get(id);
+      if(arcanaItem == null) return true;
       if(!augment.getArcanaItem().getId().equals(arcanaItem.getId())) return true;
       
       for(Map.Entry<ArcanaAugment, Integer> entry : curAugments.entrySet()){
@@ -1086,19 +1090,19 @@ public class ArcanaAugments {
       return 0;
    }
    
-   public static int getAugmentFromCompound(CompoundTag compound, String id){
-      if(!registry.containsKey(id)) return -1;
+   public static int getAugmentFromCompound(CompoundTag compound, ArcanaAugment augment){
+      if(!registry.containsKey(augment.id)) return -1;
       CompoundTag augmentTag = compound.getCompoundOrEmpty("augments");
-      if(augmentTag.contains(id)){
-         return augmentTag.getIntOr(id, 0);
+      if(augmentTag.contains(augment.id)){
+         return augmentTag.getIntOr(augment.id, 0);
       }
       return 0;
    }
    
-   public static int getAugmentFromMap(TreeMap<ArcanaAugment, Integer> augments, ArcanaAugment id){
+   public static int getAugmentFromMap(TreeMap<ArcanaAugment, Integer> augments, ArcanaAugment augment){
       if(augments == null) return 0;
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-         if(entry.getKey().id.equals(id.id)) return entry.getValue();
+         if(entry.getKey() == augment) return entry.getValue();
       }
       return 0;
    }
@@ -1112,19 +1116,18 @@ public class ArcanaAugments {
    }
    
    // Applies Augment to Item, cannot down-level existing augments
-   public static boolean applyAugment(ItemStack stack, String id, int level, boolean withCatalyst){
-      int curLevel = getAugmentOnItem(stack, id);
+   public static boolean applyAugment(ItemStack stack, ArcanaAugment augment, int level, boolean withCatalyst){
+      int curLevel = getAugmentOnItem(stack, augment);
       if(curLevel == -1) return false;
-      if(!registry.containsKey(id)) return false;
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
-      ArcanaAugment augment = registry.get(id);
+      if(arcanaItem == null) return false;
       if(!augment.getArcanaItem().getId().equals(arcanaItem.getId())) return false;
       if(level > augment.getTiers().length || curLevel >= augment.getTiers().length) return false;
-      if(isIncompatible(stack, id)) return false;
+      if(isIncompatible(stack, augment)) return false;
       if(curLevel >= level) return false;
       
       CompoundTag augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
-      augmentTag.putInt(id, level);
+      augmentTag.putInt(augment.id, level);
       ArcanaItem.putProperty(stack, ArcanaItem.AUGMENTS_TAG, augmentTag);
       
       if(withCatalyst){
@@ -1146,7 +1149,7 @@ public class ArcanaAugments {
       return true;
    }
    
-   public static void copyAugment(ItemStack sourceStack, ItemStack destinationStack, String sourceAugment, String destinationAugment){
+   public static void copyAugment(ItemStack sourceStack, ItemStack destinationStack, ArcanaAugment sourceAugment, ArcanaAugment destinationAugment){
       ListTag sourceCatas = ArcanaItem.getListProperty(sourceStack, ArcanaItem.CATALYSTS_TAG);
       
       int sourceLvl = ArcanaAugments.getAugmentOnItem(sourceStack, sourceAugment);
@@ -1156,7 +1159,7 @@ public class ArcanaAugments {
          boolean foundCata = false;
          for(Tag sourceCata : sourceCatas){
             CompoundTag cata = (CompoundTag) sourceCata;
-            if(cata.getStringOr("augment", "").equals(sourceAugment) && cata.getIntOr("level", 0) == lvl){
+            if(cata.getStringOr("augment", "").equals(sourceAugment.id) && cata.getIntOr("level", 0) == lvl){
                ArcanaAugments.applyAugment(destinationStack, destinationAugment, lvl, true);
                foundCata = true;
                break;

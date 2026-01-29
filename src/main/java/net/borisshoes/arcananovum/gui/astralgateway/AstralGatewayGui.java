@@ -62,44 +62,44 @@ public class AstralGatewayGui extends SimpleGui {
    
    private void rebuildFrame(){
       Tuple<Component,Integer> info = getStateInfo();
-      this.setSlot(9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, info.getB())).setName(info.getA()));
-      this.setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, info.getB())).setName(info.getA()));
-      this.setSlot(11, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR, info.getB())).setName(info.getA()));
-      this.setSlot(12, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR, info.getB())).setName(info.getA()));
-      this.setSlot(14, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR, info.getB())).setName(info.getA()));
-      this.setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR, info.getB())).setName(info.getA()));
-      this.setSlot(10, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, info.getB())).setName(info.getA()));
-      this.setSlot(13, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, info.getB())).setName(info.getA()));
-      this.setSlot(16, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, info.getB())).setName(info.getA()));
-      this.setSlot(18, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, info.getB())).setName(info.getA()));
-      this.setSlot(27, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, info.getB())).setName(info.getA()));
-      this.setSlot(36, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, info.getB())).setName(info.getA()));
-      this.setSlot(45, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_LEFT, info.getB())).setName(info.getA()));
-      this.setSlot(26, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(44, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(53, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_RIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(46, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM, info.getB())).setName(info.getA()));
-      this.setSlot(47, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM, info.getB())).setName(info.getA()));
-      this.setSlot(48, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM, info.getB())).setName(info.getA()));
-      this.setSlot(49, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM, info.getB())).setName(info.getA()));
-      this.setSlot(50, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM, info.getB())).setName(info.getA()));
-      this.setSlot(51, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM, info.getB())).setName(info.getA()));
-      this.setSlot(52, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM, info.getB())).setName(info.getA()));
+      this.setSlot(9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
+      this.setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
+      this.setSlot(11, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
+      this.setSlot(12, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
+      this.setSlot(14, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
+      this.setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
+      this.setSlot(10, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(13, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(16, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(18, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(27, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(36, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(45, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_LEFT_LIGHT, info.getB())).setName(info.getA()));
+      this.setSlot(26, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(44, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(53, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_RIGHT_LIGHT, info.getB())).setName(info.getA()));
+      this.setSlot(46, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(47, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(48, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(49, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(50, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(51, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      this.setSlot(52, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
       
-      GuiElementBuilder receptacleLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT, info.getB()));
+      GuiElementBuilder receptacleLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT_LIGHT, info.getB()));
       receptacleLeft.setName(Component.literal("Insert a Gateway-targeting Waystone").withStyle(ChatFormatting.AQUA));
       setSlot(3,receptacleLeft);
       
-      GuiElementBuilder receptacleRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT, info.getB()));
+      GuiElementBuilder receptacleRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT_LIGHT, info.getB()));
       receptacleRight.setName(Component.literal("Insert a Gateway-targeting Waystone").withStyle(ChatFormatting.AQUA));
       setSlot(5,receptacleRight);
       
-      GuiElementBuilder modeLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT, info.getB()));
+      GuiElementBuilder modeLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT_LIGHT, info.getB()));
       modeLeft.setName(Component.literal("Gateway Mode Controls").withStyle(ChatFormatting.DARK_PURPLE));
       setSlot(0,modeLeft);
       
-      GuiElementBuilder modeRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT, info.getB()));
+      GuiElementBuilder modeRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT_LIGHT, info.getB()));
       modeRight.setName(Component.literal("Gateway Mode Controls").withStyle(ChatFormatting.DARK_PURPLE));
       setSlot(2,modeRight);
       

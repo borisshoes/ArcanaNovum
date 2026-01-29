@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticStele;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -18,6 +20,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -41,7 +44,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class FelidaeCharm extends ArcanaItem {
+public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interaction{
 	public static final String ID = "felidae_charm";
    
    public FelidaeCharm(){
@@ -100,6 +103,18 @@ public class FelidaeCharm extends ArcanaItem {
       return list;
    }
    
+   @Override
+   public Vec3 getBaseRange(){
+      return new Vec3(15,15,15);
+   }
+   
+   @Override
+   public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
+      if(world.random.nextFloat() < 0.01){
+         SoundUtils.playSound(world, stele.getBlockPos(), SoundEvents.CAT_AMBIENT, SoundSource.BLOCKS,1f, (float) (0.5*(Math.random()-0.5)+1));
+      }
+   }
+   
    public class FelidaeCharmItem extends ArcanaPolymerItem {
       public FelidaeCharmItem(){
          super(getThis());
@@ -111,7 +126,7 @@ public class FelidaeCharm extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.PANTHERA.id) >= 1){
+         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.PANTHERA) >= 1){
             stringList.add("panthera");
          }
          baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
@@ -139,7 +154,7 @@ public class FelidaeCharm extends ArcanaItem {
             Vec3 pos = player.position();
             AABB rangeBox = new AABB(pos.x+5,pos.y+3,pos.z+5,pos.x-5,pos.y-3,pos.z-5);
             List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e instanceof Creeper);
-            if(entities.size() >= 4) ArcanaAchievements.grant(player,ArcanaAchievements.INFILTRATION.id);
+            if(entities.size() >= 4) ArcanaAchievements.grant(player,ArcanaAchievements.INFILTRATION);
          }
       }
    }

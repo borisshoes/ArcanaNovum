@@ -68,7 +68,7 @@ public class TrackingArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      int broadheads = arrow.getAugment(ArcanaAugments.BROADHEADS.id);
+      int broadheads = arrow.getAugment(ArcanaAugments.BROADHEADS);
       if(entityHitResult.getEntity() instanceof LivingEntity living && broadheads > 0){
          living.addEffect(new MobEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT,broadheads*100,1),arrow.getOwner());
       }
@@ -78,7 +78,7 @@ public class TrackingArrows extends RunicArrow {
          Vec3 initPos = new Vec3(posList.getDoubleOr(0,0.0),posList.getDoubleOr(1,0.0),posList.getDoubleOr(2,0.0));
          double dist = initPos.multiply(1,0,1).distanceTo(arrow.position().multiply(1,0,1));
          if(dist >= 250){
-            ArcanaAchievements.grant(player,ArcanaAchievements.ACTUAL_AIMBOT.id);
+            ArcanaAchievements.grant(player,ArcanaAchievements.ACTUAL_AIMBOT);
          }
       }
    }

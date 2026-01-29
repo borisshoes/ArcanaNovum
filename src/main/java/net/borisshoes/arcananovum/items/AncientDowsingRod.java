@@ -96,7 +96,7 @@ public class AncientDowsingRod extends EnergyItem {
    @Override
    public int getMaxEnergy(ItemStack item){
       // 30 second base recharge
-      int lvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SONIC_REABSORPTION.id));
+      int lvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SONIC_REABSORPTION));
       return 30 - 5*lvl;
    }
    
@@ -153,7 +153,7 @@ public class AncientDowsingRod extends EnergyItem {
             int curEnergy = getEnergy(item);
             if(curEnergy >= getMaxEnergy(item)){
                setEnergy(item,0);
-               final int scanRange = 25 + 5*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ENHANCED_RESONANCE.id));
+               final int scanRange = 25 + 5*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ENHANCED_RESONANCE));
                BlockPos curBlock = playerEntity.blockPosition();
                SoundUtils.playSound(world, curBlock, SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1f, .5f);
                
@@ -164,7 +164,7 @@ public class AncientDowsingRod extends EnergyItem {
                   }
                }
                if(world instanceof ServerLevel serverWorld){
-                  if(!debris.isEmpty()) ArcanaAchievements.progress(player,ArcanaAchievements.ARCHEOLOGIST.id,debris.size());
+                  if(!debris.isEmpty()) ArcanaAchievements.progress(player,ArcanaAchievements.ARCHEOLOGIST,debris.size());
                   
                   BorisLib.addTickTimerCallback(new GenericTimer(30, () -> SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.BELL_RESONATE, SoundSource.PLAYERS, 1f, .5f)));
                   BorisLib.addTickTimerCallback(new GenericTimer(140, () -> {
@@ -199,7 +199,7 @@ public class AncientDowsingRod extends EnergyItem {
                         locations[ind]++;
                         
                         if(count < 12)
-                           ArcanaEffectUtils.dowsingRodEmitter(serverWorld,new Vec3(b.getX(),b.getY(),b.getZ()),1,100 + 33*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.HARMONIC_FEEDBACK.id)));
+                           ArcanaEffectUtils.dowsingRodEmitter(serverWorld,new Vec3(b.getX(),b.getY(),b.getZ()),1,100 + 33*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.HARMONIC_FEEDBACK)));
                         count++;
                      }
                      double radius = 1.5;
@@ -236,7 +236,7 @@ public class AncientDowsingRod extends EnergyItem {
                         SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1f, .5f);
                         
                         if(debris.size() >= 10){
-                           ArcanaAchievements.grant(player,ArcanaAchievements.MOTHERLOAD.id);
+                           ArcanaAchievements.grant(player,ArcanaAchievements.MOTHERLOAD);
                         }
                      }else{
                         SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS,1,.5f);

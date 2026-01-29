@@ -42,7 +42,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
       super(MenuType.GENERIC_9x6, player, new ArrayList<>(blockEntity.getBooks()));
       this.blockEntity = blockEntity;
       this.capacity = capacity;
-      this.accretion = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.ACCRETION.id) >= 1;
+      this.accretion = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.ACCRETION) >= 1;
       setTitle(Component.literal("Arcane Singularity"));
       
       blankItem(GuiElementBuilder.from(GraphicalItem.with(ArcanaRegistry.GAS)).setName(Component.empty()).hideTooltip());
@@ -157,7 +157,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
          return false;
       }
       if(!isFull && blockEntity.getNumBooks() == capacity){
-         ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_QUASAR.id);
+         ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_QUASAR);
       }
       
       buildPage();

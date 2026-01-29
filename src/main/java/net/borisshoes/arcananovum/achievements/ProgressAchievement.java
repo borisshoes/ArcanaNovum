@@ -58,7 +58,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    @Override
    public ProgressAchievement fromNbt(String id, CompoundTag nbt){
-      ProgressAchievement ach = (ProgressAchievement) ArcanaAchievements.registry.get(id).makeNew();
+      ProgressAchievement ach = (ProgressAchievement) ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(id).makeNew();
       ach.setProgress(nbt.getIntOr("progress", 0));
       ach.setAcquired(nbt.getBooleanOr("acquired", false));
       return ach;
@@ -67,7 +67,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    @Override
    public MutableComponent[] getStatusDisplay(ServerPlayer player){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(getArcanaItem().getId(), id);
+      ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(this);
       
       MutableComponent[] text = new MutableComponent[achievement != null && achievement.isAcquired() ? 2 : 1];
       DecimalFormat df = new DecimalFormat("##0.00");
@@ -88,6 +88,8 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    @Override
    public ProgressAchievement makeNew(){
-      return new ProgressAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, goal);
+      ProgressAchievement ach = new ProgressAchievement(id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, goal);
+      ach.setHidden(hidden);
+      return ach;
    }
 }

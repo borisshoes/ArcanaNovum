@@ -76,24 +76,24 @@ public class EnsnarementArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      int entrapment = arrow.getAugment(ArcanaAugments.ENTRAPMENT.id);
-      boolean anchor = arrow.getAugment(ArcanaAugments.ETHEREAL_ANCHOR.id) > 0;
+      int entrapment = arrow.getAugment(ArcanaAugments.ENTRAPMENT);
+      boolean anchor = arrow.getAugment(ArcanaAugments.ETHEREAL_ANCHOR) > 0;
       if(entityHitResult.getEntity() instanceof LivingEntity living){
          int duration = living instanceof ServerPlayer ? (entrapment+1) : (entrapment+1)*5;
          living.addEffect(new MobEffectInstance(ArcanaRegistry.ENSNAREMENT_EFFECT, (int) (duration*20),anchor ? 1 : 0),arrow.getOwner());
          
          if(arrow.getOwner() instanceof ServerPlayer player){
             if(living.getAirSupply() <= 0){
-               ArcanaAchievements.grant(player, ArcanaAchievements.WATERBOARDING.id);
+               ArcanaAchievements.grant(player, ArcanaAchievements.WATERBOARDING);
             }
             
-            if(!ArcanaAchievements.isTimerActive(player, ArcanaAchievements.SHACKLED.id)){
-               ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED.id,10);
+            if(!ArcanaAchievements.isTimerActive(player, ArcanaAchievements.SHACKLED)){
+               ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED,10);
                BorisLib.addTickTimerCallback(new RepeatTimer(10,121, ()->{
                   if(living.isAlive() && living.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
-                     ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED.id,10);
+                     ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED,10);
                   }else{
-                     ArcanaAchievements.reset(player,ArcanaAchievements.SHACKLED.id);
+                     ArcanaAchievements.reset(player,ArcanaAchievements.SHACKLED);
                   }
                },null));
             }

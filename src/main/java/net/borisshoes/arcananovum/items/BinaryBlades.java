@@ -183,7 +183,7 @@ public class BinaryBlades extends EnergyItem {
    
    private BlocksAttacks getWhiteDwarfBlock(ItemStack item){
       if(!(ArcanaItemUtils.identifyItem(item) instanceof BinaryBlades)) return null;
-      int whiteDwarf = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.WHITE_DWARF_BLADES.id);
+      int whiteDwarf = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.WHITE_DWARF_BLADES);
       if(whiteDwarf < 1) return null;
       float[] reducePercentages = new float[]{0f,0.5f,0.75f,1.0f};
       
@@ -205,7 +205,7 @@ public class BinaryBlades extends EnergyItem {
       putProperty(fake,FAKE_TAG,true);
       putProperty(fake,UUID_TAG, ArcanaNovum.BLANK_UUID);
       
-      boolean white = ArcanaAugments.getAugmentOnItem(fake, ArcanaAugments.WHITE_DWARF_BLADES.id) > 0;
+      boolean white = ArcanaAugments.getAugmentOnItem(fake, ArcanaAugments.WHITE_DWARF_BLADES) > 0;
       if(white){
          fake.set(DataComponents.BLOCKS_ATTACKS,getWhiteDwarfBlock(item));
       }
@@ -245,9 +245,9 @@ public class BinaryBlades extends EnergyItem {
    }
    
    private ChatFormatting getColor(ItemStack stack){
-      boolean pulsar = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PULSAR_BLADES.id) > 0;
-      boolean white = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WHITE_DWARF_BLADES.id) > 0;
-      boolean red = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RED_GIANT_BLADES.id) > 0;
+      boolean pulsar = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PULSAR_BLADES) > 0;
+      boolean white = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WHITE_DWARF_BLADES) > 0;
+      boolean red = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RED_GIANT_BLADES) > 0;
       if(pulsar) return ChatFormatting.AQUA;
       if(white) return ChatFormatting.WHITE;
       if(red) return ChatFormatting.RED;
@@ -268,7 +268,7 @@ public class BinaryBlades extends EnergyItem {
       List<List<Component>> list = new ArrayList<>();
       list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nGazing up at the stars one night led me to observe two close stars dancing in the sky. Two stars harmoniously acting as one. Glancing over at my Forge gave me an idea.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nThe Binary Blades are two swords that act in unison, combining into one when stored and splitting in two when held. They grant an increased attack speed compared to normal weapons, with each strike acting like a note in a harmony. ").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nSuccessive strikes grant the wielder increased movement and attack speed.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Binary Blades").withStyle(ChatFormatting.YELLOW,ChatFormatting.BOLD),Component.literal("\nSuccessive strikes grant the wielder increased movement and attack speed.\n\nWhen forging the two blades together, the essence of the upper sword becomes the primary and the lower sword becomes the secondary.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -286,9 +286,9 @@ public class BinaryBlades extends EnergyItem {
          
          List<String> stringList = new ArrayList<>();
          boolean split = getBooleanProperty(itemStack,SPLIT_TAG);
-         boolean pulsar = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.PULSAR_BLADES.id) > 0;
-         boolean white = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.WHITE_DWARF_BLADES.id) > 0;
-         boolean red = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.RED_GIANT_BLADES.id) > 0;
+         boolean pulsar = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.PULSAR_BLADES) > 0;
+         boolean white = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.WHITE_DWARF_BLADES) > 0;
+         boolean red = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.RED_GIANT_BLADES) > 0;
          
          if(pulsar) stringList.add(split ? "singular_pulsar" : "combined_pulsar");
          else if(white) stringList.add(split ? "singular_white" : "combined_white");
@@ -316,12 +316,12 @@ public class BinaryBlades extends EnergyItem {
                ArcanaNovum.data(player).restoreOffhand(player);
             }else{
                ItemStack mainStack = player.getMainHandItem();
-               boolean pulsar1 = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PULSAR_BLADES.id) > 0;
-               boolean white1 = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WHITE_DWARF_BLADES.id) > 0;
-               boolean red1 = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RED_GIANT_BLADES.id) > 0;
-               boolean pulsar2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.PULSAR_BLADES.id) > 0;
-               boolean white2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.WHITE_DWARF_BLADES.id) > 0;
-               boolean red2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.RED_GIANT_BLADES.id) > 0;
+               boolean pulsar1 = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PULSAR_BLADES) > 0;
+               boolean white1 = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WHITE_DWARF_BLADES) > 0;
+               boolean red1 = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RED_GIANT_BLADES) > 0;
+               boolean pulsar2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.PULSAR_BLADES) > 0;
+               boolean white2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.WHITE_DWARF_BLADES) > 0;
+               boolean red2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.RED_GIANT_BLADES) > 0;
                if(pulsar1 ^ pulsar2 || white1 ^ white2 || red1 ^ red2){
                   ArcanaNovum.data(player).restoreOffhand(player);
                   ArcanaNovum.data(player).storeOffhand(player,getFakeItem(mainStack));

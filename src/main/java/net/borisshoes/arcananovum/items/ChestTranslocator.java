@@ -26,6 +26,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -132,7 +133,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RAPID_TRANSLOCATION.id));
+      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RAPID_TRANSLOCATION));
       return 30 - 8*cdLvl;
    }
    
@@ -158,8 +159,12 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
             inv.setItem(stack.getByteOr("Slot", (byte) 0), itemStack);
          }
       }
-      
-      return new ArcanaItemContainer(inv, 27,25, "CT", "Chest Translocator", 0.5);
+      return new ArcanaItemContainer(
+            Identifier.fromNamespaceAndPath(MOD_ID,this.id),
+            inv, 27,25,
+            Component.literal("CT"),
+            getTranslatedName(),
+             0.5);
    }
    
    @Override
@@ -263,9 +268,9 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                         filled += container.getItem(i).isEmpty() ? 0 : 1;
                      }
                      if(filled == size){
-                        ArcanaAchievements.progress(player,ArcanaAchievements.STORAGE_RELOCATION.id, 1);
+                        ArcanaAchievements.progress(player,ArcanaAchievements.STORAGE_RELOCATION, 1);
                      }else if(filled == 0){
-                        ArcanaAchievements.grant(player,ArcanaAchievements.PEAK_LAZINESS.id);
+                        ArcanaAchievements.grant(player,ArcanaAchievements.PEAK_LAZINESS);
                      }
                   }
                }

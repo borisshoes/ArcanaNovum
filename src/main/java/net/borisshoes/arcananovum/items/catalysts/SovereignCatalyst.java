@@ -130,7 +130,7 @@ public class SovereignCatalyst extends ArcanaItem {
                   CarvedPumpkinBlock.updatePatternBlocks(world, patternResult);
                   
                   if(playerEntity instanceof ServerPlayer player){
-                     ArcanaAchievements.grant(player,ArcanaAchievements.DOOR_OF_DIVINITY.id);
+                     ArcanaAchievements.grant(player,ArcanaAchievements.DOOR_OF_DIVINITY);
                   }
                   
                   context.getItemInHand().shrink(1);

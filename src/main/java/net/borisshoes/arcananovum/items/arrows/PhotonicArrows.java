@@ -103,7 +103,7 @@ public class PhotonicArrows extends RunicArrow {
          bonusDmg = Math.min(25,bonusDmg + alignmentLvl);
       }
       
-      if(proj.getOwner() instanceof ServerPlayer player && killCount >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.X.id);
+      if(proj.getOwner() instanceof ServerPlayer player && killCount >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.X);
       
       if(proj.getOwner() instanceof ServerPlayer player && !lasercast.sortedHits().isEmpty() && proj instanceof RunicArrowEntity runicArrowEntity){
          runicArrowEntity.incArrowForEveryFoe(player);

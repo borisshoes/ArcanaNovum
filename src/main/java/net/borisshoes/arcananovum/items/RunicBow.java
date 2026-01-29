@@ -160,7 +160,7 @@ public class RunicBow extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         int tier = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.BOW_ACCELERATION.id);
+         int tier = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.BOW_ACCELERATION);
          if(tier > 0) stringList.add("accel_"+tier);
          baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
@@ -190,7 +190,7 @@ public class RunicBow extends ArcanaItem {
             }
             List<ItemStack> list = draw(bow, arrowStack, playerEntity);
             if(world instanceof ServerLevel serverWorld && !list.isEmpty()){
-               float divergence = STABILITY[Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_STABILIZATION.id))];
+               float divergence = STABILITY[Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_STABILIZATION))];
                this.shoot(serverWorld, playerEntity, playerEntity.getUsedItemHand(), bow, list, pullPercent * 3.0F, divergence, pullPercent == 1.0F, null);
             }
             
@@ -208,7 +208,7 @@ public class RunicBow extends ArcanaItem {
                }
                
                ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_RUNIC_ARROW_SHOOT) * list.size());
-               if(playerEntity instanceof ServerPlayer player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, list.size());
+               if(playerEntity instanceof ServerPlayer player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER, list.size());
             }
             
             world.playSound(null, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), sound, SoundSource.PLAYERS,volume,1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + pullPercent * 0.5F);
@@ -234,7 +234,7 @@ public class RunicBow extends ArcanaItem {
                world.addFreshEntity(projectileEntity);
                
                if(ArcanaItemUtils.identifyRunicArrow(arrowStack) instanceof PhotonicArrows photonArrows){
-                  int alignmentLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(arrowStack, ArcanaAugments.PRISMATIC_ALIGNMENT.id));
+                  int alignmentLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(arrowStack, ArcanaAugments.PRISMATIC_ALIGNMENT));
                   photonArrows.shoot(world, shooter, projectileEntity, alignmentLvl);
                   projectileEntity.kill(world);
                }
@@ -248,7 +248,7 @@ public class RunicBow extends ArcanaItem {
       
       @Override
       public void onUseTick(Level world, LivingEntity user, ItemStack bow, int remainingUseTicks){
-         int accelLvl = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION.id);
+         int accelLvl = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION);
          float prog = getPullProgress(getUseDuration(bow,user)-remainingUseTicks,bow);
          if(accelLvl > 0 && user instanceof ServerPlayer player && prog >= 0.1){
             String t =  "▁▂▃▅▆▇۞";
@@ -266,7 +266,7 @@ public class RunicBow extends ArcanaItem {
          float maxPullTicks = 20f;
          ArcanaItem arcanaBow = ArcanaItemUtils.identifyItem(bow);
          if(arcanaBow instanceof RunicBow){
-            int accelLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION.id));
+            int accelLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION));
             final float[] accel = {20,18,17,16,15,10};
             maxPullTicks = accel[accelLvl];
          }

@@ -12,8 +12,8 @@ import net.minecraft.world.item.Items;
 import java.util.*;
 
 public class ArcanaAchievements {
-   public static final HashMap<String, ArcanaAchievement> registry = new HashMap<>();
-   public static final List<ArcanaAchievement> excludedAchievements = new ArrayList<>();
+   public static final HashMap<String, ArcanaAchievement> ARCANA_ACHIEVEMENTS = new HashMap<>();
+   public static final List<ArcanaAchievement> EXCLUDED_ACHIEVEMENTS = new ArrayList<>();
    
    // Divine Catalyst
    public static final ArcanaAchievement DOOR_OF_DIVINITY = ArcanaAchievements.register(
@@ -178,6 +178,8 @@ public class ArcanaAchievements {
          new ProgressAchievement("diggy_hole", new ItemStack(Items.COBBLESTONE), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 100000, 5, 1000000));
    public static final ArcanaAchievement MINE_DIAMONDS = ArcanaAchievements.register(
          new EventAchievement("mine_diamonds", new ItemStack(Items.DIAMOND), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 2500, 1));
+   public static final ArcanaAchievement INTERLOPER = ArcanaAchievements.register(
+         new EventAchievement("interloper", ArcanaRegistry.PLANESHIFTER.getPrefItemNoLore(), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 100000, 5)).setHidden(true);
    
    // Runic Bow
    public static final ArcanaAchievement JUST_LIKE_ARCHER = ArcanaAchievements.register(
@@ -446,6 +448,8 @@ public class ArcanaAchievements {
          new ProgressAchievement("terraformer", new ItemStack(Items.GRASS_BLOCK), ArcanaRegistry.GREAVES_OF_GAIALTUS, 10000, 3, 10000));
    public static final ArcanaAchievement MINERS_WALLET = ArcanaAchievements.register(
          new EventAchievement("miners_wallet", new ItemStack(Items.DIAMOND_BLOCK), ArcanaRegistry.GREAVES_OF_GAIALTUS, 1000, 1));
+   public static final ArcanaAchievement AND_THE_UNIVERSE_SAID = ArcanaAchievements.register(
+         new EventAchievement("and_the_universe_said", new ItemStack(Items.END_PORTAL_FRAME), ArcanaRegistry.GREAVES_OF_GAIALTUS, 100000, 5)).setHidden(true);
    
    // Spear of Tenbrous
    public static final ArcanaAchievement KILL_THEM_ALL = ArcanaAchievements.register(
@@ -457,7 +461,9 @@ public class ArcanaAchievements {
                      EntityType.ENDER_DRAGON.getDescription().getString()
                }));
    public static final ArcanaAchievement HISTORY_CARVED_IN_STONE = ArcanaAchievements.register(
-         new EventAchievement("history_carved_in_stone", new ItemStack(Items.FIRE_CHARGE), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5));
+         new EventAchievement("history_carved_in_stone", ArcanaRegistry.SOULSTONE.getPrefItemNoLore(), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5));
+   public static final ArcanaAchievement ZERAIYA = ArcanaAchievements.register(
+         new EventAchievement("zeraiya", new ItemStack(Items.DRAGON_EGG), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5)).setHidden(true);
    
    // Geomantic Stele
    public static final ArcanaAchievement ARTIFICIAL_VOLCANO = ArcanaAchievements.register(
@@ -468,6 +474,8 @@ public class ArcanaAchievements {
          new EventAchievement("monolith_of_fear", ArcanaRegistry.FELIDAE_CHARM.getPrefItemNoLore(), ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
    public static final ArcanaAchievement DOCTOR_STONE = ArcanaAchievements.register(
          new EventAchievement("doctor_stone", ArcanaRegistry.CLEANSING_CHARM.getPrefItemNoLore(), ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
+   public static final ArcanaAchievement KOKOPELLI = ArcanaAchievements.register(
+         new EventAchievement("kokopelli", new ItemStack(Items.WHEAT), ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
    
    // Interdictor
    public static final ArcanaAchievement UNMOBBED = ArcanaAchievements.register(
@@ -486,6 +494,12 @@ public class ArcanaAchievements {
          new EventAchievement("fancier_stargate", new ItemStack(Items.DIAMOND_BLOCK), ArcanaRegistry.ASTRAL_GATEWAY, 2500, 2));
    public static final ArcanaAchievement CARRIER_HAS_ARRIVED = ArcanaAchievements.register(
          new EventAchievement("carrier_has_arrived", new ItemStack(Items.PALE_OAK_BOAT), ArcanaRegistry.ASTRAL_GATEWAY, 7500, 3));
+   public static final ArcanaAchievement ON_YOUR_LEFT = ArcanaAchievements.register(
+         new EventAchievement("on_your_left", new ItemStack(Items.PLAYER_HEAD), ArcanaRegistry.ASTRAL_GATEWAY, 2500, 2));
+   public static final ArcanaAchievement DIALING_HELL = ArcanaAchievements.register(
+         new EventAchievement("dialing_hell", new ItemStack(Items.NETHERRACK), ArcanaRegistry.ASTRAL_GATEWAY, 2500, 2));
+   public static final ArcanaAchievement MODERATELY_INSANE = ArcanaAchievements.register(
+         new EventAchievement("moderately_insane", new ItemStack(Items.NETHERITE_BLOCK), ArcanaRegistry.ASTRAL_GATEWAY, 50000, 4));
    
    // Clockwork Multitool
    public static final ArcanaAchievement FIDGET_TOY = ArcanaAchievements.register(
@@ -501,108 +515,107 @@ public class ArcanaAchievements {
    
    
    static{
-      excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.PICKAXE_OF_CEPTYUS));
-      excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.WINGS_OF_ENDERIA));
-      excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.LEADERSHIP_CHARM));
-      excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.GREAVES_OF_GAIALTUS));
-      excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.SPEAR_OF_TENBROUS));
-      excludedAchievements.add(ALL_ACHIEVEMENTS);
+      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.PICKAXE_OF_CEPTYUS));
+      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.WINGS_OF_ENDERIA));
+      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.LEADERSHIP_CHARM));
+      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.GREAVES_OF_GAIALTUS));
+      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.SPEAR_OF_TENBROUS));
+      EXCLUDED_ACHIEVEMENTS.add(ALL_ACHIEVEMENTS);
    }
    
    
    private static ArcanaAchievement register(ArcanaAchievement achievement){
       String id = achievement.id;
-      registry.put(id, achievement);
+      ARCANA_ACHIEVEMENTS.put(id, achievement);
       return achievement;
    }
    
    public static List<ArcanaAchievement> getItemAchievements(ArcanaItem item){
       ArrayList<ArcanaAchievement> achs = new ArrayList<>();
-      for(Map.Entry<String, ArcanaAchievement> entry : registry.entrySet()){
+      for(Map.Entry<String, ArcanaAchievement> entry : ARCANA_ACHIEVEMENTS.entrySet()){
          if(entry.getValue().getArcanaItem().getId().equals(item.getId())) achs.add(entry.getValue());
       }
       return achs;
    }
    
-   public static void grant(ServerPlayer player, ArcanaAchievement achievement){
-      grant(player,achievement.id);
+   public static void grant(ServerPlayer player, ArcanaAchievement ach){
+      grant(player.getUUID(),ach);
    }
    
-   public static void grant(ServerPlayer player, String id){
+   public static void grant(UUID player, ArcanaAchievement ach){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      if(registry.get(id) instanceof ProgressAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
+      if(ach instanceof ProgressAchievement baseAch){
+         ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(baseAch);
          if(achievement == null){
             ProgressAchievement newAch = baseAch.makeNew();
             newAch.setProgress(baseAch.getGoal());
-            profile.setAchievement(itemId, newAch);
+            profile.setAchievement(newAch);
          }else{
             if(achievement.isAcquired()) return;
             achievement.setProgress(baseAch.getGoal());
-            profile.setAchievement(itemId, achievement);
+            profile.setAchievement(achievement);
          }
          baseAch.announceAcquired(player);
-      }else if(registry.get(id) instanceof EventAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         EventAchievement achievement = (EventAchievement) profile.getAchievement(itemId, baseAch.id);
+      }else if(ach instanceof EventAchievement baseAch){
+         EventAchievement achievement = (EventAchievement) profile.getAchievement(baseAch);
          if(achievement == null){
             EventAchievement newAch = baseAch.makeNew();
             newAch.setAcquired(true);
-            profile.setAchievement(itemId, newAch);
+            profile.setAchievement(newAch);
          }else{
             if(achievement.isAcquired()) return;
             achievement.setAcquired(true);
-            profile.setAchievement(itemId, achievement);
+            profile.setAchievement(achievement);
          }
          baseAch.announceAcquired(player);
-      }else if(registry.get(id) instanceof ConditionalsAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(itemId, baseAch.id);
+      }else if(ach instanceof ConditionalsAchievement baseAch){
+         ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(baseAch);
          if(achievement == null){
             ConditionalsAchievement newAch = baseAch.makeNew();
             for(Map.Entry<String, Boolean> entry : newAch.getConditions().entrySet()){
                newAch.setCondition(entry.getKey(), true);
             }
-            profile.setAchievement(itemId, newAch);
+            profile.setAchievement(newAch);
          }else{
             if(achievement.isAcquired()) return;
             for(Map.Entry<String, Boolean> entry : achievement.getConditions().entrySet()){
                achievement.setCondition(entry.getKey(), true);
             }
-            profile.setAchievement(itemId, achievement);
+            profile.setAchievement(achievement);
          }
          baseAch.announceAcquired(player);
-      }else if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
+      }else if(ach instanceof TimedAchievement baseAch){
+         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(baseAch);
          if(achievement == null){
             TimedAchievement newAch = baseAch.makeNew();
             newAch.addProgress(baseAch.getGoal());
-            profile.setAchievement(itemId, newAch);
+            profile.setAchievement(newAch);
          }else{
             if(achievement.isAcquired()) return;
             achievement.addProgress(baseAch.getGoal());
-            profile.setAchievement(itemId, achievement);
+            profile.setAchievement(achievement);
          }
          baseAch.announceAcquired(player);
       }
    }
    
-   public static void setCondition(ServerPlayer player, String id, String condition, boolean set){
+   public static void setCondition(ServerPlayer player, ArcanaAchievement ach, String condition, boolean set){
+      setCondition(player.getUUID(),ach,condition,set);
+   }
+   
+   public static void setCondition(UUID player, ArcanaAchievement ach, String condition, boolean set){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      if(registry.get(id) instanceof ConditionalsAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(itemId, baseAch.id);
+      if(ach instanceof ConditionalsAchievement baseAch){
+         ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(baseAch);
          boolean get;
          if(achievement == null){
             ConditionalsAchievement newAch = baseAch.makeNew();
             get = newAch.setCondition(condition, set);
-            profile.setAchievement(itemId, newAch);
+            profile.setAchievement(newAch);
          }else{
             if(achievement.isAcquired()) return;
             get = achievement.setCondition(condition, set);
-            profile.setAchievement(itemId, achievement);
+            profile.setAchievement(achievement);
          }
          if(get){
             baseAch.announceAcquired(player);
@@ -611,39 +624,37 @@ public class ArcanaAchievements {
    }
    
    public static void progress(ServerPlayer player, ArcanaAchievement ach, int toAdd){
-      progress(player,ach.id,toAdd);
+      progress(player.getUUID(),ach,toAdd);
    }
    
-   public static void progress(ServerPlayer player, String id, int toAdd){
+   public static void progress(UUID player, ArcanaAchievement ach, int toAdd){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      if(registry.get(id) instanceof ProgressAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
+      if(ach instanceof ProgressAchievement baseAch){
+         ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(baseAch);
          boolean get;
          if(achievement == null){
             ProgressAchievement newAch = baseAch.makeNew();
             get = newAch.setProgress(toAdd);
-            profile.setAchievement(itemId, newAch);
+            profile.setAchievement(newAch);
          }else{
             if(achievement.isAcquired()) return;
             get = achievement.setProgress(achievement.getProgress() + toAdd);
-            profile.setAchievement(itemId, achievement);
+            profile.setAchievement(achievement);
          }
          if(get){
             baseAch.announceAcquired(player);
          }
-      }else if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
+      }else if(ach instanceof TimedAchievement baseAch){
+         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(baseAch);
          boolean get;
          if(achievement == null){
             TimedAchievement newAch = baseAch.makeNew();
             get = newAch.addProgress(toAdd);
-            profile.setAchievement(itemId, newAch);
+            profile.setAchievement(newAch);
          }else{
             if(achievement.isAcquired()) return;
             get = achievement.addProgress(toAdd);
-            profile.setAchievement(itemId, achievement);
+            profile.setAchievement(achievement);
          }
          if(get){
             baseAch.announceAcquired(player);
@@ -651,19 +662,21 @@ public class ArcanaAchievements {
       }
    }
    
-   public static int getProgress(ServerPlayer player, String id){
+   public static int getProgress(ServerPlayer player, ArcanaAchievement ach){
+      return getProgress(player.getUUID(),ach);
+   }
+   
+   public static int getProgress(UUID player, ArcanaAchievement ach){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      if(registry.get(id) instanceof ProgressAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
+      if(ach instanceof ProgressAchievement baseAch){
+         ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(baseAch);
          if(achievement == null){
             return 0;
          }else{
             return achievement.getProgress();
          }
-      }else if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
+      }else if(ach instanceof TimedAchievement baseAch){
+         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(baseAch);
          if(achievement == null){
             return 0;
          }else{
@@ -673,32 +686,40 @@ public class ArcanaAchievements {
       return -1;
    }
    
-   public static void revoke(ServerPlayer player, String id){
-      ArcanaPlayerData profile = ArcanaNovum.data(player);
-      ArcanaAchievement achieve = registry.get(id);
-      if(achieve != null){
-         profile.removeAchievement(achieve.getArcanaItem().getId(), id);
-      }
+   public static void revoke(ServerPlayer player, ArcanaAchievement ach){
+      revoke(player.getUUID(),ach);
    }
    
-   public static void reset(ServerPlayer player, String id){
+   public static void revoke(UUID player, ArcanaAchievement ach){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
+      profile.removeAchievement(ach);
+   }
+   
+   public static void reset(ServerPlayer player, ArcanaAchievement ach){
+      reset(player.getUUID(),ach);
+   }
+   
+   public static void reset(UUID player, ArcanaAchievement ach){
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
+      if(ach instanceof TimedAchievement baseAch){
+         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(baseAch);
          if(achievement != null){
             if(achievement.isAcquired()) return;
             achievement.reset();
-            profile.setAchievement(itemId, achievement);
+            profile.setAchievement(achievement);
          }
       }
    }
    
-   public static boolean isTimerActive(ServerPlayer player, String id){
+   public static boolean isTimerActive(ServerPlayer player, ArcanaAchievement ach){
+      return isTimerActive(player.getUUID(),ach);
+   }
+   
+   public static boolean isTimerActive(UUID player, ArcanaAchievement ach){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      if(registry.get(id) instanceof TimedAchievement baseAch){
+      if(ach instanceof TimedAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
-         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
+         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(baseAch);
          if(achievement != null){
             if(achievement.isAcquired()) return false;
             return achievement.isActive();

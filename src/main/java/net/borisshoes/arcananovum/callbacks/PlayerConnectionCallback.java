@@ -47,14 +47,14 @@ public class PlayerConnectionCallback {
          
          if(linkedAugments.containsKey(linkedId)){
             linkedAugments.get(linkedId).add(augment);
-            int lvl = profile.getAugmentLevel(augment.id);
+            int lvl = profile.getAugmentLevel(augment);
             if(lvl > highestValue.get(linkedId)){
                highestValue.put(linkedId,lvl);
             }
          }else{
             ArrayList<ArcanaAugment> augs = new ArrayList<>();
             augs.add(augment);
-            highestValue.put(linkedId,profile.getAugmentLevel(augment.id));
+            highestValue.put(linkedId,profile.getAugmentLevel(augment));
             linkedAugments.put(linkedId,augs);
          }
       }
@@ -62,15 +62,15 @@ public class PlayerConnectionCallback {
       for(Map.Entry<String,ArrayList<ArcanaAugment>> entry : linkedAugments.entrySet()){
          ArrayList<ArcanaAugment> augs = entry.getValue();
          for(ArcanaAugment aug : augs){
-            profile.setAugmentLevel(aug.id,highestValue.get(entry.getKey()));
+            profile.setAugmentLevel(aug,highestValue.get(entry.getKey()));
          }
       }
    
       for(Map.Entry<ArcanaAugment, Integer> entry : profile.getAugments().entrySet()){
-         ArcanaAugment baseAug = ArcanaAugments.registry.get(entry.getKey().id);
+         ArcanaAugment baseAug = ArcanaAugments.registry.get(entry.getKey());
          if(baseAug != null){
             if(entry.getValue() > baseAug.getTiers().length){
-               profile.setAugmentLevel(entry.getKey().id,baseAug.getTiers().length);
+               profile.setAugmentLevel(entry.getKey(),baseAug.getTiers().length);
             }
          }
       }

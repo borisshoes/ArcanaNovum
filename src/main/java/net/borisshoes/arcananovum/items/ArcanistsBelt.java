@@ -22,6 +22,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -164,14 +165,19 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    @Override
    public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
       int size = 9;
-      boolean padding = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MENTAL_PADDING.id) >= 1;
+      boolean padding = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MENTAL_PADDING) >= 1;
       ItemContainerContents beltItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       SimpleContainer inv = new SimpleContainer(size);
       List<ItemStack> streamList = beltItems.nonEmptyStream().toList();
       for(int i = 0; i < streamList.size(); i++){
          inv.setItem(i,streamList.get(i));
       }
-      return new ArcanaItemContainer(inv, size,10, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
+      return new ArcanaItemContainer(
+            Identifier.fromNamespaceAndPath(MOD_ID,this.id),
+            inv, size,10,
+            Component.literal("AB"),
+            getTranslatedName(),
+            padding ? 0.25 : 0.5);
    }
    
    @Override

@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -76,7 +77,7 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
          setNoGravity(true);
       }else{
          if(stasisTime >= 6000 && getOwner() instanceof ServerPlayer player){
-            ArcanaAchievements.grant(player,ArcanaAchievements.PEARL_HANG.id);
+            ArcanaAchievements.grant(player,ArcanaAchievements.PEARL_HANG);
          }
          setDeltaMovement(this.savedVelocity);
          setNoGravity(false);
@@ -140,9 +141,9 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
             setOwner(holder);
             
             if(holder.position().distanceTo(position()) >= 1000){
-               ArcanaAchievements.grant(holder, ArcanaAchievements.INSTANT_TRANSMISSION.id);
+               ArcanaAchievements.grant(holder, ArcanaAchievements.INSTANT_TRANSMISSION);
             }
-            int reconstructLvl = augments.getIntOr(ArcanaAugments.STASIS_RECONSTRUCTION.id, 0);
+            int reconstructLvl = ArcanaAugments.getAugmentFromCompound(augments,ArcanaAugments.STASIS_RECONSTRUCTION);
             if(reconstructLvl > 0){
                MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 100, reconstructLvl, false, true, true);
                MobEffectInstance resist = new MobEffectInstance(MobEffects.RESISTANCE, 60, reconstructLvl-1, false, true, true);

@@ -9,6 +9,8 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.astralgateway.AstralGatewayGui;
 import net.borisshoes.arcananovum.items.Waystone;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -73,7 +75,7 @@ public class AstralGateway extends ArcanaBlock {
       block = new AstralGatewayBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(4.0f, 1200.0f).sound(SoundType.HEAVY_CORE));
       item = new AstralGatewayItem(block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE);
-      researchTasks = new ResourceKey[]{};  // TODO
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_MATTER,ResearchTasks.UNLOCK_WAYSTONE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.USE_ENDER_EYE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.OBTAIN_STARDUST};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -164,7 +166,13 @@ public class AstralGateway extends ArcanaBlock {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("TODO").withStyle(ChatFormatting.BLACK))); // TODO
+      list.add(List.of(Component.literal("  Astral Gateway").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal("\nThe primitive portals I have seen are so deceiving, they give the illusion of reliable two-way passage, when no such connection exists. They simply shunt me wherever they feel, and I'm fed up with it.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Astral Gateway").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\nMy advancements in Stellar-Leyline cartography and navigation can pinpoint any location in any dimension and chart a path through the leylines with frankly stunning accuracy.\nA marked Waystone should be all I need to create a two-way").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Astral Gateway").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\nbridge as long as there is something to stabilize the bridge on both ends.\n\nThus enters my Astral Gateway, a receptacle for a Waystone which will create a two-way portal to another Astral Gateway!").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Astral Gateway").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\nIt needs only three things, a Waystone to be attuned to the receiving Gateway by Using an unattuned Waystone on a placed Astral Gateway, a suitable rectangular frame made of any solid material for both Gateways, and a steady supply of ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Astral Gateway").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\nStardust for both Gateways to maintain the link.\n\nOnce given these three things, a simple redstone signal will begin the linking process. Even a short pulse will cause the Gateway to be locked open for long enough ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Astral Gateway").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\nfor me to pass through.\nAdditionally, the Gateway can store many Waystones in its storage, waiting for use, as well as the active Waystone being able to be hoppered in and out. Stardust can also be supplied via hoppers.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Astral Gateway").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\nLastly, I can allow each Gateway to let it act as both a sender and receiver, or restrict it such that it can only receive an activation from other Gateways, or make it so it can only be the one to activate other Gateways. ").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -263,7 +271,7 @@ public class AstralGateway extends ArcanaBlock {
          if(gateway != null){
             if(playerEntity instanceof ServerPlayer player){
                boolean hitTop = hit.getDirection() == Direction.UP || (hit.getLocation().y - pos.getY()) > 0.8125;
-               if(!gateway.getInventory().getItem(0).isEmpty() && hitTop){
+               if(!gateway.getInventory().getItem(0).isEmpty() && hitTop && player.getMainHandItem().isEmpty()){
                   ItemStack stone = gateway.getInventory().getItem(0).copy();
                   gateway.getInventory().setItem(0, ItemStack.EMPTY);
                   gateway.setChanged();

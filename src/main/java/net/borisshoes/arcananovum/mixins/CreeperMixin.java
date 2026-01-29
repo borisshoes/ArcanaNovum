@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.ai.goals.FleeFelidaeCharmGoal;
+import net.borisshoes.arcananovum.ai.goals.FleeSteleGoal;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Monster;
@@ -22,5 +24,6 @@ public abstract class CreeperMixin extends Monster {
    protected void initGoals(CallbackInfo ci){
       Creeper creeper = (Creeper) (Object) this;
       this.goalSelector.addGoal(1, new FleeFelidaeCharmGoal<>(creeper, Player.class, 8.0F, 1.0, 1.2));
+      this.goalSelector.addGoal(1, new FleeSteleGoal(creeper,1.0,1.25, 12.0F, (stack) -> stack.is(ArcanaRegistry.FELIDAE_CHARM.getItem())));
    }
 }

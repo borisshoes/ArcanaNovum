@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticStele;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -25,6 +27,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +37,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class LeadershipCharm extends ArcanaItem {
+public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Interaction {
 	public static final String ID = "leadership_charm";
    
    public LeadershipCharm(){
@@ -94,6 +97,56 @@ public class LeadershipCharm extends ArcanaItem {
       return list;
    }
    
+   @Override
+   public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
+      int invigor = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION));
+      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range),stele.getBlockPos().getCenter().add(range));
+      List<ServerPlayer> inRangePlayers = world.getPlayers(p -> !p.isSpectator() && p.getBoundingBox().intersects(box));
+      for(ServerPlayer plyr: inRangePlayers){
+         applyEffect(plyr,invigor);
+      }
+      
+      if(world.getServer().getTickCount() % 20 == 0){
+         double theta = Math.PI/(80)*(world.getServer().getTickCount()%160);
+         ArcanaEffectUtils.sphere(world,null,stele.getBlockPos().getCenter().add(0,1,0), ParticleTypes.HAPPY_VILLAGER,1.5,50,1,0.1,0,theta);
+      }
+   }
+   
+   @Override
+   public Vec3 getBaseRange(){
+      return new Vec3(12,8,12);
+   }
+   
+   private void applyEffect(ServerPlayer player, int invigor){
+      MobEffectInstance str = new MobEffectInstance(MobEffects.STRENGTH, 20 * 5 + 5, 1+invigor, false, false, true);
+      MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5 + 5, 1+invigor/2, false, false, true);
+      MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 20 * 5 + 5, 1+invigor, false, false, true);
+      player.addEffect(str);
+      player.addEffect(res);
+      player.addEffect(regen);
+      
+      // Repair Gear once per second
+      if(player.level().getServer().getTickCount() % 20 == 0){
+         // Check each player's inventory for gear that needs repairing
+         Inventory inv = player.getInventory();
+         for(int i = 0; i < inv.getContainerSize(); i++){
+            ItemStack item = inv.getItem(i);
+            if(item.isEmpty())
+               continue;
+            
+            int durability = item.getDamageValue();
+            if(durability <= 0)
+               continue;
+            durability = Mth.clamp(durability - 15*(1+invigor), 0, Integer.MAX_VALUE);
+            
+            item.setDamageValue(durability);
+         }
+      }
+      if(player.level().getServer().getTickCount() % 10 == 0){
+         player.level().sendParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY()+.75, player.getZ(), 4, .2, .2, .2, 10);
+      }
+   }
+   
    public class LeadershipCharmItem extends ArcanaPolymerItem {
       public LeadershipCharmItem(){
          super(getThis());
@@ -109,54 +162,28 @@ public class LeadershipCharm extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          // Give AoE resistance, regen, and strength, and repair gear.
-         int invigor = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION.id));
+         int invigor = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION));
          
          double effectRange = 8.5+invigor;
          Vec3 playerPos = player.position();
-         List<ServerPlayer> inRangePlayers = serverWorld.getPlayers(p -> p.distanceToSqr(playerPos) <= effectRange*effectRange);
+         List<ServerPlayer> inRangePlayers = serverWorld.getPlayers(p -> !p.isSpectator() && p.distanceToSqr(playerPos) <= effectRange*effectRange);
          
          MobEffectInstance glow = new MobEffectInstance(MobEffects.GLOWING, 20 * 5 + 5, 0, false, false, true);
          player.addEffect(glow);
          
          for(ServerPlayer plyr: inRangePlayers){
-            MobEffectInstance str = new MobEffectInstance(MobEffects.STRENGTH, 20 * 5 + 5, 1+invigor, false, false, true);
-            MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5 + 5, 1+invigor/2, false, false, true);
-            MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 20 * 5 + 5, 1+invigor, false, false, true);
-            plyr.addEffect(str);
-            plyr.addEffect(res);
-            plyr.addEffect(regen);
-            
-            // Repair Gear once per second
-            if(serverWorld.getServer().getTickCount() % 20 == 0){
-               // Check each player's inventory for gear that needs repairing
-               Inventory inv = plyr.getInventory();
-               for(int i = 0; i < inv.getContainerSize(); i++){
-                  ItemStack item = inv.getItem(i);
-                  if(item.isEmpty())
-                     continue;
-                  
-                  int durability = item.getDamageValue();
-                  if(durability <= 0)
-                     continue;
-                  durability = Mth.clamp(durability - 15*(1+invigor), 0, Integer.MAX_VALUE);
-                  
-                  item.setDamageValue(durability);
-               }
+            applyEffect(plyr,invigor);
+            if(world.getServer().getTickCount() % 10 == 0){
+               world.sendParticles(player, ParticleTypes.HAPPY_VILLAGER, false,true, player.getX(), player.getY()+3, player.getZ(), 5, .1, .3, .1, 10);
             }
          }
-         if(inRangePlayers.size() >= 6) ArcanaAchievements.grant(player,ArcanaAchievements.RAID_LEADER.id);
+         if(inRangePlayers.size() >= 6) ArcanaAchievements.grant(player,ArcanaAchievements.RAID_LEADER);
          
          // Particle effects
          if(serverWorld.getServer().getTickCount() % 10 == 0){
             double theta = Math.PI/(80)*(serverWorld.getServer().getTickCount()%160); // 8 second duration
             ArcanaEffectUtils.sphere(serverWorld,null,player.position(), ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0,theta);
             ArcanaEffectUtils.circle(serverWorld,null,player.position(), ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0);
-            for(ServerPlayer plyr : inRangePlayers){
-               if(plyr.equals(player))
-                  continue;
-               serverWorld.sendParticles(ParticleTypes.HAPPY_VILLAGER, plyr.getX(), plyr.getY()+.75, plyr.getZ(), 4, .2, .2, .2, 10);
-               serverWorld.sendParticles(plyr, ParticleTypes.HAPPY_VILLAGER, false,true, player.getX(), player.getY()+3, player.getZ(), 5, .1, .3, .1, 10);
-            }
          }
       }
    }

@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.ConditionalsAchievement;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.entities.SpearOfTenbrousEntity;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
@@ -79,9 +80,9 @@ public class EntityKilledCallback {
             
             ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
             if(ArcanaItemUtils.identifyItem(heldItem) instanceof ShadowStalkersGlaive glaive){ // Return 4 charges
-               int oldEnergy = glaive.getEnergy(heldItem);
+               int oldEnergy = EnergyItem.getEnergy(heldItem);
                glaive.addEnergy(heldItem, 80);
-               int newEnergy = glaive.getEnergy(heldItem);
+               int newEnergy = EnergyItem.getEnergy(heldItem);
                if(oldEnergy/20 != newEnergy/20){
                   String message = "Glaive Charges: ";
                   for(int i=1; i<=5; i++){
@@ -90,22 +91,22 @@ public class EntityKilledCallback {
                   player.displayClientMessage(Component.literal(message).withStyle(ChatFormatting.BLACK),true);
                }
                
-               if((killed instanceof ServerPlayer || killed instanceof Warden) && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA.id)){
-                  ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,1);
+               if((killed instanceof ServerPlayer || killed instanceof Warden) && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA)){
+                  ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA,1);
                }
-               if(killed instanceof Mob && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id) && ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY.id) % 2 == 0){
-                  ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,1);
+               if(killed instanceof Mob && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY) && ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY) % 2 == 0){
+                  ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY,1);
                }
             }
             
             ItemStack chestItem = player.getItemBySlot(EquipmentSlot.CHEST);
             if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isFallFlying() && killed instanceof Mob){
-               ArcanaAchievements.grant(player,ArcanaAchievements.ANGEL_OF_DEATH.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.ANGEL_OF_DEATH);
             }
             
             if(player.getWeaponItem().is(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()) || spear != null){
                if(((ConditionalsAchievement)ArcanaAchievements.KILL_THEM_ALL).getConditions().containsKey(killed.getType().getDescription().getString())){
-                  ArcanaAchievements.setCondition(player,ArcanaAchievements.KILL_THEM_ALL.id,killed.getType().getDescription().getString(),true);
+                  ArcanaAchievements.setCondition(player,ArcanaAchievements.KILL_THEM_ALL,killed.getType().getDescription().getString(),true);
                }
             }
          }

@@ -34,7 +34,7 @@ public class RadiantFletcheryGui extends SimpleGui {
    }
    
    public void buildGui(){
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(8,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       

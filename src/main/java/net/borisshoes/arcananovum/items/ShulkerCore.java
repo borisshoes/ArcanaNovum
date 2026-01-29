@@ -165,7 +165,7 @@ public class ShulkerCore extends EnergyItem {
       ItemStack stack = playerEntity.getItemInHand(hand);
       int speed = getIntProperty(stack,SPEED_TAG);
       int speedCD = getIntProperty(stack,SPEED_CD_TAG);
-      boolean reabsorb = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.LEVITATIVE_REABSORPTION.id)) >= 1;
+      boolean reabsorb = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.LEVITATIVE_REABSORPTION)) >= 1;
       int maxSpeed = reabsorb ? 11 : 9;
       
       if(speedCD == 0){
@@ -208,7 +208,7 @@ public class ShulkerCore extends EnergyItem {
             MobEffectInstance effect = playerEntity.getEffect(MobEffects.LEVITATION);
             if(!(effect != null && effect.getEffect() == MobEffects.LEVITATION && effect.getAmplifier() >= speed && !(effect.getDuration() < 10 || effect.getDuration() > duration))){
                MobEffectInstance levit = new MobEffectInstance(MobEffects.LEVITATION, duration, speed, false, false, false);
-               if(Math.random() >= (new double[]{0,0.1,0.25,0.5})[Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER.id))])
+               if(Math.random() >= (new double[]{0,0.1,0.25,0.5})[Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER))])
                   addEnergy(stack, -(speed / 2 + 1));
                playerEntity.addEffect(levit);
                SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);

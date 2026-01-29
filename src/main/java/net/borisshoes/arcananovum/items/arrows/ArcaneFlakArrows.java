@@ -81,13 +81,13 @@ public class ArcaneFlakArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      double radius = 4 + 1.25*arrow.getAugment(ArcanaAugments.AIRBURST.id);
+      double radius = 4 + 1.25*arrow.getAugment(ArcanaAugments.AIRBURST);
       detonate(arrow,radius);
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      double radius = 4 + 1.25*arrow.getAugment(ArcanaAugments.AIRBURST.id);
+      double radius = 4 + 1.25*arrow.getAugment(ArcanaAugments.AIRBURST);
       detonate(arrow,radius);
    }
    
@@ -106,7 +106,7 @@ public class ArcaneFlakArrows extends RunicArrow {
             if(e instanceof Phantom && e.isDeadOrDying()) deadPhantomCount++;
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayer player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,ArcanaAchievements.AA_ARTILLERY.id);
+      if(arrow.getOwner() instanceof ServerPlayer player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,ArcanaAchievements.AA_ARTILLERY);
       
       ArcanaEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.position(),damageRange,0);
       SoundUtils.playSound(serverWorld,arrow.blockPosition(), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.PLAYERS,1f,1f);

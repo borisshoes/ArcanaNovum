@@ -119,14 +119,14 @@ public class DataFixer {
       HashMap<String, List<ArcanaAchievement>> oldAchievements = oldData.getAchievements();
       for(Map.Entry<String, List<ArcanaAchievement>> entry : oldAchievements.entrySet()){
          for(ArcanaAchievement achievement : entry.getValue()){
-            newData.setAchievement(entry.getKey(), achievement);
+            newData.setAchievement(achievement);
          }
       }
       
       HashMap<ArcanaAugment, Integer> oldAugments = oldData.getAugments();
       for(Map.Entry<ArcanaAugment, Integer> entry : oldAugments.entrySet()){
-         if(newData.getAugmentLevel(entry.getKey().id) == 0){
-            newData.setAugmentLevel(entry.getKey().id, entry.getValue());
+         if(newData.getAugmentLevel(entry.getKey()) == 0){
+            newData.setAugmentLevel(entry.getKey(), entry.getValue());
          }
       }
       

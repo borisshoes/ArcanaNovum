@@ -144,13 +144,13 @@ public class OverflowingQuiver extends QuiverItem{
    
    @Override
    protected int getRefillMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
-      int refillLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"abundant_ammo"));
+      int refillLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ABUNDANT_AMMO));
       return 3000 - refillReduction[refillLvl];
    }
    
    @Override
    protected double getEfficiencyMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
-      int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"overflowing_bottomless"));
+      int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.OVERFLOWING_BOTTOMLESS));
       return efficiencyChance[effLvl];
    }
    

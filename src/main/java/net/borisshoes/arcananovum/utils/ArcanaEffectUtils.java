@@ -52,6 +52,12 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    
    public static final double PHI = (1 + Math.sqrt(5)) / 2.0;
    
+   public static void interdictionRing(ServerLevel world, BlockPos blockPos, int tick){
+      if(tick < 15) BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> interdictionRing(world, blockPos,tick+1)));
+      if(tick % 4 == 0) return;
+      ParticleEffectUtils.circle(world,null,blockPos.getBottomCenter().add(0,2.0/15.0*tick,0), ParticleTypes.WITCH,2-0.75/15.0*tick,48,1,0,0);
+   }
+   
    public static void astralGatewayWarmup(AstralGatewayBlockEntity gateway, ServerLevel world, List<Vec3> points, int totalStarTicks, int animDuration, int tick){
       if(gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.WARMUP) return;
       if(tick < animDuration){
@@ -101,7 +107,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
          SoundUtils.playSound(world, gateway.getBlockPos(), SoundEvents.PORTAL_TRIGGER, SoundSource.BLOCKS, 0.25f, 0.75f);
       }
       if(tick % 2 == 0){
-         lines = ArcanaUtils.mergeColinearLines(lines);
+         lines = MathUtils.mergeColinearLines(lines);
          DustParticleOptions dust = new DustParticleOptions(0xffffff,0.65f);
          for(Tuple<Vec3, Vec3> line : lines){
             int intervals = (int) (line.getA().distanceTo(line.getB())*6+(tick%3));

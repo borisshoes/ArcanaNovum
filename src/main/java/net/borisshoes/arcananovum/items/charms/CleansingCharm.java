@@ -4,6 +4,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticStele;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -17,6 +19,8 @@ import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -32,16 +36,20 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 import xyz.nucleoid.packettweaker.PacketContext;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +58,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class CleansingCharm extends EnergyItem {
+public class CleansingCharm extends EnergyItem implements GeomanticStele.Interaction {
    public static final String ID = "cleansing_charm";
    
    public CleansingCharm(){
@@ -81,20 +89,21 @@ public class CleansingCharm extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.INFUSED_CHARCOAL.id));
+      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.INFUSED_CHARCOAL));
       return 30 - 5*cdLvl;
    }
    
-   public void cleanseEffect(ServerPlayer player, ItemStack stack){
-      if(!(ArcanaItemUtils.identifyItem(stack) instanceof CleansingCharm)) return;
-      if(getEnergy(stack) > 0) return;
+   public boolean cleanseEffect(LivingEntity living, ItemStack stack){
+      if(!(ArcanaItemUtils.identifyItem(stack) instanceof CleansingCharm)) return false;
+      if(getEnergy(stack) > 0) return false;
       
-      List<Map.Entry<Holder<MobEffect>, MobEffectInstance>> canCleanse = new ArrayList<>(player.getActiveEffectsMap().entrySet().stream().filter(entry ->
+      boolean removed = false;
+      List<Map.Entry<Holder<MobEffect>, MobEffectInstance>> canCleanse = new ArrayList<>(living.getActiveEffectsMap().entrySet().stream().filter(entry ->
             entry.getKey().value().getCategory() == MobEffectCategory.HARMFUL && !entry.getKey().equals(ArcanaRegistry.GREATER_BLINDNESS_EFFECT)
       ).toList());
       Collections.shuffle(canCleanse);
       
-      if(canCleanse.size() >= 10){
+      if(canCleanse.size() >= 10 && living instanceof ServerPlayer player){
          ArcanaAchievements.grant(player,ArcanaAchievements.SEPTIC_SHOCK);
       }
       
@@ -102,21 +111,23 @@ public class CleansingCharm extends EnergyItem {
       for(int i = 0; i < toRemove; i++){
          if(canCleanse.isEmpty()) break;
          Holder<MobEffect> effect = canCleanse.removeFirst().getKey();
-         player.removeEffect(effect);
-         Event.addEvent(new CleansingCharmEvent(player,effect));
+         living.removeEffect(effect);
+         if(living instanceof ServerPlayer player) Event.addEvent(new CleansingCharmEvent(player,effect));
          
          if(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REJUVENATION) > 0){
             MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 100, 1, false, false, true);
-            player.addEffect(regen);
+            living.addEffect(regen);
          }
          
-         if(effect.equals(MobEffects.HUNGER)){
+         if(effect.equals(MobEffects.HUNGER) && living instanceof ServerPlayer player){
             ArcanaAchievements.grant(player,ArcanaAchievements.FOOD_POISONT);
          }
          
+         removed = true;
          setEnergy(stack,getMaxEnergy(stack));
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CLEANSING_CHARM_CLEANSE));
+         if(living instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CLEANSING_CHARM_CLEANSE));
       }
+      return removed;
    }
    
    @Override
@@ -154,6 +165,37 @@ public class CleansingCharm extends EnergyItem {
       list.add(List.of(Component.literal("Charm of Cleansing").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nBy coalescing the cleansing effects of milk and honey into a pure carbon and silica matrix, I have made their effects renewable. \n\nWhile active, the Charm will cleanse a negative  ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Charm of Cleansing").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\neffect when it is applied, or a currently active effect. \n\nThis ability takes about a minute to recharge.\n\nSneak Use the Charm to toggle its effect.\n").withStyle(ChatFormatting.BLACK)));
       return list;
+   }
+   
+   @Override
+   public Vec3 getBaseRange(){
+      return new Vec3(15,15,15);
+   }
+   
+   @Override
+   public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
+      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
+      Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      
+      List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class,box);
+      for(LivingEntity living : inRangeEntities){
+         if(cleanseEffect(living,stack) && living instanceof ServerPlayer player){
+            stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CLEANSING_CHARM_CLEANSE));
+         }
+      }
+      
+      if(world.getServer().getTickCount() % 20 == 0){
+         addEnergy(stack, -5); // Recharge
+      }
+      
+      if(world.random.nextFloat() < 0.35){
+         int rgb = Color.HSBtoRGB(world.random.nextFloat(), 0.5f, 1.0f);
+         float r = ((rgb >> 16) & 0xFF) / 255.0f;
+         float g = ((rgb >> 8) & 0xFF) / 255.0f;
+         float b = (rgb & 0xFF) / 255.0f;
+         ColorParticleOption particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, r, g, b);
+         world.sendParticles(particle,stackPos.x(),stackPos.y(),stackPos.z(),2,0.25,0.25,0.25,.0);
+      }
    }
    
    public class CleansingCharmItem extends ArcanaPolymerItem {

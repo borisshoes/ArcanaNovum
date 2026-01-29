@@ -292,7 +292,7 @@ public class LevitationHarness extends EnergyItem {
          setStone(newArcanaItem,core.getStone(coreStack));
          buildItemLore(newArcanaItem,BorisLib.SERVER);
          
-         ArcanaAugments.copyAugment(coreStack,newArcanaItem,ArcanaAugments.SHULKER_RECYCLER.id,ArcanaAugments.HARNESS_RECYCLER.id);
+         ArcanaAugments.copyAugment(coreStack,newArcanaItem,ArcanaAugments.SHULKER_RECYCLER,ArcanaAugments.HARNESS_RECYCLER);
       }
       
       return newArcanaItem;
@@ -341,7 +341,7 @@ public class LevitationHarness extends EnergyItem {
                VanillaAbilities.FLYING.isEnabledFor(player) && !riding;
          boolean wasFlying = getBooleanProperty(stack,WAS_FLYING_TAG);
          
-         int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HARNESS_RECYCLER.id));
+         int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HARNESS_RECYCLER));
          
          if(world.getServer().getTickCount() % 20 == 0){
             if(chestItem && flying && survival){
@@ -354,8 +354,8 @@ public class LevitationHarness extends EnergyItem {
                   buildItemLore(stack,player.level().getServer());
                }
                
-               ArcanaAchievements.progress(player,ArcanaAchievements.FREQUENT_FLIER.id,1);
-               if(player.getY() >= 1000) ArcanaAchievements.grant(player,ArcanaAchievements.TO_THE_MOON.id);
+               ArcanaAchievements.progress(player,ArcanaAchievements.FREQUENT_FLIER,1);
+               if(player.getY() >= 1000) ArcanaAchievements.grant(player,ArcanaAchievements.TO_THE_MOON);
                
                boolean hasAllay = false, hasBlaze = false, hasBreeze = false, hasBee = false, hasDragon = false, hasPhantom = false,
                      hasGhast = false, hasHappyGhast = false, hasWither = false, hasParrot = false, hasVex = false, hasBat = false;
@@ -388,7 +388,7 @@ public class LevitationHarness extends EnergyItem {
                   }
                }
                if(hasAllay && hasBlaze && hasBreeze && hasBee && hasDragon && hasPhantom && hasGhast && hasHappyGhast && hasWither && hasParrot && hasVex && hasBat){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.AIR_TRAFFIC_CONTROL.id);
+                  ArcanaAchievements.grant(player,ArcanaAchievements.AIR_TRAFFIC_CONTROL);
                }
                
                ArcanaEffectUtils.harnessFly(serverWorld,player,10);

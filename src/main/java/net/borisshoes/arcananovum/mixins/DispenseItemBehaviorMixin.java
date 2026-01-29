@@ -58,7 +58,6 @@ public interface DispenseItemBehaviorMixin {
             new OptionalDispenseItemBehavior() {
                @Override
                public ItemStack execute(BlockSource pointer, ItemStack stack) {
-                  AquaticEversource.AquaticEversourceItem eversource = (AquaticEversource.AquaticEversourceItem) stack.getItem();
                   int mode = ArcanaItem.getIntProperty(stack,ArcanaItem.MODE_TAG); // 0 place, 1 remove
                   BlockPos blockPos = pointer.pos().relative(pointer.state().getValue(DispenserBlock.FACING));
                   Level world = pointer.level();
@@ -74,7 +73,7 @@ public interface DispenseItemBehaviorMixin {
                         this.setSuccess(false);
                      }
                   }else if(mode == 0 || mode == 2){
-                     eversource.placeFluid(Fluids.WATER, null, world, blockPos, null, false);
+                     AquaticEversource.placeFluid(Fluids.WATER, null, world, blockPos, null, false, false);
                      this.setSuccess(true);
                   }else{
                      this.setSuccess(false);
@@ -91,7 +90,6 @@ public interface DispenseItemBehaviorMixin {
                      this.setSuccess(false);
                      return stack;
                   }
-                  MagmaticEversource.MagmaticEversourceItem eversource = (MagmaticEversource.MagmaticEversourceItem) stack.getItem();
                   int mode = ArcanaItem.getIntProperty(stack,ArcanaItem.MODE_TAG); // 0 place, 1 remove
                   int charges = ArcanaItem.getIntProperty(stack,MagmaticEversource.USES_TAG);
                   
@@ -109,7 +107,7 @@ public interface DispenseItemBehaviorMixin {
                         this.setSuccess(false);
                      }
                   }else if(mode == 0 && charges >= 1){
-                     eversource.placeFluid(Fluids.LAVA, null, world, blockPos, null);
+                     MagmaticEversource.placeFluid(Fluids.LAVA, null, world, blockPos, null, false);
                      ArcanaItem.putProperty(stack,MagmaticEversource.USES_TAG,charges-1);
                      magmaticEversource.buildItemLore(stack, world.getServer());
                      this.setSuccess(true);
@@ -218,8 +216,8 @@ public interface DispenseItemBehaviorMixin {
                   Direction direction = pointer.state().getValue(DispenserBlock.FACING);
                   
                   try {
-                     int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT.id));
-                     int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT.id));
+                     int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT));
+                     int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT));
                      if(EssenceEgg.getUses(stack) > 0){
                         ServerLevel serverWorld = pointer.level();
                         Vec3 summonPos = Vec3.atBottomCenterOf(pointer.pos().relative(direction));
@@ -266,7 +264,7 @@ public interface DispenseItemBehaviorMixin {
                   }
                   BlockPos blockPos = pointer.pos().relative(pointer.state().getValue(DispenserBlock.FACING));
                   CompoundTag contents = ArcanaItem.getCompoundProperty(stack, ContainmentCirclet.CONTENTS_TAG);
-                  boolean hostiles = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CONFINEMENT.id) > 0;
+                  boolean hostiles = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CONFINEMENT) > 0;
                   Direction direction = pointer.state().getValue(DispenserBlock.FACING);
                   
                   if(contents.isEmpty()){

@@ -220,14 +220,6 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
          return InteractionResult.SUCCESS_SERVER;
       }
       
-      @Override
-      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
-         BlockEntity entity = world.getBlockEntity(pos);
-         if(entity instanceof StellarCoreBlockEntity core){
-            initializeArcanaBlock(stack,core);
-         }
-      }
-      
       public static int getLightLevel(BlockState state){
          return state.getValue(BlockStateProperties.LIT) ? 13 : 0;
       }

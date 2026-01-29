@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.recipes.arcana;
 
 import com.google.gson.JsonObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +31,7 @@ public class ShulkerCoreIngredient extends ArcanaIngredient {
          if(needsStone){
             boolean hasStone = core.hasStone(stack);
             if(hasStone){
-               return core.getEnergy(stack) >= minSouls;
+               return EnergyItem.getEnergy(stack) >= minSouls;
             }else{
                return false;
             }

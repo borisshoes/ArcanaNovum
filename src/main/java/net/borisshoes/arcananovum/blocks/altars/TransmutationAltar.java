@@ -112,13 +112,13 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
          if(recipe instanceof InfusionTransmutationRecipe r && ArcanaItemUtils.isArcane(r.getOutput()) && !ArcanaNovum.data(player).hasResearched(ArcanaItemUtils.identifyItem(r.getOutput()))){
             return false;
          }
-         if(recipe instanceof AequalisCatalystTransmutationRecipe && !(ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.EQUIVALENT_EXCHANGE.id) > 0)){
+         if(recipe instanceof AequalisCatalystTransmutationRecipe && !(ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.EQUIVALENT_EXCHANGE) > 0)){
             return false;
          }
          if(recipe instanceof AequalisSkillTransmutationRecipe && !ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA)){
             return false;
          }
-         if(recipe instanceof AequalisUnattuneTransmutationRecipe && !(ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.IMPERMANENT_PERMUTATION.id) > 0)){
+         if(recipe instanceof AequalisUnattuneTransmutationRecipe && !(ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.IMPERMANENT_PERMUTATION) > 0)){
             return false;
          }
          return true;
@@ -227,14 +227,6 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
             }
          }
          return InteractionResult.SUCCESS_SERVER;
-      }
-      
-      @Override
-      public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
-         BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayer player && entity instanceof TransmutationAltarBlockEntity altar){
-            initializeArcanaBlock(stack,altar);
-         }
       }
       
       private void tryActivate(BlockState state, Level world, BlockPos pos){

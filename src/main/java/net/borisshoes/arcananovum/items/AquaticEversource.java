@@ -4,6 +4,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticStele;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -41,6 +43,7 @@ import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -48,8 +51,10 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -59,7 +64,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class AquaticEversource extends ArcanaItem {
+public class AquaticEversource extends ArcanaItem implements GeomanticStele.Interaction{
 	public static final String ID = "aquatic_eversource";
    
    public AquaticEversource(){
@@ -130,6 +135,85 @@ public class AquaticEversource extends ArcanaItem {
       return list;
    }
    
+   @Override
+   public Vec3 getBaseRange(){
+      return new Vec3(0,0,0);
+   }
+   
+   @Override
+   public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
+      Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      
+      if(world.random.nextFloat() < 0.15){
+         world.sendParticles(ParticleTypes.DRIPPING_WATER,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+      }
+      if(world.random.nextFloat() < 0.15){
+         world.sendParticles(ParticleTypes.FALLING_WATER,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+      }
+      
+      BlockPos geyserPos = stele.getBlockPos().above(5);
+      if(world.getFluidState(geyserPos).isSource() && world.getFluidState(geyserPos).is(Fluids.WATER)) return;
+      int mode = getIntProperty(stack,MODE_TAG);
+      int placeStatus = placeFluid(Fluids.WATER,null, world, geyserPos, null, false, true);
+      if(placeStatus > 0){
+         if(mode == 2 && placeStatus == 2){
+            for(BlockPos floodPos : BlockPos.betweenClosed(geyserPos.offset(-1, 0, -1), geyserPos.offset(1, 0, 1))){
+               if(floodPos.equals(geyserPos)) continue;
+               if(placeFluid(Fluids.WATER,null, world, floodPos, null, true, true) > 0){
+                  stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE));
+               }
+            }
+         }
+         stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE));
+      }
+   }
+   
+   public static int placeFluid(Fluid fluid, @Nullable Player player, Level world, BlockPos pos, @Nullable BlockHitResult hitResult, boolean flood, boolean silent){
+      LiquidBlockContainer fluidFillable;
+      boolean bl2;
+      if(!(fluid instanceof FlowingFluid flowableFluid)){
+         return 0;
+      }
+      BlockState blockState = world.getBlockState(pos);
+      Block block = blockState.getBlock();
+      boolean bl = blockState.canBeReplaced(fluid);
+      bl2 = blockState.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, pos, blockState, fluid) && !flood;
+      if(!bl2){
+         return hitResult == null ? 0 : placeFluid(fluid,player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null, flood, silent);
+      }
+      
+      if(world.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && fluid.is(FluidTags.WATER)){
+         int i = pos.getX();
+         int j = pos.getY();
+         int k = pos.getZ();
+         if(!silent) world.playSound(player, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.6f + (world.random.nextFloat() - world.random.nextFloat()) * 0.8f);
+         for (int l = 0; l < 8; ++l){
+            world.addParticle(ParticleTypes.LARGE_SMOKE, (double)i + Math.random(), (double)j + Math.random(), (double)k + Math.random(), 0.0, 0.0, 0.0);
+         }
+         return 1;
+      }
+      if(block instanceof LiquidBlockContainer && !flood){
+         fluidFillable = (LiquidBlockContainer) block;
+         if(fluid == Fluids.WATER){
+            fluidFillable.placeLiquid(world, pos, blockState, flowableFluid.getSource(false));
+            if(!silent) world.playSound(player, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
+            world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
+            return 1;
+         }
+      }
+      if(!world.isClientSide() && bl && !blockState.liquid()){
+         world.destroyBlock(pos, true);
+      }
+      if(world.setBlock(pos, fluid.defaultFluidState().createLegacyBlock(), Block.UPDATE_ALL_IMMEDIATE) || blockState.getFluidState().isSource()){
+         if(!flood){
+            if(!silent) world.playSound(player, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
+         }
+         world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
+         return 2;
+      }
+      return 0;
+   }
+   
    public class AquaticEversourceItem extends ArcanaPolymerItem {
       public AquaticEversourceItem(){
          super(getThis());
@@ -169,7 +253,7 @@ public class AquaticEversource extends ArcanaItem {
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          int mode = getIntProperty(stack,MODE_TAG);
-         boolean floodgate = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FLOODGATE.id) > 0;
+         boolean floodgate = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FLOODGATE) > 0;
          
          if(playerEntity.isShiftKeyDown()){
             int newMode = (mode+1) % (floodgate ? 3 : 2);
@@ -214,19 +298,19 @@ public class AquaticEversource extends ArcanaItem {
             }
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer ? blockPos : blockPos2;
-            int placeStatus = placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult, false);
+            int placeStatus = placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult, false, false);
             if(placeStatus > 0){
                if(mode == 2 && placeStatus == 2){
                   for(BlockPos floodPos : BlockPos.betweenClosed(blockPos3.offset(-1, 0, -1), blockPos3.offset(1, 0, 1))){
                      if(floodPos.equals(blockPos3)) continue;
-                     if(placeFluid(fluid,playerEntity, world, floodPos, null, true) > 0){
+                     if(placeFluid(fluid,playerEntity, world, floodPos, null, true, false) > 0){
                         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
-                        ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
+                        ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN,1);
                      }
                   }
                }
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
-               ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
+               ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN,1);
                playerEntity.awardStat(Stats.ITEM_USED.get(this));
                playerEntity.getCooldowns().addCooldown(stack,5);
                return InteractionResult.SUCCESS_SERVER;
@@ -234,53 +318,6 @@ public class AquaticEversource extends ArcanaItem {
             return InteractionResult.FAIL;
          }
          return InteractionResult.PASS;
-      }
-      
-      
-      public int placeFluid(Fluid fluid, @Nullable Player player, Level world, BlockPos pos, @Nullable BlockHitResult hitResult, boolean flood){
-         LiquidBlockContainer fluidFillable;
-         boolean bl2;
-         if(!(fluid instanceof FlowingFluid flowableFluid)){
-            return 0;
-         }
-         BlockState blockState = world.getBlockState(pos);
-         Block block = blockState.getBlock();
-         boolean bl = blockState.canBeReplaced(fluid);
-         bl2 = blockState.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, pos, blockState, fluid) && !flood;
-         if(!bl2){
-            return hitResult == null ? 0 : placeFluid(fluid,player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null, flood);
-         }
-
-         if(world.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && fluid.is(FluidTags.WATER)){
-            int i = pos.getX();
-            int j = pos.getY();
-            int k = pos.getZ();
-            world.playSound(player, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.6f + (world.random.nextFloat() - world.random.nextFloat()) * 0.8f);
-            for (int l = 0; l < 8; ++l){
-               world.addParticle(ParticleTypes.LARGE_SMOKE, (double)i + Math.random(), (double)j + Math.random(), (double)k + Math.random(), 0.0, 0.0, 0.0);
-            }
-            return 1;
-         }
-         if(block instanceof LiquidBlockContainer && !flood){
-            fluidFillable = (LiquidBlockContainer) block;
-            if(fluid == Fluids.WATER){
-               fluidFillable.placeLiquid(world, pos, blockState, flowableFluid.getSource(false));
-               world.playSound(player, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
-               world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
-               return 1;
-            }
-         }
-         if(!world.isClientSide() && bl && !blockState.liquid()){
-            world.destroyBlock(pos, true);
-         }
-         if(world.setBlock(pos, fluid.defaultFluidState().createLegacyBlock(), Block.UPDATE_ALL_IMMEDIATE) || blockState.getFluidState().isSource()){
-            if(!flood){
-               world.playSound(player, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
-            }
-            world.gameEvent(player, GameEvent.FLUID_PLACE, pos);
-            return 2;
-         }
-         return 0;
       }
    }
 }

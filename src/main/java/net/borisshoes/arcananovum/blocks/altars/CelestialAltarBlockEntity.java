@@ -91,7 +91,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
          int timeDiff = (targetTime - curTime + 24000) % 24000;
          serverWorld.setDayTime(timeOfDay + timeDiff);
          
-         if(player != null) ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OF_THE_SUN.id);
+         if(player != null) ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OF_THE_SUN);
       }else{
          int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
@@ -99,7 +99,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
          serverWorld.setDayTime(timeOfDay + phaseDiff * 24000L);
          
          if(phase == 0 && player != null){
-            ArcanaAchievements.grant(player,ArcanaAchievements.LYCANTHROPE.id);
+            ArcanaAchievements.grant(player,ArcanaAchievements.LYCANTHROPE);
          }
       }
       SoundUtils.playSound(serverWorld, this.getBlockPos(), SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 1, 0.5f);
@@ -203,7 +203,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public void resetCooldown(){
-      this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ORBITAL_PERIOD.id) * 6000;
+      this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ORBITAL_PERIOD) * 6000;
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

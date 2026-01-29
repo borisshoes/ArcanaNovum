@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.gui.shulkercore;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
@@ -35,7 +36,7 @@ public class ShulkerCoreInventoryListener implements ContainerListener {
          boolean hasStone = validSoulstone(inv);
          
          GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
-         String paneText = hasStone ? LevelUtils.readableInt(core.getEnergy(item)) + " Shulker Souls" : "No Soulstone Inserted";
+         String paneText = hasStone ? LevelUtils.readableInt(EnergyItem.getEnergy(item)) + " Shulker Souls" : "No Soulstone Inserted";
          ChatFormatting textColor = hasStone ? ChatFormatting.YELLOW : ChatFormatting.RED;
    
          gui.setSlot(0,pane.setName(Component.literal(paneText).withStyle(textColor)));

@@ -112,7 +112,7 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
       super.tick();
       
       if(arrowType instanceof TetherArrows){
-         if(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.QUICK_RELEASE.id) > 0){
+         if(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.QUICK_RELEASE) > 0){
             if(getOwner() != null && getOwner().isShiftKeyDown()){
                data.putBoolean("severed",true);
                if(getOwner() instanceof ServerPlayer player){
@@ -133,7 +133,7 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
             List<Entity> triggerTargets = level().getEntities(this,this.getBoundingBox().inflate(senseRange*2),
                   e -> !e.isSpectator() && e.distanceTo(this) <= senseRange && e instanceof LivingEntity && !e.onGround());
             if(!triggerTargets.isEmpty()){
-               double radius = 4 + 1.25*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.AIRBURST.id);
+               double radius = 4 + 1.25*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.AIRBURST);
                ArcaneFlakArrows.detonate(this,radius);
             }
          }
@@ -146,7 +146,7 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
             data.store("initPos", Vec3.CODEC, this.position());
          }
          
-         double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE.id))+5;
+         double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE))+5;
          double distance = 15;
          List<LivingEntity> possibleTargets = level().getEntitiesOfClass(LivingEntity.class,getBoundingBox().inflate(distance), e ->
                !e.isSpectator() && MathUtils.inCone(this.position(),velocityUnit,distance,1,viewWidth,e.position().add(0,e.getBbHeight()/2,0)) && !e.isInvisible()
@@ -167,7 +167,7 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
             
             if(this.getOwner() instanceof ServerPlayer player){
                if(closestTarget.getUUID().equals(this.getOwner().getUUID())){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.TARGET_ACQUIRED.id);
+                  ArcanaAchievements.grant(player,ArcanaAchievements.TARGET_ACQUIRED);
                }
                Vector2d horizVel = new Vector2d(newVelocity.x, newVelocity.z);
                if(Math.abs(newVelocity.y / horizVel.length()) < 4){
@@ -179,7 +179,7 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
                   Vector2d initPos = new Vector2d(initPos3D.x,initPos3D.z);
                   double distFromInitYawPlane = initPos.sub(currentPos).length() * Math.sin(Math.toRadians(Math.abs(yawDiff)));
                   if(Math.abs(yawDiff) >= 90 && distFromInitYawPlane > 10){
-                     ArcanaAchievements.grant(player,ArcanaAchievements.THE_ARROW_KNOWS_WHERE_IT_IS.id);
+                     ArcanaAchievements.grant(player,ArcanaAchievements.THE_ARROW_KNOWS_WHERE_IT_IS);
                   }
                }
             }
@@ -198,7 +198,7 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
          arrowType.entityHit(this,entityHitResult);
          
          if(this.getOwner() instanceof ServerPlayer player){
-            if(player.position().distanceTo(this.position()) >= 100) ArcanaAchievements.grant(player, ArcanaAchievements.AIMBOT.id);
+            if(player.position().distanceTo(this.position()) >= 100) ArcanaAchievements.grant(player, ArcanaAchievements.AIMBOT);
             incArrowForEveryFoe(player);
          }
       }
@@ -212,9 +212,9 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
       }
    }
    
-   public int getAugment(String id){
+   public int getAugment(ArcanaAugment augment){
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-         if(entry.getKey().id.equals(id)) return entry.getValue();
+         if(entry.getKey() == augment) return entry.getValue();
       }
       return 0;
    }

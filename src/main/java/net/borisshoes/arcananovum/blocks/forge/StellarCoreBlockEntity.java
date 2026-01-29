@@ -167,7 +167,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
    
    public List<ItemStack> salvageItem(ItemStack stack, MinecraftServer server){
       List<ItemStack> salvage = new ArrayList<>();
-      double salvageLvl = .25*(1+ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.DYSON_SPHERE.id));
+      double salvageLvl = .25*(1+ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.DYSON_SPHERE));
       Item item = stack.getItem();
       if(ArcanaItemUtils.isArcane(stack)) return salvage;
       
@@ -222,7 +222,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          });
       }
       
-      int stardust = (int) (ArcanaUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.FUSION_INJECTORS.id)));
+      int stardust = (int) (ArcanaUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.FUSION_INJECTORS)));
       if(stardust > 0){
          while(stardust > 64){
             salvage.add(ArcanaRegistry.STARDUST.getDefaultInstance().copyWithCount(64));
@@ -372,7 +372,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
             updating = false;
             return;
          }
-         boolean moltenCore = ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOLTEN_CORE.id) >= 1;
+         boolean moltenCore = ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOLTEN_CORE) >= 1;
          BlockState blockState = serverWorld.getBlockState(worldPosition);
          Direction dir = blockState.getValue(HORIZONTAL_FACING);
          Vec3 itemSpawnPos = worldPosition.offset(dir.getUnitVec3i()).getCenter();
@@ -381,9 +381,9 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          List<ItemStack> salvage = salvageItem(stack, serverWorld.getServer());
          if(!salvage.isEmpty()){
             salvage = salvage.stream().filter(s -> !s.isEmpty() && s.getCount()>0).toList();
-            watchingPlayers.forEach(player -> ArcanaAchievements.progress(player,ArcanaAchievements.RECLAMATION.id, stack.getCount()));
+            watchingPlayers.forEach(player -> ArcanaAchievements.progress(player,ArcanaAchievements.RECLAMATION, stack.getCount()));
             if(salvage.stream().anyMatch(s -> s.is(Items.NETHERITE_SCRAP))){
-               watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.SCRAP_TO_SCRAP.id));
+               watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.SCRAP_TO_SCRAP));
             }
             
             inv.setItem(0, ItemStack.EMPTY);

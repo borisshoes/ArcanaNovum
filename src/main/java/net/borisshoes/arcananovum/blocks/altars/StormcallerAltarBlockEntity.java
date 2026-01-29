@@ -83,7 +83,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
          default -> dur;
       };
       if(mode == 0 && serverWorld.isRaining() && player != null){
-         ArcanaAchievements.grant(player,ArcanaAchievements.COME_AGAIN_RAIN.id);
+         ArcanaAchievements.grant(player,ArcanaAchievements.COME_AGAIN_RAIN);
       }
       
       serverWorld.setWeatherParameters(mode == 0 ? dur : 0, mode >= 1 ? dur : 0, mode >= 1, mode == 2);
@@ -181,7 +181,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    public void resetCooldown(){
-      this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CLOUD_SEEDING.id) * 6000;
+      this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CLOUD_SEEDING) * 6000;
    }
    
    public int getMode(){

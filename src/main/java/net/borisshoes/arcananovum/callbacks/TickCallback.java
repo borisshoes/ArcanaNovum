@@ -6,11 +6,14 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
+import net.borisshoes.arcananovum.blocks.ItineranteurBlockEntity;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.datastorage.BossFightData;
@@ -121,10 +124,10 @@ public class TickCallback {
    
                // Achievements
                if(arcanaItem instanceof ShulkerCore){
-                  if(player.getY() > 1610 && player.getActiveEffectsMap().containsKey(MobEffects.LEVITATION)) ArcanaAchievements.grant(player,ArcanaAchievements.MILE_HIGH.id);
+                  if(player.getY() > 1610 && player.getActiveEffectsMap().containsKey(MobEffects.LEVITATION)) ArcanaAchievements.grant(player,ArcanaAchievements.MILE_HIGH);
                }
                if(server.getTickCount() % 20 == 0 && arcanaItem.getRarity() == ArcanaRarity.DIVINE){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.GOD_BOON.id);
+                  ArcanaAchievements.grant(player,ArcanaAchievements.GOD_BOON);
                }
    
                // Reset Nul Memento
@@ -167,6 +170,10 @@ public class TickCallback {
                   arcaneProfile.setResearchTask(ResearchTasks.VISIT_DOZEN_BIOMES,true);
                }
             }
+            
+            if(server.getTickCount() % 10 == 0){
+               ItineranteurBlockEntity.tickPlayer(player);
+            }
          }
          
          HashMap<ServerPlayer,Float> shieldTotals = new HashMap<>();
@@ -174,7 +181,7 @@ public class TickCallback {
             if(callback instanceof ShieldTimerCallback st){
                if(shieldTotals.containsKey(st.getPlayer())){
                   shieldTotals.put(st.getPlayer(),shieldTotals.get(st.getPlayer())+st.getHearts());
-                  if(shieldTotals.get(st.getPlayer()) >= 200 && st.getPlayer().getAbsorptionAmount() >= 200) ArcanaAchievements.grant(st.getPlayer(),ArcanaAchievements.BUILT_LIKE_TANK.id);
+                  if(shieldTotals.get(st.getPlayer()) >= 200 && st.getPlayer().getAbsorptionAmount() >= 200) ArcanaAchievements.grant(st.getPlayer(),ArcanaAchievements.BUILT_LIKE_TANK);
                }else{
                   shieldTotals.put(st.getPlayer(),st.getHearts());
                }
@@ -182,6 +189,8 @@ public class TickCallback {
          }
          
          ContinuumAnchor.updateLoadedChunks(server);
+         ItineranteurBlockEntity.tickZones();
+         GeomanticSteleBlockEntity.tickZones();
       }catch(Exception e){
          e.printStackTrace();
       }
@@ -201,10 +210,10 @@ public class TickCallback {
    private static void concCheck(MinecraftServer server, ServerPlayer player, ArcanaPlayerData arcaneProfile){
       // Check to make sure everyone is under concentration limit
       if(server.getTickCount() % 80 != 0) return;
-      int resolve = arcaneProfile.getAugmentLevel(ArcanaAugments.RESOLVE.id);
+      int resolve = arcaneProfile.getAugmentLevel(ArcanaAugments.RESOLVE);
       int maxConc = LevelUtils.concFromXp(arcaneProfile.getXP(),resolve);
       int curConc = ArcanaItemUtils.getUsedConcentration(player);
-      if(ArcanaItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT.id);
+      if(ArcanaItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT);
       if(curConc > maxConc && !player.isCreative() && !player.isSpectator()){
          int concTick = ((IntTag)arcaneProfile.getMiscData(ArcanaPlayerData.CONCENTRATION_TICK_TAG)).intValue() + 1;
          if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DO_CONCENTRATION_DAMAGE)){
@@ -214,7 +223,7 @@ public class TickCallback {
          }
          if(!player.isDeadOrDying()){
             if(player.getHealth() <= 1.5f){
-               ArcanaAchievements.grant(player,ArcanaAchievements.CLOSE_CALL.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.CLOSE_CALL);
             }
             // Nul Memento
             ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -236,7 +245,7 @@ public class TickCallback {
       ItemStack item = player.getItemBySlot(EquipmentSlot.CHEST);
       boolean harnessFly = false;
       if(ArcanaItemUtils.identifyItem(item) instanceof LevitationHarness harness){
-         if(harness.getEnergy(item) > 0 && harness.getStall(item) == -1){
+         if(EnergyItem.getEnergy(item) > 0 && harness.getStall(item) == -1){
             harnessFly = true;
          }
       }

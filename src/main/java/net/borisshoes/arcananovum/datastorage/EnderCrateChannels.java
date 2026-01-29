@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.datastorage;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.borisshoes.arcananovum.core.ArcanaItemContainer;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.datastorage.DataKey;
 import net.borisshoes.borislib.datastorage.DataRegistry;
@@ -23,7 +24,9 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class EnderCrateChannels {
    
    public static final Codec<EnderCrateChannels> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-         EnderCrateChannel.CODEC.listOf().fieldOf("channels").forGetter(data -> new ArrayList<>(data.channels.values()))
+         EnderCrateChannel.CODEC.listOf().fieldOf("channels").forGetter(data -> data.channels.values().stream()
+               .filter(channel -> !channel.getInventory().isEmpty())
+               .toList())
    ).apply(instance, EnderCrateChannels::new));
    
    public static final DataKey<EnderCrateChannels> KEY = DataRegistry.register(DataKey.ofGlobal(Identifier.fromNamespaceAndPath(MOD_ID, "ender_crates"), CODEC,EnderCrateChannels::new));
@@ -37,6 +40,16 @@ public class EnderCrateChannels {
          ChannelKey key = ChannelKey.of(channel.getIdLock(), channel.getColors());
          channels.put(key, channel);
       }
+   }
+   
+   public List<ArcanaItemContainer> arcanaInventoriesForPlayer(UUID playerId){
+      List<ArcanaItemContainer> containers = new ArrayList<>();
+      for(EnderCrateChannel value : channels.values()){
+         if(value.isLocked() && value.getIdLock().equals(playerId)){
+            containers.add(value.getArcanaItemContainer(null));
+         }
+      }
+      return containers;
    }
    
    public EnderCrateChannel getCrateChannel(@Nullable UUID lock, DyeColor... colors){

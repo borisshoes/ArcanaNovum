@@ -240,6 +240,11 @@ public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
             .add(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem())
             .add(ArcanaRegistry.CETACEA_CHARM.getItem())
             .add(ArcanaRegistry.CLEANSING_CHARM.getItem())
+            .add(ArcanaRegistry.WAYSTONE.getItem())
+            .add(ArcanaRegistry.CLOCKWORK_MULTITOOL.getItem())
+            .add(ArcanaRegistry.NEGOTIATION_CHARM.getItem())
+            .add(ArcanaRegistry.ITINERANTEUR.getItem())
+            .add(ArcanaRegistry.GEOMANTIC_STELE.getItem())
       ;
       
       valueLookupBuilder(ArcanaRegistry.WORKSHOP_ITEMS)
@@ -291,6 +296,10 @@ public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
             .add(ArcanaRegistry.CLEANSING_CHARM.getItem())
             .add(ArcanaRegistry.BINARY_BLADES.getItem())
             .add(ArcanaRegistry.GRAVITON_ARROWS.getItem())
+            .add(ArcanaRegistry.WAYSTONE.getItem())
+            .add(ArcanaRegistry.CLOCKWORK_MULTITOOL.getItem())
+            .add(ArcanaRegistry.NEGOTIATION_CHARM.getItem())
+            .add(ArcanaRegistry.ENDER_CRATE.getItem())
       ;
    }
    

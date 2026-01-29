@@ -73,15 +73,15 @@ public class DetonationArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      int blastLvl = arrow.getAugment(ArcanaAugments.BLAST_MINE.id);
-      int personLvl = arrow.getAugment(ArcanaAugments.ANTI_PERSONNEL.id);
+      int blastLvl = arrow.getAugment(ArcanaAugments.BLAST_MINE);
+      int personLvl = arrow.getAugment(ArcanaAugments.ANTI_PERSONNEL);
       explode(arrow,entityHitResult.getLocation(),blastLvl,personLvl);
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      int blastLvl = arrow.getAugment(ArcanaAugments.BLAST_MINE.id);
-      int personLvl = arrow.getAugment(ArcanaAugments.ANTI_PERSONNEL.id);
+      int blastLvl = arrow.getAugment(ArcanaAugments.BLAST_MINE);
+      int personLvl = arrow.getAugment(ArcanaAugments.ANTI_PERSONNEL);
       explode(arrow,blockHitResult.getLocation(),blastLvl,personLvl);
    }
    

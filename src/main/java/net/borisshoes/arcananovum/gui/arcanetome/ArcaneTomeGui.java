@@ -124,7 +124,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       addMode(new ArrayList<ArcanaAchievement>(),
             (baseAch, index) -> {
                ArcanaPlayerData profile = ArcanaNovum.data(player);
-               ArcanaAchievement profileAchievement = profile.getAchievement(baseAch.getArcanaItem().getId(), baseAch.id);
+               ArcanaAchievement profileAchievement = profile.getAchievement(baseAch);
                ArcanaAchievement achievement = profileAchievement != null ? profileAchievement : baseAch;
                
                ItemStack displayItem = achievement.getDisplayItem();
@@ -175,7 +175,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       addMode(new ArrayList<ArcanaPlayerData>(),
             (data, index) -> {
                UUID playerId = data.getPlayerId();
-               int numAchievements = ArcanaAchievements.registry.size();
+               int numAchievements = ArcanaAchievements.ARCANA_ACHIEVEMENTS.size();
                int playerXp = data.getXP();
                int playerLevel = LevelUtils.levelFromXp(playerXp);
                GameProfile playerGameProf;
@@ -508,7 +508,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          }
       }
       
-      int resolve = profile.getAugmentLevel(ArcanaAugments.RESOLVE.id);
+      int resolve = profile.getAugmentLevel(ArcanaAugments.RESOLVE);
       int maxConc = LevelUtils.concFromLevel(profile.getLevel(), resolve);
       GuiElementBuilder crystal = new GuiElementBuilder(Items.END_CRYSTAL);
       crystal.setName(Component.literal("Arcane Concentration").withStyle(ChatFormatting.BLUE));
@@ -526,16 +526,17 @@ public class ArcaneTomeGui extends PagedMultiGui {
       }
       setSlot(37, crystal);
       
-      
-      int used = (int) Math.ceil((double) ArcanaItemUtils.getUsedConcentration(player) / maxConc * 6.0);
-      boolean overConc = ArcanaItemUtils.getUsedConcentration(player) > maxConc;
+      int conc = ArcanaItemUtils.getUsedConcentration(player);
+      int used = (int) Math.ceil((double) conc / maxConc * 6.0);
+      boolean overConc = conc > maxConc;
       for(int i = 38; i <= 43; i++){
+         MutableComponent comp = Component.literal("Concentration: " + conc + "/" + maxConc);
          if(overConc){
-            setSlot(i, new GuiElementBuilder(Items.FIRE_CHARGE).setName(Component.literal("Concentration: " + ArcanaItemUtils.getUsedConcentration(player) + "/" + maxConc).withStyle(ChatFormatting.RED)));
+            setSlot(i, new GuiElementBuilder(Items.FIRE_CHARGE).setName(comp.withStyle(ChatFormatting.RED)));
          }else if(i >= used + 38){
-            setSlot(i, new GuiElementBuilder(Items.SLIME_BALL).setName(Component.literal("Concentration: " + ArcanaItemUtils.getUsedConcentration(player) + "/" + maxConc).withStyle(ChatFormatting.AQUA)));
+            setSlot(i, new GuiElementBuilder(Items.SLIME_BALL).setName(comp.withStyle(ChatFormatting.AQUA)));
          }else{
-            setSlot(i, new GuiElementBuilder(Items.MAGMA_CREAM).setName(Component.literal("Concentration: " + ArcanaItemUtils.getUsedConcentration(player) + "/" + maxConc).withStyle(ChatFormatting.AQUA)));
+            setSlot(i, new GuiElementBuilder(Items.MAGMA_CREAM).setName(comp.withStyle(ChatFormatting.AQUA)));
          }
          
       }
@@ -578,7 +579,8 @@ public class ArcaneTomeGui extends PagedMultiGui {
    
    private void buildAchievementsGui(){
       GuiMode<ArcanaAchievement> config = getMode(1);
-      config.setItems(new ArrayList<>(ArcanaAchievements.registry.values().stream().toList()));
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
+      config.setItems(new ArrayList<>(ArcanaAchievements.ARCANA_ACHIEVEMENTS.values().stream().filter(ach -> ach.isHidden() && !profile.hasAcheivement(ach)).toList()));
       
       GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
       
@@ -605,7 +607,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       config.setItems(DataAccess.allPlayerDataFor(ArcanaPlayerData.KEY).values().stream().toList());
       
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      int numAchievements = ArcanaAchievements.registry.size();
+      int numAchievements = ArcanaAchievements.ARCANA_ACHIEVEMENTS.size();
       
       GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
       
@@ -733,7 +735,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          clearSlot(19 + augmentSlots[i]);
          clearSlot(28 + augmentSlots[i]);
          
-         int augmentLvl = profile.getAugmentLevel(augment.id);
+         int augmentLvl = profile.getAugmentLevel(augment);
          
          GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
          augmentItem1.hideDefaultTooltip().setName(augment.getTranslatedName().withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
@@ -780,7 +782,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
             augmentItem2.setCallback((click) -> {
                int cost = tiers[augmentLvl].rarity + 1;
                if(cost <= unallocated){
-                  profile.setAugmentLevel(augment.id, augmentLvl + 1);
+                  profile.setAugmentLevel(augment, augmentLvl + 1);
                   SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_PLING, 1, (.5f + ((float) (augmentLvl + 1) / (tiers.length - 1))));
                   buildPage();
                }else{
@@ -799,6 +801,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       List<ArcanaPlayerData> allData = DataAccess.allPlayerDataFor(ArcanaPlayerData.KEY).values().stream().filter(p -> p.getXP() > 1).toList();
       List<ArcanaAchievement> achievements = ArcanaAchievements.getItemAchievements(selectedArcanaItem);
+      achievements.removeIf(ach -> ach.isHidden() && !profile.hasAcheivement(ach));
       int[] achieveSlots = DYNAMIC_SLOTS[achievements.size()];
       for(int i = 0; i < 7; i++){
          setSlot(46 + i, achievePane);
@@ -843,7 +846,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                   .append(Component.literal(")").withStyle(ChatFormatting.DARK_PURPLE))));
          }
          
-         if(profile.hasAcheivement(selectedArcanaItem.getId(), achievement.id)) achievementItem.glow();
+         if(profile.hasAcheivement(achievement)) achievementItem.glow();
          
          setSlot(46 + achieveSlots[i], achievementItem);
       }

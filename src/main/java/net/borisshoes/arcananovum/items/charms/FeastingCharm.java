@@ -123,8 +123,8 @@ public class FeastingCharm extends ArcanaItem {
          if(!(entity instanceof ServerPlayer player)) return;
          
          int mode = getIntProperty(stack,MODE_TAG);
-         int time = 400 - 100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENZYMES.id));
-         int gluttony = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.GLUTTONY.id));
+         int time = 400 - 100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENZYMES));
+         int gluttony = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.GLUTTONY));
          
          if(world.getServer().getTickCount() % time == 0){ // Consume food
             //Scan for available food items
@@ -147,7 +147,7 @@ public class FeastingCharm extends ArcanaItem {
                }
             }
             if(bestFoodInd != -1){
-               ItemStack selectedFood = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PICKY_EATER.id) >= 1 ? inv.getItem(bestFoodInd) : inv.getItem(availableFoods.getFirst().getFirst());
+               ItemStack selectedFood = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PICKY_EATER) >= 1 ? inv.getItem(bestFoodInd) : inv.getItem(availableFoods.getFirst().getFirst());
                FoodProperties foodComponent = selectedFood.get(DataComponents.FOOD);
                int foodValue = foodComponent.nutrition();
                
@@ -168,17 +168,17 @@ public class FeastingCharm extends ArcanaItem {
                   hunger.eat(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
                   
                   if(selectedFood.is(Items.POISONOUS_POTATO)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Poisonous Potato",true);
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Poisonous Potato",true);
                   }else if(selectedFood.is(Items.SPIDER_EYE)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Spider Eye",true);
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Spider Eye",true);
                   }else if(selectedFood.is(Items.ROTTEN_FLESH)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Rotten Flesh",true);
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Rotten Flesh",true);
                   }else if(selectedFood.is(Items.SUSPICIOUS_STEW)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Suspicious Stew",true);
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Suspicious Stew",true);
                   }else if(selectedFood.is(Items.CHICKEN)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Raw Chicken",true);
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Raw Chicken",true);
                   }else if(selectedFood.is(Items.PUFFERFISH)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Pufferfish",true);
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Pufferfish",true);
                   }
                   
                   Consumable consumableComponent = selectedFood.get(DataComponents.CONSUMABLE);

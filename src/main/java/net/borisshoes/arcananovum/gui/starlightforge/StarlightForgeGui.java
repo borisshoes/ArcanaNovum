@@ -73,8 +73,8 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
       this.blockEntity = blockEntity;
       this.world = world;
       this.mode = mode;
-      this.skillLvl = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SKILLED.id);
-      this.resourceLvl =  ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.RESOURCEFUL.id);
+      this.skillLvl = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SKILLED);
+      this.resourceLvl =  ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.RESOURCEFUL);
       this.inventory = new SimpleContainer(25);
       this.listener = new StarlightForgeInventoryListener(this,blockEntity,world,mode);
       inventory.addListener(listener);
@@ -228,7 +228,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
       ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, recipe.getCenterpieces(), blockEntity),player.getStringUUID(),0,world.getServer());
       
       if(skillPair != null && skillPair.getB() > 0){
-         ArcanaAugments.applyAugment(newArcanaItem, skillPair.getA().id, skillPair.getB(),false);
+         ArcanaAugments.applyAugment(newArcanaItem, skillPair.getA(), skillPair.getB(),false);
       }
       
       arcanaItem.buildItemLore(newArcanaItem,player.level().getServer());
@@ -250,12 +250,12 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
          }
          
          if(arcanaItem.getRarity() != ArcanaRarity.MUNDANE){
-            ArcanaAchievements.grant(player,ArcanaAchievements.INTRO_ARCANA.id);
-            ArcanaAchievements.progress(player,ArcanaAchievements.INTERMEDIATE_ARTIFICE.id,1);
+            ArcanaAchievements.grant(player,ArcanaAchievements.INTRO_ARCANA);
+            ArcanaAchievements.progress(player,ArcanaAchievements.INTERMEDIATE_ARTIFICE,1);
          }
-         if(arcanaItem.getRarity() == ArcanaRarity.SOVEREIGN) ArcanaAchievements.grant(player,ArcanaAchievements.ARTIFICIAL_DIVINITY.id);
+         if(arcanaItem.getRarity() == ArcanaRarity.SOVEREIGN) ArcanaAchievements.grant(player,ArcanaAchievements.ARTIFICIAL_DIVINITY);
          if(recipe.getForgeRequirement().needsFletchery()){
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.OVERLY_EQUIPPED_ARCHER.id, arcanaItem.getNameString(),true);
+            ArcanaAchievements.setCondition(player,ArcanaAchievements.OVERLY_EQUIPPED_ARCHER, arcanaItem.getNameString(),true);
          }
          
          Vec3 pos = blockEntity.getBlockPos().getCenter().add(0,2,0);
@@ -281,7 +281,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
          int skillPoints = SKILLED_POINTS[skillLvl];
          int applicableLevel = 0;
          int sumCost = 0;
-         int unlockedLevel = ArcanaNovum.data(player).getAugmentLevel(augment.id);
+         int unlockedLevel = ArcanaNovum.data(player).getAugmentLevel(augment);
          for(ArcanaRarity tier : tiers){
             sumCost += tier.rarity + 1;
             if(sumCost > skillPoints || applicableLevel+1 > unlockedLevel || tier.rarity > maxRarity.rarity){
@@ -394,7 +394,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
          setSlot(CRAFTING_SLOTS[i], new GuiElementBuilder(Items.AIR));
       }
       
-      boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION.id) >= 1;
+      boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION) >= 1;
       ArrayList<Container> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
       for(int i = 0; i<25;i++){
          setSlotRedirect(CRAFTING_SLOTS[i], new Slot(inventory,i,0,0));
@@ -546,7 +546,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
       
       HashMap<String, Tuple<Integer, ItemStack>> ingredList = recipe.getIngredientList();
       if(!(recipe instanceof ExplainRecipe)){
-         boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION.id) >= 1;
+         boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION) >= 1;
          ArrayList<Container> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
          Container playerInventory = player.getInventory();
          HashMap<String,Integer> ingredCounts = new HashMap<>();
@@ -667,7 +667,9 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
          prevPage.setName(Component.translatable("gui.arcananovum.prev_recipe", curInd+1, size).withStyle(ChatFormatting.DARK_PURPLE));
          prevPage.addLoreLine(Component.translatable("text.borislib.two_elements", Component.translatable("gui.borislib.click").withStyle(ChatFormatting.GREEN), Component.translatable("gui.arcananovum.prev_recipe_sub").withStyle(ChatFormatting.LIGHT_PURPLE)));
          prevPage.setCallback((type) -> {
-            buildRecipeGui(otherRecipes.get((curInd-1) % size));
+            int newInd = (curInd - 1) % size;
+            if(curInd < 0) newInd = size-1;
+            buildRecipeGui(otherRecipes.get(newInd));
          });
          setSlot(51,prevPage);
       }
@@ -701,7 +703,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
       
       for(int i = 0; i < augmentSlots.length; i++){
          ArcanaAugment augment = augments.get(i);
-         int augmentLvl = profile.getAugmentLevel(augment.id);
+         int augmentLvl = profile.getAugmentLevel(augment);
          
          GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
          MutableComponent name = augment.getTranslatedName().withStyle(ChatFormatting.DARK_PURPLE);

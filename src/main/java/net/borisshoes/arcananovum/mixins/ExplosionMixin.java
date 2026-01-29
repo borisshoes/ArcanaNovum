@@ -52,7 +52,7 @@ public class ExplosionMixin {
       if(damageSource.is(ArcanaDamageTypes.DETONATION_DAMAGE) && entity instanceof ServerPlayer hitPlayer){
          Entity attacker = damageSource.getEntity();
          if(attacker != null && hitPlayer.getUUID().equals(attacker.getUUID()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f)
-            ArcanaAchievements.grant(hitPlayer, ArcanaAchievements.SAFETY_THIRD.id);
+            ArcanaAchievements.grant(hitPlayer, ArcanaAchievements.SAFETY_THIRD);
       }
    }
 }

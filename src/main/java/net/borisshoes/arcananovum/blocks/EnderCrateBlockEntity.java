@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
+import net.borisshoes.arcananovum.datastorage.EnderCrateChannels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -20,6 +21,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
@@ -93,7 +96,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    
    @Override
    protected NonNullList<ItemStack> getItems(){
-      return this.channel == null ? null : this.channel.getInventory().getItems();
+      return this.channel == null ? NonNullList.create() : this.channel.getInventory().getItems();
    }
    
    @Override
@@ -116,6 +119,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    
    @Override
    public boolean canPlaceItemThroughFace(int i, ItemStack itemStack, @Nullable Direction direction){
+      if(!this.channel.isLocked() && itemStack.is(ArcanaRegistry.ALL_ARCANA_ITEMS)) return false;
       return true;
    }
    
@@ -135,5 +139,36 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    @Override
    public void containerChanged(Container container){
    
+   }
+   
+   @Override
+   public void loadAdditional(ValueInput view){
+      super.loadAdditional(view);
+      this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
+      this.augments = new TreeMap<>();
+      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
+      view.read("channel", EnderCrateChannel.CODEC).ifPresent(data -> {
+         // Use the deserialized channel's key (colors + lock) to get the shared channel from global storage
+         this.channel = EnderCrateChannels.getChannel(data.getIdLock(), data.getColors());
+      });
+      
+      this.slotCount = 27 + 9*ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.ENDER_BANDWIDTH);
+      this.slots = IntStream.range(0, slotCount).toArray();
+   }
+   
+   @Override
+   protected void saveAdditional(ValueOutput view){
+      super.saveAdditional(view);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
+      view.storeNullable("channel", EnderCrateChannel.CODEC, this.channel);
    }
 }

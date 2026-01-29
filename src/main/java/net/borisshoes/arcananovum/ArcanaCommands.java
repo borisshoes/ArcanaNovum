@@ -1,9 +1,5 @@
 package net.borisshoes.arcananovum;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -17,7 +13,6 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.astralgateway.GatewayFrame;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
@@ -40,18 +35,14 @@ import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.datastorage.DataAccess;
-import net.borisshoes.borislib.utils.ParticleEffectUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
@@ -66,7 +57,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.Util;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -74,7 +64,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -83,14 +72,12 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.Shapes;
 import org.apache.commons.lang3.function.TriConsumer;
 
 import java.io.*;
@@ -100,10 +87,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.*;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui.getIngredStr;
 
 public class ArcanaCommands {
@@ -227,11 +212,11 @@ public class ArcanaCommands {
             ItemStack stack = pair.getB();
             count++;
             
-            String storage = invItem.getShortContainerString();
+            MutableComponent storage = invItem.getShortContainerString();
             
             MutableComponent feedback = Component.literal("")
                   .append(Component.literal("(").withStyle(ChatFormatting.LIGHT_PURPLE))
-                  .append(Component.literal(storage).withStyle(ChatFormatting.BLUE))
+                  .append(storage.withStyle(ChatFormatting.BLUE))
                   .append(Component.literal(") ").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(Component.literal("[").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(arcanaItem.getTranslatedName().withStyle(ChatFormatting.AQUA))
@@ -306,15 +291,15 @@ public class ArcanaCommands {
                   String displayName = TextUtils.textToCode(Component.literal(arcanaItem.getNameString()).toFlatList(arcanaItem.getDisplayName().getStyle()).getFirst()).replace(";", "");
                   if(first){
                      loreData.add(List.of(arcanaItem.getDisplayName(), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(arcanaItem.getRarity(), false)), Component.literal("\n" + line).withStyle(ChatFormatting.BLACK)));
-                     out.println("list.add(List.of(" + displayName + ",Text.literal(\"\\nRarity: \").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal(\"\\n" + line.replace("\n", "\\n") + "\").formatted(Formatting.BLACK)));");
+                     out.println("list.add(List.of(" + displayName + ",Component.literal(\"\\nRarity: \").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal(\"\\n" + line.replace("\n", "\\n") + "\").withStyle(ChatFormatting.BLACK)));");
                      first = false;
                   }else{
                      loreData.add(List.of(arcanaItem.getDisplayName(), Component.literal("\n" + line).withStyle(ChatFormatting.BLACK)));
-                     out.println("list.add(List.of(" + displayName + ",Text.literal(\"\\n" + line.replace("\n", "\\n") + "\").formatted(Formatting.BLACK)));");
+                     out.println("list.add(List.of(" + displayName + ",Component.literal(\"\\n" + line.replace("\n", "\\n") + "\").withStyle(ChatFormatting.BLACK)));");
                   }
                }else{
                   loreData.add(List.of(Component.literal(line).withStyle(ChatFormatting.BLACK)));
-                  out.println("list.add(List.of(Text.literal(\"" + line.replace("\n", "\\n") + "\").formatted(Formatting.BLACK)));");
+                  out.println("list.add(List.of(Component.literal(\"" + line.replace("\n", "\\n") + "\").withStyle(ChatFormatting.BLACK)));");
                }
             }
             BookElementBuilder bookBuilder = new BookElementBuilder();
@@ -893,7 +878,7 @@ public class ArcanaCommands {
    
    public static CompletableFuture<Suggestions> getAchievementSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
       String start = builder.getRemaining().toLowerCase(Locale.ROOT);
-      Set<String> items = ArcanaAchievements.registry.keySet();
+      Set<String> items = ArcanaAchievements.ARCANA_ACHIEVEMENTS.keySet();
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
    }
@@ -935,10 +920,10 @@ public class ArcanaCommands {
             return -1;
          }
          if(level == 0){
-            ArcanaNovum.data(player).removeAugment(id);
+            ArcanaNovum.data(player).removeAugment(augment);
             src.sendSystemMessage(Component.literal("Successfully removed ").append(augment.getTranslatedName()).append(" from ").append(player.getDisplayName()));
          }else{
-            ArcanaNovum.data(player).setAugmentLevel(id, level);
+            ArcanaNovum.data(player).setAugmentLevel(augment, level);
             src.sendSystemMessage(Component.literal("Successfully set ").append(augment.getTranslatedName()).append(" to level " + level + " for ").append(player.getDisplayName()));
          }
          return 1;
@@ -1004,6 +989,7 @@ public class ArcanaCommands {
             return -1;
          }
          arcanaItem.addCrafter(handItem, optional.get().id().toString(), type, src.getServer());
+         DataAccess.getPlayer(optional.get().id(), BorisLib.PLAYER_DATA_KEY).tryResolve(src.getServer());
          src.sendSuccess(() -> Component.translatable("command.arcananovum.change_crafter_success", optional.get().name()), false);
          return 1;
       }catch(Exception e){
@@ -1037,11 +1023,11 @@ public class ArcanaCommands {
             src.sendFailure(Component.literal("Player is not holding a valid Arcana Item"));
             return -1;
          }
-         if(ArcanaAugments.isIncompatible(handItem, id)){
+         if(ArcanaAugments.isIncompatible(handItem, augment)){
             src.sendFailure(Component.literal("This augment is incompatible with existing augments"));
             return -1;
          }
-         if(ArcanaAugments.applyAugment(handItem, id, level, false)){
+         if(ArcanaAugments.applyAugment(handItem, augment, level, false)){
             src.sendSystemMessage(Component.literal("Successfully applied ").append(augment.getTranslatedName()).append(" at level " + level + " for ").append(player.getDisplayName()));
             return 1;
          }else{
@@ -1140,7 +1126,7 @@ public class ArcanaCommands {
    public static int setAchievement(CommandContext<CommandSourceStack> ctx, String id, boolean grant, Collection<ServerPlayer> targets){
       try{
          CommandSourceStack source = ctx.getSource();
-         ArcanaAchievement achievement = ArcanaAchievements.registry.get(id);
+         ArcanaAchievement achievement = ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(id);
          if(achievement == null){
             source.sendFailure(Component.literal("That is not a valid Achievement"));
             return -1;
@@ -1148,9 +1134,9 @@ public class ArcanaCommands {
          
          for(ServerPlayer player : targets){
             if(grant){
-               ArcanaAchievements.grant(player, id);
+               ArcanaAchievements.grant(player, achievement);
             }else{
-               ArcanaAchievements.revoke(player, id);
+               ArcanaAchievements.revoke(player, achievement);
             }
          }
          
@@ -1182,12 +1168,12 @@ public class ArcanaCommands {
       try{
          CommandSourceStack source = ctx.getSource();
          ArcanaPlayerData profile = ArcanaNovum.data(target);
-         ArcanaAchievement baseAch = ArcanaAchievements.registry.get(id);
+         ArcanaAchievement baseAch = ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(id);
          if(baseAch == null){
             source.sendFailure(Component.literal("That is not a valid Achievement"));
             return -1;
          }
-         ArcanaAchievement profAchieve = profile.getAchievement(baseAch.getArcanaItem().getId(), id);
+         ArcanaAchievement profAchieve = profile.getAchievement(baseAch);
          ArcanaAchievement achieve = profAchieve == null ? baseAch : profAchieve;
          MutableComponent[] response = achieve.getStatusDisplay(target);
          

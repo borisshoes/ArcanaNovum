@@ -87,7 +87,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
             
             int points = LevelUtils.vanillaLevelToTotalXp(outputSet.levelCost());
             if(!player.isCreative()){
-               if(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ANVIL_EXPERTISE.id) > 0){
+               if(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ANVIL_EXPERTISE) > 0){
                   if(player.totalExperience < points){
                      player.sendSystemMessage(Component.literal("Not Enough Experience").withStyle(ChatFormatting.RED));
                      return true;
@@ -103,14 +103,14 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                
             }
             if(outputSet.levelCost() > 40){
-               ArcanaAchievements.grant(player,ArcanaAchievements.BEYOND_IRONS_LIMIT.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.BEYOND_IRONS_LIMIT);
             }
 
             boolean finalMaxEnhanced = EnhancedStatUtils.isEnhanced(outputSet.output()) && ArcanaItem.getDoubleProperty(outputSet.output(),EnhancedStatUtils.ENHANCED_STAT_TAG) >= 1;
             boolean input1MaxEnhanced = EnhancedStatUtils.isEnhanced(input1) && ArcanaItem.getDoubleProperty(input1,EnhancedStatUtils.ENHANCED_STAT_TAG) >= 1;
             boolean input2MaxEnhanced = EnhancedStatUtils.isEnhanced(input2) && ArcanaItem.getDoubleProperty(input2,EnhancedStatUtils.ENHANCED_STAT_TAG) >= 1;
             if(finalMaxEnhanced && !input1MaxEnhanced && !input2MaxEnhanced){
-               ArcanaAchievements.grant(player,ArcanaAchievements.TINKER_TO_THE_TOP.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.TINKER_TO_THE_TOP);
             }
             ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TWILIGHT_ANVIL_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TWILIGHT_ANVIL_PER_10)*points/10.0));
             
@@ -213,9 +213,9 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                
                if(augment != null){
                   ArcanaPlayerData profile = ArcanaNovum.data(player);
-                  int augmentLvl = profile.getAugmentLevel(augment.id);
+                  int augmentLvl = profile.getAugmentLevel(augment);
                   ArcanaRarity[] tiers = augment.getTiers();
-                  int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment.id);
+                  int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment);
                   if(curItemLevel == -1) curItemLevel = 0;
                   
                   boolean generic = arcanaItem.getId().equals(ArcaneTome.ID);
@@ -228,7 +228,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                      player.displayClientMessage(Component.literal("You must unlock this augment first").withStyle(ChatFormatting.RED), false);
                   }else if(curItemLevel >= augmentLvl){ // Item level != max & >= player level: Obsidian
                      player.displayClientMessage(Component.literal("You must unlock higher levels to augment further").withStyle(ChatFormatting.RED), false);
-                  }else if(ArcanaAugments.isIncompatible(item, augment.id)){ // Incompatible augment: Structure Void
+                  }else if(ArcanaAugments.isIncompatible(item, augment)){ // Incompatible augment: Structure Void
                      player.displayClientMessage(Component.literal("This augment is incompatible with existing augments").withStyle(ChatFormatting.RED), false);
                   }else{ // Item level = 0 | (Item level != max & < player level): Augment Catalyst
                      if(attemptAugment(item, augment, curItemLevel + 1)){
@@ -270,15 +270,15 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
    public void buildAnvilGui(){
       GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR, Component.empty());
       
-      GuiElementBuilder itemsPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.LAPIS_COLOR)).hideDefaultTooltip();
+      GuiElementBuilder itemsPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_MIDDLE, ArcanaColors.ARCANA_COLOR)).hideDefaultTooltip();
       itemsPane.setName((Component.literal("")
-            .append(Component.literal("<- Place Items Here ->").withStyle(ChatFormatting.LIGHT_PURPLE))));
+            .append(Component.literal("<- Place Items Here ->").withStyle(ChatFormatting.BLUE))));
       setSlot(11,itemsPane);
-      setSlot(13,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(13,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(4,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(22,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(2,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(20,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(24,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       
@@ -361,7 +361,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
          player.displayClientMessage(Component.literal("No Augment Catalyst Found").withStyle(ChatFormatting.RED),false);
       }else{
          if(tinkerSlotType == 0){
-            if(ArcanaAugments.applyAugment(item,augment.id,level,true)){
+            if(ArcanaAugments.applyAugment(item,augment,level,true)){
                if(!creative) playerInv.removeItemNoUpdate(catalystSlot);
                inventory.setItem(0,item);
                return true;
@@ -443,7 +443,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                   clearSlot(10+augmentSlots[i]);
                   clearSlot(19+augmentSlots[i]);
                   
-                  int augmentLvl = profile.getAugmentLevel(augment.id);
+                  int augmentLvl = profile.getAugmentLevel(augment);
                   ArcanaRarity[] tiers = augment.getTiers();
                   
                   GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
@@ -456,7 +456,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                   
                   if(augmentLvl > 0) augmentItem1.glow();
                   
-                  int curItemLevel = ArcanaAugments.getAugmentOnItem(item,augment.id);
+                  int curItemLevel = ArcanaAugments.getAugmentOnItem(item,augment);
                   if(curItemLevel == -1) curItemLevel = 0;
                   
                   GuiElementBuilder augmentItem2;
@@ -476,7 +476,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                      augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")
                            .append(Component.literal("Max Level").withStyle(ChatFormatting.AQUA))));
                   }else if(augmentLvl == 0 && curItemLevel == 0){ // Item & player lvl = 0: Obsidian
-                     augmentItem2 = new GuiElementBuilder(Items.OBSIDIAN);
+                     augmentItem2 = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL));
                      augmentItem2.hideDefaultTooltip().glow().setName(
                            Component.literal("Not Augmented").withStyle(ChatFormatting.DARK_PURPLE));
                      augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")
@@ -489,7 +489,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                      augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")
                            .append(Component.literal("Unlock augments on the item's page").withStyle(ChatFormatting.DARK_AQUA))));
                   }else if(curItemLevel >= augmentLvl){ // Item level != max & >= player level: Obsidian
-                     augmentItem2 = new GuiElementBuilder(Items.OBSIDIAN);
+                     augmentItem2 = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL));
                      augmentItem2.hideDefaultTooltip().glow().setName(
                            Component.literal("Current Level: ").withStyle(ChatFormatting.DARK_PURPLE)
                                  .append(Component.literal(""+curItemLevel).withStyle(ChatFormatting.LIGHT_PURPLE)));
@@ -503,7 +503,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                            .append(Component.literal(" to unlock higher levels").withStyle(ChatFormatting.DARK_AQUA))));
                      augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")
                            .append(Component.literal("Unlock augments on the item's page").withStyle(ChatFormatting.DARK_AQUA))));
-                  }else if(ArcanaAugments.isIncompatible(item,augment.id)){ // Incompatible augment: Structure Void
+                  }else if(ArcanaAugments.isIncompatible(item,augment)){ // Incompatible augment: Structure Void
                      augmentItem2 = new GuiElementBuilder(Items.STRUCTURE_VOID);
                      augmentItem2.hideDefaultTooltip().glow().setName(
                            Component.literal("Incompatible Augment").withStyle(ChatFormatting.DARK_PURPLE));

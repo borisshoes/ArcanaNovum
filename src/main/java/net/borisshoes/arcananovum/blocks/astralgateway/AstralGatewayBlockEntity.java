@@ -33,6 +33,7 @@ import net.minecraft.world.*;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Relative;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.happyghast.HappyGhast;
 import net.minecraft.world.entity.player.Inventory;
@@ -86,8 +87,8 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    private boolean forceConvex;
    private boolean tryFind = false;
    private int openingStardust;
-   private int perSecondStardust;
-   private int remainderStardust;
+   private int stardustPerMinute;
+   private double stardustAccumulator;
    private int warmupDuration;
    private int cooldownDuration;
    private int findCooldown;
@@ -113,9 +114,9 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       recyclerLvl = ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.STARLIGHT_RECYCLERS);
       
       int stardustPerMinute = (int) Math.round(STARDUST_PER_MINUTE * RECYCLER_RATE[recyclerLvl]);
-      perSecondStardust = stardustPerMinute / 60;
-      remainderStardust = stardustPerMinute % 60;
-      openingStardust = perSecondStardust*(LOCK_DURATION/20) + stardustPerMinute;
+      this.stardustPerMinute = stardustPerMinute;
+      this.stardustAccumulator = 0.0;
+      openingStardust = (int) Math.ceil(stardustPerMinute * (LOCK_DURATION / 1200.0)) + stardustPerMinute;
       inventory.addListener(this);
       tryFind = true;
    }
@@ -135,6 +136,13 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       GatewayState state = getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
       if(serverWorld.getServer().getTickCount() % 20 == 0 && state != GatewayState.CLOSED){
          ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+      }
+      
+      if(serverWorld.getServer().getTickCount() % 250 == 0 && state != GatewayState.CLOSED){
+         serverWorld.getChunkSource().addTicketWithRadius(TicketType.PORTAL, new ChunkPos(this.getBlockPos()), 2);
+         if(syncedGateway != null && syncedGateway.getLevel() instanceof ServerLevel otherLevel){
+            otherLevel.getChunkSource().addTicketWithRadius(TicketType.PORTAL, new ChunkPos(syncedGateway.getBlockPos()), 2);
+         }
       }
       
       if(state == GatewayState.CLOSED){
@@ -157,7 +165,6 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       }else{
          boolean check = validateCurrentGateway(serverWorld);
          if(!check){
-            System.out.println("Broken during regular check");
             frameBreak();
             return;
          }
@@ -201,7 +208,6 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
             for(Map.Entry<BlockPos, Integer> entry : this.blockDistances.entrySet()){
                BlockState portalState = serverWorld.getBlockState(entry.getKey());
                if(!portalState.is(ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK)){
-                  System.out.println("Broken during keepalive");
                   frameBreak();
                   return;
                }else{
@@ -214,12 +220,12 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          }
          
          if(state == GatewayState.LOCKED_OPEN || state == GatewayState.OPEN){
-            if(level.getServer().getTickCount() % 20 == 0){
-               this.stardust -= Math.min(this.stardust,perSecondStardust);
-               evaluateForOpenOrClose();
-            }
-            if(level.getServer().getTickCount() % 1200 == 0){
-               this.stardust -= Math.min(this.stardust,remainderStardust);
+            // Smooth stardust consumption using fractional accumulator
+            stardustAccumulator += stardustPerMinute / 1200.0; // 1200 ticks per minute
+            if(stardustAccumulator >= 1.0){
+               int toConsume = (int) stardustAccumulator;
+               this.stardust -= Math.min(this.stardust, toConsume);
+               stardustAccumulator -= toConsume;
                evaluateForOpenOrClose();
             }
          }
@@ -371,7 +377,20 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       if(entity instanceof HappyGhast happyGhast){
          for(Entity passenger : happyGhast.getPassengers()){
             if(passenger instanceof ServerPlayer player){
-               ArcanaAchievements.grant(player,ArcanaAchievements.CARRIER_HAS_ARRIVED.id);
+               ArcanaAchievements.grant(player,ArcanaAchievements.CARRIER_HAS_ARRIVED);
+            }
+         }
+      }else if(entity instanceof ServerPlayer player || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwner() != null)){
+         int portalCount = 0;
+         for(BlockPos pos : BlockPos.withinManhattan(snappedPos, 16, 16, 16)){
+            if(destLevel.getBlockEntity(pos) instanceof AstralGatewayBlockEntity agbe && agbe.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.CLOSED){
+               portalCount++;
+            }
+         }
+         if(portalCount >= 3){
+            Player nearest = destLevel.getNearestPlayer(getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), 25, (e) -> true);
+            if(nearest instanceof ServerPlayer serverPlayer){
+               ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.ON_YOUR_LEFT);
             }
          }
       }
@@ -504,6 +523,18 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
             ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.FANCIER_STARGATE);
          }
       }
+      if(this.frame.getType().defaultBlockState().is(Blocks.NETHERITE_BLOCK) && this.frame.getBlocks().size() >= 64){
+         Player player = level.getNearestPlayer(getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), 25, (e) -> true);
+         if(player instanceof ServerPlayer serverPlayer){
+            ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.MODERATELY_INSANE);
+         }
+      }
+      if(!this.level.dimension().identifier().equals(Level.NETHER.identifier()) && otherGateway.level.dimension().identifier().equals(Level.NETHER.identifier())){
+         Player player = level.getNearestPlayer(getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), 25, (e) -> true);
+         if(player instanceof ServerPlayer serverPlayer){
+            ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.DIALING_HELL);
+         }
+      }
       
       return true;
    }
@@ -512,8 +543,8 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       boolean closed = getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) == GatewayState.CLOSED;
       boolean open = getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) == GatewayState.OPEN;
       if(open || closed){
-         boolean hasOpeningStardust = this.stardust > openingStardust;
-         boolean hasAnyStardust = this.stardust > 0;
+         boolean hasOpeningStardust = this.stardust >= openingStardust;
+         boolean hasAnyStardust = this.stardust > 0 || getStardustPerMinute() == 0;
          boolean hasRedstone = this.level.hasNeighborSignal(getBlockPos());
          boolean validWaystone = validWaystone(this.inventory.getItem(0));
          boolean lostConnection = (this.syncedGateway == null || this.syncedGateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.OPEN);
@@ -630,7 +661,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    }
    
    public int getStardustPerMinute(){
-      return this.perSecondStardust*60+this.remainderStardust;
+      return this.stardustPerMinute;
    }
    
    public int getOpeningStardust(){
@@ -752,7 +783,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          this.frame = GatewayFrame.fromTag(data);
       });
       view.read(SYNCED_TAG, CompoundTag.CODEC).ifPresent((data) -> {
-         MinecraftServer server = this.level.getServer();
+         MinecraftServer server = BorisLib.SERVER;
          ServerLevel otherLevel = server.getLevel(ResourceKey.create(Registries.DIMENSION, Identifier.parse(data.getStringOr("dim",""))));
          if(otherLevel == null) return;
          int[] posArray = data.getIntArray("pos").orElse(new int[0]);
@@ -771,9 +802,9 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       recyclerLvl = ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.STARLIGHT_RECYCLERS);
       
       int stardustPerMinute = (int) Math.round(STARDUST_PER_MINUTE * RECYCLER_RATE[recyclerLvl]);
-      perSecondStardust = stardustPerMinute / 60;
-      remainderStardust = stardustPerMinute % 60;
-      openingStardust = perSecondStardust*(LOCK_DURATION/20) + stardustPerMinute;
+      this.stardustPerMinute = stardustPerMinute;
+      this.stardustAccumulator = view.getDoubleOr("stardustAccumulator", 0.0);
+      openingStardust = (int) Math.ceil(stardustPerMinute * (LOCK_DURATION / 1200.0)) + stardustPerMinute;
       inventory.addListener(this);
    }
    
@@ -787,6 +818,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
       view.putInt(STATE_TIME_TAG,this.stateTime);
       view.putLong(STARDUST_TAG,this.stardust);
+      view.putDouble("stardustAccumulator", this.stardustAccumulator);
       view.putBoolean(DIALLER_TAG, this.dialler);
       view.putInt(WARMUP_DURATION_TAG, this.warmupDuration);
       view.putInt(COOLDOWN_DURATION_TAG, this.cooldownDuration);

@@ -180,7 +180,7 @@ public class SpawnerHarness extends ArcanaItem {
                      world.setBlockEntity(blockEntity);
                   }
                   
-                  boolean reinforced = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS.id)) > 0;
+                  boolean reinforced = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS)) > 0;
                   if(Math.random() > .15 || reinforced){ // Chance of the harness breaking after use
                      player.displayClientMessage(Component.literal("The harness successfully places the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.CHAIN_PLACE, 1,.1f);
@@ -207,7 +207,7 @@ public class SpawnerHarness extends ArcanaItem {
                   String entityTypeId = EntityType.getKey(renderedEntity.getType()).toString();
                   String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
                   player.displayClientMessage(Component.literal("The harness captures the "+entityTypeName+" spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
-                  if(entityTypeId.equals(EntityType.getKey(EntityType.SILVERFISH).toString())) ArcanaAchievements.grant((ServerPlayer) player,ArcanaAchievements.FINALLY_USEFUL.id);
+                  if(entityTypeId.equals(EntityType.getKey(EntityType.SILVERFISH).toString())) ArcanaAchievements.grant((ServerPlayer) player,ArcanaAchievements.FINALLY_USEFUL);
                }
                
                putProperty(stack,SPAWNER_TAG,spawnerNbt);

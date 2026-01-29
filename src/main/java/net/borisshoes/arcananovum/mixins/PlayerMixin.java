@@ -6,8 +6,10 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -84,8 +86,17 @@ public class PlayerMixin {
    @ModifyExpressionValue(method = "getDestroySpeed", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;getValue()D"))
    private double arcananovum$underwaterBlockBreakingSpeed(double original){
       Player player = (Player) (Object) this;
-      List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
       int level = 0;
+      if(player instanceof ServerPlayer serverPlayer){
+         for(int i = ArcanaAugments.MARINERS_GRACE.getTiers().length-1; i >= 0; i--){
+            int finalI = i;
+            if(GeomanticSteleBlockEntity.isEntityInZone(serverPlayer,(item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARINERS_GRACE) > finalI)){
+               level = i+1;
+               break;
+            }
+         }
+      }
+      List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
       for(ItemStack stack : stacks){
          boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);
          if(!isActive) continue;
@@ -115,7 +126,7 @@ public class PlayerMixin {
    private void arcananovum$quiverCheck(ItemStack bow, CallbackInfoReturnable<ItemStack> cir){
       Player player = (Player) (Object) this;
       boolean runicBow = (ArcanaItemUtils.identifyItem(bow) instanceof RunicBow);
-      boolean runicArbalest = bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST.id) >= 1;
+      boolean runicArbalest = bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST) >= 1;
       if(!bow.is(Items.BOW) && !runicBow && !bow.is(Items.CROSSBOW) && !bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem())) return;
       boolean runic = runicBow || runicArbalest;
       
@@ -144,10 +155,10 @@ public class PlayerMixin {
       ItemStack off = player.getItemInHand(InteractionHand.OFF_HAND);
       if(ArcanaItemUtils.identifyItem(main) instanceof EverlastingRocket rocket){
          ItemStack fireworkStack = rocket.getFireworkStack(main);
-         if(rocket.getEnergy(main) > 0 && predicate.test(fireworkStack)) cir.setReturnValue(fireworkStack);
+         if(EnergyItem.getEnergy(main) > 0 && predicate.test(fireworkStack)) cir.setReturnValue(fireworkStack);
       }else if(ArcanaItemUtils.identifyItem(off) instanceof EverlastingRocket rocket){
          ItemStack fireworkStack = rocket.getFireworkStack(off);
-         if(rocket.getEnergy(off) > 0 && predicate.test(fireworkStack)) cir.setReturnValue(fireworkStack);
+         if(EnergyItem.getEnergy(off) > 0 && predicate.test(fireworkStack)) cir.setReturnValue(fireworkStack);
       }
    }
    
@@ -155,7 +166,7 @@ public class PlayerMixin {
    private void arcananovum$stopRunicUsage(ItemStack bow, CallbackInfoReturnable<ItemStack> cir){
       Player player = (Player) (Object) this;
       if(!bow.is(Items.BOW) || bow.is(Items.CROSSBOW) || bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem())) return;
-      boolean runicArbalest = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST.id) >= 1;
+      boolean runicArbalest = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST) >= 1;
       ItemStack curReturn = cir.getReturnValue();
       if(ArcanaItemUtils.isRunicArrow(curReturn) && !runicArbalest){
          cir.setReturnValue(player.isCreative() ? new ItemStack(Items.ARROW) : ItemStack.EMPTY);

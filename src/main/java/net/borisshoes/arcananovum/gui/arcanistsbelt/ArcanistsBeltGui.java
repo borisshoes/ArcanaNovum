@@ -96,7 +96,7 @@ public class ArcanistsBeltGui extends SimpleGui {
       belt.buildItemLore(beltStack,player.level().getServer());
       
       if(charmCount >= slotCount){
-         ArcanaAchievements.grant(player,ArcanaAchievements.BELT_CHARMING.id);
+         ArcanaAchievements.grant(player,ArcanaAchievements.BELT_CHARMING);
       }
    }
 }

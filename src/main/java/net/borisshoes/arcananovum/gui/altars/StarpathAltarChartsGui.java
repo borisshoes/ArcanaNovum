@@ -37,7 +37,7 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
       super(MenuType.GENERIC_9x6, player, new ArrayList<>(blockEntity.getSavedTargets()));
       this.blockEntity = blockEntity;
       this.returnGui = returnGui;
-      this.stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE.id) > 0;
+      this.stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE) > 0;
       setTitle(Component.literal("Star Charts"));
       
       action1TextColor(ChatFormatting.AQUA.getColor().intValue());

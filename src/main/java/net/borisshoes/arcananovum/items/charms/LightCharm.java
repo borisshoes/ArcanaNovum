@@ -268,10 +268,10 @@ public class LightCharm extends ArcanaItem {
       int brightness = getIntProperty(item,BRIGHTNESS_TAG);
       int novaCD = getIntProperty(item,NOVA_TAG);
       
-      boolean hasThresh = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MOOD_LIGHTING.id) >= 1;
-      boolean hasBright = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.DIMMER_SWITCH.id) >= 1;
-      boolean hasNova = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RADIANCE.id) >= 1;
-      boolean hasManual = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SELECTIVE_PLACEMENT.id) >= 1;
+      boolean hasThresh = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MOOD_LIGHTING) >= 1;
+      boolean hasBright = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.DIMMER_SWITCH) >= 1;
+      boolean hasNova = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RADIANCE) >= 1;
+      boolean hasManual = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SELECTIVE_PLACEMENT) >= 1;
       
       ArrayList<Integer> possibleModes = new ArrayList<>();
       possibleModes.add(0);
@@ -363,7 +363,7 @@ public class LightCharm extends ArcanaItem {
                   world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
                   SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, .3f,2f);
                   ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LIGHT_CHARM_AUTOMATIC)); // Add xp
-                  ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
+                  ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED,1);
                }
             }
             
@@ -402,7 +402,7 @@ public class LightCharm extends ArcanaItem {
             world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
             SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, .3f,2f);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LIGHT_CHARM_MANUAL)); // Add xp
-            ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
+            ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED,1);
             return InteractionResult.SUCCESS_SERVER;
          }
          return InteractionResult.PASS;
