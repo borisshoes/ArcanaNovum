@@ -9,6 +9,7 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -30,6 +31,7 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
@@ -44,6 +46,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.network.chat.ClickEvent;
@@ -56,9 +59,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.server.players.ProfileResolver;
+import net.minecraft.stats.Stat;
+import net.minecraft.stats.Stats;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
@@ -71,11 +78,14 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.*;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.function.TriConsumer;
@@ -85,6 +95,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -1596,6 +1607,128 @@ public class ArcanaCommands {
             return -1;
          }
          return placedBlocks(ctx, src.getPlayer());
+      }catch(Exception e){
+         log(2, e.toString());
+         return -1;
+      }
+   }
+   
+   public static int specialEventCommand(CommandContext<CommandSourceStack> ctx, String arg){
+      try{
+         CommandSourceStack src = ctx.getSource();
+         ServerPlayer player = src.getPlayer();
+         if(!src.isPlayer()){
+            return -1;
+         }
+         ArcanaNovum.data(player).specialEventResponse(player,arg);
+         return 1;
+      }catch(Exception e){
+         log(2, e.toString());
+         return -1;
+      }
+   }
+   
+   public static int forceGaialtusEvent(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> players){
+      try{
+         CommandSourceStack src = ctx.getSource();
+         for(ServerPlayer player : players){
+            ArcanaNovum.data(player).startGaialtus(player);
+            ArcanaNovum.data(player).setLastGaialtusAttempt(36000);
+         }
+         src.sendSuccess(() -> Component.literal("Began Gaialtus event for "+players.size()+" players"), true);
+         return players.size();
+      }catch(Exception e){
+         log(2, e.toString());
+         return -1;
+      }
+   }
+   
+   public static int forceCeptyusEvent(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> players){
+      try{
+         CommandSourceStack src = ctx.getSource();
+         for(ServerPlayer player : players){
+            ArcanaNovum.data(player).startCeptyus(player);
+            ArcanaNovum.data(player).setLastCeptyusAttempt(36000);
+         }
+         src.sendSuccess(() -> Component.literal("Began Ceptyus event for "+players.size()+" players"), true);
+         return players.size();
+      }catch(Exception e){
+         log(2, e.toString());
+         return -1;
+      }
+   }
+   
+   public static int forceZeraiyaEvent(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> players){
+      try{
+         CommandSourceStack src = ctx.getSource();
+         for(ServerPlayer player : players){
+            ArcanaNovum.data(player).startZeraiya(player);
+            ArcanaNovum.data(player).setLastZeraiyaAttempt(36000);
+         }
+         src.sendSuccess(() -> Component.literal("Began Zeraiya event for "+players.size()+" players"), true);
+         return players.size();
+      }catch(Exception e){
+         log(2, e.toString());
+         return -1;
+      }
+   }
+   
+   public static int checkSpecialEventConditions(CommandContext<CommandSourceStack> ctx, ServerPlayer player){
+      try{
+         CommandSourceStack src = ctx.getSource();
+         ArcanaPlayerData data = ArcanaNovum.data(player);
+         MutableComponent feedback = Component.literal("");
+         boolean hasEgg = ArcanaItemUtils.hasItemInInventory(player,Items.DRAGON_EGG);
+         int zTimer = data.getLastZeraiyaAttempt();
+         boolean zDone = data.completedZeraiya();
+         feedback.append(Component.literal("\nZeraiya: ").withStyle(ChatFormatting.DARK_PURPLE,ChatFormatting.BOLD));
+         feedback.append(Component.literal("\n - Has Egg: "+hasEgg).withStyle(hasEgg ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Timer: "+zTimer).withStyle(zTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Completed: "+zDone).withStyle(zDone ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n"));
+         
+         Structure structure = player.level().structureManager().registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.ANCIENT_CITY);
+         StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(),structure);
+         boolean hasAequalis = ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem());
+         boolean validStructure = start.isValid() && start.canBeReferenced();
+         int cTimer = data.getLastCeptyusAttempt();
+         boolean cDone = data.completedCeptyus();
+         boolean cBlocked = data.canAttemptCeptyus();
+         feedback.append(Component.literal("\nCeptyus: ").withStyle(ChatFormatting.DARK_AQUA,ChatFormatting.BOLD));
+         feedback.append(Component.literal("\n - Has Aequalis: "+hasAequalis).withStyle(hasAequalis ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Timer: "+cTimer).withStyle(cTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Completed: "+cDone).withStyle(cDone ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n - Blocked: "+cBlocked).withStyle(cBlocked ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n - In City: "+validStructure).withStyle(validStructure ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n"));
+         
+         boolean hasSkyLight = player.level().getBrightness(LightLayer.SKY,player.blockPosition()) > 0;
+         boolean isFishing = !player.level().getEntities(EntityType.FISHING_BOBBER,player.getBoundingBox().inflate(20.0, 8.0, 20.0),(hook) -> player.equals(hook.getPlayerOwner())).isEmpty();
+         boolean inOverworld = player.level().equals(player.level().getServer().overworld());
+         int gTimer = data.getLastGaialtusAttempt();
+         boolean gDone = data.completedGaialtus();
+         AtomicInteger mined = new AtomicInteger();
+         AtomicInteger placed = new AtomicInteger();
+         Object2IntMap<Stat<?>> stats = player.getStats().stats;
+         stats.keySet().forEach(key -> {
+            if(key.getType() == Stats.BLOCK_MINED){
+               mined.addAndGet(stats.getInt(key));
+            }else if(key.getType() == Stats.ITEM_USED && key.getValue() instanceof BlockItem){
+               placed.addAndGet(stats.getInt(key));
+            }
+         });
+         feedback.append(Component.literal("\nGaialtus: ").withStyle(ChatFormatting.DARK_GREEN,ChatFormatting.BOLD));
+         feedback.append(Component.literal("\n - In Overworld: "+inOverworld).withStyle(inOverworld ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Has Skylight: "+hasSkyLight).withStyle(hasSkyLight ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Is Fishing: "+isFishing).withStyle(isFishing ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Timer: "+gTimer).withStyle(gTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Completed: "+gDone).withStyle(gDone ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n - Mined: "+mined.get()).withStyle(mined.get() < 10000 ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n - Placed: "+placed.get()).withStyle(placed.get() < 10000 ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n"));
+         
+         src.sendSuccess(() -> feedback,false);
+         return 0;
       }catch(Exception e){
          log(2, e.toString());
          return -1;

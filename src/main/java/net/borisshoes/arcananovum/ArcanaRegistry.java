@@ -449,6 +449,16 @@ public class ArcanaRegistry {
          new BooleanConfigValue("researchEnabled", true)));
    public static final IConfigSetting<?> STARDUST_PARTICLES = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("stardustParticles", true)));
+   public static final IConfigSetting<?> DISABLE_ARCANA_CRAFTING = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("disableArcanaCrafting", false)));
+   public static final IConfigSetting<?> DISABLE_STARDUST_INFUSION = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("disableStardustInfusion", false)));
+   public static final IConfigSetting<?> CEPTYUS_EVENT_ENABLED = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("ceptyusEventEnabled", true)));
+   public static final IConfigSetting<?> GAIALTUS_EVENT_ENABLED = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("gaialtusEventEnabled", true)));
+   public static final IConfigSetting<?> ZERAIYA_EVENT_ENABLED = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("zeraiyaEventEnabled", true)));
    
    public static final IConfigSetting<?> XP_STORMCALLER_ALTAR_ACTIVATE = registerConfigSetting(new ConfigSetting<>(
          new IntConfigValue("xpStormcallerAltarActivate", 1000, new IntConfigValue.IntLimits(0))));

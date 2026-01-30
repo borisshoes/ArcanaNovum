@@ -179,7 +179,7 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement MINE_DIAMONDS = ArcanaAchievements.register(
          new EventAchievement("mine_diamonds", new ItemStack(Items.DIAMOND), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 2500, 1));
    public static final ArcanaAchievement INTERLOPER = ArcanaAchievements.register(
-         new EventAchievement("interloper", ArcanaRegistry.PLANESHIFTER.getPrefItemNoLore(), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 100000, 5)).setHidden(true);
+         new EventAchievement("interloper", ArcanaRegistry.PLANESHIFTER.getPrefItemNoLore(), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 100000, 10)).setHidden(true);
    
    // Runic Bow
    public static final ArcanaAchievement JUST_LIKE_ARCHER = ArcanaAchievements.register(
@@ -449,7 +449,7 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement MINERS_WALLET = ArcanaAchievements.register(
          new EventAchievement("miners_wallet", new ItemStack(Items.DIAMOND_BLOCK), ArcanaRegistry.GREAVES_OF_GAIALTUS, 1000, 1));
    public static final ArcanaAchievement AND_THE_UNIVERSE_SAID = ArcanaAchievements.register(
-         new EventAchievement("and_the_universe_said", new ItemStack(Items.END_PORTAL_FRAME), ArcanaRegistry.GREAVES_OF_GAIALTUS, 100000, 5)).setHidden(true);
+         new EventAchievement("and_the_universe_said", new ItemStack(Items.END_PORTAL_FRAME), ArcanaRegistry.GREAVES_OF_GAIALTUS, 100000, 10)).setHidden(true);
    
    // Spear of Tenbrous
    public static final ArcanaAchievement KILL_THEM_ALL = ArcanaAchievements.register(
@@ -463,7 +463,7 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement HISTORY_CARVED_IN_STONE = ArcanaAchievements.register(
          new EventAchievement("history_carved_in_stone", ArcanaRegistry.SOULSTONE.getPrefItemNoLore(), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5));
    public static final ArcanaAchievement ZERAIYA = ArcanaAchievements.register(
-         new EventAchievement("zeraiya", new ItemStack(Items.DRAGON_EGG), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5)).setHidden(true);
+         new EventAchievement("zeraiya", new ItemStack(Items.DRAGON_EGG), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 10)).setHidden(true);
    
    // Geomantic Stele
    public static final ArcanaAchievement ARTIFICIAL_VOLCANO = ArcanaAchievements.register(

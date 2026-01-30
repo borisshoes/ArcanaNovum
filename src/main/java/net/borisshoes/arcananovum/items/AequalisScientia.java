@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarRecipeGui;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
@@ -21,6 +22,7 @@ import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -39,6 +41,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -214,6 +219,17 @@ public class AequalisScientia extends ArcanaItem {
    }
    
    public void inventoryDialog(ServerPlayer player){
+      ArcanaPlayerData data = ArcanaNovum.data(player);
+      if(!data.completedCeptyus() && data.canAttemptCeptyus() && data.getLastCeptyusAttempt() <= 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.CEPTYUS_EVENT_ENABLED)){
+         Structure structure = player.level().structureManager().registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.ANCIENT_CITY);
+         StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(),structure);
+         if(start.isValid() && start.canBeReferenced()){
+            data.startCeptyus(player);
+            data.setLastCeptyusAttempt(36000);
+            return;
+         }
+      }
+      
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
       // Conditions: 0 - Crafted Wings, 1 - Crafted Memento, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Egg, 5 - Has Greaves, 6 - Has Spear
       boolean[] conditions = new boolean[]{
@@ -241,7 +257,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-                  .append(Component.literal("\nYou have one of Ceptyus's Picks? How in the world did you acquire this?! For once, I do not think I have anything equivalent to trade.").withStyle(ChatFormatting.AQUA))
+                  .append(Component.literal("\nI still muse about your trickery to acquire that pickaxe. Ceptyus must be enraged that a player managed to breach their realm.").withStyle(ChatFormatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,1.3f))
       ),new int[]{},0,1,0b100));
@@ -321,7 +337,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-                  .append(Component.literal("\nYou too have a relic of Gaialtus? Treasure that rare gift!").withStyle(ChatFormatting.AQUA))
+                  .append(Component.literal("\nYou too, have a gift from Gaialtus? Treasure it!").withStyle(ChatFormatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
       ),new int[]{},0,1,0b100000));
@@ -367,7 +383,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-                  .append(Component.literal("\nYou do not know Gaialtus as I do. And my true power comes not from divinity, but from the lifetimes I spent researching our world.").withStyle(ChatFormatting.AQUA))
+                  .append(Component.literal("\nYou do not know Gaialtus as this Player and I do. And my true power comes not from divinity, but from the lifetimes I spent researching our world.").withStyle(ChatFormatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),

@@ -5,6 +5,7 @@ import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -122,7 +123,11 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
          if(index == 1){
             blockEntity.openForgeGui(player,tomeGui);
          }else if(index == 3){
-            blockEntity.openCraftingGui(player,null,tomeGui);
+            if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DISABLE_ARCANA_CRAFTING)){
+               player.displayClientMessage(Component.literal("Arcana Crafting has been disabled!").withStyle(ChatFormatting.RED),false);
+            }else{
+               blockEntity.openCraftingGui(player,null,tomeGui);
+            }
          }
       }else if(mode == 1){ // Arcana Crafting
          if(index == 7){
@@ -620,7 +625,8 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
          }
          
          table.setCallback((type) -> {
-            blockEntity.openCraftingGui(player,recipe,tomeGui);
+            if(!ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DISABLE_ARCANA_CRAFTING))
+               blockEntity.openCraftingGui(player,recipe,tomeGui);
          });
          
          setSlot(43,table);
@@ -798,7 +804,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
    public void onClose(){
       if(mode == 3){
          openRecipeSelectionGui();
-      }else if(mode == 4){
+      }else if(mode == 4 && !ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DISABLE_ARCANA_CRAFTING)){
          blockEntity.openCraftingGui(player,null,tomeGui);
       }
       

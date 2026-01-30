@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.events.NulMementoEvent;
+import net.borisshoes.arcananovum.events.special.CeptyusOpenEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
@@ -220,8 +221,8 @@ public class NulMemento extends EnergyItem {
             return true;
          }
          
-         if(!constructInterference){
-            dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+         if(!constructInterference && Event.getEventsOfType(CeptyusOpenEvent.class).stream().noneMatch(c -> c.getPlayer().equals(player))){
+            DialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                   Component.literal("\n")
                         .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                         .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
@@ -307,9 +308,9 @@ public class NulMemento extends EnergyItem {
                            .append(Component.literal("skull").withStyle(ChatFormatting.GRAY))
                            .append(Component.literal(" is about to ").withStyle(ChatFormatting.DARK_GRAY))
                            .append(Component.literal("collapse").withStyle(ChatFormatting.RED))
-                           .append(Component.literal(" when a ").withStyle(ChatFormatting.DARK_GRAY))
-                           .append(Component.literal("gentle breeze").withStyle(ChatFormatting.GRAY))
-                           .append(Component.literal(" sweeps through you.").withStyle(ChatFormatting.DARK_GRAY))
+                           .append(Component.literal(" when an ").withStyle(ChatFormatting.DARK_GRAY))
+                           .append(Component.literal("encouraging voice").withStyle(ChatFormatting.GRAY))
+                           .append(Component.literal(" lifts you.").withStyle(ChatFormatting.DARK_GRAY))
                )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
             }
          }
@@ -390,6 +391,7 @@ public class NulMemento extends EnergyItem {
             )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
             
             ArcanaNovum.data(player).removeAllAugments();
+            ArcanaNovum.data(player).setCanAttemptCeptyus(true);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_NUL_MEMENTO_DEALLOCATE));
             ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE);
             ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC,1);
@@ -499,7 +501,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
-                  .append(Component.literal("A relic of Ceptyus?! How fascinating! I wonder if it was forgotten as they fled.").withStyle(ChatFormatting.DARK_GRAY))
+                  .append(Component.literal("Your ingenuity in acquiring that Pick did not go unnoticed. But remember that it was my gift that saved you.").withStyle(ChatFormatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b100));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(

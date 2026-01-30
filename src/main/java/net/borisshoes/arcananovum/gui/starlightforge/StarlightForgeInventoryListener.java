@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.gui.starlightforge;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
@@ -69,10 +70,12 @@ public class StarlightForgeInventoryListener implements ContainerListener {
          }
       }
       
-      CraftingInput input = CraftingInput.of(3,3,craftingStacks);
-      Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING,input,world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input,world.registryAccess()))){
-         return optional.get().value().assemble(input,world.registryAccess()).copy();
+      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DISABLE_STARDUST_INFUSION)){
+         CraftingInput input = CraftingInput.of(3,3,craftingStacks);
+         Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING,input,world);
+         if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input,world.registryAccess()))){
+            return optional.get().value().assemble(input,world.registryAccess()).copy();
+         }
       }
       
       return hasGold && hasPaper ? new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER) : ItemStack.EMPTY;
@@ -129,8 +132,11 @@ public class StarlightForgeInventoryListener implements ContainerListener {
             craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                   .append(Component.literal("Click Here ").withStyle(ChatFormatting.GREEN))
                   .append(Component.literal("to forge an item once a recipe is loaded!").withStyle(ChatFormatting.DARK_AQUA)))));
-            craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-                  .append(Component.literal("").withStyle(ChatFormatting.DARK_AQUA)))));
+            if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DISABLE_STARDUST_INFUSION)){
+               craftingItem.addLoreLine(Component.literal(""));
+               craftingItem.addLoreLine(Component.literal("Stardust Infusion is disabled, only Sovereign Paper can be crafted").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+            }
+            craftingItem.addLoreLine(Component.literal(""));
             craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                   .append(Component.literal("This slot will show an item once a valid recipe is loaded.").withStyle(ChatFormatting.LIGHT_PURPLE)))));
             gui.setSlot(15,craftingItem);

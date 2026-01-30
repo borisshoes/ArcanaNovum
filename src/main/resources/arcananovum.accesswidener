@@ -18,6 +18,7 @@ accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/m
 accessible field net/minecraft/world/item/crafting/ShapelessRecipe ingredients Ljava/util/List;
 accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/crafting/TransmuteResult;
 accessible field net/minecraft/world/entity/ExperienceOrb count I
+accessible field net/minecraft/stats/StatsCounter stats Lit/unimi/dsi/fastutil/objects/Object2IntMap;
 
 accessible method net/minecraft/world/entity/LivingEntity collectEquipmentChanges ()Ljava/util/Map;
 accessible method net/minecraft/world/entity/animal/frog/Tadpole ageUp (I)V

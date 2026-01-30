@@ -48,7 +48,7 @@ public class DialogHelper {
       return dialogs.get(pool.get((int) (Math.random()*pool.size())));
    }
    
-   public void sendDialog(List<ServerPlayer> players, Dialog dialog, boolean sounds){
+   public static void sendDialog(List<ServerPlayer> players, Dialog dialog, boolean sounds){
       int index = 0;
       int curDelay = 0;
       int[] delay = dialog.delay();

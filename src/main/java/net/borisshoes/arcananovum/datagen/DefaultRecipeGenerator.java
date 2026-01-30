@@ -1948,7 +1948,11 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("glowstone_infusion",new ItemStack(Items.REDSTONE,4),new ItemStack(Items.GLOWSTONE_DUST,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.QUARTZ,16)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("ender_infusion",new ItemStack(Items.ENDER_PEARL,1),new ItemStack(Items.ENDER_EYE,2),new ItemStack(Items.GLOWSTONE_DUST,12),new ItemStack(Items.BLAZE_POWDER,24)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("ender_infusion",new ItemStack(Items.ENDER_PEARL,1),new ItemStack(Items.ENDER_EYE,2),new ItemStack(Items.GLOWSTONE_DUST,12),new ItemStack(Items.BLAZE_POWDER,18)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("chorus_transmogrification",new ItemStack(Items.APPLE,1),new ItemStack(Items.CHORUS_FLOWER,1),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,12),new ItemStack(Items.ENDER_PEARL,6)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("endstone_transmogrification",new ItemStack(Items.COBBLED_DEEPSLATE,1),new ItemStack(Items.END_STONE,1),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,6),new ItemStack(Items.ENDER_PEARL,2)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("refined_flesh",new ItemStack(Items.ROTTEN_FLESH,4),new ItemStack(Items.LEATHER,1),new ItemStack(Items.REDSTONE,8),new ItemStack(Items.SUGAR,16)));
       
@@ -3804,6 +3808,10 @@ public class DefaultRecipeGenerator {
       transmutationRecipes.add(new InfusionTransmutationRecipe("glowstone_infusion",new ItemStack(Items.REDSTONE,4),new ItemStack(Items.GLOWSTONE_DUST,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.QUARTZ,16)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("ender_infusion",new ItemStack(Items.ENDER_PEARL,1),new ItemStack(Items.ENDER_EYE,2),new ItemStack(Items.GLOWSTONE_DUST,12),new ItemStack(Items.BLAZE_POWDER,24)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("chorus_transmogrification",new ItemStack(Items.APPLE,1),new ItemStack(Items.CHORUS_FLOWER,1),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,12),new ItemStack(Items.ENDER_PEARL,16)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("endstone_transmogrification",new ItemStack(Items.COBBLED_DEEPSLATE,1),new ItemStack(Items.END_STONE,1),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,6),new ItemStack(Items.ENDER_PEARL,4)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("refined_flesh",new ItemStack(Items.ROTTEN_FLESH,4),new ItemStack(Items.LEATHER,1),new ItemStack(Items.REDSTONE,8),new ItemStack(Items.SUGAR,16)));
       

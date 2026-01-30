@@ -146,6 +146,18 @@ public class CommandRegisterCallback {
                               .executes(context -> ArcanaCommands.bossTeleport(context,getPlayer(context,"player"),false)))
                         .then(literal("all").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                               .executes(context ->ArcanaCommands.bossTeleport(context,context.getSource().getPlayer(),true)))))
+            .then(literal("specialEvent")
+                  .then(literal("check").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(argument("player", player())
+                              .executes(context -> ArcanaCommands.checkSpecialEventConditions(context,getPlayer(context,"player")))))
+                  .then(literal("trigger").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(argument("players", players())
+                              .then(literal("gaialtus").executes(context -> ArcanaCommands.forceGaialtusEvent(context,getPlayers(context,"players"))))
+                              .then(literal("ceptyus").executes(context -> ArcanaCommands.forceCeptyusEvent(context,getPlayers(context,"players"))))
+                              .then(literal("zeraiya").executes(context -> ArcanaCommands.forceZeraiyaEvent(context,getPlayers(context,"players"))))))
+                  .then(literal("action")
+                        .then(argument("choice",greedyString())
+                              .executes(context -> ArcanaCommands.specialEventCommand(context,getString(context,"choice"))))))
       );
    
       dispatcher.register(ArcanaNovum.CONFIG.generateCommand("arcana","config"));

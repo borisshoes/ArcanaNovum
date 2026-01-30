@@ -36,6 +36,7 @@ import net.minecraft.world.item.component.InstrumentComponent;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -651,7 +652,7 @@ public class RecipeManager {
       return matching;
    }
    
-   public static TransmutationRecipe findMatchingTransmutationRecipe(String id){
+   public static @Nullable TransmutationRecipe findMatchingTransmutationRecipe(String id){
       return TRANSMUTATION_RECIPES.stream().filter(r -> r.getId().equals(id)).findAny().orElse(null);
    }
 }
