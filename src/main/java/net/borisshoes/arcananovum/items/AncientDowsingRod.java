@@ -140,7 +140,6 @@ public class AncientDowsingRod extends EnergyItem {
       @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerLevel)) return;
          if(world.getServer().getTickCount() % 20 == 0){
             addEnergy(stack, 1); // Recharge
          }
@@ -157,17 +156,17 @@ public class AncientDowsingRod extends EnergyItem {
                BlockPos curBlock = playerEntity.blockPosition();
                SoundUtils.playSound(world, curBlock, SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1f, .5f);
                
-               List<BlockPos> debris = new ArrayList<>();
-               for(BlockPos block : BlockPos.withinManhattan(curBlock,scanRange,scanRange/2,scanRange)){
-                  if(world.getBlockState(block).getBlock() == Blocks.ANCIENT_DEBRIS){
-                     debris.add(new BlockPos(block));
-                  }
-               }
                if(world instanceof ServerLevel serverWorld){
-                  if(!debris.isEmpty()) ArcanaAchievements.progress(player,ArcanaAchievements.ARCHEOLOGIST,debris.size());
-                  
                   BorisLib.addTickTimerCallback(new GenericTimer(30, () -> SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.BELL_RESONATE, SoundSource.PLAYERS, 1f, .5f)));
                   BorisLib.addTickTimerCallback(new GenericTimer(140, () -> {
+                     List<BlockPos> debris = new ArrayList<>();
+                     for(BlockPos block : BlockPos.withinManhattan(curBlock,scanRange,scanRange/2,scanRange)){
+                        if(world.getBlockState(block).getBlock() == Blocks.ANCIENT_DEBRIS){
+                           debris.add(new BlockPos(block));
+                        }
+                     }
+                     if(!debris.isEmpty()) ArcanaAchievements.progress(player,ArcanaAchievements.ARCHEOLOGIST,debris.size());
+                     
                      int[] locations = new int[8]; // N, NE, E, SE, S, SW, W, NW
                      final double t1 = Math.tan(Math.toRadians(45*3.0/2));
                      final double t2 = Math.tan(Math.toRadians(45/2.0));

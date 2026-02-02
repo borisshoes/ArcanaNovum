@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.datastorage;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.ladysnake.pal.VanillaAbilities;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -34,9 +33,9 @@ import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.datastorage.DataKey;
 import net.borisshoes.borislib.datastorage.DataRegistry;
+import net.borisshoes.borislib.datastorage.StorableData;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.timers.GenericTimer;
-import net.borisshoes.borislib.utils.CodecUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
@@ -50,6 +49,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -72,6 +72,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.structure.*;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
+import net.minecraft.world.level.storage.ValueInput;
 
 import java.net.URI;
 import java.util.*;
@@ -81,7 +82,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.DRAGON_TOWER_ABILITY;
 import static net.borisshoes.arcananovum.ArcanaRegistry.LEVITATION_HARNESS_ABILITY;
 
-public class ArcanaPlayerData {
+public class ArcanaPlayerData implements StorableData {
    
    public static final String ADMIN_SKILL_POINTS_TAG = "adminSkillPoints";
    public static final String CONCENTRATION_TICK_TAG = "concentration";
@@ -106,114 +107,112 @@ public class ArcanaPlayerData {
    private int xp;
    private ItemStack storedOffhand = ItemStack.EMPTY;
    
-   // Helper codec for achievements map - stores as CompoundTag matching existing NBT structure
-   private static final Codec<HashMap<String, List<ArcanaAchievement>>> ACHIEVEMENTS_CODEC = CompoundTag.CODEC.xmap(
-         achievementsTag -> {
-            HashMap<String, List<ArcanaAchievement>> achievements = new HashMap<>();
-            Set<String> achieveItemKeys = achievementsTag.keySet();
-            for(String itemKey : achieveItemKeys){
-               List<ArcanaAchievement> itemAchs = new ArrayList<>();
-               CompoundTag itemAchsTag = achievementsTag.getCompoundOrEmpty(itemKey);
-               
-               for(String achieveKey : itemAchsTag.keySet()){
-                  CompoundTag achTag = itemAchsTag.getCompoundOrEmpty(achieveKey);
-                  ArcanaAchievement ach = ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(achieveKey);
-                  if(ach == null) continue;
-                  itemAchs.add(ach.makeNew().fromNbt(achieveKey, achTag));
-               }
-               achievements.put(itemKey, itemAchs);
-            }
-            return achievements;
-         },
-         achievements -> {
-            CompoundTag achievementsTag = new CompoundTag();
-            for(Map.Entry<String, List<ArcanaAchievement>> entry : achievements.entrySet()){
-               String item = entry.getKey();
-               List<ArcanaAchievement> itemAchs = entry.getValue();
-               CompoundTag itemAchsTag = new CompoundTag();
-               for(ArcanaAchievement itemAch : itemAchs){
-                  itemAchsTag.put(itemAch.id, itemAch.toNbt());
-               }
-               achievementsTag.put(item, itemAchsTag);
-            }
-            return achievementsTag;
-         }
-   );
-   
-   // Helper codec for augments map - stores as CompoundTag
-   private static final Codec<HashMap<ArcanaAugment, Integer>> AUGMENTS_CODEC = CompoundTag.CODEC.xmap(
-         tag -> {
-            HashMap<ArcanaAugment, Integer> augments = new HashMap<>();
-            Set<String> augmentKeys = tag.keySet();
-            for(String augmentKey : augmentKeys){
-               int augmentLvl = tag.getIntOr(augmentKey, 0);
-               if(augmentLvl > 0){
-                  ArcanaAugment aug = ArcanaAugments.registry.get(augmentKey);
-                  if(aug != null) augments.put(aug, augmentLvl);
-               }
-            }
-            return augments;
-         },
-         augments -> {
-            CompoundTag tag = new CompoundTag();
-            for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-               tag.putInt(entry.getKey().id, entry.getValue());
-            }
-            return tag;
-         }
-   );
-   
-   // Helper codec for miscData map - stores as CompoundTag
-   private static final Codec<HashMap<String, Tag>> MISC_DATA_CODEC = CompoundTag.CODEC.xmap(
-         tag -> {
-            HashMap<String, Tag> miscData = new HashMap<>();
-            Set<String> keys = tag.keySet();
-            keys.forEach(key -> miscData.put(key, tag.get(key)));
-            return miscData;
-         },
-         miscData -> {
-            CompoundTag tag = new CompoundTag();
-            miscData.forEach(tag::put);
-            return tag;
-         }
-   );
-   
-   public static final Codec<ArcanaPlayerData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-         CodecUtils.UUID_CODEC.optionalFieldOf("playerID").forGetter(data -> Optional.ofNullable(data.playerId)),
-         Codec.STRING.optionalFieldOf("username", "").forGetter(data -> data.username),
-         CodecUtils.STRING_LIST.optionalFieldOf("crafted", new ArrayList<>()).forGetter(data -> data.crafted),
-         CodecUtils.STRING_LIST.optionalFieldOf("researchedItems", new ArrayList<>()).forGetter(data -> data.researchedItems),
-         CodecUtils.STRING_LIST.optionalFieldOf("researchTasks", new ArrayList<>()).forGetter(data -> data.researchTasks),
-         MISC_DATA_CODEC.optionalFieldOf("miscData", new HashMap<>()).forGetter(data -> data.miscData),
-         ACHIEVEMENTS_CODEC.optionalFieldOf("achievements", new HashMap<>()).forGetter(data -> data.achievements),
-         AUGMENTS_CODEC.optionalFieldOf("augments", new HashMap<>()).forGetter(data -> data.augments),
-         Codec.INT.optionalFieldOf("level", 0).forGetter(data -> data.level),
-         Codec.INT.optionalFieldOf("xp", 0).forGetter(data -> data.xp),
-         ItemStack.OPTIONAL_CODEC.optionalFieldOf("storedOffhand", ItemStack.EMPTY).forGetter(data -> data.storedOffhand)
-   ).apply(instance, ArcanaPlayerData::fromCodec));
-   
-   private static ArcanaPlayerData fromCodec(Optional<UUID> playerId, String username, List<String> crafted, List<String> researchedItems, List<String> researchTasks, HashMap<String, Tag> miscData, HashMap<String, List<ArcanaAchievement>> achievements, HashMap<ArcanaAugment, Integer> augments, int level, int xp, ItemStack storedOffhand){
-      return new ArcanaPlayerData(playerId.orElse(null), username, crafted, researchedItems, researchTasks, miscData, achievements, augments, level, xp, storedOffhand);
-   }
-   
-   public static final DataKey<ArcanaPlayerData> KEY = DataRegistry.register(DataKey.ofPlayer(Identifier.fromNamespaceAndPath(MOD_ID, "playerdata"), CODEC, ArcanaPlayerData::new));
+   public static final DataKey<ArcanaPlayerData> KEY = DataRegistry.register(DataKey.ofPlayer(Identifier.fromNamespaceAndPath(MOD_ID, "playerdata"), ArcanaPlayerData::new));
    
    public ArcanaPlayerData(UUID playerId){
       this.playerId = playerId;
    }
    
-   public ArcanaPlayerData(UUID playerId, String username, List<String> crafted, List<String> researchedItems, List<String> researchTasks, HashMap<String, Tag> miscData, HashMap<String, List<ArcanaAchievement>> achievements, HashMap<ArcanaAugment, Integer> augments, int level, int xp, ItemStack storedOffhand){
-      this.playerId = playerId;
-      this.username = username;
-      this.crafted.addAll(crafted);
-      this.researchedItems.addAll(researchedItems);
-      this.researchTasks.addAll(researchTasks);
-      this.miscData.putAll(miscData);
-      this.achievements.putAll(achievements);
-      this.augments.putAll(augments);
-      this.level = level;
-      this.xp = xp;
-      this.storedOffhand = storedOffhand;
+   @Override
+   public void read(ValueInput view){
+      this.username = view.getStringOr("username", "");
+      
+      this.crafted.clear();
+      view.listOrEmpty("crafted", Codec.STRING).forEach(this.crafted::add);
+      
+      this.researchedItems.clear();
+      view.listOrEmpty("researchedItems", Codec.STRING).forEach(this.researchedItems::add);
+      
+      this.researchTasks.clear();
+      view.listOrEmpty("researchTasks", Codec.STRING).forEach(this.researchTasks::add);
+      
+      this.miscData.clear();
+      view.read("miscData", CompoundTag.CODEC).ifPresent(tag -> {
+         tag.keySet().forEach(key -> this.miscData.put(key, tag.get(key)));
+      });
+      
+      this.achievements.clear();
+      view.read("achievements", CompoundTag.CODEC).ifPresent(achievementsTag -> {
+         for(String itemKey : achievementsTag.keySet()){
+            List<ArcanaAchievement> itemAchs = new ArrayList<>();
+            CompoundTag itemAchsTag = achievementsTag.getCompoundOrEmpty(itemKey);
+            
+            for(String achieveKey : itemAchsTag.keySet()){
+               CompoundTag achTag = itemAchsTag.getCompoundOrEmpty(achieveKey);
+               ArcanaAchievement ach = ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(achieveKey);
+               if(ach == null) continue;
+               itemAchs.add(ach.makeNew().fromNbt(achieveKey, achTag));
+            }
+            this.achievements.put(itemKey, itemAchs);
+         }
+      });
+      
+      this.augments.clear();
+      view.read("augments", CompoundTag.CODEC).ifPresent(tag -> {
+         for(String augmentKey : tag.keySet()){
+            int augmentLvl = tag.getIntOr(augmentKey, 0);
+            if(augmentLvl > 0){
+               ArcanaAugment aug = ArcanaAugments.registry.get(augmentKey);
+               if(aug != null) this.augments.put(aug, augmentLvl);
+            }
+         }
+      });
+      
+      this.level = view.getIntOr("level", 0);
+      this.xp = view.getIntOr("xp", 0);
+      this.storedOffhand = view.read("storedOffhand", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+   }
+   
+   @Override
+   public void writeNbt(CompoundTag tag){
+      tag.putString("username", username);
+      
+      ListTag craftedList = new ListTag();
+      for(String s : crafted){
+         craftedList.add(StringTag.valueOf(s));
+      }
+      tag.put("crafted", craftedList);
+      
+      ListTag researchedItemsList = new ListTag();
+      for(String s : researchedItems){
+         researchedItemsList.add(StringTag.valueOf(s));
+      }
+      tag.put("researchedItems", researchedItemsList);
+      
+      ListTag researchTasksList = new ListTag();
+      for(String s : researchTasks){
+         researchTasksList.add(StringTag.valueOf(s));
+      }
+      tag.put("researchTasks", researchTasksList);
+      
+      CompoundTag miscDataTag = new CompoundTag();
+      miscData.forEach(miscDataTag::put);
+      tag.put("miscData", miscDataTag);
+      
+      CompoundTag achievementsTag = new CompoundTag();
+      for(Map.Entry<String, List<ArcanaAchievement>> entry : achievements.entrySet()){
+         String item = entry.getKey();
+         List<ArcanaAchievement> itemAchs = entry.getValue();
+         CompoundTag itemAchsTag = new CompoundTag();
+         for(ArcanaAchievement itemAch : itemAchs){
+            itemAchsTag.put(itemAch.id, itemAch.toNbt());
+         }
+         achievementsTag.put(item, itemAchsTag);
+      }
+      tag.put("achievements", achievementsTag);
+      
+      CompoundTag augmentsTag = new CompoundTag();
+      for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+         augmentsTag.putInt(entry.getKey().id, entry.getValue());
+      }
+      tag.put("augments", augmentsTag);
+      
+      tag.putInt("level", level);
+      tag.putInt("xp", xp);
+      
+      if(!storedOffhand.isEmpty()){
+         ItemStack.OPTIONAL_CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), storedOffhand).result().ifPresent(nbt -> tag.put("storedOffhand", nbt));
+      }
    }
    
    private ServerPlayer findPlayer(){
@@ -1104,8 +1103,8 @@ public class ArcanaPlayerData {
       if(!ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.GAIALTUS_EVENT_ENABLED)) return;
       if(completedGaialtus() || getLastGaialtusAttempt() > 0) return;
       if(!player.level().equals(player.level().getServer().overworld())) return;
-      if(player.level().getBrightness(LightLayer.SKY,player.blockPosition()) == 0) return;
-      List<FishingHook> list = player.level().getEntities(EntityType.FISHING_BOBBER,player.getBoundingBox().inflate(20.0, 8.0, 20.0),(hook) -> player.equals(hook.getPlayerOwner()));
+      if(player.level().getBrightness(LightLayer.SKY, player.blockPosition()) == 0) return;
+      List<FishingHook> list = player.level().getEntities(EntityType.FISHING_BOBBER, player.getBoundingBox().inflate(20.0, 8.0, 20.0), (hook) -> player.equals(hook.getPlayerOwner()));
       if(list.isEmpty()) return;
       AtomicInteger mined = new AtomicInteger();
       AtomicInteger placed = new AtomicInteger();
@@ -1434,7 +1433,7 @@ public class ArcanaPlayerData {
                DialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                      Component.literal("\n")
                            .append(Component.literal("So you are aware of your dream? But can you see the meaning in it, the ").withStyle(ChatFormatting.DARK_GREEN))
-                           .append(Component.literal("------").withStyle(ChatFormatting.DARK_AQUA,ChatFormatting.OBFUSCATED))
+                           .append(Component.literal("------").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.OBFUSCATED))
                            .append(Component.literal("? Ah, not yet. Keep dreaming, ").withStyle(ChatFormatting.DARK_GREEN))
                            .append(player.getDisplayName())
                            .append(Component.literal(", and I hope to see you again.").withStyle(ChatFormatting.DARK_GREEN)),

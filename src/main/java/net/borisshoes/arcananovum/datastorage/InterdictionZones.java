@@ -2,14 +2,20 @@ package net.borisshoes.arcananovum.datastorage;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.borisshoes.borislib.datastorage.DataAccess;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.datastorage.DataKey;
 import net.borisshoes.borislib.datastorage.DataRegistry;
+import net.borisshoes.borislib.datastorage.StorableData;
 import net.borisshoes.borislib.utils.CodecUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -17,23 +23,11 @@ import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class InterdictionZones {
+public class InterdictionZones implements StorableData {
    
    private static final int CELL_SIZE = 16; // Same as chunk size for efficiency
    
-   public static final Codec<InterdictionZones> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-         Level.RESOURCE_KEY_CODEC.fieldOf("worldKey").forGetter(data -> data.worldKey),
-         InterdictionZone.CODEC.listOf().fieldOf("zones").forGetter(data -> data.zones)
-   ).apply(instance, (worldKey, zones) -> {
-      InterdictionZones data = new InterdictionZones(worldKey);
-      for(InterdictionZone zone : zones){
-         data.zones.add(zone);
-         data.indexZone(zone);
-      }
-      return data;
-   }));
-   
-   public static final DataKey<InterdictionZones> KEY = DataRegistry.register(DataKey.ofWorld(Identifier.fromNamespaceAndPath(MOD_ID, "interdiction_zones"),CODEC,InterdictionZones::new));
+   public static final DataKey<InterdictionZones> KEY = DataRegistry.register(DataKey.ofWorld(Identifier.fromNamespaceAndPath(MOD_ID, "interdiction_zones"), InterdictionZones::new));
    
    private final ResourceKey<Level> worldKey;
    private final List<InterdictionZone> zones = new ArrayList<>();
@@ -41,6 +35,25 @@ public class InterdictionZones {
    
    public InterdictionZones(ResourceKey<Level> worldKey){
       this.worldKey = worldKey;
+   }
+   
+   @Override
+   public void read(ValueInput view){
+      this.zones.clear();
+      this.spatialIndex.clear();
+      view.listOrEmpty("zones", InterdictionZone.CODEC).forEach(zone -> {
+         this.zones.add(zone);
+         this.indexZone(zone);
+      });
+   }
+   
+   @Override
+   public void writeNbt(CompoundTag tag){
+      ListTag zonesList = new ListTag();
+      for(InterdictionZone zone : zones){
+         InterdictionZone.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), zone).result().ifPresent(zonesList::add);
+      }
+      tag.put("zones", zonesList);
    }
    
    public ResourceKey<Level> getWorldKey(){

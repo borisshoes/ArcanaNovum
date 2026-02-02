@@ -42,6 +42,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.bossevents.CustomBossEvent;
@@ -795,7 +796,7 @@ public class DragonBossFight {
          return -1;
       }
       ServerLevel endWorld = player.level();
-      CompoundTag dragonData = (CompoundTag) (EndDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, endWorld.getDragonFight().saveData()).getOrThrow());
+      CompoundTag dragonData = (CompoundTag) (EndDragonFight.Data.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), endWorld.getDragonFight().saveData()).getOrThrow());
       CompoundTag fightData = new CompoundTag();
       if(dragonData.getBooleanOr("DragonKilled", false)){
          player.displayClientMessage(Component.literal("Dragon is Dead, Commencing Respawn"), false);

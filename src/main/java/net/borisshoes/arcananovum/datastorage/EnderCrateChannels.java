@@ -1,45 +1,52 @@
 package net.borisshoes.arcananovum.datastorage;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.datastorage.DataKey;
 import net.borisshoes.borislib.datastorage.DataRegistry;
-import net.borisshoes.borislib.utils.CodecUtils;
-import net.minecraft.core.component.DataComponents;
+import net.borisshoes.borislib.datastorage.StorableData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.SimpleContainer;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.level.storage.ValueInput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class EnderCrateChannels {
+public class EnderCrateChannels implements StorableData {
    
-   public static final Codec<EnderCrateChannels> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-         EnderCrateChannel.CODEC.listOf().fieldOf("channels").forGetter(data -> data.channels.values().stream()
-               .filter(channel -> !channel.getInventory().isEmpty())
-               .toList())
-   ).apply(instance, EnderCrateChannels::new));
-   
-   public static final DataKey<EnderCrateChannels> KEY = DataRegistry.register(DataKey.ofGlobal(Identifier.fromNamespaceAndPath(MOD_ID, "ender_crates"), CODEC,EnderCrateChannels::new));
+   public static final DataKey<EnderCrateChannels> KEY = DataRegistry.register(DataKey.ofGlobal(Identifier.fromNamespaceAndPath(MOD_ID, "ender_crates"), EnderCrateChannels::new));
    
    private final Map<ChannelKey, EnderCrateChannel> channels = new HashMap<>();
    
    public EnderCrateChannels(){}
    
-   private EnderCrateChannels(List<EnderCrateChannel> channelList){
-      for(EnderCrateChannel channel : channelList){
-         ChannelKey key = ChannelKey.of(channel.getIdLock(), channel.getColors());
-         channels.put(key, channel);
+   @Override
+   public void read(ValueInput view){
+      this.channels.clear();
+      view.listOrEmpty("channels", EnderCrateChannel.CODEC).forEach(channel -> {
+         if(!channel.getInventory().isEmpty()){
+            ChannelKey key = ChannelKey.of(channel.getIdLock(), channel.getColors());
+            channels.put(key, channel);
+         }
+      });
+   }
+   
+   @Override
+   public void writeNbt(CompoundTag tag){
+      ListTag channelsList = new ListTag();
+      for(EnderCrateChannel channel : channels.values()){
+         if(!channel.getInventory().isEmpty()){
+            EnderCrateChannel.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), channel).result().ifPresent(channelsList::add);
+         }
       }
+      tag.put("channels", channelsList);
    }
    
    public List<ArcanaItemContainer> arcanaInventoriesForPlayer(UUID playerId){

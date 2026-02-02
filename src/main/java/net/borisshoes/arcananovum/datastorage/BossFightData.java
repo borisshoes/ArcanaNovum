@@ -1,49 +1,55 @@
 package net.borisshoes.arcananovum.datastorage;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.borislib.datastorage.DataKey;
 import net.borisshoes.borislib.datastorage.DataRegistry;
+import net.borisshoes.borislib.datastorage.StorableData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.bosses.BossFights.BOSS_FIGHTS_CODEC;
 
-public class BossFightData {
+public class BossFightData implements StorableData {
    
    public Tuple<BossFights, CompoundTag> bossFight;
    private final ResourceKey<Level> worldKey;
    
-   // Codec for the bossFight Tuple (can be null)
-   private static final Codec<Tuple<BossFights, CompoundTag>> BOSS_FIGHT_TUPLE_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-         BOSS_FIGHTS_CODEC.fieldOf("boss").forGetter(Tuple::getA),
-         CompoundTag.CODEC.fieldOf("data").forGetter(Tuple::getB)
-   ).apply(instance, Tuple::new));
-   
-   public static final Codec<BossFightData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-         Level.RESOURCE_KEY_CODEC.fieldOf("worldKey").forGetter(data -> data.worldKey),
-         BOSS_FIGHT_TUPLE_CODEC.optionalFieldOf("bossFight").forGetter(data ->
-               data.bossFight == null ? java.util.Optional.empty() : java.util.Optional.of(data.bossFight))
-   ).apply(instance, (worldKey, bossFight) -> {
-      BossFightData data = new BossFightData(worldKey);
-      bossFight.ifPresent(fight -> data.bossFight = fight);
-      return data;
-   }));
-   
-   public static final DataKey<BossFightData> KEY = DataRegistry.register(DataKey.ofWorld(Identifier.fromNamespaceAndPath(MOD_ID, "boss_fight"), CODEC, BossFightData::new));
+   public static final DataKey<BossFightData> KEY = DataRegistry.register(DataKey.ofWorld(Identifier.fromNamespaceAndPath(MOD_ID, "boss_fight"), BossFightData::new));
    
    public BossFightData(ResourceKey<Level> worldKey){
       this.worldKey = worldKey;
    }
    
+   @Override
+   public void read(ValueInput view){
+      view.read("bossFight", CompoundTag.CODEC).ifPresent(bossFightTag -> {
+         String bossLabel = bossFightTag.getStringOr("boss", "");
+         BossFights boss = BossFights.fromLabel(bossLabel);
+         if(boss != null){
+            CompoundTag data = bossFightTag.getCompoundOrEmpty("data");
+            this.bossFight = new Tuple<>(boss, data);
+         }
+      });
+   }
+   
+   @Override
+   public void writeNbt(CompoundTag tag){
+      tag.putBoolean("hasBossFight", bossFight != null);
+      if(bossFight != null){
+         CompoundTag bossFightTag = new CompoundTag();
+         bossFightTag.putString("boss", bossFight.getA().label);
+         bossFightTag.put("data", bossFight.getB());
+         tag.put("bossFight", bossFightTag);
+      }
+   }
+   
    public boolean setBossFight(BossFights boss, CompoundTag data){
       if(bossFight == null || bossFight.getA() == boss){
-         bossFight = new Tuple<>(boss,data);
+         bossFight = new Tuple<>(boss, data);
          return true;
       }else{
          return false;

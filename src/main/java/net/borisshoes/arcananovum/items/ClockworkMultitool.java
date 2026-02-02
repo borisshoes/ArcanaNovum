@@ -187,6 +187,8 @@ public class ClockworkMultitool extends EnergyItem {
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          setEnergy(stack,0);
+         player.getCooldowns().addCooldown(playerEntity.getMainHandItem(),1);
+         player.getCooldowns().addCooldown(playerEntity.getOffhandItem(),1);
          if(hand == InteractionHand.OFF_HAND && player.isShiftKeyDown()){
             MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack,MODE_TAG));
             putProperty(stack, SAVED_TAG,mode.getName());

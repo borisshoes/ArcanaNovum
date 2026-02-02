@@ -580,7 +580,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    private void buildAchievementsGui(){
       GuiMode<ArcanaAchievement> config = getMode(1);
       ArcanaPlayerData profile = ArcanaNovum.data(player);
-      config.setItems(new ArrayList<>(ArcanaAchievements.ARCANA_ACHIEVEMENTS.values().stream().filter(ach -> ach.isHidden() && !profile.hasAcheivement(ach)).toList()));
+      config.setItems(new ArrayList<>(ArcanaAchievements.ARCANA_ACHIEVEMENTS.values().stream().filter(ach -> !ach.isHidden() || profile.hasAcheivement(ach)).toList()));
       
       GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
       
