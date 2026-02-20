@@ -175,7 +175,7 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement BACK_IN_THE_MINE = ArcanaAchievements.register(
          new ProgressAchievement("back_in_the_mine", new ItemStack(Items.DIAMOND_PICKAXE), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 5000, 2, 72000));
    public static final ArcanaAchievement DIGGY_HOLE = ArcanaAchievements.register(
-         new ProgressAchievement("diggy_hole", new ItemStack(Items.COBBLESTONE), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 100000, 5, 1000000));
+         new ProgressAchievement("diggy_hole", new ItemStack(Items.COBBLESTONE), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 100000, 5, 100000));
    public static final ArcanaAchievement MINE_DIAMONDS = ArcanaAchievements.register(
          new EventAchievement("mine_diamonds", new ItemStack(Items.DIAMOND), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 2500, 1));
    public static final ArcanaAchievement INTERLOPER = ArcanaAchievements.register(

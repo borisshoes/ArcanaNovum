@@ -1,5 +1,12 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
@@ -20,10 +27,12 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -48,6 +57,8 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -72,7 +83,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.SCULK_CATALYST;
-      block = new StarpathAltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(3.0f,1200.0f).lightLevel(state -> 6).sound(SoundType.SCULK_CATALYST));
+      block = new StarpathAltarBlock(BlockBehaviour.Properties.of().noOcclusion().mapColor(MapColor.COLOR_BLACK).strength(3.0f,1200.0f).lightLevel(state -> 6).sound(SoundType.SCULK_CATALYST));
       item = new StarpathAltarItem(this.block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.USE_ENDER_EYE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.UNLOCK_WAYSTONE};
@@ -171,7 +182,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public class StarpathAltarBlock extends ArcanaPolymerBlockEntity {
+   public class StarpathAltarBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {
       public static final BooleanProperty BLOOM = BlockStateProperties.BLOOM;
       public static final BooleanProperty ACTIVATABLE = BooleanProperty.create("activatable");
       public StarpathAltarBlock(BlockBehaviour.Properties settings){
@@ -180,7 +191,11 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.SCULK_CATALYST.defaultBlockState().setValue(BLOOM,state.getValue(BLOOM));
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            return Blocks.SCULK_CATALYST.defaultBlockState().setValue(BLOOM,state.getValue(BLOOM));
+         }
       }
       
       @Override
@@ -264,6 +279,175 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
             this.tryActivate(state, world, pos);
             world.setBlock(pos, state.setValue(ACTIVATABLE, false), Block.UPDATE_CLIENTS);
          }
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return new Model(world, initialBlockState);
+      }
+      
+      @Override
+      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
+         return true;
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      public static final ItemStack STARPATH_ALTAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starpath_altar"));
+      public static final ItemStack STAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starlight_forge_pulsar"));
+      
+      // Star particle constants
+      private static final int MAX_STARS = 8;
+      private static final float PADDING = 0.25f; // Padding from each face
+      private static final int SPAWN_INTERVAL = 8; // Spawn a star every N ticks
+      private static final int STAR_MIN_LIFETIME = 80; // Minimum star lifetime in ticks
+      private static final int STAR_MAX_LIFETIME = 600; // Maximum star lifetime in ticks
+      private static final float STAR_MAX_SCALE = 0.4f; // Maximum star scale
+      private static final float STAR_DRIFT_SPEED = 0.003f; // How fast stars drift
+      private static final float STAR_SPIN_SPEED = 2.0f * Mth.DEG_TO_RAD; // How fast stars rotate
+      
+      private final ServerLevel world;
+      private final ItemDisplayElement main;
+      private int ticks;
+      
+      // Star particle state
+      private final ItemDisplayElement[] stars = new ItemDisplayElement[MAX_STARS];
+      private final boolean[] starActive = new boolean[MAX_STARS];
+      private final boolean[] starJustSpawned = new boolean[MAX_STARS]; // Skip interpolation on first tick
+      private final int[] starLifetime = new int[MAX_STARS];
+      private final int[] starInitialLifetime = new int[MAX_STARS];
+      private final Vector3f[] starPosition = new Vector3f[MAX_STARS];
+      private final Vector3f[] starDrift = new Vector3f[MAX_STARS];
+      private final Vector3f[] starRotationAxis = new Vector3f[MAX_STARS];
+      private final float[] starRotationAngle = new float[MAX_STARS];
+      
+      public Model(ServerLevel world, BlockState state){
+         this.world = world;
+         this.main = ItemDisplayElementUtil.createSimple(STARPATH_ALTAR);
+         this.main.setScale(new Vector3f(1f));
+         this.addElement(this.main);
+         
+         // Initialize star arrays
+         for(int i = 0; i < MAX_STARS; i++){
+            stars[i] = ItemDisplayElementUtil.createSimple(STAR);
+            stars[i].setInterpolationDuration(2);
+            starPosition[i] = new Vector3f();
+            starDrift[i] = new Vector3f();
+            starRotationAxis[i] = new Vector3f();
+         }
+      }
+      
+      private void spawnStar(int index){
+         // Random position within the block with padding
+         float range = 1f - 2f * PADDING;
+         starPosition[index].set(
+               PADDING + world.random.nextFloat() * range - 0.5f,
+               PADDING + world.random.nextFloat() * range - 0.5f,
+               PADDING + world.random.nextFloat() * range - 0.5f
+         );
+         
+         // Random lifetime
+         starInitialLifetime[index] = STAR_MIN_LIFETIME + world.random.nextInt(STAR_MAX_LIFETIME - STAR_MIN_LIFETIME);
+         starLifetime[index] = starInitialLifetime[index];
+         
+         // Calculate max drift speed based on lifetime so star can't leave padded area
+         // Max travel distance is range/2 (from center to edge), so max speed = (range/2) / lifetime
+         float maxDriftSpeed = Math.min(STAR_DRIFT_SPEED, (range * 0.5f) / starInitialLifetime[index]);
+         
+         // Random slow drift direction with speed limit
+         starDrift[index].set(
+               (world.random.nextFloat() * 2 - 1) * maxDriftSpeed,
+               (world.random.nextFloat() * 2 - 1) * maxDriftSpeed,
+               (world.random.nextFloat() * 2 - 1) * maxDriftSpeed
+         );
+         
+         // Random rotation axis (normalized)
+         starRotationAxis[index].set(
+               world.random.nextFloat() * 2 - 1,
+               world.random.nextFloat() * 2 - 1,
+               world.random.nextFloat() * 2 - 1
+         ).normalize();
+         starRotationAngle[index] = world.random.nextFloat() * Mth.TWO_PI;
+         
+         // Set initial transformation at scale 0 BEFORE adding the element
+         // This prevents the client from interpolating from the old position
+         Vector3f pos = starPosition[index];
+         Vector3f axis = starRotationAxis[index];
+         Matrix4f matrix = new Matrix4f();
+         matrix.translate(pos.x, pos.y, pos.z);
+         matrix.rotate(starRotationAngle[index], axis.x, axis.y, axis.z);
+         matrix.scale(0.001f); // Start at near-zero scale
+         stars[index].setTransformation(matrix);
+         
+         starActive[index] = true;
+         starJustSpawned[index] = true; // Skip interpolation on first update
+         this.addElement(stars[index]);
+      }
+      
+      private void updateStar(int index){
+         // Update position with drift
+         starPosition[index].add(starDrift[index]);
+         
+         // Update rotation
+         starRotationAngle[index] += STAR_SPIN_SPEED;
+         if(starRotationAngle[index] > Mth.TWO_PI) starRotationAngle[index] -= Mth.TWO_PI;
+         
+         // Calculate scale based on lifetime (flicker in and out)
+         float lifeProgress = 1f - ((float) starLifetime[index] / (float) starInitialLifetime[index]);
+         // Use sin curve for smooth fade in/out: sin(π * t) gives 0->1->0 over t=0->1
+         float scaleFactor = Mth.sin(Mth.PI * lifeProgress);
+         float scale = STAR_MAX_SCALE * scaleFactor;
+         
+         Vector3f pos = starPosition[index];
+         Vector3f axis = starRotationAxis[index];
+         
+         Matrix4f matrix = new Matrix4f();
+         matrix.translate(pos.x, pos.y, pos.z);
+         matrix.rotate(starRotationAngle[index], axis.x, axis.y, axis.z);
+         matrix.scale(scale);
+         
+         stars[index].setTransformation(matrix);
+         
+         // Skip interpolation on first tick after spawn to prevent zipping from old position
+         if(starJustSpawned[index]){
+            starJustSpawned[index] = false;
+         }else{
+            stars[index].startInterpolation();
+         }
+      }
+      
+      private void removeStar(int index){
+         this.removeElement(stars[index]);
+         starActive[index] = false;
+      }
+      
+      @Override
+      public void tick(){
+         super.tick();
+         
+         // Spawn new stars periodically
+         if(ticks % SPAWN_INTERVAL == 0){
+            for(int i = 0; i < MAX_STARS; i++){
+               if(!starActive[i]){
+                  spawnStar(i);
+                  break;
+               }
+            }
+         }
+         
+         // Update active stars
+         for(int i = 0; i < MAX_STARS; i++){
+            if(starActive[i]){
+               starLifetime[i]--;
+               if(starLifetime[i] <= 0){
+                  removeStar(i);
+               }else{
+                  updateStar(i);
+               }
+            }
+         }
+         
+         ticks++;
       }
    }
 }

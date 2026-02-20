@@ -1,0 +1,62 @@
+{
+	"format_version": "1.21.11",
+	"textures": {
+		"1": "arcananovum:block/starlight_forge_decals",
+		"particle": "arcananovum:block/starlight_forge_decals"
+	},
+	"elements": [
+		{
+			"name": "AppleStem",
+			"from": [7.5, 9.5, 7.5],
+			"to": [8.5, 10.5, 8.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 10, 8]},
+			"faces": {
+				"north": {"uv": [9.5, 2, 10, 2.5], "texture": "#1"},
+				"east": {"uv": [9.5, 2, 10, 2.5], "texture": "#1"},
+				"south": {"uv": [9.5, 2, 10, 2.5], "texture": "#1"},
+				"west": {"uv": [9.5, 2, 10, 2.5], "texture": "#1"},
+				"up": {"uv": [9.5, 2, 10, 2.5], "texture": "#1"},
+				"down": {"uv": [9.5, 2, 10, 2.5], "texture": "#1"}
+			},
+			"light_emission": 10
+		},
+		{
+			"name": "AppleLeaf",
+			"from": [6.5, 9.5, 7.5],
+			"to": [8.5, 9.5, 9.5],
+			"rotation": {"x": 14.97401, "y": -20.25437, "z": -52.68944, "origin": [7.5, 9.5, 8.5]},
+			"faces": {
+				"north": {"uv": [0, 0, 0, 2.59091], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"south": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"up": {"uv": [12.5, 0, 11.5, 1], "texture": "#1"},
+				"down": {"uv": [11.5, 0, 12.5, 1], "texture": "#1"}
+			},
+			"light_emission": 10
+		},
+		{
+			"name": "AppleBody",
+			"from": [6, 5.5, 6],
+			"to": [10, 9.5, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 7.5, 8]},
+			"faces": {
+				"north": {"uv": [9.5, 0, 11.5, 2], "texture": "#1"},
+				"east": {"uv": [9.5, 0, 11.5, 2], "texture": "#1"},
+				"south": {"uv": [9.5, 0, 11.5, 2], "texture": "#1"},
+				"west": {"uv": [9.5, 0, 11.5, 2], "texture": "#1"},
+				"up": {"uv": [9.5, 0, 11.5, 2], "texture": "#1"},
+				"down": {"uv": [9.5, 0, 11.5, 2], "texture": "#1"}
+			},
+			"light_emission": 10
+		}
+	],
+	"groups": [
+		{
+			"name": "Apple",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [0, 1, 2]
+		}
+	]
+}

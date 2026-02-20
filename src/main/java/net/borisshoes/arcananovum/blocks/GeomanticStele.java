@@ -1,12 +1,16 @@
 package net.borisshoes.arcananovum.blocks;
 
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.*;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -17,6 +21,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,10 +47,12 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -67,7 +74,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       itemVersion = 0;
       vanillaItem = Items.REINFORCED_DEEPSLATE;
-      block = new GeomanticSteleBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(6.0f, 1200.0f).sound(SoundType.LODESTONE));
+      block = new GeomanticSteleBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(6.0f, 1200.0f).sound(SoundType.LODESTONE));
       item = new GeomanticSteleItem(block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.OBTAIN_AMETHYST_SHARD};
@@ -193,7 +200,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public class GeomanticSteleBlock extends ArcanaPolymerBlockEntity {
+   public class GeomanticSteleBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {
       public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
       
       public GeomanticSteleBlock(BlockBehaviour.Properties settings){
@@ -202,7 +209,11 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.REINFORCED_DEEPSLATE.defaultBlockState();
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            return Blocks.REINFORCED_DEEPSLATE.defaultBlockState();
+         }
       }
       
       @Override
@@ -237,6 +248,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
                   level.scheduleTick(blockPos, this, 4);
                } else if (level.getBlockEntity(blockPos) instanceof GeomanticSteleBlockEntity stele && stele.isAssembled() && !stele.getItem().isEmpty()) {
                   level.setBlock(blockPos,blockState.setValue(ACTIVE,true),Block.UPDATE_ALL);
+                  level.gameEvent(GameEvent.BLOCK_ACTIVATE, blockPos, GameEvent.Context.of(blockState));
                }
             }
          }
@@ -246,6 +258,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       protected void tick(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, RandomSource randomSource) {
          if (blockState.getValue(ACTIVE) && !serverLevel.hasNeighborSignal(blockPos)) {
             serverLevel.setBlock(blockPos, blockState.cycle(ACTIVE), 2);
+            serverLevel.gameEvent(GameEvent.BLOCK_DEACTIVATE, blockPos, GameEvent.Context.of(blockState));
          }
       }
       
@@ -261,6 +274,25 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
          GeomanticSteleBlockEntity stele = (GeomanticSteleBlockEntity) world.getBlockEntity(pos);
          if(stele != null && player instanceof ServerPlayer serverPlayer && stele.interact(serverPlayer, ItemStack.EMPTY)) return InteractionResult.SUCCESS_SERVER;
          return InteractionResult.PASS;
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return new Model(world, initialBlockState);
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      public static final ItemStack STELE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/geomantic_stele"));
+      
+      private final ServerLevel world;
+      private final ItemDisplayElement main;
+      
+      public Model(ServerLevel world, BlockState state){
+         this.world = world;
+         this.main = ItemDisplayElementUtil.createSimple(STELE);
+         this.main.setScale(new Vector3f(1f));
+         this.addElement(this.main);
       }
    }
    

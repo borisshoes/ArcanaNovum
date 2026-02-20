@@ -37,6 +37,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerListener;
+import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
@@ -422,7 +423,6 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                .append(Component.translatable(getStack().getItem().getDescriptionId()).withStyle(ChatFormatting.DARK_PURPLE)))));
       }
       
-      
       if(!selected.isEmpty()){
          enchantItem.addLoreLine(TextUtils.removeItalics(Component.empty()));
          enchantItem.addLoreLine(TextUtils.removeItalics(Component.literal("Adding: ").withStyle(ChatFormatting.DARK_PURPLE)));
@@ -778,7 +778,12 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
    
    @Override
    public void onClose(){
-      MinecraftUtils.returnItems(inventory, player);
+      if(!player.isDeadOrDying() && !player.isSpectator()){
+         MinecraftUtils.returnItems(inventory,player);
+      }else if(blockEntity.getLevel() != null){
+         Containers.dropContents(blockEntity.getLevel(), blockEntity.getBlockPos().above(1), inventory);
+      }
+      this.inventory.clearContent();
       onVirtualInventoryClose();
       super.onClose();
    }
@@ -809,8 +814,8 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       if(!updating){
          setUpdating();
          ItemStack mainStack = inv.getItem(0);
-         buildPage();
          setItem(mainStack);
+         buildPage();
          //Update gui
          finishUpdate();
       }

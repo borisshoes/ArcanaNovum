@@ -435,7 +435,7 @@ public class DefaultRecipeGenerator {
       // ===================================
       //          CETACEA CHARM
       // ===================================
-      a = new ArcanaIngredient(Items.TURTLE_SCUTE,9);
+      a = new ArcanaIngredient(Items.TURTLE_SCUTE,1);
       b = new ArcanaIngredient(Items.PRISMARINE_CRYSTALS,2);
       c = new ArcanaIngredient(Items.PUFFERFISH,2);
       d = new ArcanaIngredient(Items.POTION,1).withPotion(Potions.STRONG_SWIFTNESS);

@@ -1,0 +1,70 @@
+{
+	"format_version": "1.21.11",
+	"textures": {
+		"1": "arcananovum:block/starlight_forge_decals",
+		"particle": "arcananovum:block/starlight_forge_decals"
+	},
+	"ambientocclusion": false,
+	"elements": [
+		{
+			"name": "BlackHoleCore",
+			"from": [6.9477, 7.01071, 6.95392],
+			"to": [8.9477, 9.01071, 8.95392],
+			"rotation": {"x": 22.47096, "y": -11.2531, "z": 25.25766, "origin": [7.9977, 8.01071, 8.00391]},
+			"faces": {
+				"north": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"up": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#1"}
+			},
+			"light_emission": 15
+		},
+		{
+			"name": "BlackHoleRim",
+			"from": [9.1977, 9.26071, 9.20391],
+			"to": [6.6977, 6.76071, 6.70391],
+			"rotation": {"x": 22.47096, "y": -11.2531, "z": 25.25766, "origin": [7.9977, 8.01071, 8.00391]},
+			"faces": {
+				"north": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"east": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"south": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"west": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"up": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"down": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"}
+			},
+			"light_emission": 15
+		},
+		{
+			"name": "BlackHoleSpiral",
+			"from": [5.5477, 7.76071, 5.55391],
+			"to": [10.5477, 8.26071, 10.55391],
+			"rotation": {"x": 22.47096, "y": -11.2531, "z": 25.25766, "origin": [7.9977, 8.01071, 8.00391]},
+			"faces": {
+				"north": {"uv": [7, 1, 9.5, 1.25], "texture": "#1"},
+				"east": {"uv": [7, 1, 9.5, 1.25], "texture": "#1"},
+				"south": {"uv": [7, 1, 9.5, 1.25], "texture": "#1"},
+				"west": {"uv": [7, 1, 9.5, 1.25], "texture": "#1"},
+				"up": {"uv": [4, 1.5, 6.5, 4], "texture": "#1"},
+				"down": {"uv": [4, 1.5, 6.5, 4], "texture": "#1"}
+			},
+			"light_emission": 15
+		}
+	],
+	"groups": [
+		{
+			"name": "StarlightDecals",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [
+				{
+					"name": "BlackHole",
+					"origin": [8, 8, 8],
+					"color": 0,
+					"children": [0, 1, 2]
+				}
+			]
+		}
+	]
+}

@@ -1,7 +1,7 @@
 {
     "model": {
         "type": "minecraft:model",
-        "model": "minecraft:block/anvil"
+        "model": "arcananovum:item/twilight_anvil"
     },
-    "hand_animation_on_swap": false
+    "hand_animation_on_swap": true
 }

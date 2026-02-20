@@ -7,35 +7,35 @@
                 "when": "yellow",
                 "model": {
                     "type": "minecraft:model",
-                    "model": "minecraft:item/lantern"
+                    "model": "arcananovum:item/itineranteur_yellow"
                 }
             },
             {
                 "when": "blue",
                 "model": {
                     "type": "minecraft:model",
-                    "model": "minecraft:item/soul_lantern"
+                    "model": "arcananovum:item/itineranteur_blue"
                 }
             },
             {
                 "when": "copper",
                 "model": {
                     "type": "minecraft:model",
-                    "model": "minecraft:item/copper_lantern"
+                    "model": "arcananovum:item/itineranteur_unoxidized"
                 }
             },
             {
                 "when": "green",
                 "model": {
                     "type": "minecraft:model",
-                    "model": "minecraft:item/oxidized_copper_lantern"
+                    "model": "arcananovum:item/itineranteur_oxidized"
                 }
             }
         ],
         "fallback": {
             "type": "minecraft:model",
-            "model": "minecraft:item/lantern"
+            "model": "arcananovum:item/itineranteur_yellow"
         }
     },
-    "hand_animation_on_swap": false
+    "hand_animation_on_swap": true
 }

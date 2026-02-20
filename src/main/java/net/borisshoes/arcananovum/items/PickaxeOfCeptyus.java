@@ -25,6 +25,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.Unit;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -159,8 +161,12 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       
       List<ItemStack> drops = new ArrayList<>();
       ItemStack veinPick = new ItemStack(Items.NETHERITE_PICKAXE);
-      veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.FORTUNE),5 + greed[greedLvl]);
-      veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),5);
+      if(EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),item) <= 0){
+         veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.FORTUNE),5 + greed[greedLvl]);
+      }else{
+         veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),1);
+      }
+      veinPick.set(DataComponents.UNBREAKABLE, Unit.INSTANCE);
       
       for(BlockPos blockPos : toMine){
          drops.addAll(Block.getDrops(world.getBlockState(blockPos), serverWorld, blockPos, null, player, veinPick));

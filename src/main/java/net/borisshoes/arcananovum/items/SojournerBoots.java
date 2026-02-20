@@ -208,7 +208,7 @@ public class SojournerBoots extends EnergyItem {
       public SojournerBootsItem(){
          super(getThis(),getEquipmentArcanaItemComponents()
                .humanoidArmor(ArmorMaterials.NETHERITE, ArmorType.BOOTS)
-               .component(DataComponents.DYED_COLOR,new DyedItemColor(0x33A900))
+               .component(DataComponents.DYED_COLOR,new DyedItemColor(0xFF33A900))
                .attributes(ArmorMaterials.NETHERITE.createAttributes(ArmorType.BOOTS)
                      .withModifierAdded(Attributes.STEP_HEIGHT, new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.FEET)
                )

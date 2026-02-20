@@ -6,6 +6,7 @@ import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.resourcepack.extras.api.ResourcePackExtras;
 import io.github.ladysnake.pal.AbilitySource;
 import io.github.ladysnake.pal.Pal;
 import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
@@ -642,6 +643,8 @@ public class ArcanaRegistry {
       ASTRAL_GATEWAY_PORTAL_BLOCK_ENTITY = registerBlockEntity("astral_gateway_portal", FabricBlockEntityTypeBuilder.create(AstralGatewayPortalBlockEntity::new, ASTRAL_GATEWAY_PORTAL_BLOCK).build());
       
       PolymerResourcePackUtils.addModAssets(MOD_ID);
+      ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.fromNamespaceAndPath(MOD_ID,"block"));
+      
       FabricDefaultAttributeRegistry.register(DRAGON_WIZARD_ENTITY, DragonWizardEntity.createWizardAttributes());
       FabricDefaultAttributeRegistry.register(DRAGON_PHANTOM_ENTITY, DragonPhantomEntity.createPhantomAttributes());
       FabricDefaultAttributeRegistry.register(NUL_CONSTRUCT_ENTITY, NulConstructEntity.createConstructAttributes());

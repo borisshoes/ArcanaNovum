@@ -3,7 +3,7 @@
     "humanoid": [
       {
         "dyeable": {
-          "color_when_undyed": 3385600
+          "color_when_undyed": -13001472
         },
         "texture": "arcananovum:sojourner_boots"
       },

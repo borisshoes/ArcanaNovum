@@ -1,11 +1,19 @@
 package net.borisshoes.arcananovum.blocks.astralgateway;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.InteractionElement;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.Waystone;
@@ -27,6 +35,7 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.*;
@@ -40,6 +49,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -48,12 +58,15 @@ import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -92,6 +105,9 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    private int warmupDuration;
    private int cooldownDuration;
    private int findCooldown;
+   private ElementHolder hologram;
+   private HolderAttachment attachment;
+   private int interactCooldown = 0;
    private static final int LOCK_DURATION = 100;
    private static final int STARDUST_PER_MINUTE = 64;
    private static final double[] RECYCLER_RATE = new double[]{1.0,0.9,0.8,0.7,0.5,0.25,0};
@@ -133,12 +149,26 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          return;
       }
       
+      if(serverWorld.getServer().getTickCount() % 10 == 0){
+         if(validWaystone(this.inventory.getItem(0))){
+            Vec3 pos = getHologramPos();
+            Player player = serverWorld.getNearestPlayer(pos.x(),pos.y(),pos.z(), 32, entity -> true);
+            if(player != null && hologram == null){
+               hologram = getNewHologram(serverWorld);
+               if(hologram != null) attachment = ChunkAttachment.ofTicking(this.hologram,serverWorld,pos);
+            }else if(player == null && hologram != null){
+               hologram.destroy();
+               hologram = null;
+            }
+         }
+      }
+      
       GatewayState state = getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
       if(serverWorld.getServer().getTickCount() % 20 == 0 && state != GatewayState.CLOSED){
          ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
       }
       
-      if(serverWorld.getServer().getTickCount() % 250 == 0 && state != GatewayState.CLOSED){
+      if(serverWorld.getServer().getTickCount() % 200 == 0 && state != GatewayState.CLOSED){
          serverWorld.getChunkSource().addTicketWithRadius(TicketType.PORTAL, new ChunkPos(this.getBlockPos()), 2);
          if(syncedGateway != null && syncedGateway.getLevel() instanceof ServerLevel otherLevel){
             otherLevel.getChunkSource().addTicketWithRadius(TicketType.PORTAL, new ChunkPos(syncedGateway.getBlockPos()), 2);
@@ -306,7 +336,6 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          finalYaw = 0;
       }else if(thisY){ // Align directly to portal
          finalYaw = destDir.toYRot()-finalYaw;
-         
       }else{ // Rotate player
          float sourceYaw = sourceDir.toYRot();
          float destYaw = destDir.toYRot();
@@ -560,12 +589,111 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    }
    
    private void setState(GatewayState state){
-      this.level.setBlock(getBlockPos(),this.getBlockState().setValue(AstralGateway.AstralGatewayBlock.STATE,state),Block.UPDATE_ALL);
+      if(this.level.getBlockState(getBlockPos()).is(((ArcanaBlock)ArcanaRegistry.ASTRAL_GATEWAY).getBlock())){
+         if(this.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) == GatewayState.CLOSED && state != GatewayState.WARMUP){
+            level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
+         }else if(this.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.CLOSED && state == GatewayState.CLOSED){
+            level.gameEvent(GameEvent.BLOCK_DEACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
+         }
+         this.level.setBlock(getBlockPos(),this.getBlockState().setValue(AstralGateway.AstralGatewayBlock.STATE,state),Block.UPDATE_ALL);
+      }
       this.stateTime = 0;
       if(state == GatewayState.CLOSED){
          this.syncedGateway = null;
          this.dialler = false;
       }
+   }
+   
+   public boolean interact(ServerPlayer player, ItemStack stack){
+      player.getCooldowns().addCooldown(player.getMainHandItem(), 1);
+      player.getCooldowns().addCooldown(player.getOffhandItem(), 1);
+      // TODO
+      return false;
+   }
+   
+   private Vec3 getHologramPos(){
+      return this.getBlockPos().getCenter();
+   }
+   
+   private ElementHolder getNewHologram(ServerLevel world){
+      ItemStack stone = this.inventory.getItem(0);
+      if(!validWaystone(stone)) return null;
+      ItemDisplayElement icon = new ItemDisplayElement(stone);
+      icon.setInterpolationDuration(3);
+      InteractionElement click = new InteractionElement(new VirtualElement.InteractionHandler(){
+         public void click(ServerPlayer player, ItemStack stack){
+            if(interactCooldown == 0){
+               AstralGatewayBlockEntity.this.interact(player,stack);
+               interactCooldown = 5;
+            }
+         }
+         
+         @Override
+         public void interact(ServerPlayer player, InteractionHand hand){
+            click(player,player.getItemInHand(hand));
+         }
+         
+         @Override
+         public void interactAt(ServerPlayer player, InteractionHand hand, Vec3 pos){
+            click(player,player.getItemInHand(hand));
+         }
+      });
+      click.setSize(0.65f,0.65f);
+      
+      ElementHolder holder = new ElementHolder() {
+         ServerLevel serverLevel = world;
+         private final ItemDisplayElement iconElem = icon;
+         private final InteractionElement clickElem = click;
+         private int tickCount = 0;
+         private float currentYaw = 0f;
+         
+         @Override
+         protected void onTick(){
+            super.onTick();
+            
+            if(!validWaystone(AstralGatewayBlockEntity.this.inventory.getItem(0))){
+               AstralGatewayBlockEntity.this.hologram = null;
+               destroy();
+               return;
+            }
+            
+            tickCount++;
+            if(interactCooldown > 0) interactCooldown--;
+            
+            float f = Mth.TWO_PI / 80f;
+            float yOffset;
+            
+            if(AstralGatewayBlockEntity.this.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.CLOSED){
+               currentYaw -= 5.5f * Mth.DEG_TO_RAD;
+               yOffset = 0.625f + 0.85f * f * Mth.cos(f * tickCount) + 0.1f;
+            }else{
+               currentYaw += 0.5f * Mth.DEG_TO_RAD;
+               yOffset = 0.625f + 0.6f * f * Mth.cos(f * tickCount);
+            }
+            if(currentYaw > Mth.TWO_PI) currentYaw -= Mth.TWO_PI;
+            if(currentYaw < 0) currentYaw += Mth.TWO_PI;
+            
+            Matrix4f matrix = new Matrix4f();
+            matrix.translate(0, yOffset, 0);
+            matrix.rotateY(currentYaw);
+            matrix.scale(0.5f);
+            iconElem.setTransformation(matrix);
+            iconElem.startInterpolation();
+         }
+      };
+      
+      click.setOffset(new Vec3(0,0.375,0));
+      icon.setOffset(Vec3.ZERO);
+      
+      // Set initial transformation before adding to prevent interpolation from default position
+      Matrix4f initialMatrix = new Matrix4f();
+      initialMatrix.translate(0, 0.625f, 0);
+      initialMatrix.scale(0.5f);
+      icon.setTransformation(initialMatrix);
+      
+      holder.addElement(icon);
+      holder.addElement(click);
+      return holder;
    }
    
    @Override
@@ -577,8 +705,22 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          this.stardust += stardustStack.getCount();
       }
       ItemStack waystone = container.getItem(0);
-      this.level.setBlock(getBlockPos(),getBlockState().setValue(AstralGateway.AstralGatewayBlock.HAS_EYE,!waystone.isEmpty()),Block.UPDATE_ALL);
+      if(this.level.getBlockState(getBlockPos()).is(((ArcanaBlock)ArcanaRegistry.ASTRAL_GATEWAY).getBlock()))
+         this.level.setBlock(getBlockPos(),getBlockState().setValue(AstralGateway.AstralGatewayBlock.HAS_EYE,!waystone.isEmpty()),Block.UPDATE_ALL);
       if(!stardustStack.isEmpty()) this.inventory.setItem(1,ItemStack.EMPTY);
+      
+      // Update hologram item if it exists
+      if(this.hologram != null){
+         for(var element : this.hologram.getElements()){
+            if(element instanceof ItemDisplayElement itemDisplay){
+               if(validWaystone(waystone)){
+                  itemDisplay.setItem(waystone);
+               }
+               break;
+            }
+         }
+      }
+      
       evaluateForOpenOrClose();
       updating = false;
    }
@@ -753,6 +895,9 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       if(!(this.level instanceof ServerLevel serverWorld)) return;
       if(!this.inventory.getItem(0).isEmpty()){
          Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), this.inventory.getItem(0).copyAndClear());
+      }
+      if(oldState.getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.CLOSED || this.syncedGateway != null){
+         frameBreak();
       }
    }
    

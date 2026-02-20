@@ -1,0 +1,54 @@
+{
+	"format_version": "1.21.11",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "arcananovum:block/spawner_infuser",
+		"particle": "arcananovum:block/spawner_infuser"
+	},
+	"elements": [
+		{
+			"from": [6, 4.5, 8],
+			"to": [10, 13.5, 12],
+			"rotation": {"x": 90, "y": 67.5, "z": 90, "origin": [8, 12, 10]},
+			"faces": {
+				"north": {"uv": [11.5, 16, 16, 14], "rotation": 90, "texture": "#0"},
+				"east": {"uv": [11.5, 14, 16, 16], "rotation": 90, "texture": "#0"},
+				"south": {"uv": [11.5, 14, 16, 16], "rotation": 90, "texture": "#0"},
+				"west": {"uv": [11.5, 16, 16, 14], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [9.5, 14, 11.5, 16], "texture": "#0"}
+			}
+		},
+		{
+			"from": [5, 12.5, 8.5],
+			"to": [8, 18.5, 11.5],
+			"rotation": {"x": 90.00001, "y": 80, "z": 90, "origin": [8, 20, 10]},
+			"faces": {
+				"north": {"uv": [6.5, 16, 9.5, 14.5], "rotation": 90, "texture": "#0"},
+				"east": {"uv": [6.5, 14.5, 9.5, 16], "rotation": 90, "texture": "#0"},
+				"south": {"uv": [6.5, 14.5, 9.5, 16], "rotation": 90, "texture": "#0"},
+				"west": {"uv": [6.5, 16, 9.5, 14.5], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [5, 14.5, 6.5, 16], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6.2, 17.5, 9],
+			"to": [8.2, 23.5, 11],
+			"rotation": {"x": -90.00002, "y": 77.5, "z": -90.00002, "origin": [8, 20, 10]},
+			"faces": {
+				"north": {"uv": [2, 16, 5, 15], "rotation": 90, "texture": "#0"},
+				"east": {"uv": [2, 15, 5, 16], "rotation": 90, "texture": "#0"},
+				"south": {"uv": [2, 16, 5, 15], "rotation": 90, "texture": "#0"},
+				"west": {"uv": [2, 15, 5, 16], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [1, 15, 2, 16], "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "group",
+			"origin": [1.5, 1.5, 14.5],
+			"color": 0,
+			"children": [0, 1, 2]
+		}
+	]
+}

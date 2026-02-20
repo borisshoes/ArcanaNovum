@@ -1,5 +1,16 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.factorytools.api.virtualentity.LodItemDisplayElement;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.resourcepack.api.AssetPaths;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -14,18 +25,24 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Brightness;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -38,6 +55,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -47,6 +65,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Map.entry;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
+import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.LIT;
 
 public class StellarCore extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "stellar_core";
@@ -72,10 +92,11 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.BLAST_FURNACE;
-      block = new StellarCoreBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(3.5f,1200.0f).lightLevel(StellarCoreBlock::getLightLevel).sound(SoundType.METAL));
+      block = new StellarCoreBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(3.5f,1200.0f).lightLevel(StellarCoreBlock::getLightLevel).sound(SoundType.METAL));
       item = new StellarCoreItem(block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.OBTAIN_BLAST_FURNACE,ResearchTasks.OBTAIN_NETHERITE_INGOT};
+      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("ii_iridescent")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -155,7 +176,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public class StellarCoreBlock extends ArcanaPolymerBlockEntity {
+   public class StellarCoreBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {
       public static final BooleanProperty LIT = BlockStateProperties.LIT;
       public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
       
@@ -165,7 +186,11 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.BLAST_FURNACE.defaultBlockState().setValue(LIT,state.getValue(LIT)).setValue(HORIZONTAL_FACING,state.getValue(HORIZONTAL_FACING));
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            return Blocks.BLAST_FURNACE.defaultBlockState().setValue(LIT,state.getValue(LIT)).setValue(HORIZONTAL_FACING,state.getValue(HORIZONTAL_FACING));
+         }
       }
       
       @Nullable
@@ -222,6 +247,47 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       
       public static int getLightLevel(BlockState state){
          return state.getValue(BlockStateProperties.LIT) ? 13 : 0;
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return new Model(world, initialBlockState);
+      }
+      
+      @Override
+      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return true;
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      public static final ItemStack CORE_LIT = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/stellar_core_lit"));
+      public static final ItemStack CORE_UNLIT = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/stellar_core_unlit"));
+      
+      private final ServerLevel world;
+      private final ItemDisplayElement main;
+      private boolean lit;
+      
+      public Model(ServerLevel world, BlockState state) {
+         this.lit = state.getValue(LIT);
+         this.world = world;
+         float direction = state.getValue(HORIZONTAL_FACING).toYRot();
+         
+         this.main = ItemDisplayElementUtil.createSimple(this.lit ? CORE_LIT : CORE_UNLIT);
+         this.main.setScale(new Vector3f(2f));
+         this.main.setYaw(direction);
+         this.addElement(this.main);
+      }
+      
+      @Override
+      public void notifyUpdate(HolderAttachment.UpdateType updateType) {
+         if (updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE) {
+            BlockState state = this.blockState();
+            if(this.lit ^ state.getValue(LIT)){
+               this.lit = state.getValue(LIT);
+               this.main.setItem(this.lit ? CORE_LIT : CORE_UNLIT);
+            }
+         }
       }
    }
 }

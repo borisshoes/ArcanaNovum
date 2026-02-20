@@ -587,7 +587,7 @@ public class ArcanaPlayerData implements StorableData {
                }
             }
          }else{
-            augments.put(augment, level);
+            augments.put(aug, level);
          }
       }
       

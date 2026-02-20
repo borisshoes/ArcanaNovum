@@ -1092,7 +1092,7 @@ public class ArcanaAugments {
    
    public static int getAugmentFromCompound(CompoundTag compound, ArcanaAugment augment){
       if(!registry.containsKey(augment.id)) return -1;
-      CompoundTag augmentTag = compound.getCompoundOrEmpty("augments");
+      CompoundTag augmentTag = compound.contains("augments") ? compound.getCompoundOrEmpty("augments") : compound;
       if(augmentTag.contains(augment.id)){
          return augmentTag.getIntOr(augment.id, 0);
       }

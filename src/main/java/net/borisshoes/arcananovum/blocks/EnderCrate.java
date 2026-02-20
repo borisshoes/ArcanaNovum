@@ -1,17 +1,21 @@
 package net.borisshoes.arcananovum.blocks;
 
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
-import net.borisshoes.arcananovum.ArcanaRegistry;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
-import net.borisshoes.arcananovum.blocks.astralgateway.GatewayMode;
-import net.borisshoes.arcananovum.blocks.astralgateway.GatewayState;
+import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannels;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
@@ -19,6 +23,7 @@ import net.borisshoes.arcananovum.gui.endercrate.EnderCrateChannelGui;
 import net.borisshoes.arcananovum.gui.endercrate.EnderCrateGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.datastorage.DataAccess;
@@ -33,27 +38,21 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -64,20 +63,22 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -88,6 +89,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.EnderCrate.EnderCrateBlock.HORIZONTAL_FACING;
 
 public class EnderCrate extends ArcanaBlock {
    public static final String CHANNEL_TAG = "channel";
@@ -103,7 +105,7 @@ public class EnderCrate extends ArcanaBlock {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       itemVersion = 0;
       vanillaItem = Items.ENDER_CHEST;
-      block = new EnderCrateBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(4.0f, 1200.0f).sound(SoundType.WOOD));
+      block = new EnderCrateBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(4.0f, 1200.0f).sound(SoundType.WOOD));
       item = new EnderCrateItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER,ResearchTasks.USE_ENDER_CHEST};
@@ -152,12 +154,19 @@ public class EnderCrate extends ArcanaBlock {
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
       lore.add(Component.literal("")
             .append(Component.literal("Sneak Use").withStyle(ChatFormatting.DARK_GREEN))
-            .append(Component.literal(" the ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal(" a placed ").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal("Crate ").withStyle(ChatFormatting.LIGHT_PURPLE))
-            .append(Component.literal("in your ").withStyle(ChatFormatting.DARK_PURPLE))
-            .append(Component.literal("offhand ").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal("to ").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal("alter").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal(" its ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("channel").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
+      lore.add(Component.literal("")
+            .append(Component.literal("Use").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal(" on a placed ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("Crate ").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal("to ").withStyle(ChatFormatting.DARK_PURPLE))
+            .append(Component.literal("copy").withStyle(ChatFormatting.DARK_GREEN))
             .append(Component.literal(" its ").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal("channel").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
@@ -170,7 +179,7 @@ public class EnderCrate extends ArcanaBlock {
             channelComp.append(Component.literal("\uD83D\uDD12 Private Channel: ").withStyle(ChatFormatting.GREEN));
             DefaultPlayerData playerData = DataAccess.getPlayer(channel.getIdLock(), BorisLib.PLAYER_DATA_KEY);
             if(playerData.getUsername().isEmpty()) playerData.tryResolve(BorisLib.SERVER);
-            channelComp.append(playerData.getFaceTextComponent());
+            channelComp.append(playerData.getFaceTextComponent().copy().withStyle(ChatFormatting.WHITE));
             channelComp.append(Component.literal(" - "));
          }else{
             channelComp.append(Component.literal("\uD83D\uDD13 Public Channel: ").withStyle(ChatFormatting.LIGHT_PURPLE));
@@ -262,7 +271,7 @@ public class EnderCrate extends ArcanaBlock {
       }
    }
    
-   public class EnderCrateBlock extends ArcanaPolymerBlockEntity implements SimpleWaterloggedBlock {
+   public class EnderCrateBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock, SimpleWaterloggedBlock {
       public static final EnumProperty<Direction> HORIZONTAL_FACING = HorizontalDirectionalBlock.FACING;
       public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
       private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 14.0);
@@ -273,7 +282,11 @@ public class EnderCrate extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.ENDER_CHEST.defaultBlockState().setValue(WATERLOGGED, state.getValue(WATERLOGGED)).setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            return Blocks.ENDER_CHEST.defaultBlockState().setValue(WATERLOGGED, state.getValue(WATERLOGGED)).setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
+         }
       }
       
       @Override
@@ -334,12 +347,14 @@ public class EnderCrate extends ArcanaBlock {
       
       @Override
       public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, PacketContext.NotNullWithPlayer contexts){
-         CompoundTag main = new CompoundTag();
-         main.putString("id", "minecraft:ender_chest");
-         main.putInt("x", pos.getX());
-         main.putInt("y", pos.getY());
-         main.putInt("z", pos.getZ());
-         contexts.getPlayer().connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityType.ENDER_CHEST,main));
+         if(!PolymerResourcePackUtils.hasMainPack(contexts.getPlayer())){
+            CompoundTag main = new CompoundTag();
+            main.putString("id", "minecraft:ender_chest");
+            main.putInt("x", pos.getX());
+            main.putInt("y", pos.getY());
+            main.putInt("z", pos.getZ());
+            contexts.getPlayer().connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityType.ENDER_CHEST,main));
+         }
       }
       
       @Override
@@ -365,7 +380,8 @@ public class EnderCrate extends ArcanaBlock {
             EnderCrateChannel channel = crate.getChannel();
             EnderCrateChannel otherChannel = EnderCrate.getChannelOrDefault(itemStack);
             UUID lock = channel.getIdLock();
-            if(channel.equals(otherChannel)){
+            boolean canLock = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.BIOMETRIC_CHANNELS) > 0;
+            if(channel.equals(otherChannel) || (channel.isLocked() && !canLock)){
                return InteractionResult.TRY_WITH_EMPTY_HAND;
             }else if(lock == null || lock.equals(player.getUUID())){
                ArcanaItem.putProperty(itemStack,CHANNEL_TAG,EnderCrate.colorsToTag(channel.getColors()));
@@ -415,6 +431,7 @@ public class EnderCrate extends ArcanaBlock {
                      gui.setWatched(crate);
                      gui.build();
                      gui.open();
+                     level.gameEvent(GameEvent.CONTAINER_OPEN, blockPos, GameEvent.Context.of(blockState));
                   }else{
                      EnderCrateGui gui = new EnderCrateGui(serverPlayer, crate);
                      gui.open();
@@ -427,6 +444,107 @@ public class EnderCrate extends ArcanaBlock {
          }else{
             return InteractionResult.SUCCESS_SERVER;
          }
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return new Model(world, initialBlockState);
+      }
+      
+      @Override
+      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
+         return true;
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      public static final ItemStack CRATE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/ender_crate"));
+      
+      // Direction offsets for each horizontal face (North, South, East, West)
+      private static final Direction[] FACES = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+      private static final float TEXT_OFFSET = 0.455f; // Distance from center to face
+      private static final float TEXT_SCALE_VERT = 0.25f;
+      private static final float TEXT_SCALE_HORZ = 0.275f;
+      private static final byte TEXT_OPACITY = (byte)(255 * 1.00); // 80% opacity
+      
+      private final ServerLevel world;
+      private final ItemDisplayElement main;
+      private final TextDisplayElement[] codes;
+      private EnderCrateChannel channel;
+      private int ticks;
+      
+      public Model(ServerLevel world, BlockState state){
+         this.world = world;
+         this.main = ItemDisplayElementUtil.createSimple(CRATE);
+         this.main.setYaw(state.getValue(HORIZONTAL_FACING).toYRot());
+         this.main.setScale(new Vector3f(1f));
+         this.addElement(this.main);
+         
+         // Initialize the 4 text displays for each horizontal face
+         this.codes = new TextDisplayElement[4];
+         for(int i = 0; i < 4; i++){
+            codes[i] = new TextDisplayElement();
+            codes[i].setScale(new Vector3f(TEXT_SCALE_HORZ,TEXT_SCALE_VERT,TEXT_SCALE_HORZ));
+            codes[i].setTextOpacity(TEXT_OPACITY);
+            codes[i].setLineWidth(1000); // Prevent line wrapping
+            
+            // Position and rotate based on face direction
+            Direction face = FACES[i];
+            float yaw = face.toYRot();
+            Vec3 offset = new Vec3(
+                  face.getStepX() * TEXT_OFFSET,
+                  -0.0625, // 3 pixels lower
+                  face.getStepZ() * TEXT_OFFSET
+            );
+            codes[i].setOffset(offset);
+            codes[i].setYaw(yaw);
+            
+            this.addElement(codes[i]);
+         }
+      }
+      
+      private void updateCodeDisplays(){
+         if(channel == null) return;
+         
+         DyeColor[] colors = channel.getColors();
+         MutableComponent text = Component.literal("");
+         
+         for(DyeColor color : colors){
+            if(color == null){
+               text.append(Component.literal("░").withColor(0xc7fcfb));
+            }else{
+               text.append(Component.literal("█").withColor(color.getFireworkColor()));
+            }
+         }
+         
+         // Set background based on lock status
+         int background;
+         if(channel.isLocked()){
+            // ARGB format: alpha in high byte, then RGB
+            background = (0xCC << 24) | ArcanaColors.ARCANA_COLOR; // ~80% alpha
+         }else{
+            background = 0; // Fully transparent
+         }
+         
+         for(TextDisplayElement code : codes){
+            code.setText(text);
+            code.setBackground(background);
+         }
+      }
+      
+      @Override
+      public void tick(){
+         super.tick();
+         
+         if(this.ticks % 20 == 0){
+            BlockEntity entity = world.getBlockEntity(blockPos());
+            if(entity instanceof EnderCrateBlockEntity crate){
+               this.channel = crate.getChannel();
+               updateCodeDisplays();
+            }
+         }
+         
+         this.ticks++;
       }
    }
 }

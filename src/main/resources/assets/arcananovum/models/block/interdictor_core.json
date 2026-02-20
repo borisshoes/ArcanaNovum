@@ -1,0 +1,23 @@
+{
+	"format_version": "1.21.11",
+	"textures": {
+		"1": "arcananovum:block/interdictor_swirl",
+		"particle": "arcananovum:block/interdictor_base"
+	},
+	"elements": [
+		{
+			"from": [7, 8.2, 7.1],
+			"to": [9, 10.2, 9.1],
+			"rotation": {"x": -26.56505, "y": -24.09484, "z": -39.23152, "origin": [8, 9.2, 8.1]},
+			"faces": {
+				"north": {"uv": [14, 14, 16, 16], "texture": "#1"},
+				"east": {"uv": [14, 14, 16, 16], "texture": "#1"},
+				"south": {"uv": [14, 14, 16, 16], "texture": "#1"},
+				"west": {"uv": [14, 14, 16, 16], "texture": "#1"},
+				"up": {"uv": [14, 14, 16, 16], "texture": "#1"},
+				"down": {"uv": [14, 14, 16, 16], "texture": "#1"}
+			},
+			"light_emission": 15
+		}
+	]
+}

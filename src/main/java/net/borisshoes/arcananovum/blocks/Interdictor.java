@@ -1,8 +1,20 @@
 package net.borisshoes.arcananovum.blocks;
 
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
+import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanter;
+import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.core.*;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
@@ -22,11 +34,13 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -51,9 +65,12 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -62,6 +79,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.Interdictor.InterdictorBlock.ACTIVE;
 
 public class Interdictor extends ArcanaBlock implements MultiblockCore {
    public static final String ID = "interdictor";
@@ -75,7 +93,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       itemVersion = 0;
       vanillaItem = Items.BEACON;
-      block = new InterdictorBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(6.0f, 1200.0f).sound(SoundType.VAULT));
+      block = new InterdictorBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(6.0f, 1200.0f).lightLevel(InterdictorBlock::getLightLevel).sound(SoundType.VAULT));
       item = new InterdictorItem(block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_MATTER,ResearchTasks.OBTAIN_BEACON,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.OBTAIN_END_CRYSTAL,ResearchTasks.USE_ENDER_EYE,ResearchTasks.ADVANCEMENT_KILL_A_MOB};
@@ -180,7 +198,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public class InterdictorBlock extends ArcanaPolymerBlockEntity {
+   public class InterdictorBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {
       public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
       
       public InterdictorBlock(BlockBehaviour.Properties settings){
@@ -189,7 +207,11 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.BEACON.defaultBlockState();
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            return Blocks.BEACON.defaultBlockState();
+         }
       }
       
       @Override
@@ -222,6 +244,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
                if (currentlyActive) {
                   level.scheduleTick(blockPos, this, 4);
                } else if (level.getBlockEntity(blockPos) instanceof InterdictorBlockEntity interdictor && interdictor.isAssembled()) {
+                  level.gameEvent(GameEvent.BLOCK_ACTIVATE, blockPos, GameEvent.Context.of(blockState));
                   level.setBlock(blockPos,blockState.setValue(ACTIVE,true),Block.UPDATE_ALL);
                }
             }
@@ -232,6 +255,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       protected void tick(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, RandomSource randomSource) {
          if (blockState.getValue(ACTIVE) && !serverLevel.hasNeighborSignal(blockPos)) {
             serverLevel.setBlock(blockPos, blockState.cycle(ACTIVE), 2);
+            serverLevel.gameEvent(GameEvent.BLOCK_DEACTIVATE, blockPos, GameEvent.Context.of(blockState));
          }
       }
       
@@ -250,6 +274,234 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
             return InteractionResult.PASS;
          }else{
             return InteractionResult.PASS;
+         }
+      }
+      
+      public static int getLightLevel(BlockState state){
+         return 15;
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
+         return new Model(world, initialBlockState);
+      }
+      
+      @Override
+      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
+         return true;
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      public static final ItemStack INTERDICTOR_BASE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/interdictor"));
+      public static final ItemStack INTERDICTOR_TOP = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/interdictor_top_shell"));
+      public static final ItemStack INTERDICTOR_BOT = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/interdictor_bottom_shell"));
+      public static final ItemStack INTERDICTOR_CORE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/interdictor_core"));
+      
+      // Base rotation speeds (radians per tick)
+      private static final float SHELL_BASE_SPEED = 0.5f * Mth.DEG_TO_RAD;
+      private static final float CORE_BASE_SPEED = 0.8f * Mth.DEG_TO_RAD;
+      
+      // Active rotation speed multipliers
+      private static final float ACTIVE_SPEED_MULTIPLIER = 100.0f;
+      
+      // Oscillation constants
+      private static final float SHELL_OSCILLATION_AMPLITUDE = 0.03f;
+      private static final float CORE_OSCILLATION_AMPLITUDE = 0.02f;
+      private static final float TOP_SHELL_OSCILLATION_PERIOD = 60f;
+      private static final float BOT_SHELL_OSCILLATION_PERIOD = 50f;
+      private static final float CORE_OSCILLATION_PERIOD = 40f;
+      
+      // Surge constants (for active state)
+      private static final float SURGE_SPEED_BOOST = 2.0f * Mth.DEG_TO_RAD;
+      private static final float SURGE_DECAY = 0.98f; // How quickly surge decays
+      private static final int MIN_SURGE_INTERVAL = 40;
+      private static final int MAX_SURGE_INTERVAL = 120;
+      
+      // Core instability constants (for active state)
+      private static final float SHAKE_AMPLITUDE = 0.015f;
+      private static final float CORE_BURST_SPEED = 50.0f * Mth.DEG_TO_RAD;
+      private static final int MIN_BURST_INTERVAL = 80;
+      private static final int MAX_BURST_INTERVAL = 200;
+      
+      // State transition speed
+      private static final float TRANSITION_SPEED = 0.05f;
+      
+      private final ServerLevel world;
+      private final ItemDisplayElement base;
+      private final ItemDisplayElement top;
+      private final ItemDisplayElement bot;
+      private final ItemDisplayElement core;
+      private boolean active;
+      private int ticks;
+      
+      // Current rotation angles
+      private float topShellAngle;
+      private float botShellAngle;
+      private float coreAngle;
+      
+      // Current speed (for smooth transitions)
+      private float currentSpeedMultiplier = 1.0f;
+      private float targetSpeedMultiplier = 1.0f;
+      
+      // Surge state for shells
+      private float topShellSurge;
+      private float botShellSurge;
+      private int topShellSurgeTimer;
+      private int botShellSurgeTimer;
+      
+      // Core burst and shake state
+      private float coreBurst;
+      private int coreBurstTimer;
+      private float coreShakeX;
+      private float coreShakeZ;
+      
+      // Oscillation phase offsets (for independent movement)
+      private final float topShellPhase;
+      private final float botShellPhase;
+      private final float corePhase;
+      
+      public Model(ServerLevel world, BlockState state){
+         this.world = world;
+         this.active = state.getValue(ACTIVE);
+         this.targetSpeedMultiplier = active ? ACTIVE_SPEED_MULTIPLIER : 1.0f;
+         this.currentSpeedMultiplier = targetSpeedMultiplier;
+         
+         // Random phase offsets for independent oscillation
+         this.topShellPhase = world.random.nextFloat() * Mth.TWO_PI;
+         this.botShellPhase = world.random.nextFloat() * Mth.TWO_PI;
+         this.corePhase = world.random.nextFloat() * Mth.TWO_PI;
+         
+         // Initialize surge/burst timers with staggered starts
+         this.topShellSurgeTimer = MIN_SURGE_INTERVAL + world.random.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
+         this.botShellSurgeTimer = MIN_SURGE_INTERVAL / 2 + world.random.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
+         this.coreBurstTimer = MIN_BURST_INTERVAL / 3 + world.random.nextInt(MAX_BURST_INTERVAL - MIN_BURST_INTERVAL);
+         
+         this.base = ItemDisplayElementUtil.createSimple(INTERDICTOR_BASE);
+         this.base.setScale(new Vector3f(1f));
+         this.addElement(this.base);
+         
+         this.top = ItemDisplayElementUtil.createSimple(INTERDICTOR_TOP);
+         this.top.setInterpolationDuration(2);
+         this.addElement(this.top);
+         
+         this.bot = ItemDisplayElementUtil.createSimple(INTERDICTOR_BOT);
+         this.bot.setInterpolationDuration(2);
+         this.addElement(this.bot);
+         
+         this.core = ItemDisplayElementUtil.createSimple(INTERDICTOR_CORE);
+         this.core.setInterpolationDuration(2);
+         this.addElement(this.core);
+         
+         // Initialize transformations
+         updateTransformations();
+      }
+      
+      private void updateTransformations(){
+         // Top shell: rotates clockwise, oscillates up
+         float topOscillation = SHELL_OSCILLATION_AMPLITUDE * Mth.sin(Mth.TWO_PI * ticks / TOP_SHELL_OSCILLATION_PERIOD + topShellPhase);
+         Matrix4f topMatrix = new Matrix4f();
+         topMatrix.translate(0, topOscillation, 0);
+         topMatrix.rotateY(topShellAngle);
+         this.top.setTransformation(topMatrix);
+         
+         // Bottom shell: rotates counter-clockwise, oscillates (opposite phase from top)
+         float botOscillation = SHELL_OSCILLATION_AMPLITUDE * Mth.sin(Mth.TWO_PI * ticks / BOT_SHELL_OSCILLATION_PERIOD + botShellPhase);
+         Matrix4f botMatrix = new Matrix4f();
+         botMatrix.translate(0, botOscillation, 0);
+         botMatrix.rotateY(botShellAngle);
+         this.bot.setTransformation(botMatrix);
+         
+         // Core: rotates, oscillates, and when active can shake
+         float coreOscillation = CORE_OSCILLATION_AMPLITUDE * Mth.sin(Mth.TWO_PI * ticks / CORE_OSCILLATION_PERIOD + corePhase);
+         Matrix4f coreMatrix = new Matrix4f();
+         coreMatrix.translate(coreShakeX, coreOscillation, coreShakeZ);
+         coreMatrix.rotateY(coreAngle);
+         this.core.setTransformation(coreMatrix);
+      }
+      
+      @Override
+      public void tick(){
+         super.tick();
+         
+         // Smooth transition between speed states
+         if(Math.abs(currentSpeedMultiplier - targetSpeedMultiplier) > 0.01f){
+            currentSpeedMultiplier += (targetSpeedMultiplier - currentSpeedMultiplier) * TRANSITION_SPEED;
+         }else{
+            currentSpeedMultiplier = targetSpeedMultiplier;
+         }
+         
+         // Calculate shell speeds (shells rotate in opposite directions)
+         float shellSpeed = SHELL_BASE_SPEED * currentSpeedMultiplier;
+         float coreSpeed = CORE_BASE_SPEED * currentSpeedMultiplier;
+         
+         // Handle active-only effects
+         if(active){
+            // Shell surges
+            topShellSurgeTimer--;
+            if(topShellSurgeTimer <= 0){
+               topShellSurge = SURGE_SPEED_BOOST;
+               topShellSurgeTimer = MIN_SURGE_INTERVAL + world.random.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
+            }
+            
+            botShellSurgeTimer--;
+            if(botShellSurgeTimer <= 0){
+               botShellSurge = SURGE_SPEED_BOOST;
+               botShellSurgeTimer = MIN_SURGE_INTERVAL + world.random.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
+            }
+            
+            // Core bursts and shakes
+            coreBurstTimer--;
+            if(coreBurstTimer <= 0){
+               coreBurst = CORE_BURST_SPEED;
+               // Also add a shake when bursting
+               coreShakeX = (world.random.nextFloat() * 2 - 1) * SHAKE_AMPLITUDE;
+               coreShakeZ = (world.random.nextFloat() * 2 - 1) * SHAKE_AMPLITUDE;
+               coreBurstTimer = MIN_BURST_INTERVAL + world.random.nextInt(MAX_BURST_INTERVAL - MIN_BURST_INTERVAL);
+            }
+            
+            // Random small shakes while active
+            if(world.random.nextFloat() < 0.1f){
+               coreShakeX = (world.random.nextFloat() * 2 - 1) * SHAKE_AMPLITUDE * 0.5f;
+               coreShakeZ = (world.random.nextFloat() * 2 - 1) * SHAKE_AMPLITUDE * 0.5f;
+            }
+         }
+         
+         // Decay surges and bursts
+         topShellSurge *= SURGE_DECAY;
+         botShellSurge *= SURGE_DECAY;
+         coreBurst *= SURGE_DECAY;
+         
+         // Decay shakes
+         coreShakeX *= 0.85f;
+         coreShakeZ *= 0.85f;
+         
+         // Apply rotations
+         topShellAngle += shellSpeed + topShellSurge;  // Clockwise
+         botShellAngle -= shellSpeed + botShellSurge;  // Counter-clockwise
+         coreAngle += coreSpeed + coreBurst;
+         
+         // Normalize angles
+         if(topShellAngle > Mth.TWO_PI) topShellAngle -= Mth.TWO_PI;
+         if(botShellAngle < -Mth.TWO_PI) botShellAngle += Mth.TWO_PI;
+         if(coreAngle > Mth.TWO_PI) coreAngle -= Mth.TWO_PI;
+         
+         updateTransformations();
+         top.startInterpolation();
+         bot.startInterpolation();
+         core.startInterpolation();
+         
+         ticks++;
+      }
+      
+      @Override
+      public void notifyUpdate(HolderAttachment.UpdateType updateType) {
+         if (updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE) {
+            BlockState state = this.blockState();
+            if(this.active != state.getValue(ACTIVE)){
+               this.active = state.getValue(ACTIVE);
+               this.targetSpeedMultiplier = active ? ACTIVE_SPEED_MULTIPLIER : 1.0f;
+            }
          }
       }
    }

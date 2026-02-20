@@ -796,7 +796,6 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
       if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled()){
          this.close();
       }
-      
       super.onTick();
    }
    
@@ -808,7 +807,12 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
          blockEntity.openCraftingGui(player,null,tomeGui);
       }
       
-      MinecraftUtils.returnItems(inventory,player);
+      if(!player.isDeadOrDying() && !player.isSpectator()){
+         MinecraftUtils.returnItems(inventory,player);
+      }else if(blockEntity.getLevel() != null){
+         Containers.dropContents(blockEntity.getLevel(), blockEntity.getBlockPos().above(1), inventory);
+      }
+      this.inventory.clearContent();
       onVirtualInventoryClose();
       super.onClose();
    }

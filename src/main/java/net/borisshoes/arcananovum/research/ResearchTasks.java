@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -243,7 +244,7 @@ public class ResearchTasks {
       ));
       
       ResearchTasks.register(OBTAIN_EGG, new ObtainResearchTask(
-            OBTAIN_EGG.identifier().getPath(), Items.EGG,
+            OBTAIN_EGG.identifier().getPath(), ItemTags.EGGS,
             new ItemStack(Items.EGG)
       ));
       
@@ -408,7 +409,7 @@ public class ResearchTasks {
       ));
       
       ResearchTasks.register(OBTAIN_LANTERN, new ObtainResearchTask(
-            OBTAIN_LANTERN.identifier().getPath(), Items.LANTERN,
+            OBTAIN_LANTERN.identifier().getPath(), ItemTags.LANTERNS,
             new ItemStack(Items.LANTERN)
       ));
       

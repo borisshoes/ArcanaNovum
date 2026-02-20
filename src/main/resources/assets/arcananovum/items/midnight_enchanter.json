@@ -1,7 +1,7 @@
 {
     "model": {
         "type": "minecraft:model",
-        "model": "minecraft:block/enchanting_table"
+        "model": "arcananovum:item/midnight_enchanter"
     },
-    "hand_animation_on_swap": false
+    "hand_animation_on_swap": true
 }

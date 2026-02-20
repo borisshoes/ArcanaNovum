@@ -1,7 +1,7 @@
 {
     "model": {
         "type": "minecraft:model",
-        "model": "minecraft:block/fletching_table"
+        "model": "arcananovum:item/radiant_fletchery"
     },
-    "hand_animation_on_swap": false
+    "hand_animation_on_swap": true
 }

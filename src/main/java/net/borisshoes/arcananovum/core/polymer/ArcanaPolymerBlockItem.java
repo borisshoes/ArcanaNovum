@@ -14,10 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -91,7 +88,11 @@ public abstract class ArcanaPolymerBlockItem extends BlockItem implements Polyme
    
    @Override
    public Item getPolymerItem(ItemStack itemStack, PacketContext context){
-      return arcanaItem.getVanillaItem();
+      if(PolymerResourcePackUtils.hasMainPack(context)){
+         return Items.TINTED_GLASS;
+      }else{
+         return arcanaItem.getVanillaItem();
+      }
    }
    
    @Override

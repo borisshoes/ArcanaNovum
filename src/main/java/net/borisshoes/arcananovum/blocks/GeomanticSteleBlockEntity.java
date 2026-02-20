@@ -51,10 +51,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -114,8 +116,9 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
          boolean hasItem = !getItem().isEmpty();
          boolean shouldBeActive = assembled && hasItem && hasRedstone;
          
-         if(active ^ shouldBeActive){
+         if(active != shouldBeActive){
             serverWorld.setBlock(blockPos, blockState.setValue(GeomanticStele.GeomanticSteleBlock.ACTIVE, shouldBeActive), Block.UPDATE_ALL);
+            level.gameEvent(shouldBeActive ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
             active = shouldBeActive;
          }
          
@@ -139,7 +142,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
          
          if(assembled && hasItem){
             Vec3 pos = getHologramPos();
-            Player player = serverWorld.getNearestPlayer(pos.x(),pos.y(),pos.z(), 32, entity -> !entity.isSpectator());
+            Player player = serverWorld.getNearestPlayer(pos.x(),pos.y(),pos.z(), 32, entity -> true);
             if(player != null && hologram == null){
                hologram = getNewHologram(serverWorld);
                attachment = ChunkAttachment.ofTicking(this.hologram,serverWorld,pos);
@@ -172,6 +175,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    
    private ElementHolder getNewHologram(ServerLevel world){
       ItemDisplayElement icon = new ItemDisplayElement(getItem());
+      icon.setInterpolationDuration(3);
       InteractionElement click = new InteractionElement(new VirtualElement.InteractionHandler(){
          public void click(ServerPlayer player, ItemStack stack){
             if(interactCooldown == 0){
@@ -197,6 +201,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
          private final ItemDisplayElement iconElem = icon;
          private final InteractionElement clickElem = click;
          private int tickCount = 0;
+         private float currentYaw = 0f;
          
          @Override
          protected void onTick(){
@@ -212,24 +217,44 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
             if(interactCooldown > 0) interactCooldown--;
             
             if(GeomanticSteleBlockEntity.this.wasActive){
-               double f = Math.PI*2 / 80;
-               iconElem.setRotation(0,iconElem.getYaw()+4);
-               iconElem.setOffset(new Vec3(0,1+1.2*f*Math.cos(f*tickCount),0));
-               icon.setBrightness(Brightness.FULL_BRIGHT);
+               float f = Mth.TWO_PI / 80f;
+               currentYaw += 4f * Mth.DEG_TO_RAD;
+               if(currentYaw > Mth.TWO_PI) currentYaw -= Mth.TWO_PI;
+               float yOffset = 1f + 1.2f * f * Mth.cos(f * tickCount);
+               
+               Matrix4f matrix = new Matrix4f();
+               matrix.translate(0, yOffset, 0);
+               matrix.rotateY(currentYaw);
+               matrix.scale(0.75f);
+               iconElem.setTransformation(matrix);
+               iconElem.setBrightness(Brightness.FULL_BRIGHT);
+               iconElem.startInterpolation();
+               
                if(tickCount % 2 == 0){
                   iconElem.setItem(Items.GLASS_PANE.getDefaultInstance());
                   iconElem.setItem(GeomanticSteleBlockEntity.this.getItem());
                }
             }else{
-               iconElem.setOffset(new Vec3(0,1,0));
-               icon.setBrightness(new Brightness(5,5));
+               Matrix4f matrix = new Matrix4f();
+               matrix.translate(0, 1f, 0);
+               matrix.rotateY(currentYaw);
+               matrix.scale(0.75f);
+               iconElem.setTransformation(matrix);
+               iconElem.setBrightness(new Brightness(5,5));
+               iconElem.startInterpolation();
             }
          }
       };
       
       click.setOffset(new Vec3(0,0.625,0));
-      icon.setOffset(new Vec3(0,1,0));
-      icon.setScale(new Vector3f(0.75f));
+      icon.setOffset(Vec3.ZERO);
+      
+      // Set initial transformation before adding to prevent interpolation from default position
+      Matrix4f initialMatrix = new Matrix4f();
+      initialMatrix.translate(0, 1f, 0);
+      initialMatrix.scale(0.75f);
+      icon.setTransformation(initialMatrix);
+      
       holder.addElement(icon);
       holder.addElement(click);
       return holder;
@@ -254,6 +279,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
          ItemStack returnStack = getItem().copy();
          setItem(0, ItemStack.EMPTY);
          this.level.setBlock(getBlockPos(),getBlockState().setValue(GeomanticStele.GeomanticSteleBlock.ACTIVE,false),Block.UPDATE_ALL);
+         level.gameEvent(GameEvent.BLOCK_DEACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
          setChanged();
          BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(returnStack,player,0));
          return true;
@@ -283,6 +309,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
          boolean hasRedstone = this.level.hasNeighborSignal(getBlockPos());
          if(hasRedstone){
             this.level.setBlock(getBlockPos(),getBlockState().setValue(GeomanticStele.GeomanticSteleBlock.ACTIVE,true),Block.UPDATE_ALL);
+            level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
          }
          return true;
       }

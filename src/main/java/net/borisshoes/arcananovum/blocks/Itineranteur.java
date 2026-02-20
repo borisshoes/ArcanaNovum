@@ -1,8 +1,16 @@
 package net.borisshoes.arcananovum.blocks;
 
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.blocks.forge.TwilightAnvil;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -19,11 +27,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Brightness;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Container;
@@ -65,6 +75,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -73,6 +84,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
 public class Itineranteur extends ArcanaBlock {
    public static final String COLOR_TAG = "color";
@@ -86,7 +98,7 @@ public class Itineranteur extends ArcanaBlock {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       itemVersion = 0;
       vanillaItem = Items.LANTERN;
-      block = new ItineranteurBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(3.0f, 1200.0f).sound(SoundType.METAL));
+      block = new ItineranteurBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(3.0f, 1200.0f).lightLevel(ItineranteurBlock::getLightLevel).sound(SoundType.METAL));
       item = new ItineranteurItem(block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.EFFECT_SWIFTNESS,ResearchTasks.OBTAIN_BEACON,ResearchTasks.WALK_ONE_KILOMETER,ResearchTasks.OBTAIN_LANTERN};
@@ -172,6 +184,9 @@ public class Itineranteur extends ArcanaBlock {
       
       @Override
       public Item getPolymerItem(ItemStack itemStack, PacketContext context){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
+            return Items.TINTED_GLASS;
+         }
          return LanternType.fromString(getStringProperty(itemStack, COLOR_TAG)).getItem();
       }
       
@@ -213,7 +228,7 @@ public class Itineranteur extends ArcanaBlock {
       }
    }
    
-   public class ItineranteurBlock extends ArcanaPolymerBlockEntity implements SimpleWaterloggedBlock {
+   public class ItineranteurBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock, SimpleWaterloggedBlock {
       public static final EnumProperty<LanternType> TYPE = EnumProperty.create("lantern_type",LanternType.class);
       public static final BooleanProperty HANGING = BlockStateProperties.HANGING;
       public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -231,8 +246,12 @@ public class Itineranteur extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         LanternType type = state.getValue(TYPE);
-         return type.getBlock().defaultBlockState().setValue(HANGING, state.getValue(HANGING)).setValue(WATERLOGGED, state.getValue(WATERLOGGED));
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            LanternType type = state.getValue(TYPE);
+            return type.getBlock().defaultBlockState().setValue(HANGING, state.getValue(HANGING)).setValue(WATERLOGGED, state.getValue(WATERLOGGED));
+         }
       }
       
       @Nullable
@@ -332,13 +351,42 @@ public class Itineranteur extends ArcanaBlock {
          return super.useWithoutItem(blockState, level, blockPos, player, blockHitResult);
       }
       
+      public static int getLightLevel(BlockState state){
+         return 15;
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return new Model(world, initialBlockState);
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      private final ServerLevel world;
+      private final ItemDisplayElement main;
+      
+      public Model(ServerLevel world, BlockState state){
+         this.world = world;
+         this.main = ItemDisplayElementUtil.createSimple(LanternType.getModel(state));
+         this.main.setScale(new Vector3f(1f));
+         this.addElement(this.main);
+      }
    }
    
    public enum LanternType implements StringRepresentable {
       YELLOW("yellow", Items.LANTERN, Blocks.LANTERN),
       BLUE("blue", Items.SOUL_LANTERN, Blocks.SOUL_LANTERN),
-      COPPER("copper", Items.COPPER_LANTERN.waxed(), ((BlockItem)Items.COPPER_LANTERN.waxed()).getBlock()),
-      GREEN("green", Items.COPPER_LANTERN.waxedOxidized(), ((BlockItem)Items.COPPER_LANTERN.waxedOxidized()).getBlock());
+      COPPER("copper", Items.COPPER_LANTERN.waxed(), ((BlockItem) Items.COPPER_LANTERN.waxed()).getBlock()),
+      GREEN("green", Items.COPPER_LANTERN.waxedOxidized(), ((BlockItem) Items.COPPER_LANTERN.waxedOxidized()).getBlock());
+      
+      public static final ItemStack ITINERANTEUR_NORMAL = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_normal"));
+      public static final ItemStack ITINERANTEUR_NORMAL_HANGING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_normal_hanging"));
+      public static final ItemStack ITINERANTEUR_SOUL = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_soul"));
+      public static final ItemStack ITINERANTEUR_SOUL_HANGING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_soul_hanging"));
+      public static final ItemStack ITINERANTEUR_OXIDIZED = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_oxidized"));
+      public static final ItemStack ITINERANTEUR_OXIDIZED_HANGING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_oxidized_hanging"));
+      public static final ItemStack ITINERANTEUR_UNOXIDIZED = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_unoxidized"));
+      public static final ItemStack ITINERANTEUR_UNOXIDIZED_HANGING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_unoxidized_hanging"));
       
       private final String id;
       private final Item item;
@@ -381,10 +429,22 @@ public class Itineranteur extends ArcanaBlock {
       public static LanternType fromItemStack(ItemStack stack){
          if(stack.is(Items.SOUL_LANTERN)) return BLUE;
          if(stack.is(Items.COPPER_LANTERN.oxidized()) || stack.is(Items.COPPER_LANTERN.weathered()) ||
-               stack.is(Items.COPPER_LANTERN.waxedOxidized()) || stack.is(Items.COPPER_LANTERN.waxedWeathered())) return GREEN;
+               stack.is(Items.COPPER_LANTERN.waxedOxidized()) || stack.is(Items.COPPER_LANTERN.waxedWeathered()))
+            return GREEN;
          if(stack.is(Items.COPPER_LANTERN.exposed()) || stack.is(Items.COPPER_LANTERN.unaffected()) ||
                stack.is(Items.COPPER_LANTERN.waxedExposed()) || stack.is(Items.COPPER_LANTERN.waxed())) return COPPER;
          return YELLOW;
+      }
+      
+      public static ItemStack getModel(BlockState state){
+         LanternType type = state.getValue(ItineranteurBlock.TYPE);
+         boolean hanging = state.getValue(ItineranteurBlock.HANGING);
+         return switch(type){
+            case YELLOW -> hanging ? ITINERANTEUR_NORMAL_HANGING : ITINERANTEUR_NORMAL;
+            case BLUE -> hanging ? ITINERANTEUR_SOUL_HANGING : ITINERANTEUR_SOUL;
+            case COPPER -> hanging ? ITINERANTEUR_UNOXIDIZED_HANGING : ITINERANTEUR_UNOXIDIZED;
+            case GREEN -> hanging ? ITINERANTEUR_OXIDIZED_HANGING : ITINERANTEUR_OXIDIZED;
+         };
       }
       
       @Override

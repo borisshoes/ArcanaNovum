@@ -1,10 +1,18 @@
 package net.borisshoes.arcananovum.blocks;
 
 import com.google.common.collect.Lists;
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.TwilightAnvil;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -20,6 +28,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,6 +48,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -47,6 +57,7 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 import static net.minecraft.world.level.block.Block.dropResources;
 
 public class FractalSponge extends ArcanaBlock {
@@ -58,7 +69,7 @@ public class FractalSponge extends ArcanaBlock {
       rarity = ArcanaRarity.EMPOWERED;
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.SPONGE;
-      block = new FractalSpongeBlock(BlockBehaviour.Properties.of().strength(.6f,1200.0f).sound(SoundType.GRASS));
+      block = new FractalSpongeBlock(BlockBehaviour.Properties.of().noOcclusion().strength(.6f,1200.0f).sound(SoundType.GRASS));
       item = new FractalSpongeItem(this.block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SPONGE,ResearchTasks.OBTAIN_END_CRYSTAL};
@@ -206,14 +217,18 @@ public class FractalSponge extends ArcanaBlock {
       }
    }
    
-   public class FractalSpongeBlock extends ArcanaPolymerBlockEntity {
+   public class FractalSpongeBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {
       public FractalSpongeBlock(BlockBehaviour.Properties settings){
          super(getThis(), settings);
       }
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.SPONGE.defaultBlockState();
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            return Blocks.SPONGE.defaultBlockState();
+         }
       }
       
       @Nullable
@@ -246,6 +261,27 @@ public class FractalSponge extends ArcanaBlock {
                e.printStackTrace();
             }
          }
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return new Model(world, initialBlockState);
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      public static final ItemStack SPONGE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/fractal_sponge"));
+      public static final ItemStack SPONGE_WET = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/fractal_sponge_wet"));
+      
+      private final ServerLevel world;
+      private final ItemDisplayElement main;
+      
+      public Model(ServerLevel world, BlockState state){
+         this.world = world;
+         
+         this.main = ItemDisplayElementUtil.createSimple(SPONGE);
+         this.main.setScale(new Vector3f(1f));
+         this.addElement(this.main);
       }
    }
 }

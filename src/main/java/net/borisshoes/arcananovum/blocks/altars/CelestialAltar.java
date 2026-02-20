@@ -1,6 +1,14 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.blocks.Itineranteur;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
@@ -17,9 +25,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -42,6 +53,8 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -63,10 +76,11 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.PEARLESCENT_FROGLIGHT;
-      block = new CelestialAltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).strength(.3f,1200.0f).lightLevel(state -> 15).sound(SoundType.FROGLIGHT));
+      block = new CelestialAltarBlock(BlockBehaviour.Properties.of().noOcclusion().mapColor(MapColor.COLOR_PINK).lightLevel(CelestialAltarBlock::getLightLevel).strength(.3f,1200.0f).lightLevel(state -> 15).sound(SoundType.FROGLIGHT));
       item = new CelestialAltarItem(this.block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Lunaralpacas")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("Lunaralpacas"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -145,7 +159,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public class CelestialAltarBlock extends ArcanaPolymerBlockEntity {
+   public class CelestialAltarBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {
       public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
       public static final BooleanProperty ACTIVATABLE = BooleanProperty.create("activatable");
       
@@ -155,7 +169,11 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.PEARLESCENT_FROGLIGHT.defaultBlockState();
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            return Blocks.PEARLESCENT_FROGLIGHT.defaultBlockState();
+         }
       }
       
       @Nullable
@@ -224,6 +242,87 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
             this.tryActivate(state, world, pos);
             world.setBlock(pos, state.setValue(ACTIVATABLE, false), Block.UPDATE_CLIENTS);
          }
+      }
+      
+      public static int getLightLevel(BlockState state){
+         return 15;
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return new Model(world, initialBlockState);
+      }
+      
+      @Override
+      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
+         return true;
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      public static final ItemStack CELESTIAL_ALTAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/celestial_altar"));
+      public static final ItemStack MOON = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/celestial_altar_moon"));
+      public static final ItemStack SUN = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/celestial_altar_sun"));
+      
+      // Satellite animation constants
+      private static final float SATELLITE_SPIN_SPEED = 0.5f * Mth.DEG_TO_RAD; // Slow spin (degrees per tick)
+      private static final float SATELLITE_OSCILLATION_AMPLITUDE = 0.05f;
+      private static final float SATELLITE_OSCILLATION_PERIOD = 80f;
+      
+      private final ServerLevel world;
+      private final ItemDisplayElement main;
+      private final ItemDisplayElement satellite;
+      private boolean lunar = false;
+      private int ticks;
+      private float satelliteSpinAngle;
+      
+      public Model(ServerLevel world, BlockState state){
+         this.world = world;
+         this.main = ItemDisplayElementUtil.createSimple(CELESTIAL_ALTAR);
+         this.main.setScale(new Vector3f(1f));
+         this.addElement(this.main);
+         
+         BlockEntity entity = world.getBlockEntity(blockPos());
+         if(entity instanceof CelestialAltarBlockEntity altar){
+            this.lunar = altar.getMode() == 1;
+         }
+         this.satellite = ItemDisplayElementUtil.createSimple(lunar ? MOON : SUN);
+         this.satellite.setScale(new Vector3f(1f));
+         this.satellite.setInterpolationDuration(2);
+         this.addElement(this.satellite);
+      }
+      
+      private void updateSatelliteTransformation(){
+         float oscillation = SATELLITE_OSCILLATION_AMPLITUDE * Mth.sin(Mth.TWO_PI * ticks / SATELLITE_OSCILLATION_PERIOD);
+         
+         Matrix4f matrix = new Matrix4f();
+         matrix.translate(0, oscillation, 0);
+         matrix.rotateY(satelliteSpinAngle);
+         this.satellite.setTransformation(matrix);
+      }
+      
+      @Override
+      public void tick(){
+         super.tick();
+         
+         // Satellite animation - slow spin and oscillation
+         satelliteSpinAngle += SATELLITE_SPIN_SPEED;
+         if(satelliteSpinAngle > Mth.TWO_PI) satelliteSpinAngle -= Mth.TWO_PI;
+         updateSatelliteTransformation();
+         satellite.startInterpolation();
+         
+         if(ticks % 20 == 0){
+            BlockEntity entity = world.getBlockEntity(blockPos());
+            if(entity instanceof CelestialAltarBlockEntity altar){
+               boolean oldLunar = this.lunar;
+               this.lunar = altar.getMode() == 1;
+               if(oldLunar != this.lunar){
+                  this.satellite.setItem(lunar ? MOON : SUN);
+               }
+            }
+         }
+         
+         ticks++;
       }
    }
 }

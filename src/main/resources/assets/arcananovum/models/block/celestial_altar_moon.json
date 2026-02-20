@@ -1,0 +1,24 @@
+{
+	"format_version": "1.21.11",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "arcananovum:block/celestial_altar",
+		"particle": "arcananovum:block/celestial_altar"
+	},
+	"elements": [
+		{
+			"from": [4.5, 4.5, 4.5],
+			"to": [11.5, 11.5, 11.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [7.75, 8.5, 9.5, 10.25], "texture": "#0"},
+				"east": {"uv": [7.75, 8.5, 9.5, 10.25], "texture": "#0"},
+				"south": {"uv": [7.75, 8.5, 9.5, 10.25], "texture": "#0"},
+				"west": {"uv": [7.75, 8.5, 9.5, 10.25], "texture": "#0"},
+				"up": {"uv": [7.75, 8.5, 9.5, 10.25], "texture": "#0"},
+				"down": {"uv": [7.75, 8.5, 9.5, 10.25], "texture": "#0"}
+			},
+			"light_emission": 8
+		}
+	]
+}

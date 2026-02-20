@@ -1129,9 +1129,9 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
          return;
       }
       
-      world.sendParticles(ParticleTypes.ENCHANT,center.x(),center.y()+0.75,center.z(),5,0.1,0.1,0.1,1);
+      world.sendParticles(ParticleTypes.ENCHANT,center.x(),center.y()+1.25,center.z(),5,0.1,0.1,0.1,1);
       
-      ParticleOptions blue = new DustParticleOptions(0x12ccff,0.7f);
+      ParticleOptions blue = new DustParticleOptions(0x12ccff,0.5f);
       final double L1 = 2.35;
       final double S1 = 0.85;
       final int I1 = tick % 4 == 1 ? 10 : 11;
@@ -1148,7 +1148,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,-S1),blue,I1,C1,D1,1);
       
       
-      ParticleOptions purple = new DustParticleOptions(0xa100e6,0.7f);
+      ParticleOptions purple = new DustParticleOptions(0xa100e6,0.5f);
       final double L2 = 1.4;
       final double S2 = 0.6;
       final int I2 = tick % 4 == 1 ? 10 : 11;
@@ -1164,7 +1164,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       line(world,null,center.add(-L2,-0.4,-L2),center.add(0,-0.4,-S2),purple,I2,C2,D2,1);
       line(world,null,center.add(-L2,-0.4,-L2),center.add(-S2,-0.4,0),purple,I2,C2,D2,1);
       
-      ParticleOptions pink = new DustParticleOptions(0xd300e6,0.7f);
+      ParticleOptions pink = new DustParticleOptions(0xd300e6,0.6f);
       final double L3 = 2.0;
       final double S3 = 1.15;
       final int I3 = tick % 4 == 1 ? 30 : 31;
@@ -1244,7 +1244,6 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       world.sendParticles(ParticleTypes.PORTAL,pos.x,pos.y,pos.z,20,0.3,0.3,0.3,1);
-      
       
       if(tick < 220){
          BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> nulConstructSummon(world,pos,tick+1)));

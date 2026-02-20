@@ -25,6 +25,7 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -151,6 +152,7 @@ public class EnderCrateChannelGui extends SimpleGui {
       if(watched != null){
          Level world = watched.getLevel();
          if(world == null || world.getBlockEntity(watched.getBlockPos()) != watched){
+            world.gameEvent(GameEvent.CONTAINER_CLOSE, watched.getBlockPos(), GameEvent.Context.of(watched.getBlockState()));
             this.close();
          }
       }

@@ -1,0 +1,85 @@
+{
+	"format_version": "1.21.11",
+	"textures": {
+		"1": "arcananovum:block/starlight_forge_decals",
+		"particle": "arcananovum:block/starlight_forge_decals"
+	},
+	"ambientocclusion": false,
+	"elements": [
+		{
+			"name": "BlackHoleCore",
+			"from": [6.95836, 7.00357, 6.96213],
+			"to": [8.95836, 9.00357, 8.96213],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.00836, 8.00357, 8.01213]},
+			"faces": {
+				"north": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"up": {"uv": [0, 0, 1, 1], "texture": "#1"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#1"}
+			},
+			"light_emission": 15
+		},
+		{
+			"name": "Spew",
+			"from": [7.45836, -0.99643, 7.46213],
+			"to": [8.45836, 17.00357, 8.46213],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.00836, 8.00357, 8.01213]},
+			"faces": {
+				"north": {"uv": [0, 9.5, 2.5, 16], "texture": "#1"},
+				"east": {"uv": [0, 9.5, 2.5, 16], "texture": "#1"},
+				"south": {"uv": [0, 9.5, 2.5, 16], "texture": "#1"},
+				"west": {"uv": [0, 9.5, 2.5, 16], "texture": "#1"},
+				"up": {"uv": [3, 9.5, 4.5, 11], "texture": "#1"},
+				"down": {"uv": [3, 9.5, 4.5, 11], "texture": "#1"}
+			},
+			"light_emission": 15
+		},
+		{
+			"name": "BlackHoleRim",
+			"from": [9.20836, 9.25357, 9.21213],
+			"to": [6.70836, 6.75357, 6.71213],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.00836, 8.00357, 8.01213]},
+			"faces": {
+				"north": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"east": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"south": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"west": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"up": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"},
+				"down": {"uv": [0, 1, 3.5, 4.5], "texture": "#1"}
+			},
+			"light_emission": 15
+		},
+		{
+			"name": "BlackHoleSpiral",
+			"from": [5.55836, 7.75357, 5.56213],
+			"to": [10.55836, 8.25357, 10.56213],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.00836, 8.00357, 8.01213]},
+			"faces": {
+				"north": {"uv": [7, 1, 9.5, 1.25], "texture": "#1"},
+				"east": {"uv": [7, 1, 9.5, 1.25], "texture": "#1"},
+				"south": {"uv": [7, 1, 9.5, 1.25], "texture": "#1"},
+				"west": {"uv": [7, 1, 9.5, 1.25], "texture": "#1"},
+				"up": {"uv": [4, 1.5, 6.5, 4], "texture": "#1"},
+				"down": {"uv": [4, 1.5, 6.5, 4], "texture": "#1"}
+			},
+			"light_emission": 15
+		}
+	],
+	"groups": [
+		{
+			"name": "StarlightDecals",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [
+				{
+					"name": "Quasar",
+					"origin": [8, 8, 8],
+					"color": 0,
+					"children": [0, 1, 2, 3]
+				}
+			]
+		}
+	]
+}

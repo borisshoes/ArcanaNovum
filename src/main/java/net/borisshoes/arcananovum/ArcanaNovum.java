@@ -50,7 +50,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
    public static MinecraftServer SERVER = null;
-   public static final boolean DEV_MODE = true;
+   public static final boolean DEV_MODE = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static final String BLANK_UUID = "00000000-0000-4000-8000-000000000000";
@@ -59,6 +59,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static int DEBUG_VALUE = 0;
    
    @Override
+   
    public void onInitialize(){
       CONFIG = new ConfigManager(MOD_ID,"Arcana Novum",CONFIG_NAME,ArcanaRegistry.CONFIG_SETTINGS);
       ArcanaRegistry.initialize();

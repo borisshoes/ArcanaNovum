@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.core;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.blocks.EnderCrate;
 import net.borisshoes.arcananovum.blocks.EnderCrateBlockEntity;
+import net.borisshoes.arcananovum.blocks.Itineranteur;
+import net.borisshoes.arcananovum.blocks.ItineranteurBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltar;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.astralgateway.AstralGateway;
@@ -101,6 +103,9 @@ public interface ArcanaBlockEntity {
          EnderCrateChannel channel = crate.getChannel();
          ArcanaItem.putProperty(stack, EnderCrate.CHANNEL_TAG, EnderCrate.colorsToTag(channel.getColors()));
          ArcanaItem.putProperty(stack, EnderCrate.LOCK_TAG, channel.isLocked() ? channel.getIdLock().toString() : "");
+      }
+      if(arcanaBlockEntity instanceof ItineranteurBlockEntity itineranteur){
+         ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG,itineranteur.getBlockState().getValue(Itineranteur.ItineranteurBlock.TYPE).getId());
       }
       
       arcanaItem.buildItemLore(stack,world.getServer());

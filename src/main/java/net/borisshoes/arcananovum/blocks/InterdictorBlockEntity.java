@@ -36,6 +36,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -99,9 +100,11 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
          boolean assembled = isAssembled();
          boolean hasRedstone = serverWorld.hasNeighborSignal(blockPos);
          if(hasRedstone && !active && assembled){
+            level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
             serverWorld.setBlock(blockPos, blockState.setValue(Interdictor.InterdictorBlock.ACTIVE, true), Block.UPDATE_ALL);
             active = true;
          }else if(active && (!hasRedstone || !isAssembled())){
+            level.gameEvent(GameEvent.BLOCK_DEACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
             serverWorld.setBlock(blockPos, blockState.setValue(Interdictor.InterdictorBlock.ACTIVE, false), Block.UPDATE_ALL);
             active = false;
          }

@@ -899,10 +899,12 @@ public class DragonBossFight {
    }
    
    public static int beginBoss(MinecraftServer server, CompoundTag data){
+      System.out.println("Beginning Boss");
       States state = States.valueOf(data.getStringOr("State", ""));
       ServerPlayer gm = server.getPlayerList().getPlayer(AlgoUtils.getUUID(data.getStringOr("GameMaster", "")));
       if(state == States.WAITING_START){
          if(startTimeAnnounced){
+            System.out.println("Updating State");
             States.updateState(States.WAITING_ONE,server);
             if(gm != null){
                gm.sendSystemMessage(Component.literal("Beginning Boss Fight. Good Luck, Have Fun!"));
@@ -1391,7 +1393,7 @@ public class DragonBossFight {
       }
       
       public static void updateState(States state, MinecraftServer server){
-         Tuple<BossFights, CompoundTag> bossFight = BOSS_FIGHT.get(server.getLevel(Level.END)).getBossFight();
+         Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
          if(bossFight.getA() == BossFights.DRAGON){
             bossFight.getB().putString("State", state.name());
          }else{

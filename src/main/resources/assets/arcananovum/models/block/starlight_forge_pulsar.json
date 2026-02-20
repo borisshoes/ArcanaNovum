@@ -1,0 +1,85 @@
+{
+	"format_version": "1.21.11",
+	"textures": {
+		"1": "arcananovum:block/starlight_forge_decals",
+		"particle": "arcananovum:block/starlight_forge_decals"
+	},
+	"ambientocclusion": false,
+	"elements": [
+		{
+			"name": "EffectWE",
+			"from": [4, 4, 8],
+			"to": [12, 12, 8],
+			"rotation": {"x": 35.26439, "y": -30, "z": -54.73561, "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [10, 4.5, 15, 9.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"south": {"uv": [15, 4.5, 10, 9.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"up": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 0, 0], "texture": "#1"}
+			},
+			"light_emission": 15
+		},
+		{
+			"name": "EffectNS",
+			"from": [4, 4, 8],
+			"to": [12, 12, 8],
+			"rotation": {"x": 135, "y": -45, "z": -180, "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [10, 4.5, 15, 9.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"south": {"uv": [15, 4.5, 10, 9.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"up": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 0, 0], "texture": "#1"}
+			},
+			"light_emission": 15
+		},
+		{
+			"name": "EffectUD",
+			"from": [4, 4, 8],
+			"to": [12, 12, 8],
+			"rotation": {"x": 45, "y": -45, "z": -180, "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [5, 4.5, 10, 9.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"south": {"uv": [10, 4.5, 5, 9.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"up": {"uv": [0, 0, 0, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 0, 0], "texture": "#1"}
+			},
+			"light_emission": 15
+		},
+		{
+			"name": "StarCore",
+			"from": [7.25, 7.25, 7.25],
+			"to": [8.75, 8.75, 8.75],
+			"rotation": {"x": 35.26439, "y": -30, "z": -54.73561, "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [2, 6.5, 3, 7.5], "texture": "#1"},
+				"east": {"uv": [2, 6.5, 3, 7.5], "texture": "#1"},
+				"south": {"uv": [2, 6.5, 3, 7.5], "texture": "#1"},
+				"west": {"uv": [2, 6.5, 3, 7.5], "texture": "#1"},
+				"up": {"uv": [2, 6.5, 3, 7.5], "texture": "#1"},
+				"down": {"uv": [2, 6.5, 3, 7.5], "texture": "#1"}
+			},
+			"light_emission": 15
+		}
+	],
+	"groups": [
+		{
+			"name": "StarlightDecals",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [
+				{
+					"name": "Pulsar",
+					"origin": [0, 0, 0],
+					"color": 0,
+					"children": [0, 1, 2, 3]
+				}
+			]
+		}
+	]
+}

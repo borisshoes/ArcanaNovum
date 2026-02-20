@@ -1,5 +1,14 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
+import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -17,9 +26,14 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Brightness;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -37,7 +51,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -45,6 +61,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
+import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.LIT;
 
 public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "arcane_singularity";
@@ -61,10 +79,11 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.LECTERN;
-      block = new ArcaneSingularityBlock(BlockBehaviour.Properties.of().strength(2.5f,1200.0f).sound(SoundType.WOOD));
+      block = new ArcaneSingularityBlock(BlockBehaviour.Properties.of().noOcclusion().strength(2.5f,1200.0f).sound(SoundType.WOOD));
       item = new ArcaneSingularityItem(this.block);
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NEBULOUS_ESSENCE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("ii_iridescent")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -169,7 +188,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public class ArcaneSingularityBlock extends ArcanaPolymerBlockEntity {
+   public class ArcaneSingularityBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {
       public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
       
       public ArcaneSingularityBlock(BlockBehaviour.Properties settings){
@@ -178,7 +197,11 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         return Blocks.LECTERN.defaultBlockState().setValue(HORIZONTAL_FACING,state.getValue(HORIZONTAL_FACING));
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+            return Blocks.BARRIER.defaultBlockState();
+         }else{
+            return Blocks.LECTERN.defaultBlockState().setValue(HORIZONTAL_FACING,state.getValue(HORIZONTAL_FACING));
+         }
       }
       
       @Nullable
@@ -240,6 +263,76 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
             initializeArcanaBlock(stack,singularity);
             singularity.initializeBooks(getListProperty(stack,BOOKS_TAG),world.registryAccess());
          }
+      }
+      
+      @Override
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return new Model(world, initialBlockState);
+      }
+      
+      @Override
+      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+         return true;
+      }
+   }
+   
+   public static final class Model extends BlockModel {
+      public static final ItemStack SINGULARITY_BASE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/arcane_singularity_bottom"));
+      public static final ItemStack SINGULARITY_STEM = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/arcane_singularity_middle"));
+      public static final ItemStack SINGULARITY_TOP_ON = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/arcane_singularity_top"));
+      public static final ItemStack SINGULARITY_TOP_OFF = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/arcane_singularity_top_off"));
+      
+      private final ServerLevel world;
+      private final ItemDisplayElement base;
+      private final ItemDisplayElement stem;
+      private final ItemDisplayElement top;
+      private boolean active;
+      private int ticks;
+      
+      public Model(ServerLevel world, BlockState state) {
+         this.world = world;
+         float direction = state.getValue(HORIZONTAL_FACING).toYRot();
+         
+         this.top = ItemDisplayElementUtil.createSimple(SINGULARITY_TOP_OFF);
+         this.top.setScale(new Vector3f(2f));
+         this.top.setYaw(direction);
+         this.addElement(this.top);
+         
+         this.stem = ItemDisplayElementUtil.createSimple(SINGULARITY_STEM);
+         this.stem.setScale(new Vector3f(2f));
+         this.stem.setYaw(direction);
+         this.addElement(this.stem);
+         
+         this.base = ItemDisplayElementUtil.createSimple(SINGULARITY_BASE);
+         this.base.setScale(new Vector3f(2f));
+         this.base.setYaw(direction);
+         this.addElement(this.base);
+      }
+      
+      @Override
+      public void tick(){
+         super.tick();
+         
+         float stemOffset = 0.025f * Mth.sin(2*Mth.PI*ticks / 100);
+         float topOffset = stemOffset + 0.015f * Mth.sin(2*Mth.PI*ticks / 75);
+         this.top.setTranslation(new Vector3f(0,topOffset,0));
+         this.stem.setTranslation(new Vector3f(0,stemOffset,0));
+         this.top.startInterpolation();
+         this.stem.startInterpolation();
+         
+         if(ticks % 20 == 0){
+            boolean oldActive = this.active;
+            ArcaneSingularityBlockEntity singularity = (ArcaneSingularityBlockEntity) world.getBlockEntity(this.blockPos());
+            if(singularity != null){
+               this.active = singularity.isAssembled() && StarlightForge.findActiveForge(world,this.blockPos()) != null;
+            }else{
+               this.active = false;
+            }
+            if(this.active ^ oldActive){
+               this.top.setItem(this.active ? SINGULARITY_TOP_ON : SINGULARITY_TOP_OFF);
+            }
+         }
+         ticks++;
       }
    }
 }
