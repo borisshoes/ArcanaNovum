@@ -234,7 +234,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
-         if(world.getServer().getTickCount() % getRefillMod(stack) == 0) refillArrow(player, stack);
+         if(world.getServer().getTickCount() % getRefillMod(stack) == 0) refillArrow(world.getServer(), player.getUUID(), stack);
       }
       
       @Override

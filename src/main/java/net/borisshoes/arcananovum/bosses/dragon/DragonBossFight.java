@@ -161,6 +161,7 @@ public class DragonBossFight {
                if(endWorld.getDragons().isEmpty()){
                   log(3,"Attempted to start Enderia fight without a dragon, cancelling boss fight");
                   abortBoss(server);
+                  return;
                }
                numPlayers = calcPlayers(server,false);
                fightData.putInt("numPlayers",numPlayers);
@@ -703,12 +704,10 @@ public class DragonBossFight {
          Objective dmgTaken = scoreboard.getObjective("arcananovum_boss_dmg_taken");
          Objective deaths = scoreboard.getObjective("arcananovum_boss_deaths");
          Objective mobKills = scoreboard.getObjective("arcananovum_boss_mob_kills");
-         
-         
-         scoreboard.removeObjective(dmgDealt);
-         scoreboard.removeObjective(dmgTaken);
-         scoreboard.removeObjective(deaths);
-         scoreboard.removeObjective(mobKills);
+         if(dmgDealt != null) scoreboard.removeObjective(dmgDealt);
+         if(dmgTaken != null) scoreboard.removeObjective(dmgTaken);
+         if(deaths != null) scoreboard.removeObjective(deaths);
+         if(mobKills != null) scoreboard.removeObjective(mobKills);
       }catch(Exception e){
          e.printStackTrace();
       }
@@ -872,12 +871,14 @@ public class DragonBossFight {
          }
       }
    
-      for(EndCrystal crystal : crystals){
-         if(crystal != null){
-            crystal.setInvulnerable(false);
+      if(crystals != null){
+         for(EndCrystal crystal : crystals){
+            if(crystal != null){
+               crystal.setInvulnerable(false);
+            }
          }
       }
-   
+      
       List<Endermite> mites = endWorld.getEntities(EntityType.ENDERMITE, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
       List<Shulker> shulkers = endWorld.getEntities(EntityType.SHULKER, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
       List<Skeleton> skeletons = endWorld.getEntities(EntityType.SKELETON, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
@@ -899,12 +900,10 @@ public class DragonBossFight {
    }
    
    public static int beginBoss(MinecraftServer server, CompoundTag data){
-      System.out.println("Beginning Boss");
       States state = States.valueOf(data.getStringOr("State", ""));
       ServerPlayer gm = server.getPlayerList().getPlayer(AlgoUtils.getUUID(data.getStringOr("GameMaster", "")));
       if(state == States.WAITING_START){
          if(startTimeAnnounced){
-            System.out.println("Updating State");
             States.updateState(States.WAITING_ONE,server);
             if(gm != null){
                gm.sendSystemMessage(Component.literal("Beginning Boss Fight. Good Luck, Have Fun!"));

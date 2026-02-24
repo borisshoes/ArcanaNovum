@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public abstract class TransmutationRecipe {
    
@@ -69,6 +70,10 @@ public abstract class TransmutationRecipe {
       return Component.translatable("transmutation.arcananovum."+id);
    }
    
+   public boolean validStack(Predicate<ItemStack> recipePred, ItemStack input){
+      return recipePred.test(input);
+   }
+   
    public boolean validStack(ItemStack recipeStack, ItemStack input){
       if(recipeStack.isEmpty()) return true;
       if(ArcanaItemUtils.isArcane(recipeStack)){
@@ -76,7 +81,6 @@ public abstract class TransmutationRecipe {
          return stackItem != null && stackItem.getId().equals(ArcanaItemUtils.identifyItem(recipeStack).getId());
       }
       
-      // TODO maybe have optional item predicate check?
       if(!recipeStack.is(input.getItem())) return false;
       int reqCount = recipeStack.getCount();
       return input.getCount() >= reqCount;

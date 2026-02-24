@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
 import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
+import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -29,6 +30,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -48,13 +50,17 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -242,11 +248,12 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
       
       boolean active = getBooleanProperty(stack,ACTIVE_TAG);
       if(active && getEnergy(stack) > 0){
+         HashMap<ItemStack,ServerPlayer> tools = new HashMap<>();
+         
          List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class,box);
          for(LivingEntity living : inRangeEntities){
             if(living.isSpectator()) continue;
             // Check each player's inventory for gear that needs repairing
-            List<ItemStack> inventory = new ArrayList<>();
             if(living instanceof ServerPlayer player){
                Inventory inv = player.getInventory();
                for(int i = 0; i < inv.getContainerSize(); i++){
@@ -257,7 +264,7 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
                      continue;
                   boolean hasMending = EnchantmentHelper.has(equipment, EnchantmentEffectComponents.REPAIR_WITH_XP);
                   if(hasMending){
-                     inventory.add(equipment);
+                     tools.put(equipment, player);
                   }
                }
             }else{
@@ -269,26 +276,62 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
                      continue;
                   boolean hasMending = EnchantmentHelper.has(equipment, EnchantmentEffectComponents.REPAIR_WITH_XP);
                   if(hasMending){
-                     inventory.add(equipment);
+                     tools.put(equipment, null);
                   }
                }
             }
-            
-            for(ItemStack tool : inventory){
-               int durability = tool.getDamageValue();
-               int repairAmount = (int) Math.ceil((EnchantmentHelper.modifyDurabilityToRepairFromXp(world, tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL)))));
-               if(durability <= 0 || !tool.isDamageableItem())
-                  continue;
-               int newDura = Mth.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
-               if(living instanceof ServerPlayer player){
-                  ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR,durability-newDura);
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BRAIN_JAR_MEND_PER_XP));
+         }
+         
+         ArrayList<Container> invs = new ArrayList<>();
+         for(BlockPos blockPos : BlockPos.betweenClosed(box)){
+            BlockEntity be = world.getBlockEntity(blockPos);
+            BlockState state = world.getBlockState(blockPos);
+            if(be instanceof ChestBlockEntity chestBe){
+               if(!invs.contains(chestBe)){
+                  invs.add(chestBe);
                }
-               stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BRAIN_JAR_MEND_PER_XP));
-               addEnergy(stack,-1);
-               buildItemLore(stack,world.getServer());
-               tool.setDamageValue(newDura);
+            }else if(be instanceof BarrelBlockEntity barrelBe){
+               if(!invs.contains(barrelBe)){
+                  invs.add(barrelBe);
+               }
+            }else if(be instanceof ShulkerBoxBlockEntity shulkerBox){
+               if(!invs.contains(shulkerBox)){
+                  invs.add(shulkerBox);
+               }
+            }else if(be instanceof ArcaneSingularityBlockEntity singularity){
+               if(!invs.contains(singularity)){
+                  invs.add(singularity);
+               }
             }
+         }
+         for(Container inv : invs){
+            for(ItemStack equipment : inv){
+               if(equipment.isEmpty())
+                  continue;
+               if(!equipment.isEnchanted())
+                  continue;
+               boolean hasMending = EnchantmentHelper.has(equipment, EnchantmentEffectComponents.REPAIR_WITH_XP);
+               if(hasMending){
+                  tools.put(equipment, null);
+               }
+            }
+         }
+         
+         for(ItemStack tool : tools.keySet()){
+            if(getEnergy(stack) <= 0) break;
+            int durability = tool.getDamageValue();
+            int repairAmount = (int) Math.ceil((EnchantmentHelper.modifyDurabilityToRepairFromXp(world, tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL)))));
+            if(durability <= 0 || !tool.isDamageableItem())
+               continue;
+            int newDura = Mth.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
+            if(tools.get(tool) != null){
+               ArcanaAchievements.progress(tools.get(tool),ArcanaAchievements.CERTIFIED_REPAIR,durability-newDura);
+               ArcanaNovum.data(tools.get(tool)).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BRAIN_JAR_MEND_PER_XP));
+            }
+            stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BRAIN_JAR_MEND_PER_XP));
+            addEnergy(stack,-1);
+            buildItemLore(stack,world.getServer());
+            tool.setDamageValue(newDura);
          }
       }
       

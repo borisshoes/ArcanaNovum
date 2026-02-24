@@ -142,6 +142,8 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using the Charm of Cetacea in the Stele, the Charm's passive ability is activated and extended to a cubic range of 20 blocks.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using the Charm of Wild Growth in the Stele, the Charm's passive ability is activated and extended to a cubic range of 12 blocks horizontally, and 6 blocks vertically.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using a Magmatic or Aquatic Eversource in the Stele, it will continuously generate its fluid atop the Stele construct.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using an Overflowing or Runic Quiver in the Stele, it will continue to restock its arrows.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using the Charm of Leadership in the Stele, the Charm's passive ability is activated and extended to a cubic range of 12 blocks horizontally and 8 blocks vertically.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    

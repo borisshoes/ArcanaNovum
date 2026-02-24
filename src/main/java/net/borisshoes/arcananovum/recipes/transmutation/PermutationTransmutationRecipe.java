@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.recipes.transmutation;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.Itineranteur;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -38,10 +39,13 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe{
       List<ItemStack> returnItems = new ArrayList<>();
       int iterations = positiveInput.getCount() / getInput().getCount();
       for(int i = 0; i < iterations; i++){
-         ItemStack outputStack = permutationFunction.apply(input,player.level().getServer()).copy();
+         ItemStack outputStack = permutationFunction.apply(positiveInput,player.level().getServer()).copy();
          if(ArcanaItemUtils.isArcane(positiveInput) && ArcanaItemUtils.isArcane(outputStack)){
+            ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(positiveInput);
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getStringUUID(),0,player.level().getServer());
+            if(!arcanaInputItem.getId().equals(arcanaOutputItem.getId())){
+               outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getStringUUID(),0, player.level().getServer());
+            }
          }
          returnItems.add(outputStack);
       }
@@ -77,11 +81,14 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe{
       int consumedInput = iterations * getInput().getCount();
       
       for(int i = 0; i < iterations; i++){
-         ItemStack outputStack = permutationFunction.apply(input,altar.getLevel().getServer()).copy();
+         ItemStack outputStack = permutationFunction.apply(inputStack,altar.getLevel().getServer()).copy();
          if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),arcanaInputItem.getCrafter(inputStack),0, BorisLib.SERVER);
+            if(!arcanaInputItem.getId().equals(arcanaOutputItem.getId())){
+               outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),arcanaInputItem.getCrafter(inputStack),0, BorisLib.SERVER);
+            }
+            
          }
          
          outputs.add(new Tuple<>(outputStack,outputPos));

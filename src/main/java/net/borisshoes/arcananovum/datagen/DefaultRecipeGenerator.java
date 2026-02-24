@@ -16,6 +16,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
@@ -1907,6 +1908,42 @@ public class DefaultRecipeGenerator {
             .with(Either.right(BlockTags.BEDS))
             .withViewStack(new ItemStack(Items.WHITE_BED)));
       
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("rods", new ItemStack(Items.QUARTZ,11), new ItemStack(Items.REDSTONE,13))
+            .with(Items.BLAZE_ROD, Items.BREEZE_ROD)
+            .withViewStack(new ItemStack(Items.BREEZE_ROD)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("coal_ore", new ItemStack(Items.COAL, 4), new ItemStack(Items.QUARTZ,3))
+            .with(Items.COAL_ORE, Items.DEEPSLATE_COAL_ORE)
+            .withViewStack(new ItemStack(Items.COAL_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("emerald_ore", new ItemStack(Items.COAL, 4), new ItemStack(Items.QUARTZ,3))
+            .with(Items.EMERALD_ORE, Items.DEEPSLATE_EMERALD_ORE)
+            .withViewStack(new ItemStack(Items.EMERALD_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("iron_ore", new ItemStack(Items.COAL, 4), new ItemStack(Items.QUARTZ,3))
+            .with(Items.IRON_ORE, Items.DEEPSLATE_IRON_ORE)
+            .withViewStack(new ItemStack(Items.IRON_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("lapis_ore", new ItemStack(Items.COAL, 4), new ItemStack(Items.QUARTZ,3))
+            .with(Items.LAPIS_ORE, Items.DEEPSLATE_LAPIS_ORE)
+            .withViewStack(new ItemStack(Items.LAPIS_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("diamond_ore", new ItemStack(Items.COAL, 4), new ItemStack(Items.QUARTZ,3))
+            .with(Items.DIAMOND_ORE, Items.DEEPSLATE_DIAMOND_ORE)
+            .withViewStack(new ItemStack(Items.DIAMOND_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("copper_ore", new ItemStack(Items.COAL, 4), new ItemStack(Items.QUARTZ,3))
+            .with(Items.COPPER_ORE, Items.DEEPSLATE_COPPER_ORE)
+            .withViewStack(new ItemStack(Items.COPPER_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("gold_ore", new ItemStack(Items.COAL, 4), new ItemStack(Items.QUARTZ,3))
+            .with(Items.GOLD_ORE, Items.DEEPSLATE_GOLD_ORE, Items.NETHER_GOLD_ORE)
+            .withViewStack(new ItemStack(Items.GOLD_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("redstone_ore", new ItemStack(Items.COAL, 4), new ItemStack(Items.QUARTZ,3))
+            .with(Items.REDSTONE_ORE, Items.DEEPSLATE_REDSTONE_ORE)
+            .withViewStack(new ItemStack(Items.REDSTONE_ORE)));
+      
       
       // Infusion Recipes
       
@@ -3766,6 +3803,41 @@ public class DefaultRecipeGenerator {
             .with(Either.right(BlockTags.BEDS))
             .withViewStack(new ItemStack(Items.WHITE_BED)));
       
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("rods", new ItemStack(Items.QUARTZ,35), new ItemStack(Items.REDSTONE,45))
+            .with(Items.BLAZE_ROD, Items.BREEZE_ROD)
+            .withViewStack(new ItemStack(Items.BREEZE_ROD)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("coal_ore", new ItemStack(Items.COAL, 16), new ItemStack(Items.QUARTZ,12))
+            .with(Items.COAL_ORE, Items.DEEPSLATE_COAL_ORE)
+            .withViewStack(new ItemStack(Items.COAL_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("emerald_ore", new ItemStack(Items.COAL, 16), new ItemStack(Items.QUARTZ,12))
+            .with(Items.EMERALD_ORE, Items.DEEPSLATE_EMERALD_ORE)
+            .withViewStack(new ItemStack(Items.EMERALD_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("iron_ore", new ItemStack(Items.COAL, 16), new ItemStack(Items.QUARTZ,12))
+            .with(Items.IRON_ORE, Items.DEEPSLATE_IRON_ORE)
+            .withViewStack(new ItemStack(Items.IRON_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("lapis_ore", new ItemStack(Items.COAL, 16), new ItemStack(Items.QUARTZ,12))
+            .with(Items.LAPIS_ORE, Items.DEEPSLATE_LAPIS_ORE)
+            .withViewStack(new ItemStack(Items.LAPIS_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("diamond_ore", new ItemStack(Items.COAL, 16), new ItemStack(Items.QUARTZ,12))
+            .with(Items.DIAMOND_ORE, Items.DEEPSLATE_DIAMOND_ORE)
+            .withViewStack(new ItemStack(Items.DIAMOND_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("copper_ore", new ItemStack(Items.COAL, 16), new ItemStack(Items.QUARTZ,12))
+            .with(Items.COPPER_ORE, Items.DEEPSLATE_COPPER_ORE)
+            .withViewStack(new ItemStack(Items.COPPER_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("gold_ore", new ItemStack(Items.COAL, 16), new ItemStack(Items.QUARTZ,12))
+            .with(Items.GOLD_ORE, Items.DEEPSLATE_GOLD_ORE, Items.NETHER_GOLD_ORE)
+            .withViewStack(new ItemStack(Items.GOLD_ORE)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("redstone_ore", new ItemStack(Items.COAL, 16), new ItemStack(Items.QUARTZ,12))
+            .with(Items.REDSTONE_ORE, Items.DEEPSLATE_REDSTONE_ORE)
+            .withViewStack(new ItemStack(Items.REDSTONE_ORE)));
       
       // Infusion Recipes
       

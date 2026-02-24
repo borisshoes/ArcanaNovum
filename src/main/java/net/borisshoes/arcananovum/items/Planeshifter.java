@@ -27,6 +27,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -203,7 +204,7 @@ public class Planeshifter extends EnergyItem {
    private void directTeleport(ServerPlayer player, ServerLevel destWorld){
       double scale = DimensionType.getTeleportationScale(player.level().dimensionType(), destWorld.dimensionType());
       WorldBorder worldBorder = destWorld.getWorldBorder();
-      Vec3 destPos = worldBorder.clampVec3ToBound(player.getX() * scale, player.getY(), player.getZ() * scale);
+      Vec3 destPos = worldBorder.clampVec3ToBound(player.getX() * scale, Mth.clamp(player.getY(),destWorld.getMinY()+5,destWorld.getMaxY()-5), player.getZ() * scale);
       player.teleport(new TeleportTransition(destWorld, destPos, Vec3.ZERO, player.getYRot(),player.getXRot(), TeleportTransition.PLACE_PORTAL_TICKET));
       for(int y = player.getBlockY(); y >= player.getBlockY()-destWorld.getHeight(); y--){
          BlockPos blockPos = new BlockPos(player.getBlockX(),y,player.getBlockZ());

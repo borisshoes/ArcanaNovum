@@ -8,7 +8,7 @@ import net.borisshoes.arcananovum.blocks.EnderCrate;
 import net.borisshoes.arcananovum.blocks.EnderCrateBlockEntity;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannels;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.gui.ClickCooldown;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.datastorage.DefaultPlayerData;
@@ -34,12 +34,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class EnderCrateChannelGui extends SimpleGui {
+public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
    
    private EnderCrateChannel channel;
    private final boolean canLock;
    private Consumer<EnderCrateChannel> onConfirm;
    private EnderCrateBlockEntity watched;
+   private int clickCooldown = 0;
    
    public EnderCrateChannelGui(ServerPlayer player, @Nullable EnderCrateChannel channel, boolean canLock){
       super(MenuType.GENERIC_9x3, player, false);
@@ -65,6 +66,8 @@ public class EnderCrateChannelGui extends SimpleGui {
          DyeColor color = colors[i];
          int finalI = i;
          Consumer<ClickType> click = (type) -> {
+            if(isOnClickCooldown()) return;
+            resetClickCooldown();
             ArrayList<DyeColor> options = new ArrayList<>();
             options.add(null);
             options.addAll(List.of(DyeColor.values()));
@@ -72,7 +75,7 @@ public class EnderCrateChannelGui extends SimpleGui {
             
             if(type.shift){
                curInd = 0;
-            }if(type.isRight){
+            }else if(type.isRight){
                curInd = (curInd - 1) % options.size();
                if(curInd < 0) curInd = options.size()-1;
             }else{
@@ -156,6 +159,7 @@ public class EnderCrateChannelGui extends SimpleGui {
             this.close();
          }
       }
+      tickClickCooldown();
       super.onTick();
    }
    
@@ -172,5 +176,20 @@ public class EnderCrateChannelGui extends SimpleGui {
          }
       }
       super.onClose();
+   }
+   
+   @Override
+   public int getClickCooldown(){
+      return clickCooldown;
+   }
+   
+   @Override
+   public void setClickCooldown(int cooldown){
+      this.clickCooldown = cooldown;
+   }
+   
+   @Override
+   public int getCooldownDuration(){
+      return 2;
    }
 }

@@ -45,15 +45,19 @@ import static net.borisshoes.borislib.BorisLib.SERVER_TIMER_CALLBACKS;
 public class PlayerMixin {
    
    @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getKnockback(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)F"))
-   private void arcananovum$postDamageEntity(Entity target, CallbackInfo ci, @Local(ordinal = 2) float atkPercentage){
+   private void arcananovum$postDamageEntity(Entity target, CallbackInfo ci, @Local(ordinal = 1) float atkPercentage){
       Player player = (Player)(Object) this;
       ItemStack handStack = player.getMainHandItem();
-      if(ArcanaItemUtils.identifyItem(handStack) instanceof BinaryBlades blades && atkPercentage > 0.85){
-         ArcanaItem.putProperty(handStack,BinaryBlades.LAST_HIT_TAG,12);
-         blades.addEnergy(handStack,10);
-         if(player instanceof ServerPlayer serverPlayer) BorisLib.addTickTimerCallback(serverPlayer.level(), new GenericTimer(4, () -> {
-            serverPlayer.level().getChunkSource().sendToTrackingPlayersAndSelf(serverPlayer, new ClientboundAnimatePacket(serverPlayer, ClientboundAnimatePacket.SWING_OFF_HAND));
-         }));
+      if(ArcanaItemUtils.identifyItem(handStack) instanceof BinaryBlades blades){
+         if(atkPercentage > 0.5){
+            ArcanaItem.putProperty(handStack,BinaryBlades.LAST_HIT_TAG,12);
+         }
+         if(atkPercentage > 0.85){
+            blades.addEnergy(handStack,10);
+            if(player instanceof ServerPlayer serverPlayer) BorisLib.addTickTimerCallback(serverPlayer.level(), new GenericTimer(4, () -> {
+               serverPlayer.level().getChunkSource().sendToTrackingPlayersAndSelf(serverPlayer, new ClientboundAnimatePacket(serverPlayer, ClientboundAnimatePacket.SWING_OFF_HAND));
+            }));
+         }
       }
    }
    

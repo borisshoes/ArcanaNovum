@@ -929,6 +929,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       });
       view.read(SYNCED_TAG, CompoundTag.CODEC).ifPresent((data) -> {
          MinecraftServer server = BorisLib.SERVER;
+         if(server == null) return;
          ServerLevel otherLevel = server.getLevel(ResourceKey.create(Registries.DIMENSION, Identifier.parse(data.getStringOr("dim",""))));
          if(otherLevel == null) return;
          int[] posArray = data.getIntArray("pos").orElse(new int[0]);

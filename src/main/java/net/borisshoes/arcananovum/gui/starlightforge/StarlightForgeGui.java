@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.gui.ClickCooldown;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcanaItemCompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
@@ -56,7 +57,7 @@ import java.util.*;
 
 import static net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui.DYNAMIC_SLOTS;
 
-public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<SimpleContainer> {
+public class StarlightForgeGui extends SimpleGui implements ClickCooldown, VirtualInventoryGui<SimpleContainer> {
    private final StarlightForgeBlockEntity blockEntity;
    private final Level world;
    private final StarlightForgeInventoryListener listener;
@@ -68,6 +69,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
    private final int skillLvl;
    private final int resourceLvl;
    private final ArcaneTomeGui tomeGui;
+   private int clickCooldown = 0;
    
    public StarlightForgeGui(MenuType<?> type, ServerPlayer player, StarlightForgeBlockEntity blockEntity, Level world, int mode, @Nullable ArcaneTomeGui tomeGui){
       super(type, player, false);
@@ -79,6 +81,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
       this.inventory = new SimpleContainer(25);
       this.listener = new StarlightForgeInventoryListener(this,blockEntity,world,mode);
       inventory.addListener(listener);
+      resetClickCooldown();
       
       if(tomeGui == null){
          this.tomeGui = new ArcaneTomeGui(player, ArcaneTomeGui.TomeMode.COMPENDIUM,null);
@@ -119,6 +122,12 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
    
    @Override
    public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
+      if(isOnClickCooldown()){
+         return false;
+      }
+      if(getSlot(index) == null || getSlot(index).getGuiCallback() == null){
+         resetClickCooldown();
+      }
       if(mode == 0){ // Menu
          if(index == 1){
             blockEntity.openForgeGui(player,tomeGui);
@@ -149,6 +158,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
                
                boolean canApplySkilled = getSkilledOptions(arcanaItem,player).entrySet().stream().anyMatch(entry -> entry.getValue() > 0);
                if(canApplySkilled){
+                  resetClickCooldown();
                   buildSkilledGui(arcanaItem, recipe);
                }else{
                   forgeItem(arcanaItem, recipe, null,type == ClickType.MOUSE_LEFT_SHIFT);
@@ -743,12 +753,18 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
                   .append(Component.literal(" at Level ").withStyle(ChatFormatting.DARK_PURPLE))
                   .append(Component.literal(applicableLevel+"").withStyle(ChatFormatting.LIGHT_PURPLE))));
             augmentItem1.setCallback((clickType) -> {
+               if(isOnClickCooldown()){
+                  return;
+               }
                forgeItem(arcanaItem, recipe, new Tuple<>(augment,applicableLevel), clickType == ClickType.MOUSE_LEFT_SHIFT);
                close();
             });
          }else{
             augmentItem1.addLoreLine(TextUtils.removeItalics(Component.literal("You cannot apply this Augment").withStyle(ChatFormatting.RED)));
             augmentItem1.setCallback((clickType) -> {
+               if(isOnClickCooldown()){
+                  return;
+               }
                player.displayClientMessage(Component.literal("You cannot apply this Augment!").withStyle(ChatFormatting.RED),false);
             });
          }
@@ -796,6 +812,7 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
       if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled()){
          this.close();
       }
+      tickClickCooldown();
       super.onTick();
    }
    
@@ -833,4 +850,19 @@ public class StarlightForgeGui extends SimpleGui implements VirtualInventoryGui<
    
    @Override
    public ServerPlayer getPlayer() { return player; }
+   
+   @Override
+   public int getClickCooldown(){
+      return clickCooldown;
+   }
+   
+   @Override
+   public void setClickCooldown(int cooldown){
+      this.clickCooldown = cooldown;
+   }
+   
+   @Override
+   public int getCooldownDuration(){
+      return 4;
+   }
 }

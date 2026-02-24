@@ -1552,5 +1552,18 @@
   "transmutation.arcananovum.trapdoors": "Trapdoors",
   "transmutation.arcananovum.trident_synthesis": "Trident Synthesis",
   "transmutation.arcananovum.wood": "Wood",
-  "transmutation.arcananovum.wool": "Wool"
+  "transmutation.arcananovum.wool": "Wool",
+  "transmutation.arcananovum.itineranteur_normal": "Itineranteur Recolor (Normal)",
+  "transmutation.arcananovum.itineranteur_soul": "Itineranteur Recolor (Soulfire)",
+  "transmutation.arcananovum.itineranteur_oxidized": "Itineranteur Recolor (Oxidized)",
+  "transmutation.arcananovum.itineranteur_unoxidized": "Itineranteur Recolor (Unoxidized)",
+  "transmutation.arcananovum.redstone_ore": "Redstone Ores",
+  "transmutation.arcananovum.gold_ore": "Gold Ores",
+  "transmutation.arcananovum.copper_ore": "Copper Ores",
+  "transmutation.arcananovum.diamond_ore": "Diamond Ores",
+  "transmutation.arcananovum.lapis_ore": "Lapis Ores",
+  "transmutation.arcananovum.iron_ore": "Iron Ores",
+  "transmutation.arcananovum.emerald_ore": "Emerald Ores",
+  "transmutation.arcananovum.coal_ore": "Coal Ores",
+  "transmutation.arcananovum.rods": "Rods"
 }

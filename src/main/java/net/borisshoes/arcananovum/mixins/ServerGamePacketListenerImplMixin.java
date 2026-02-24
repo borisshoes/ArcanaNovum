@@ -76,7 +76,7 @@ public class ServerGamePacketListenerImplMixin {
       return original;
    }
    
-   @Inject(method = "handlePlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 0))
+   @Inject(method = "handlePlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 1))
    private void arcananovum$onHandSwap(ServerboundPlayerActionPacket packet, CallbackInfo ci){
       ItemStack offHand = player.getOffhandItem();
       if(BinaryBlades.isFakeBlade(offHand)){

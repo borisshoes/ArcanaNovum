@@ -51,6 +51,10 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.IntUnaryOperator;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -295,13 +299,16 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
          this.decal2 = ItemDisplayElementUtil.createSimple(STAR);
          this.decal2.setInterpolationDuration(2);
          
+         // Use ThreadLocalRandom for initialization since world.random may not be accessible from this thread
+         Random initRandom = ThreadLocalRandom.current();
+         
          // Initialize decal paths
          for(int i = 0; i < 2; i++){
             decalStartPos[i] = new Vector3f();
             decalMidPos[i] = new Vector3f();
             decalEndPos[i] = new Vector3f();
             decalSpinAxis[i] = new Vector3f();
-            initializeDecalPath(i);
+            initializeDecalPath(i, initRandom::nextFloat, initRandom::nextInt);
          }
          
          // Stagger the decals so they don't appear at the same time
@@ -310,9 +317,8 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
          updateAppleTransformation();
       }
       
-      private ItemStack getRandomDecalType(){
+      private ItemStack getRandomDecalType(float roll){
          // Weighted random: Star (common), Pulsar (uncommon), Black Hole (rare), Quasar (very rare)
-         float roll = world.random.nextFloat();
          if(roll < 0.6f){
             return STAR;
          }else if(roll < 0.85f){
@@ -325,40 +331,44 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       }
       
       private void initializeDecalPath(int index){
+         initializeDecalPath(index, world.random::nextFloat, world.random::nextInt);
+      }
+      
+      private void initializeDecalPath(int index, Supplier<Float> nextFloat, IntUnaryOperator nextInt){
          // Generate random start, middle, and end points for a curved path
          decalStartPos[index].set(
-               (world.random.nextFloat() * 2 - 1) * DECAL_HORIZONTAL_RANGE,
-               DECAL_Y_MIN + world.random.nextFloat() * (DECAL_Y_MAX - DECAL_Y_MIN),
-               (world.random.nextFloat() * 2 - 1) * DECAL_HORIZONTAL_RANGE
+               (nextFloat.get() * 2 - 1) * DECAL_HORIZONTAL_RANGE,
+               DECAL_Y_MIN + nextFloat.get() * (DECAL_Y_MAX - DECAL_Y_MIN),
+               (nextFloat.get() * 2 - 1) * DECAL_HORIZONTAL_RANGE
          );
          
          decalMidPos[index].set(
-               (world.random.nextFloat() * 2 - 1) * DECAL_HORIZONTAL_RANGE,
-               DECAL_Y_MIN + world.random.nextFloat() * (DECAL_Y_MAX - DECAL_Y_MIN),
-               (world.random.nextFloat() * 2 - 1) * DECAL_HORIZONTAL_RANGE
+               (nextFloat.get() * 2 - 1) * DECAL_HORIZONTAL_RANGE,
+               DECAL_Y_MIN + nextFloat.get() * (DECAL_Y_MAX - DECAL_Y_MIN),
+               (nextFloat.get() * 2 - 1) * DECAL_HORIZONTAL_RANGE
          );
          
          decalEndPos[index].set(
-               (world.random.nextFloat() * 2 - 1) * DECAL_HORIZONTAL_RANGE,
-               DECAL_Y_MIN + world.random.nextFloat() * (DECAL_Y_MAX - DECAL_Y_MIN),
-               (world.random.nextFloat() * 2 - 1) * DECAL_HORIZONTAL_RANGE
+               (nextFloat.get() * 2 - 1) * DECAL_HORIZONTAL_RANGE,
+               DECAL_Y_MIN + nextFloat.get() * (DECAL_Y_MAX - DECAL_Y_MIN),
+               (nextFloat.get() * 2 - 1) * DECAL_HORIZONTAL_RANGE
          );
          
          // Random initial rotation for this decal
-         decalRotationX[index] = world.random.nextFloat() * Mth.TWO_PI;
-         decalRotationY[index] = world.random.nextFloat() * Mth.TWO_PI;
-         decalRotationZ[index] = world.random.nextFloat() * Mth.TWO_PI;
+         decalRotationX[index] = nextFloat.get() * Mth.TWO_PI;
+         decalRotationY[index] = nextFloat.get() * Mth.TWO_PI;
+         decalRotationZ[index] = nextFloat.get() * Mth.TWO_PI;
          
          // Random spin axis (normalized)
          decalSpinAxis[index].set(
-               world.random.nextFloat() * 2 - 1,
-               world.random.nextFloat() * 2 - 1,
-               world.random.nextFloat() * 2 - 1
+               nextFloat.get() * 2 - 1,
+               nextFloat.get() * 2 - 1,
+               nextFloat.get() * 2 - 1
          ).normalize();
          decalSpinAngle[index] = 0f;
          
          // Set random lifetime and store initial value for path progress calculation
-         decalInitialLifetime[index] = DECAL_MIN_LIFETIME + world.random.nextInt(DECAL_MAX_LIFETIME - DECAL_MIN_LIFETIME);
+         decalInitialLifetime[index] = DECAL_MIN_LIFETIME + nextInt.applyAsInt(DECAL_MAX_LIFETIME - DECAL_MIN_LIFETIME);
          decalLifetime[index] = decalInitialLifetime[index];
          
          // Set to fade in
@@ -366,7 +376,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
          
          // Assign random decal type
          ItemDisplayElement decal = index == 0 ? decal1 : decal2;
-         decal.setItem(getRandomDecalType());
+         decal.setItem(getRandomDecalType(nextFloat.get()));
       }
       
       private Vector3f getDecalPosition(int index, float t){

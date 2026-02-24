@@ -42,6 +42,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -367,15 +371,18 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
          this.targetSpeedMultiplier = active ? ACTIVE_SPEED_MULTIPLIER : 1.0f;
          this.currentSpeedMultiplier = targetSpeedMultiplier;
          
+         // Use ThreadLocalRandom for initialization since world.random may not be accessible from this thread
+         Random initRandom = ThreadLocalRandom.current();
+         
          // Random phase offsets for independent oscillation
-         this.topShellPhase = world.random.nextFloat() * Mth.TWO_PI;
-         this.botShellPhase = world.random.nextFloat() * Mth.TWO_PI;
-         this.corePhase = world.random.nextFloat() * Mth.TWO_PI;
+         this.topShellPhase = initRandom.nextFloat() * Mth.TWO_PI;
+         this.botShellPhase = initRandom.nextFloat() * Mth.TWO_PI;
+         this.corePhase = initRandom.nextFloat() * Mth.TWO_PI;
          
          // Initialize surge/burst timers with staggered starts
-         this.topShellSurgeTimer = MIN_SURGE_INTERVAL + world.random.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
-         this.botShellSurgeTimer = MIN_SURGE_INTERVAL / 2 + world.random.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
-         this.coreBurstTimer = MIN_BURST_INTERVAL / 3 + world.random.nextInt(MAX_BURST_INTERVAL - MIN_BURST_INTERVAL);
+         this.topShellSurgeTimer = MIN_SURGE_INTERVAL + initRandom.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
+         this.botShellSurgeTimer = MIN_SURGE_INTERVAL / 2 + initRandom.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
+         this.coreBurstTimer = MIN_BURST_INTERVAL / 3 + initRandom.nextInt(MAX_BURST_INTERVAL - MIN_BURST_INTERVAL);
          
          this.base = ItemDisplayElementUtil.createSimple(INTERDICTOR_BASE);
          this.base.setScale(new Vector3f(1f));

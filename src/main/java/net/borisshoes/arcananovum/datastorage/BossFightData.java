@@ -26,14 +26,16 @@ public class BossFightData implements StorableData {
    
    @Override
    public void read(ValueInput view){
-      view.read("bossFight", CompoundTag.CODEC).ifPresent(bossFightTag -> {
-         String bossLabel = bossFightTag.getStringOr("boss", "");
-         BossFights boss = BossFights.fromLabel(bossLabel);
-         if(boss != null){
-            CompoundTag data = bossFightTag.getCompoundOrEmpty("data");
-            this.bossFight = new Tuple<>(boss, data);
-         }
-      });
+      if(view.getBooleanOr("hasBossFight",false)){
+         view.read("bossFight", CompoundTag.CODEC).ifPresent(bossFightTag -> {
+            String bossLabel = bossFightTag.getStringOr("boss", "");
+            BossFights boss = BossFights.fromLabel(bossLabel);
+            if(boss != null){
+               CompoundTag data = bossFightTag.getCompoundOrEmpty("data");
+               this.bossFight = new Tuple<>(boss, data);
+            }
+         });
+      }
    }
    
    @Override
@@ -44,6 +46,8 @@ public class BossFightData implements StorableData {
          bossFightTag.putString("boss", bossFight.getA().label);
          bossFightTag.put("data", bossFight.getB());
          tag.put("bossFight", bossFightTag);
+      }else{
+         tag.remove("bossFight");
       }
    }
    

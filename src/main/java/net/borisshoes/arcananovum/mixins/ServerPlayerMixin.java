@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import eu.pb4.sgui.api.GuiHelpers;
+import eu.pb4.sgui.api.gui.GuiInterface;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -10,6 +12,12 @@ import net.borisshoes.arcananovum.callbacks.EntityKilledCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.entities.StasisPearlEntity;
+import net.borisshoes.arcananovum.gui.arcanistsbelt.ArcanistsBeltGui;
+import net.borisshoes.arcananovum.gui.greaves.GreavesOfGaialtusGui;
+import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
+import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
+import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
+import net.borisshoes.arcananovum.items.GreavesOfGaialtus;
 import net.borisshoes.arcananovum.items.SojournerBoots;
 import net.borisshoes.arcananovum.research.EffectResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTask;
@@ -145,5 +153,9 @@ public class ServerPlayerMixin {
    private void arcananovum$teleportDimensionChange(TeleportTransition teleportTarget, CallbackInfoReturnable<Entity> cir){
       ServerPlayer player = (ServerPlayer) (Object) this;
       ArcanaNovum.data(player).setResearchTask(ResearchTasks.DIMENSION_TRAVEL, true);
+      GuiInterface guiInterface = GuiHelpers.getCurrentGui(player);
+      if(guiInterface != null){
+         guiInterface.close();
+      }
    }
 }

@@ -51,6 +51,8 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -295,11 +297,13 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
          basisIndices[1] = 1;
          basisIndices[2] = 2;
          
+         // Use ThreadLocalRandom.current() for initialization since world.random may not be accessible from this thread
+         Random initRandom = ThreadLocalRandom.current();
          for(int i = 0; i < 3; i++){
-            oscillationPhases[i] = world.random.nextFloat() * Mth.TWO_PI;
-            xOscillationPhases[i] = world.random.nextFloat() * Mth.TWO_PI;
-            zOscillationPhases[i] = world.random.nextFloat() * Mth.TWO_PI;
-            flickCooldowns[i] = MIN_WAIT_TICKS + world.random.nextInt(MAX_WAIT_TICKS - MIN_WAIT_TICKS);
+            oscillationPhases[i] = initRandom.nextFloat() * Mth.TWO_PI;
+            xOscillationPhases[i] = initRandom.nextFloat() * Mth.TWO_PI;
+            zOscillationPhases[i] = initRandom.nextFloat() * Mth.TWO_PI;
+            flickCooldowns[i] = MIN_WAIT_TICKS + initRandom.nextInt(MAX_WAIT_TICKS - MIN_WAIT_TICKS);
          }
          
          this.mat1 = ItemDisplayElementUtil.createSimple(MATRIX);

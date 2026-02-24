@@ -4,11 +4,14 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.GeomanticStele;
+import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.DataFixer;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
@@ -19,6 +22,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,14 +32,17 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import static net.minecraft.world.item.ProjectileWeaponItem.ARROW_ONLY;
 
-public abstract class QuiverItem extends ArcanaItem {
+public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.Interaction {
    public static final String ARROWS_TAG = "arrows";
    public static final String QUIVER_SLOT_TAG = "QuiverSlot";
    public static final String QUIVER_ID_TAG = "QuiverId";
@@ -68,7 +75,7 @@ public abstract class QuiverItem extends ArcanaItem {
    
    protected abstract double getEfficiencyMod(ItemStack item);
    
-   protected void refillArrow(ServerPlayer player, ItemStack item){
+   protected void refillArrow(MinecraftServer server, @Nullable UUID playerId, ItemStack item){
       ItemContainerContents arrows = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       ArrayList<ItemStack> eligible = new ArrayList<>();
       for(ItemStack stack : arrows.nonEmptyItems()){
@@ -80,13 +87,15 @@ public abstract class QuiverItem extends ArcanaItem {
       if(eligible.isEmpty()) return;
       eligible.get((int)(Math.random()*eligible.size())).grow(1);
       
-      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_QUIVER_REFILL)); // Add xp
-      if(this instanceof OverflowingQuiver){
-         ArcanaAchievements.progress(player,ArcanaAchievements.SPARE_STOCK,1);
-      }else if(this instanceof RunicQuiver){
-         ArcanaAchievements.progress(player,ArcanaAchievements.UNLIMITED_STOCK,1);
+      if(playerId != null){
+         ArcanaNovum.data(playerId).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_QUIVER_REFILL)); // Add xp
+         if(this instanceof OverflowingQuiver){
+            ArcanaAchievements.progress(playerId,ArcanaAchievements.SPARE_STOCK,1);
+         }else if(this instanceof RunicQuiver){
+            ArcanaAchievements.progress(playerId,ArcanaAchievements.UNLIMITED_STOCK,1);
+         }
       }
-      buildItemLore(item,player.level().getServer());
+      buildItemLore(item,server);
    }
    
    public boolean shootArrow(ItemStack item, int slot, ServerPlayer player, ItemStack bow){
@@ -344,6 +353,23 @@ public abstract class QuiverItem extends ArcanaItem {
                   }
                }
             }
+         }
+      }
+   }
+   
+   @Override
+   public Vec3 getBaseRange(){
+      return new Vec3(0,0,0);
+   }
+   
+   @Override
+   public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
+      if(world.getServer().getTickCount() % ((int)(getRefillMod(stack) * 0.75)) == 0){
+         String crafterId = stele.getCrafterId();
+         if(crafterId != null && !crafterId.isEmpty()){
+            refillArrow(world.getServer(), AlgoUtils.getUUID(crafterId), stack);
+         }else{
+            refillArrow(world.getServer(), null, stack);
          }
       }
    }

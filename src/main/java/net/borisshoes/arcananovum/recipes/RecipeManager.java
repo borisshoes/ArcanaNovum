@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.blocks.Itineranteur;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -15,6 +16,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.loader.api.FabricLoader;
@@ -533,6 +535,26 @@ public class RecipeManager {
          Holder<Instrument> newInst = options.get(minecraftServer.overworld().random.nextInt(options.size()));
          return InstrumentItem.create(Items.GOAT_HORN, newInst);
       }, Component.literal("A Random ").append(Component.translatable(Items.GOAT_HORN.getDescriptionId()))));
+      
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_normal", ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore(), MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.LANTERN, 1), (stack, minecraftServer) -> {
+         ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.YELLOW.getId());
+         return stack;
+      }, Component.literal("A Normal ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
+      
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_soul", ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore(), MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.SOUL_LANTERN, 1), (stack, minecraftServer) -> {
+         ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.BLUE.getId());
+         return stack;
+      }, Component.literal("A Soulfire ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
+      
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_oxidized", ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore(), MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.oxidized(), 1), (stack, minecraftServer) -> {
+         ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.GREEN.getId());
+         return stack;
+      }, Component.literal("An Oxidized ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
+      
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_unoxidized", ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore(), MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.unaffected(), 1), (stack, minecraftServer) -> {
+         ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.COPPER.getId());
+         return stack;
+      }, Component.literal("An Unoxidized ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
       
       // Aequalis Scientia Recipes
       TRANSMUTATION_RECIPES.add(new AequalisUnattuneTransmutationRecipe("aequalis_reconfiguration"));
