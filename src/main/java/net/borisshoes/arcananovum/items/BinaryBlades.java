@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -30,7 +31,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -233,10 +233,11 @@ public class BinaryBlades extends EnergyItem {
       }
       
       if(energy > 0){
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MOVEMENT_SPEED,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,MOVE_SPEED_TAG),0.5 * getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.MAINHAND));
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_SPEED,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,ATTACK_SPEED_TAG),(double) getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MOVEMENT_SPEED,new AttributeModifier(ArcanaRegistry.arcanaId(MOVE_SPEED_TAG),0.5 * getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.MAINHAND));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_SPEED,new AttributeModifier(ArcanaRegistry.arcanaId(ATTACK_SPEED_TAG),(double) getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
          if(redGiant && energy >= 50){
-            attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_DAMAGE,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,ATTACK_DAMAGE_TAG),4 * (getEnergy(stack) - 50.0) / (getMaxEnergy(stack) - 50.0), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
+            float dmgPerEnergy = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BINARY_BLADES_RED_GIANT_DMG_PER_ENERGY);
+            attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_DAMAGE,new AttributeModifier(ArcanaRegistry.arcanaId(ATTACK_DAMAGE_TAG),dmgPerEnergy * (getEnergy(stack) - 50.0), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
          }
       }
       
@@ -260,7 +261,7 @@ public class BinaryBlades extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      return 100;
+      return ArcanaNovum.CONFIG.getInt(ArcanaConfig.BINARY_BLADES_MAX_ENERGY);
    }
    
    @Override
@@ -382,7 +383,8 @@ public class BinaryBlades extends EnergyItem {
             }else if(lastHitTime == 0){
                putProperty(stack, LAST_HIT_TAG, -1);
             }else{
-               addEnergy(stack, -4);
+               int decay = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BINARY_BLADES_ENERGY_DECAY_RATE);
+               addEnergy(stack, -decay);
             }
          }
          
@@ -393,7 +395,7 @@ public class BinaryBlades extends EnergyItem {
                ArcanaAchievements.grant(player,ArcanaAchievements.STARBURST_STREAM);
             }
             if(world.getServer().getTickCount() % 20 == 0){
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_BINARY_BLADES_MAX_ENERGY_PER_SECOND));
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_BINARY_BLADES_MAX_ENERGY_PER_SECOND));
             }
          }
          
@@ -417,12 +419,16 @@ public class BinaryBlades extends EnergyItem {
          
          int pulsar = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PULSAR_BLADES);
          int energy = getEnergy(stack);
-         int energyCost = (25*(3-pulsar));
+         int energyCost = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.BINARY_BLADES_PULSAR_ENERGY_CONSUMPTION_PER_LVL).get(pulsar);
          int energyGain = 0;
+         int delay = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BINARY_BLADES_ENERGY_GRACE_PERIOD);
+         int perHit = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BINARY_BLADES_ENERGY_PER_HIT);
+         float pulsarDmg = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BINARY_BLADES_PULSAR_DMG);
+         double pulsarRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.BINARY_BLADES_PULSAR_RANGE);
          
          if(pulsar > 0 && energy > energyCost){
-            MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, player.getEyePosition(), player.getForward(), 25, true, player);
-            float damage = pulsar * 7;
+            MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, player.getEyePosition(), player.getForward(), pulsarRange, true, player);
+            float damage = pulsar * pulsarDmg;
             for(Entity hit : lasercast.sortedHits()){
                if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
                   double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
@@ -432,8 +438,8 @@ public class BinaryBlades extends EnergyItem {
                   }
                }
                hit.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(),ArcanaDamageTypes.PHOTONIC,player), damage);
-               ArcanaItem.putProperty(stack,BinaryBlades.LAST_HIT_TAG,20);
-               energyGain += 10;
+               ArcanaItem.putProperty(stack,BinaryBlades.LAST_HIT_TAG,delay);
+               energyGain += perHit;
             }
             ArcanaEffectUtils.pulsarBladeShoot(player.level(),player.getEyePosition().subtract(0,player.getBbHeight()/4,0),lasercast.endPos(),0);
             SoundUtils.playSound(player.level(),player.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS,1.0f,2.0f);

@@ -5,29 +5,29 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.EnchantmentTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
+import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class ArcanaUtils {
+   
+   public static float getArrowPercentage(AbstractArrow arrow){ // 0.5 is usually smallest natural value and 2.5-3 is usually largest natural value
+      return ((float)Mth.clamp(arrow.getDeltaMovement().length(),0.5,10) - 0.5f) / 2.5f;
+   }
    
    public static void blockWithShield(LivingEntity entity, float damage){
       if(entity.isBlocking()){
@@ -127,7 +127,7 @@ public class ArcanaUtils {
       int count = 0;
       for(Holder<Enchantment> entry : comp.keySet()){
          int lvl = comp.getLevel(entry);
-         count += (int) (calcEssenceValue(entry, lvl) / 2.0);
+         count += calcEssenceValue(entry, lvl);
       }
       return count;
    }

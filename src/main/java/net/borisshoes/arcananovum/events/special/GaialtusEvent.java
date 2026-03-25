@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.events.special;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
@@ -8,10 +9,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class GaialtusEvent extends Event {
-   public static final Identifier ID = Identifier.fromNamespaceAndPath(MOD_ID,"ceptyus_start");
+   public static final Identifier ID = ArcanaRegistry.arcanaId("gaialtus_start");
    
    private final ServerPlayer player;
    private int stage;

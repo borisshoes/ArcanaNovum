@@ -1,12 +1,11 @@
 package net.borisshoes.arcananovum.areaeffects;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public abstract class AreaEffectTracker {
    
@@ -17,7 +16,7 @@ public abstract class AreaEffectTracker {
    public AreaEffectTracker(String type){
       this.type = type;
       this.sources = new ArrayList<>();
-      this.id = Identifier.fromNamespaceAndPath(MOD_ID,type);
+      this.id = ArcanaRegistry.arcanaId(type);
    }
    
    public abstract void onTick(MinecraftServer server);

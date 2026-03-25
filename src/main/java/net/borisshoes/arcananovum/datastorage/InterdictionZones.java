@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.datastorage;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.datastorage.DataKey;
 import net.borisshoes.borislib.datastorage.DataRegistry;
@@ -11,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -21,13 +21,11 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class InterdictionZones implements StorableData {
    
    private static final int CELL_SIZE = 16; // Same as chunk size for efficiency
    
-   public static final DataKey<InterdictionZones> KEY = DataRegistry.register(DataKey.ofWorld(Identifier.fromNamespaceAndPath(MOD_ID, "interdiction_zones"), InterdictionZones::new));
+   public static final DataKey<InterdictionZones> KEY = DataRegistry.register(DataKey.ofWorld(ArcanaRegistry.arcanaId("interdiction_zones"), InterdictionZones::new));
    
    private final ResourceKey<Level> worldKey;
    private final List<InterdictionZone> zones = new ArrayList<>();

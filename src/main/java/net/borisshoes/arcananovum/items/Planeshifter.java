@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -64,8 +65,6 @@ public class Planeshifter extends EnergyItem {
    public static final String DIMENSIONS_TAG = "dimensions";
    public static final String SELECTED_TAG = "selected";
    public static final String HEAT_TAG = "heat";
-   
-   public static final int[] cdReduction = {0,60,120,240,360,480};
    
    public Planeshifter(){
       id = ID;
@@ -182,8 +181,9 @@ public class Planeshifter extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PLANAR_FLOW));
-      return 600 - cdReduction[cdLvl];
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PLANESHIFTER_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PLANESHIFTER_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PLANAR_FLOW));
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    private void findPortalAndTeleport(ServerPlayer player, ServerLevel destWorld, boolean destIsNether){
@@ -247,7 +247,7 @@ public class Planeshifter extends EnergyItem {
          directTeleport(player,target);
       }
       
-      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_PLANESHIFTER_USE)); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_PLANESHIFTER_USE)); // Add xp
       setEnergy(stack,0);
       SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL,1,2f);
       ArcanaEffectUtils.recallTeleport(world,player.position());

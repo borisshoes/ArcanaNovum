@@ -1,7 +1,10 @@
 package net.borisshoes.arcananovum.areaeffects;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.effects.DamageAmpEffect;
+import com.mojang.datafixers.util.Either;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
@@ -37,8 +40,8 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
       if(sources.isEmpty()) return;
       
       for(ServerLevel world : server.getAllLevels()){
-         HashMap<BlockPos, List<Tuple<MobEffectInstance,AlchemicalArrowSource>>> affectedBlocks = new HashMap<>();
-         HashMap<Entity, List<Tuple<MobEffectInstance,AlchemicalArrowSource>>> affectedEntities = new HashMap<>();
+         HashMap<BlockPos, List<Tuple<Either<MobEffectInstance, ConditionInstance>,AlchemicalArrowSource>>> affectedBlocks = new HashMap<>();
+         HashMap<Entity, List<Tuple<Either<MobEffectInstance, ConditionInstance>,AlchemicalArrowSource>>> affectedEntities = new HashMap<>();
          for(AlchemicalArrowSource source : sources){
             for(BlockPos affectedBlock : source.getAffectedBlocks(world)){
                if(affectedBlocks.containsKey(affectedBlock)){
@@ -57,27 +60,33 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
             }
          }
          
-         for(Map.Entry<Entity, List<Tuple<MobEffectInstance, AlchemicalArrowSource>>> entry : affectedEntities.entrySet()){
+         for(Map.Entry<Entity, List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> entry : affectedEntities.entrySet()){
             Entity entity = entry.getKey();
             if(!(entity instanceof LivingEntity living)) continue;
-            List<Tuple<MobEffectInstance, AlchemicalArrowSource>> effects = entry.getValue();
+            List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>> effects = entry.getValue();
             HashMap<MobEffect, Tuple<Integer,AlchemicalArrowSource>> instantEffects = new HashMap<>();
             
-            for(Tuple<MobEffectInstance, AlchemicalArrowSource> pair : effects){
-               MobEffectInstance effect = pair.getA();
+            for(Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource> pair : effects){
+               Either<MobEffectInstance, ConditionInstance> either = pair.getA();
                AlchemicalArrowSource source = pair.getB();
                
-               if(effect.getEffect().value().isInstantenous() && server.getTickCount() % 20 == 0){
-                  if(instantEffects.containsKey(effect.getEffect().value())){
-                     if(effect.getAmplifier() > instantEffects.get(effect.getEffect().value()).getA()){
+               if(either.left().isPresent()){
+                  MobEffectInstance effect = either.left().get();
+                  if(effect.getEffect().value().isInstantenous() && server.getTickCount() % 20 == 0){
+                     if(instantEffects.containsKey(effect.getEffect().value())){
+                        if(effect.getAmplifier() > instantEffects.get(effect.getEffect().value()).getA()){
+                           instantEffects.put(effect.getEffect().value(),new Tuple<>(effect.getAmplifier(),source));
+                        }
+                     }else{
                         instantEffects.put(effect.getEffect().value(),new Tuple<>(effect.getAmplifier(),source));
                      }
-                  }else{
-                     instantEffects.put(effect.getEffect().value(),new Tuple<>(effect.getAmplifier(),source));
+                  }else if(!effect.getEffect().value().isInstantenous()){
+                     source.applyEffect(world, living, effect);
                   }
-               }else if(!effect.getEffect().value().isInstantenous()){
-                  source.applyEffect(world, living, effect);
+               }else if(either.right().isPresent()){
+                  source.applyCondition(world, living, either.right().get());
                }
+               
             }
             
             for(Map.Entry<MobEffect, Tuple<Integer,AlchemicalArrowSource>> instantEntry : instantEffects.entrySet()){
@@ -85,13 +94,15 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
             }
          }
          
-         for(Map.Entry<BlockPos, List<Tuple<MobEffectInstance, AlchemicalArrowSource>>> entry : affectedBlocks.entrySet()){
+         for(Map.Entry<BlockPos, List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> entry : affectedBlocks.entrySet()){
             BlockPos pos = entry.getKey();
-            List<Tuple<MobEffectInstance, AlchemicalArrowSource>> effects = entry.getValue();
-            int random = (int) (Math.random()*effects.size());
+            List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>> eithers = entry.getValue();
+            List<MobEffectInstance> effects = new ArrayList<>();
+            eithers.forEach(t -> t.getA().ifLeft(effects::add));
             
+            int random = (int) (Math.random()*effects.size());
             if(Math.random() < 0.03){
-               ParticleOptions dust = new DustParticleOptions(effects.get(random).getA().getEffect().value().getColor(),1.2f);
+               ParticleOptions dust = new DustParticleOptions(effects.get(random).getEffect().value().getColor(),1.2f);
                world.sendParticles(dust,pos.getX(),pos.getY(),pos.getZ(),1,0.5,0.5,0.5,0);
             }
          }
@@ -105,7 +116,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
       if(source instanceof AlchemicalArrowSource arrowSource) sources.add(arrowSource);
    }
    
-   public static AlchemicalArrowSource source(@Nullable Entity contributor, BlockPos sourceBlock, ServerLevel blockWorld, double range, int level, List<MobEffectInstance> effects){
+   public static AlchemicalArrowSource source(@Nullable Entity contributor, BlockPos sourceBlock, ServerLevel blockWorld, double range, int level, List<Either<MobEffectInstance, ConditionInstance>> effects){
       return new AlchemicalArrowSource(sourceBlock,blockWorld,range,level,effects,contributor);
    }
    
@@ -114,12 +125,12 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
       private final ServerLevel blockWorld;
       private final double range;
       private final int level;
-      private final List<MobEffectInstance> effects;
+      private final List<Either<MobEffectInstance, ConditionInstance>> effects;
       private int age;
       private final int duration;
       private final Entity contributor;
       
-      private AlchemicalArrowSource(BlockPos sourceBlock, ServerLevel blockWorld, double range, int level, List<MobEffectInstance> effects, @Nullable Entity contributor){
+      private AlchemicalArrowSource(BlockPos sourceBlock, ServerLevel blockWorld, double range, int level, List<Either<MobEffectInstance, ConditionInstance>> effects, @Nullable Entity contributor){
          this.sourceBlock = sourceBlock;
          this.blockWorld = blockWorld;
          this.range = range;
@@ -128,7 +139,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
          this.effects.addAll(effects);
          this.contributor = contributor;
          this.age = 0;
-         this.duration = 200;
+         this.duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ALCHEMICAL_ARBALEST_FIELD_DURATION);;
       }
       
       public Level getSourceWorld(){
@@ -152,7 +163,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
          return contributor;
       }
       
-      public List<MobEffectInstance> getEffects(){
+      public List<Either<MobEffectInstance, ConditionInstance>> getEffects(){
          return effects;
       }
       
@@ -162,11 +173,12 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
          if(existing != null && existing.getAmplifier() >= effect.getAmplifier()){
             return;
          }
-         
-         boolean applied = entity.addEffect(new MobEffectInstance(effect),contributor);
-         if(applied && effect.getEffect() == ArcanaRegistry.DAMAGE_AMP_EFFECT && contributor instanceof LivingEntity applier){
-            DamageAmpEffect.AMP_TRACKER.put(entity,applier);
-         }
+         entity.addEffect(new MobEffectInstance(effect),contributor);
+      }
+      
+      public void applyCondition(ServerLevel world, LivingEntity entity, ConditionInstance condition){
+         if(!world.dimension().identifier().toString().equals(blockWorld.dimension().identifier().toString())) return;
+         Conditions.addCondition(world.getServer(),entity,condition);
       }
       
       @Override

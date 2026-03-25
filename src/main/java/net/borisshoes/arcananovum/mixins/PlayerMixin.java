@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.mixins;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -12,11 +13,13 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.timers.TickTimerCallback;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,13 +53,24 @@ public class PlayerMixin {
       ItemStack handStack = player.getMainHandItem();
       if(ArcanaItemUtils.identifyItem(handStack) instanceof BinaryBlades blades){
          if(atkPercentage > 0.5){
-            ArcanaItem.putProperty(handStack,BinaryBlades.LAST_HIT_TAG,12);
+            int delay = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BINARY_BLADES_ENERGY_GRACE_PERIOD);
+            ArcanaItem.putProperty(handStack,BinaryBlades.LAST_HIT_TAG,delay);
          }
          if(atkPercentage > 0.85){
-            blades.addEnergy(handStack,10);
+            int perHit = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BINARY_BLADES_ENERGY_PER_HIT);
+            blades.addEnergy(handStack,perHit);
             if(player instanceof ServerPlayer serverPlayer) BorisLib.addTickTimerCallback(serverPlayer.level(), new GenericTimer(4, () -> {
                serverPlayer.level().getChunkSource().sendToTrackingPlayersAndSelf(serverPlayer, new ClientboundAnimatePacket(serverPlayer, ClientboundAnimatePacket.SWING_OFF_HAND));
             }));
+         }
+      }
+      if(ArcanaItemUtils.identifyItem(handStack) instanceof ShadowStalkersGlaive glaive){
+         if(atkPercentage > 0.8){
+            int toAdd = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHADOW_STALKERS_GLAIVE_HIT_ENERGY);
+            int oldEnergy = EnergyItem.getEnergy(handStack);
+            glaive.addEnergy(handStack, toAdd);
+            int newEnergy = EnergyItem.getEnergy(handStack);
+            glaive.sendEnergyMessage(player,oldEnergy,newEnergy,false);
          }
       }
    }
@@ -84,7 +98,8 @@ public class PlayerMixin {
          int lvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MARINERS_GRACE);
          if(lvl > level) level = lvl;
       }
-      return level == 0 ? constant : Math.min(constant, Math.max(1, constant - level*1.34f)); // Don't buff below 1, unless it is already below 1
+      float marinerBuff = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.CETACEA_CHARM_SWIM_PENALTY_PER_LVL).get(level);
+      return level == 0 ? constant : Math.min(constant, Math.max(1, constant - marinerBuff)); // Don't buff below 1, unless it is already below 1
    }
    
    @ModifyExpressionValue(method = "getDestroySpeed", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;getValue()D"))
@@ -107,7 +122,8 @@ public class PlayerMixin {
          int lvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MARINERS_GRACE);
          if(lvl > level) level = lvl;
       }
-      return level == 0 ? original : Math.max(original, Math.min(1,original + level*0.35)); // Don't buff beyond 1, unless it is already above 1
+      double marinerBuff = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.CETACEA_CHARM_SWIM_PENALTY_PER_LVL).get(level);
+      return level == 0 ? original : Math.max(original, Math.min(1,original + marinerBuff)); // Don't buff beyond 1, unless it is already above 1
    }
    
    // Remove all absorption callbacks when shield gets disabled

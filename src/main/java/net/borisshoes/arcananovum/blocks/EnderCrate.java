@@ -9,8 +9,8 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -40,7 +40,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -458,7 +457,7 @@ public class EnderCrate extends ArcanaBlock {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack CRATE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/ender_crate"));
+      public static final ItemStack CRATE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/ender_crate"));
       
       // Direction offsets for each horizontal face (North, South, East, West)
       private static final Direction[] FACES = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};

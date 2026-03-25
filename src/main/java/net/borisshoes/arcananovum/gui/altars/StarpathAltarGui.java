@@ -17,10 +17,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-
-import static net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity.COST;
 
 public class StarpathAltarGui extends SimpleGui {
    private final StarpathAltarBlockEntity blockEntity;
@@ -50,12 +49,13 @@ public class StarpathAltarGui extends SimpleGui {
          }
       }else if(index == 4){
          if(blockEntity.getCooldown() <= 0){
-            if(MinecraftUtils.removeItems(player,COST,blockEntity.calculateCost())){
+            Item cost = StarpathAltarBlockEntity.getCost();
+            if(MinecraftUtils.removeItems(player,cost,blockEntity.calculateCost())){
                blockEntity.startTeleport(player);
                close();
             }else{
                player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                     .append(Component.translatable(COST.getDescriptionId()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))
+                     .append(Component.translatable(cost.getDescriptionId()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))
                      .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)),false);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
                close();
@@ -120,7 +120,8 @@ public class StarpathAltarGui extends SimpleGui {
       int cost = blockEntity.calculateCost();
       int stacks = cost / 64;
       int leftover = cost % 64;
-      GuiElementBuilder activateItem = new GuiElementBuilder(COST);
+      Item costItem = StarpathAltarBlockEntity.getCost();
+      GuiElementBuilder activateItem = new GuiElementBuilder(costItem);
       activateItem.setName((Component.literal("")
             .append(Component.literal("Activate Altar").withStyle(ChatFormatting.LIGHT_PURPLE))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -133,8 +134,8 @@ public class StarpathAltarGui extends SimpleGui {
       MutableComponent text = Component.literal("")
             .append(Component.literal(cost+"").withStyle(ChatFormatting.DARK_GREEN))
             .append(Component.literal(" - ").withStyle(ChatFormatting.DARK_PURPLE))
-            .append(Component.translatable(COST.getDescriptionId()).withStyle(ChatFormatting.DARK_AQUA));
-      if(cost > COST.getDefaultMaxStackSize()){
+            .append(Component.translatable(costItem.getDescriptionId()).withStyle(ChatFormatting.DARK_AQUA));
+      if(cost > costItem.getDefaultMaxStackSize()){
          text.append(Component.literal(" - ").withStyle(ChatFormatting.DARK_PURPLE));
          if(cost > 0){
             text.append("("+stacks+" Stacks + "+leftover+")").withStyle(ChatFormatting.YELLOW);

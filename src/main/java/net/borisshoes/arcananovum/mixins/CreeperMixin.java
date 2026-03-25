@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.ai.goals.FleeFelidaeCharmGoal;
 import net.borisshoes.arcananovum.ai.goals.FleeSteleGoal;
@@ -23,7 +25,8 @@ public abstract class CreeperMixin extends Monster {
    @Inject(method = "registerGoals", at = @At("HEAD"))
    protected void initGoals(CallbackInfo ci){
       Creeper creeper = (Creeper) (Object) this;
-      this.goalSelector.addGoal(1, new FleeFelidaeCharmGoal<>(creeper, Player.class, 8.0F, 1.0, 1.2));
-      this.goalSelector.addGoal(1, new FleeSteleGoal(creeper,1.0,1.25, 12.0F, (stack) -> stack.is(ArcanaRegistry.FELIDAE_CHARM.getItem())));
+      float baseRange = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FELIDAE_CHARM_CREEPER_RANGE);
+      this.goalSelector.addGoal(1, new FleeFelidaeCharmGoal<>(creeper, Player.class, baseRange, 1.0, 1.2));
+      this.goalSelector.addGoal(1, new FleeSteleGoal(creeper,1.0,1.25, baseRange*1.5f, (stack) -> stack.is(ArcanaRegistry.FELIDAE_CHARM.getItem())));
    }
 }

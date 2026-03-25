@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.core.polymer;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -9,6 +10,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,12 +40,10 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
    public ArcanaPolymerCrossbowItem(ArcanaItem arcanaItem, net.minecraft.world.item.Item.Properties settings){
-      super(settings.setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId()))));
+      super(settings.setId(ResourceKey.create(Registries.ITEM, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    
@@ -61,13 +61,13 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
             
             if(projectile.level() instanceof ServerLevel serverWorld){
                int alignmentLvl = Math.max(0, runicArrow.getAugment(ArcanaAugments.PRISMATIC_ALIGNMENT));
-               photonArrows.shoot(serverWorld, shooter, projectile, alignmentLvl);
+               photonArrows.shoot(serverWorld, shooter, runicArrow, alignmentLvl);
                projectile.kill(serverWorld);
             }
          }
          
          if(shooter instanceof ServerPlayer player){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_RUNIC_ARROW_SHOOT));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_RUNIC_ARROW_SHOOT));
             ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER, 1);
             shooter.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS,volume, 1.0F / (shooter.level().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
          }
@@ -85,7 +85,12 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    @Override
    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
       if(PolymerResourcePackUtils.hasMainPack(context)){
-         return Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId());
+         ArcanaSkin skin = ArcanaItem.getSkin(stack);
+         if(skin != null){
+            return skin.getModelId();
+         }else{
+            return ArcanaRegistry.arcanaId(arcanaItem.getId());
+         }
       }else{
          return BuiltInRegistries.ITEM.getResourceKey(arcanaItem.getVanillaItem().asItem()).get().identifier();
       }

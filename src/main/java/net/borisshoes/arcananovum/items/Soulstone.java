@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -108,7 +109,7 @@ public class Soulstone extends ArcanaItem {
       }
       
       lore.add(Component.literal(attunedString).withStyle(ChatFormatting.LIGHT_PURPLE));
-      lore.add(Component.literal("Tier "+tier+" - ("+ LevelUtils.readableInt(souls)+" Mobs Killed)").withStyle(ChatFormatting.GRAY));
+      lore.add(Component.literal("Tier "+tier+" - ("+ TextUtils.readableInt(souls)+" Mobs Killed)").withStyle(ChatFormatting.GRAY));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
@@ -134,7 +135,7 @@ public class Soulstone extends ArcanaItem {
       
       String entityTypeId = EntityType.getKey(dead.getType()).toString();
       
-      int toAdd = new int[]{1,2,3,4,5,10}[Math.max(0,ArcanaAugments.getAugmentOnItem(stone,ArcanaAugments.SOUL_REAPER))];
+      int toAdd = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SOULSTONE_SOULS_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stone,ArcanaAugments.SOUL_REAPER));
       if(weapon.is(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem())){
          if(ArcanaAugments.getAugmentOnItem(weapon,ArcanaAugments.ETERNAL_CRUELTY) > 0){
             toAdd *= 2;
@@ -149,7 +150,7 @@ public class Soulstone extends ArcanaItem {
          player.displayClientMessage(Component.literal("Your Soulstone crackles with new power!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, 1,1f);
          if(tier > maxTier){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
             putProperty(stone,MAX_TIER_TAG,tier);
          }
          if(tier == 7){

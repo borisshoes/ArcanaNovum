@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
@@ -22,7 +23,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -173,7 +173,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
          inv.setItem(i,streamList.get(i));
       }
       return new ArcanaItemContainer(
-            Identifier.fromNamespaceAndPath(MOD_ID,this.id),
+            ArcanaRegistry.arcanaId(this.id),
             inv, size,10,
             Component.literal("AB"),
             getTranslatedName(),
@@ -220,7 +220,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
          // Open GUI
          if(playerEntity instanceof ServerPlayer player){
             ItemStack stack = playerEntity.getItemInHand(hand);
-            ArcanistsBeltGui gui = new ArcanistsBeltGui(player, ArcanistsBelt.this, stack,BELT_SLOT_COUNT[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.POUCHES))]);
+            ArcanistsBeltGui gui = new ArcanistsBeltGui(player, ArcanistsBelt.this, stack,BELT_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.POUCHES)]);
             gui.build();
             gui.open();
          }
@@ -240,7 +240,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
                if(!ArcanistsBeltSlot.isValidItem(otherStack)){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
                }else{
-                  int size = BELT_SLOT_COUNT[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.POUCHES))];
+                  int size = BELT_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.POUCHES)];
                   int count = otherStack.getCount();
                   Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
                   if(count == addPair.getB().getCount()){

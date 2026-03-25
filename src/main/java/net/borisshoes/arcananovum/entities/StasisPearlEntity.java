@@ -1,8 +1,9 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -11,6 +12,8 @@ import net.borisshoes.arcananovum.mixins.EntityAccessor;
 import net.borisshoes.arcananovum.mixins.ThrowableItemProjectileAccessor;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -21,6 +24,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -31,6 +35,8 @@ import net.minecraft.world.phys.Vec3;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
+
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity {
    
@@ -43,7 +49,6 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
    
    public StasisPearlEntity(EntityType<? extends StasisPearlEntity> entityType, Level world){
       super(entityType, world);
-      //pearlStack.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.MENDING),1);
    }
    
    public StasisPearlEntity(Level world, LivingEntity owner, String itemUuid, CompoundTag augments){
@@ -145,10 +150,13 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
             }
             int reconstructLvl = ArcanaAugments.getAugmentFromCompound(augments,ArcanaAugments.STASIS_RECONSTRUCTION);
             if(reconstructLvl > 0){
-               MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 100, reconstructLvl, false, true, true);
-               MobEffectInstance resist = new MobEffectInstance(MobEffects.RESISTANCE, 60, reconstructLvl-1, false, true, true);
-               holder.addEffect(regen);
-               holder.addEffect(resist);
+               int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STASIS_PEARL_RECONSTRUCT_DURATION);
+               float rejuvRate = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_REGEN_PER_LVL).get(reconstructLvl);
+               float fortMod = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_FORTITUDE_PER_LVL).get(reconstructLvl);
+               ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION,arcanaId(ArcanaRegistry.STASIS_PEARL.getId()),duration, rejuvRate,true,true,false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
+               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE,arcanaId(ArcanaRegistry.STASIS_PEARL.getId()),duration, -fortMod,true,true,false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
+               Conditions.addCondition(holder.level().getServer(),holder,rejuv);
+               Conditions.addCondition(holder.level().getServer(),holder,fortitude);
                
                holder.level().sendParticles(ParticleTypes.HAPPY_VILLAGER,getX(),getY()+holder.getBbHeight()/2,getZ(),10*reconstructLvl, .5,.5,.5,1);
             }

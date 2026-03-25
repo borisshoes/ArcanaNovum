@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -180,8 +180,9 @@ public class SpawnerHarness extends ArcanaItem {
                      world.setBlockEntity(blockEntity);
                   }
                   
-                  boolean reinforced = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS)) > 0;
-                  if(Math.random() > .15 || reinforced){ // Chance of the harness breaking after use
+                  boolean reinforced = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS) > 0;
+                  double breakChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SPAWNER_HARNESS_BREAK_PERCENT);
+                  if(player.random.nextFloat() > breakChance || reinforced){ // Chance of the harness breaking after use
                      player.displayClientMessage(Component.literal("The harness successfully places the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.CHAIN_PLACE, 1,.1f);
                      putProperty(stack,SPAWNER_TAG,new CompoundTag());
@@ -193,7 +194,7 @@ public class SpawnerHarness extends ArcanaItem {
                      buildItemLore(stack,player.level().getServer());
                      stack.consume(stack.getCount(),player);
                   }
-                  if(!reinforced) ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SPAWNER_HARNESS_USE)*0.15)); // Add xp
+                  if(!reinforced) ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SPAWNER_HARNESS_USE)*0.15)); // Add xp
                   return InteractionResult.SUCCESS_SERVER;
                }else{
                   player.displayClientMessage(Component.literal("The harness cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);

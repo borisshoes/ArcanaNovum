@@ -15,8 +15,6 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class ArcanaRecipe {
    
    private final ArcanaIngredient[][] trueIngredients;
@@ -37,7 +35,7 @@ public class ArcanaRecipe {
    }
    
    public ArcanaRecipe(ArcanaItem item, ArcanaIngredient[][] ingredients, ForgeRequirement forgeRequirement){
-      this.itemId = Identifier.fromNamespaceAndPath(MOD_ID,item.getId());
+      this.itemId = ArcanaRegistry.arcanaId(item.getId());
       this.trueIngredients = ingredients;
       this.forgeRequirement = forgeRequirement;
    }

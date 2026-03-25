@@ -51,9 +51,13 @@ public class ArcaneNotesItem extends NormalPolymerItem {
          loreText.add(Component.literal("")
                .append(TextUtils.removeItalics(Component.literal("Contains notes for the ").withStyle(ChatFormatting.DARK_PURPLE)))
                .append(TextUtils.removeItalics(Component.translatable(arcanaItem.getItem().getDescriptionId()).withStyle(ArcanaRarity.getColor(arcanaItem.getRarity())))));
+         loreText.add(TextUtils.removeItalics(Component.literal("")
+               .append(Component.literal("Hold Right Click ").withStyle(ArcanaRarity.getColor(arcanaItem.getRarity())))
+               .append(Component.literal("to read the notes and unlock the item").withStyle(ChatFormatting.DARK_PURPLE))));
       
          String author = ArcanaItem.getStringProperty(stack,AUTHOR_TAG);
          if(!author.isEmpty()){
+            loreText.add(Component.literal(""));
             loreText.add(Component.literal("")
                   .append(Component.literal("Scribed by ").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC))
                   .append(TextUtils.removeItalics(Component.literal(author).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC))));

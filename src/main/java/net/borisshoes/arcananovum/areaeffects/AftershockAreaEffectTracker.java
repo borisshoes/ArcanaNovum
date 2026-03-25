@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.areaeffects;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
@@ -88,12 +90,12 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
       private AftershockSource(BlockPos sourceBlock, ServerLevel blockWorld, int level, @Nullable Entity contributor){
          this.sourceBlock = sourceBlock;
          this.blockWorld = blockWorld;
-         this.range = level >= 4 ? 4 : 2.5;
-         this.damage = level >= 4 ? 4 : 2;
+         this.range = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STORM_ARROW_AFTERSHOCK_RANGE_PER_LVL).get(level);
+         this.damage = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STORM_ARROW_AFTERSHOCK_DMG_PER_LVL).get(level);
          this.level = level;
          this.contributor = contributor;
          this.age = 0;
-         this.duration = 30 + 20*level;
+         this.duration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.STORM_ARROW_AFTERSHOCK_DURATION_PER_LVL).get(level);
       }
       
       public Level getSourceWorld(){

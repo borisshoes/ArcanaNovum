@@ -13,9 +13,6 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanter;
-import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
-import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -31,7 +28,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -76,8 +72,6 @@ import static net.borisshoes.arcananovum.ArcanaNovum.ANCHOR_CHUNKS;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.blocks.ContinuumAnchor.ContinuumAnchorBlock.ACTIVE;
 import static net.borisshoes.arcananovum.blocks.ContinuumAnchor.ContinuumAnchorBlock.CHARGES;
-import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.LIT;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
 public class ContinuumAnchor extends ArcanaBlock {
@@ -297,12 +291,12 @@ public class ContinuumAnchor extends ArcanaBlock {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack ANCHOR_BASE_0 = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/continuum_anchor_0"));
-      public static final ItemStack ANCHOR_BASE_1 = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/continuum_anchor_1"));
-      public static final ItemStack ANCHOR_BASE_2 = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/continuum_anchor_2"));
-      public static final ItemStack ANCHOR_BASE_3 = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/continuum_anchor_3"));
-      public static final ItemStack ANCHOR_BASE_4 = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/continuum_anchor_4"));
-      public static final ItemStack ANCHOR_SPIKE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/continuum_anchor_spike"));
+      public static final ItemStack ANCHOR_BASE_0 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_0"));
+      public static final ItemStack ANCHOR_BASE_1 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_1"));
+      public static final ItemStack ANCHOR_BASE_2 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_2"));
+      public static final ItemStack ANCHOR_BASE_3 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_3"));
+      public static final ItemStack ANCHOR_BASE_4 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_4"));
+      public static final ItemStack ANCHOR_SPIKE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_spike"));
       
       // Spike animation constants
       private static final float SPIKE_TILT = 7.5f * Mth.DEG_TO_RAD; // Tilt towards center

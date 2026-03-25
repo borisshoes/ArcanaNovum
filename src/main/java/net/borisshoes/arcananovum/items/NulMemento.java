@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -16,6 +17,8 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -39,6 +42,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -57,6 +61,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class NulMemento extends EnergyItem {
 	public static final String ID = "nul_memento";
@@ -187,7 +192,9 @@ public class NulMemento extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      return 36000 - 12000*Math.max(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TEMPO_MORTUUS),0); // 30 minutes - 10 per level
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TEMPO_MORTUUS));
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    public boolean protectFromDeath(ItemStack stack, LivingEntity living, DamageSource source, boolean constructInterference){
@@ -231,7 +238,7 @@ public class NulMemento extends EnergyItem {
                         .append(Component.literal("Let my gift offer you a second chance.").withStyle(ChatFormatting.DARK_GRAY))
             )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
          }
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_NUL_MEMENTO_PROTECT));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_NUL_MEMENTO_PROTECT));
       }
       
       setEnergy(stack,getMaxEnergy(stack));
@@ -252,11 +259,11 @@ public class NulMemento extends EnergyItem {
       putProperty(stack,ACTIVE_TAG,true);
       
       int increments = 100;
-      MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT,increments*5 , 0, false, false, true);
+      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId(ID),increments*5,1.0f,false,true,true, AttributeModifier.Operation.ADD_VALUE,null);
       MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, increments*5, 9, false, false, true);
       MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, increments*5 , 4, false, false, true);
       MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS,increments*5 , 4, false, false, true);
-      player.addEffect(blind);
+      Conditions.addCondition(player.level().getServer(),player,nearsight);
       player.addEffect(slow);
       player.addEffect(fatigue);
       player.addEffect(weakness);
@@ -392,7 +399,7 @@ public class NulMemento extends EnergyItem {
             
             ArcanaNovum.data(player).removeAllAugments();
             ArcanaNovum.data(player).setCanAttemptCeptyus(true);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_NUL_MEMENTO_DEALLOCATE));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_NUL_MEMENTO_DEALLOCATE));
             ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE);
             ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC,1);
          }
@@ -698,11 +705,11 @@ public class NulMemento extends EnergyItem {
       
       @Override
       public Item getPolymerItem(ItemStack itemStack, PacketContext context){
-         if(ArcanaItemUtils.isArcane(itemStack)){
-            boolean onHead = getBooleanProperty(itemStack,HEAD_TAG);
-            if(onHead && PolymerResourcePackUtils.hasMainPack(context)) return textureItem;
+         if(PolymerResourcePackUtils.hasMainPack(context)){
+            return textureItem;
+         }else{
+            return super.getPolymerItem(itemStack, context);
          }
-         return super.getPolymerItem(itemStack, context);
       }
       
       @Override
@@ -729,8 +736,8 @@ public class NulMemento extends EnergyItem {
             buildItemLore(stack,entity.level().getServer());
          }
          
-         // 0.0000075 ~ 120 minutes between voice lines
-         if(Math.random() < 0.0000075){ // 0.0000075
+         double dialogChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MEMENTO_DIALOG_CHANCE);
+         if(Math.random() < dialogChance){
             inventoryDialog(player);
          }
       }

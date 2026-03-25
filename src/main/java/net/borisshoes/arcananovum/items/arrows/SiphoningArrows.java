@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.OverhealTimerCallback;
@@ -10,6 +12,7 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.mixins.AbstractArrowAccessor;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -39,9 +42,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class SiphoningArrows extends RunicArrow {
 	public static final String ID = "siphoning_arrows";
-   public static final Identifier EFFECT_ID = Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,ID+".overheal");
-   
-   private static final int[] overhealCap = {0,2,4,10};
+   public static final Identifier EFFECT_ID = ArcanaRegistry.arcanaId(ID+".overheal");
    
    public SiphoningArrows(){
       id = ID;
@@ -83,8 +84,11 @@ public class SiphoningArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayer player){
-         double damage = Mth.ceil(Mth.clamp(arrow.getDeltaMovement().length() * ((AbstractArrowAccessor)arrow).getBaseDamage(), 0.0, 2.147483647E9)) / 5.5;
-         damage += arrow.isCritArrow() ? damage/4 : 0;
+         double percentage = ArcanaUtils.getArrowPercentage(arrow);
+         double minHeal = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SIPHONING_ARROW_MIN_HEAL);
+         double maxHeal = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SIPHONING_ARROW_MAX_HEAL);
+         float heal = (float) Mth.clamp(percentage*maxHeal,minHeal,maxHeal);
+         float overhealCap = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.SIPHONING_ARROW_OVERHEAL_PER_LVL).get(arrow.getAugment(ArcanaAugments.OVERHEAL));
          
          if(player.getHealth() < 1.5f){
             BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2, () -> {
@@ -92,8 +96,7 @@ public class SiphoningArrows extends RunicArrow {
             }));
          }
          
-         int overhealLvl = arrow.getAugment(ArcanaAugments.OVERHEAL);
-         float overheal = (float) Mth.clamp((damage+player.getHealth()) - player.getMaxHealth(),0,overhealCap[overhealLvl]);
+         float overheal = Mth.clamp((heal+player.getHealth()) - player.getMaxHealth(),0,overhealCap);
          if(overheal > 0){
             float curAbs = player.getAbsorptionAmount();
             BorisLib.addTickTimerCallback(new OverhealTimerCallback(100,player,overheal));
@@ -102,8 +105,8 @@ public class SiphoningArrows extends RunicArrow {
             player.setAbsorptionAmount((curAbs + overheal));
          }
          
-         player.heal((float)damage);
-         player.level().sendParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getBbHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
+         player.heal(heal);
+         player.level().sendParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getBbHeight()/2,player.getZ(),(int)Math.ceil(heal), .5,.5,.5,1);
       }
    }
    

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -23,8 +24,8 @@ import java.util.List;
 
 public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
    
-   public AequalisSkillTransmutationRecipe(String id){
-      super(id,new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
+   public AequalisSkillTransmutationRecipe(){
+      super("transfer_skill_points",new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
    }
    
    @Override // This transmutation cannot be done by an Aequalis
@@ -197,7 +198,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      if(player != null) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AEQUALIS_SCIENTIA_SKILL_TRANSMUTE));
+      if(player != null) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AEQUALIS_SCIENTIA_SKILL_TRANSMUTE));
       return new ArrayList<>();
    }
    

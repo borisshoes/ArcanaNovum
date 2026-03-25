@@ -16,7 +16,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
@@ -1658,6 +1657,36 @@ public class DefaultRecipeGenerator {
             {r, s, t, u, v}
       };
       arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.WILD_GROWTH_CHARM, ingredients,new ForgeRequirement()));
+      
+      // ===================================
+      //           TRANSMOGRIFICATION CATALYST
+      // ===================================
+      a = new ArcanaIngredient(Items.WHITE_DYE, 2);
+      b = new ArcanaIngredient(Items.AMETHYST_SHARD, 2);
+      c = new ArcanaIngredient(Items.LIME_DYE, 2);
+      d = new ArcanaIngredient(Items.GRAY_DYE, 2);
+      e = new ArcanaIngredient(Items.LIGHT_BLUE_DYE, 2);
+      f = new ArcanaIngredient(Items.MAGENTA_DYE, 2);
+      g = new ArcanaIngredient(Items.CYAN_DYE, 2);
+      h = new ArcanaIngredient(Items.RED_DYE, 2);
+      i = new ArcanaIngredient(Items.PINK_DYE, 2);
+      j = new GenericArcanaIngredient(ArcanaRegistry.CATALYTIC_MATRIX, 1);
+      k = new ArcanaIngredient(Items.BROWN_DYE, 2);
+      l = new ArcanaIngredient(Items.ORANGE_DYE, 2);
+      m = new ArcanaIngredient(Items.GREEN_DYE, 2);
+      n = new ArcanaIngredient(Items.PURPLE_DYE, 2);
+      o = new ArcanaIngredient(Items.BLUE_DYE, 2);
+      p = new ArcanaIngredient(Items.LIGHT_GRAY_DYE, 2);
+      q = new ArcanaIngredient(Items.YELLOW_DYE, 2);
+      r = new ArcanaIngredient(Items.BLACK_DYE, 2);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,d},
+            {b,e,f,g,b},
+            {h,i,j,k,l},
+            {b,m,n,o,b},
+            {p,b,q,b,r}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.TRANSMOGRIFICATION_CATALYST, ingredients, new ForgeRequirement().withAnvil()));
       
       
       // ===================================
@@ -3553,6 +3582,36 @@ public class DefaultRecipeGenerator {
             {b,g,h,g,b},
             {a,b,c,b,a}};
       arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.TWILIGHT_ANVIL, ingredients,new ForgeRequirement()));
+      
+      // ===================================
+      //           TRANSMOGRIFICATION CATALYST
+      // ===================================
+      a = new ArcanaIngredient(Items.WHITE_DYE, 8);
+      b = new ArcanaIngredient(Items.AMETHYST_SHARD, 4);
+      c = new ArcanaIngredient(Items.LIME_DYE, 8);
+      d = new ArcanaIngredient(Items.GRAY_DYE, 8);
+      e = new ArcanaIngredient(Items.LIGHT_BLUE_DYE, 8);
+      f = new ArcanaIngredient(Items.MAGENTA_DYE, 8);
+      g = new ArcanaIngredient(Items.CYAN_DYE, 8);
+      h = new ArcanaIngredient(Items.RED_DYE, 8);
+      i = new ArcanaIngredient(Items.PINK_DYE, 8);
+      j = new GenericArcanaIngredient(ArcanaRegistry.CATALYTIC_MATRIX, 1);
+      k = new ArcanaIngredient(Items.BROWN_DYE, 8);
+      l = new ArcanaIngredient(Items.ORANGE_DYE, 8);
+      m = new ArcanaIngredient(Items.GREEN_DYE, 8);
+      n = new ArcanaIngredient(Items.PURPLE_DYE, 8);
+      o = new ArcanaIngredient(Items.BLUE_DYE, 8);
+      p = new ArcanaIngredient(Items.LIGHT_GRAY_DYE, 8);
+      q = new ArcanaIngredient(Items.YELLOW_DYE, 8);
+      r = new ArcanaIngredient(Items.BLACK_DYE, 8);
+      
+      ingredients = new ArcanaIngredient[][]{
+            {a,b,c,b,d},
+            {b,e,f,g,b},
+            {h,i,j,k,l},
+            {b,m,n,o,b},
+            {p,b,q,b,r}};
+      arcanaRecipes.add(new ArcanaRecipe(ArcanaRegistry.TRANSMOGRIFICATION_CATALYST, ingredients, new ForgeRequirement().withAnvil()));
       
       
       // ===================================

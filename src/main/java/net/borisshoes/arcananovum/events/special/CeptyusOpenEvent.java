@@ -24,14 +24,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -40,10 +37,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class CeptyusOpenEvent extends Event {
-   public static final Identifier ID = Identifier.fromNamespaceAndPath(MOD_ID,"ceptyus_open");
+   public static final Identifier ID = ArcanaRegistry.arcanaId("ceptyus_open");
    
    private final ServerPlayer player;
    private final ServerLevel world;

@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.core.polymer;
 
 import eu.pb4.polymer.core.api.block.PolymerBlock;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,12 +16,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public abstract class ArcanaPolymerBlock extends Block implements PolymerBlock {
    protected final ArcanaItem arcanaItem;
    public ArcanaPolymerBlock(ArcanaItem arcanaItem, Properties settings){
-      super(settings.setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId()))));
+      super(settings.setId(ResourceKey.create(Registries.BLOCK, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    

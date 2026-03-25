@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -48,7 +49,6 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
    private boolean seenForge;
    private boolean updating;
    private SimpleContainer inventory = new SimpleContainer(getContainerSize());
-   private final int[] efficiency = {24,32,40,48,56,64};
    private final Set<ServerPlayer> watchingPlayers = new HashSet<>();
    
    public RadiantFletcheryBlockEntity(BlockPos pos, BlockState state){
@@ -89,7 +89,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
    
    public int getPotionRatio(){
       int lvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.ALCHEMICAL_EFFICIENCY);
-      return efficiency[lvl];
+      return ArcanaNovum.CONFIG.getIntList(ArcanaConfig.RADIANT_FLETCHERY_ARROWS_PER_LVL).get(lvl);
    }
    
    public void openGui(ServerPlayer player){
@@ -243,7 +243,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
             }
             
             watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.FINALLY_USEFUL_2));
-            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_RADIANT_FLETCHERY_TIP_ARROWS)));
+            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_RADIANT_FLETCHERY_TIP_ARROWS)));
          }
          
          //Update gui

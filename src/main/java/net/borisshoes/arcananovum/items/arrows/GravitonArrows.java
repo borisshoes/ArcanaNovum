@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -9,6 +11,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -88,8 +91,13 @@ public class GravitonArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
-         int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20);// Measured in quarter seconds
-         double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL);
+         double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.GRAVITON_ARROW_RANGE);
+         double addedRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GRAVITON_ARROW_WELL_RANGE_PER_LVL).get(arrow.getAugment(ArcanaAugments.GRAVITY_WELL));
+         int maxDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MAX);
+         int minDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MIN);
+         float percentage = ArcanaUtils.getArrowPercentage(arrow);
+         int duration = (int) Mth.clamp(percentage*maxDur,minDur,maxDur);
+         double range = baseRange + addedRange;
          gravitonPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
       }
    }
@@ -97,8 +105,13 @@ public class GravitonArrows extends RunicArrow {
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
-         int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20); // Measured in quarter seconds
-         double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL);
+         double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.GRAVITON_ARROW_RANGE);
+         double addedRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GRAVITON_ARROW_WELL_RANGE_PER_LVL).get(arrow.getAugment(ArcanaAugments.GRAVITY_WELL));
+         int maxDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MAX);
+         int minDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MIN);
+         float percentage = ArcanaUtils.getArrowPercentage(arrow);
+         int duration = (int) Mth.clamp(percentage*maxDur,minDur,maxDur);
+         double range = baseRange + addedRange;
          gravitonPulse(arrow, serverWorld,blockHitResult.getLocation(),null,duration,range,0);
       }
    }

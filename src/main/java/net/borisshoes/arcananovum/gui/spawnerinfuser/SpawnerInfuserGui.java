@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.gui.spawnerinfuser;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -21,13 +23,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -65,13 +64,7 @@ public class SpawnerInfuserGui extends SimpleGui {
       super(MenuType.GENERIC_9x5, player, false);
       this.blockEntity = blockEntity;
       this.world = world;
-      
-      boolean emulator = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SPIRIT_EMULATOR) >= 1;
-      if(emulator){
-         this.playerRangeLvls = new int[]{2, 5, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 75, 90, 9999};
-      }else{
-         this.playerRangeLvls = new int[]{2, 5, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 75, 90, 100};
-      }
+      this.playerRangeLvls = new int[]{2, 5, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 75, 90, 100};
    }
    
    @Override
@@ -217,8 +210,8 @@ public class SpawnerInfuserGui extends SimpleGui {
       
       if(usable){
          setSlotRedirect(40, new SpawnerInfuserPointsSlot(blockEntity.getInventory(),1,0,0)); // Points item slot
-   
-         int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SOUL_RESERVOIR)];
+         
+         int bonusCap = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SPAWNER_INFUSER_EXTRA_CAPACITY_PER_LVL).get(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SOUL_RESERVOIR));
          int soulstoneTier = Soulstone.soulsToTier(Soulstone.getSouls(stone));
          int maxPoints = SpawnerInfuser.pointsFromTier[soulstoneTier] + bonusCap;
          int pips = (int)Math.ceil((double)points*3.0/(double)maxPoints);

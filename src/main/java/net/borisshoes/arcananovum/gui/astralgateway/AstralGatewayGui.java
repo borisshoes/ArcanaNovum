@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.gui.astralgateway;
 
-import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -12,7 +11,6 @@ import net.borisshoes.arcananovum.gui.WaystoneSlot;
 import net.borisshoes.arcananovum.gui.starlightforge.StardustSlot;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
-import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -20,7 +18,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -103,33 +100,52 @@ public class AstralGatewayGui extends SimpleGui {
       modeRight.setName(Component.literal("Gateway Mode Controls").withStyle(ChatFormatting.DARK_PURPLE));
       setSlot(2,modeRight);
       
-      GatewayMode mode = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.MODE);
-      GuiElementBuilder modeSwitch = new GuiElementBuilder();
-      modeSwitch.setName(Component.literal("Gateway Mode").withStyle(ChatFormatting.GREEN));
-      modeSwitch.addLoreLine(Component.literal("Click ").withStyle(ChatFormatting.AQUA).append(Component.literal("to cycle the gateway mode").withStyle(ChatFormatting.DARK_PURPLE)));
-      modeSwitch.addLoreLine(Component.literal("Shift Click ").withStyle(ChatFormatting.DARK_AQUA).append(Component.literal("to reverse-cycle the gateway mode").withStyle(ChatFormatting.DARK_PURPLE)));
-      modeSwitch.addLoreLine(Component.literal(""));
-      if(mode == GatewayMode.BOTH){
-         modeSwitch.setItem(Items.ENDER_EYE);
-         modeSwitch.addLoreLine(Component.literal("Current Mode: ").withStyle(ChatFormatting.GREEN).append(Component.literal("Both - Gateway can open and be opened by other Gateways").withStyle(ChatFormatting.DARK_PURPLE)));
-      }else if(mode == GatewayMode.RECEIVE_ONLY){
-         modeSwitch.setItem(Items.ENDER_PEARL);
-         modeSwitch.addLoreLine(Component.literal("Current Mode: ").withStyle(ChatFormatting.GREEN).append(Component.literal("Receive Only - Gateway only be opened by other Gateways").withStyle(ChatFormatting.DARK_PURPLE)));
+      GatewayState state = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
+      if(state == GatewayState.OPEN){
+         GuiElementBuilder forceClose = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.CANCEL_COLOR,ArcanaColors.ARCANA_COLOR));
+         forceClose.setName(Component.literal("Close Gateway").withStyle(ChatFormatting.RED));
+         forceClose.addLoreLine(Component.literal("Click ").withStyle(ChatFormatting.DARK_RED).append(Component.literal("to close the gateway").withStyle(ChatFormatting.RED)));
+         forceClose.setCallback((type) -> {
+            GatewayState curState = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
+            if(curState != GatewayState.OPEN){
+               build();
+               return;
+            }
+            gateway.setState(GatewayState.COOLDOWN);
+            AstralGatewayBlockEntity synced = gateway.getSyncedGateway();
+            if(synced != null) synced.setState(GatewayState.COOLDOWN);
+            build();
+         });
+         setSlot(1,forceClose);
       }else{
-         modeSwitch.setItem(Items.COPPER_BARS.oxidized());
-         modeSwitch.addLoreLine(Component.literal("Current Mode: ").withStyle(ChatFormatting.GREEN).append(Component.literal("Send Only - Gateway can only open other Gateways").withStyle(ChatFormatting.DARK_PURPLE)));
-      }
-      modeSwitch.setCallback((type) -> {
+         GatewayMode mode = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.MODE);
+         GuiElementBuilder modeSwitch = new GuiElementBuilder();
+         modeSwitch.setName(Component.literal("Gateway Mode").withStyle(ChatFormatting.GREEN));
+         modeSwitch.addLoreLine(Component.literal("Click ").withStyle(ChatFormatting.AQUA).append(Component.literal("to cycle the gateway mode").withStyle(ChatFormatting.DARK_PURPLE)));
+         modeSwitch.addLoreLine(Component.literal("Shift Click ").withStyle(ChatFormatting.DARK_AQUA).append(Component.literal("to reverse-cycle the gateway mode").withStyle(ChatFormatting.DARK_PURPLE)));
+         modeSwitch.addLoreLine(Component.literal(""));
          if(mode == GatewayMode.BOTH){
-            gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.SEND_ONLY : GatewayMode.RECEIVE_ONLY), Block.UPDATE_ALL);
+            modeSwitch.setItem(Items.ENDER_EYE);
+            modeSwitch.addLoreLine(Component.literal("Current Mode: ").withStyle(ChatFormatting.GREEN).append(Component.literal("Both - Gateway can open and be opened by other Gateways").withStyle(ChatFormatting.DARK_PURPLE)));
          }else if(mode == GatewayMode.RECEIVE_ONLY){
-            gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.BOTH : GatewayMode.SEND_ONLY), Block.UPDATE_ALL);
+            modeSwitch.setItem(Items.ENDER_PEARL);
+            modeSwitch.addLoreLine(Component.literal("Current Mode: ").withStyle(ChatFormatting.GREEN).append(Component.literal("Receive Only - Gateway only be opened by other Gateways").withStyle(ChatFormatting.DARK_PURPLE)));
          }else{
-            gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.RECEIVE_ONLY : GatewayMode.BOTH), Block.UPDATE_ALL);
+            modeSwitch.setItem(Items.COPPER_BARS.oxidized());
+            modeSwitch.addLoreLine(Component.literal("Current Mode: ").withStyle(ChatFormatting.GREEN).append(Component.literal("Send Only - Gateway can only open other Gateways").withStyle(ChatFormatting.DARK_PURPLE)));
          }
-         build();
-      });
-      setSlot(1,modeSwitch);
+         modeSwitch.setCallback((type) -> {
+            if(mode == GatewayMode.BOTH){
+               gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.SEND_ONLY : GatewayMode.RECEIVE_ONLY), Block.UPDATE_ALL);
+            }else if(mode == GatewayMode.RECEIVE_ONLY){
+               gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.BOTH : GatewayMode.SEND_ONLY), Block.UPDATE_ALL);
+            }else{
+               gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.RECEIVE_ONLY : GatewayMode.BOTH), Block.UPDATE_ALL);
+            }
+            build();
+         });
+         setSlot(1,modeSwitch);
+      }
       
       long stardust = gateway.getStardust();
       int stardustPerMin = gateway.getStardustPerMinute();

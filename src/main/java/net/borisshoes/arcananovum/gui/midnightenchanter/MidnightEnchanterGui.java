@@ -5,6 +5,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -70,7 +71,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       inventory = new SimpleContainer(1);
       inventory.addListener(this);
       
-      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)));
+      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)).hideTooltip());
       setPaneHeight(3);
       setPaneStartInd(19);
       setSortInd(9);
@@ -145,9 +146,12 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
                .append(Component.literal(" to disenchant this item").withStyle(ChatFormatting.DARK_PURPLE)))));
          essenceItem.setCallback((clickType) -> {
-            int essence = (int) (ArcanaUtils.calcEssenceFromEnchants(getStack()) * (1 + .15 * ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.ESSENCE_SUPERNOVA)));
+            int rawEssence = ArcanaUtils.calcEssenceFromEnchants(getStack());
+            double modifier = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MIDNIGHT_ENCHANTER_ESSENCE_RATE) +
+                  ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.MIDNIGHT_ENCHANTER_ESSENCE_RATE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA));
+            int essence = (int) (rawEssence * modifier);
             SimpleContainer sinv = new SimpleContainer(essence / 64 + 1);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE) * essence);
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE) * essence);
             if(essence > 0){
                while(essence > 64){
                   sinv.addItem(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance().copyWithCount(64));
@@ -393,9 +397,9 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
          essenceCost = getStack().getCount();
       }else{
          if(getStack().isEmpty()){
-            blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)));
+            blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)).hideTooltip());
          }else{
-            blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)));
+            blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)).hideTooltip());
          }
          super.buildPage();
          if(getStack().isEmpty()){
@@ -708,7 +712,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
             rarityMod *= 2;
          }
          cost += entry.level() * rarityMod;
-         eCost += (int) Math.ceil(ArcanaUtils.calcEssenceValue(entry.enchantment(), entry.level()) * 1.5);
+         eCost += ArcanaUtils.calcEssenceValue(entry.enchantment(), entry.level());
       }
       
       essenceCost = eCost;

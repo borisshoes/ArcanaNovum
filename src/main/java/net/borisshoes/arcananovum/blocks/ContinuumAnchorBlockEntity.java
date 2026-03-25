@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -42,7 +43,6 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, WorldlyContainer, ContainerListener {
-   private static final double[] anchorEfficiency = {0,.05,.1,.15,.2,.5};
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -147,7 +147,8 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
          
          if(active && serverWorld.getServer().getTickCount() % 20 == 0){
             int lvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.TEMPORAL_RELATIVITY);
-            if(Math.random() >= anchorEfficiency[lvl]){
+            double efficiency = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.CONTINUUM_ANCHOR_EFFICIENCY_PER_LVL).get(lvl);
+            if(Math.random() >= efficiency){
                fuel = Math.max(0, fuel - 1);
                
                if(ArcanaItemUtils.identifyItem(getFuelStack()) instanceof ExoticMatter matter){
@@ -160,7 +161,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
                UUID parsedId = AlgoUtils.getUUID(crafterId);
                ArcanaPlayerData profile = ArcanaNovum.data(parsedId);
                ArcanaAchievements.progress(parsedId,ArcanaAchievements.TIMEY_WIMEY, 1);
-               if(serverWorld.getServer().getTickCount() % 1200 == 0) profile.addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CONTINUUM_ANCHOR_PER_MINUTE));
+               if(serverWorld.getServer().getTickCount() % 1200 == 0) profile.addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CONTINUUM_ANCHOR_PER_MINUTE));
             }
          }
          int fuelMarks = (int)Math.min(Math.ceil(4.0*fuel/600000.0),4);

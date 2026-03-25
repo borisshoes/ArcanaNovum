@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -158,7 +158,8 @@ public class LightCharm extends ArcanaItem {
             if(novaCD == 0){
                player.displayClientMessage(Component.literal("The Charm's Light Flares!").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC),true);
                nova(player,item);
-               putProperty(item,NOVA_TAG, 30);
+               int cooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.LIGHT_CHARM_NOVA_COOLDOWN);
+               putProperty(item,NOVA_TAG, cooldown);
             }else{
                player.displayClientMessage(Component.literal("Radiant Nova Cooldown: "+novaCD+" seconds").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC),true);
             }
@@ -171,7 +172,7 @@ public class LightCharm extends ArcanaItem {
    private void nova(ServerPlayer player, ItemStack stack){
       ServerLevel world = player.level();
       BlockPos center = player.blockPosition();
-      int range = 32;
+      int range = ArcanaNovum.CONFIG.getInt(ArcanaConfig.LIGHT_CHARM_NOVA_RANGE);
       int threshold = 3;
       BlockPos max = center.offset(range,10,range);
       BlockPos min = center.offset(-range,-3*range,-range);
@@ -212,7 +213,7 @@ public class LightCharm extends ArcanaItem {
          }
       }
       
-      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LIGHT_CHARM_NOVA_PER_LIGHT)*placedCount); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_LIGHT_CHARM_NOVA_PER_LIGHT)*placedCount); // Add xp
       SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1f,0.5f);
    }
    
@@ -354,15 +355,16 @@ public class LightCharm extends ArcanaItem {
          int threshold = getIntProperty(stack,THRESHOLD_TAG);
          int brightness = getIntProperty(stack,BRIGHTNESS_TAG);
          int novaCD = getIntProperty(stack,NOVA_TAG);
+         int cooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.LIGHT_CHARM_PASSIVE_COOLDOWN);
          
-         if(world.getServer().getTickCount() % 60 == 0){
+         if(world.getServer().getTickCount() % cooldown == 0){
             BlockPos pos = player.blockPosition();
             if(active){
                if(world.getMaxLocalRawBrightness(pos) <= threshold && world.getBlockState(pos).isAir()){
                   world.setBlock(pos, Blocks.LIGHT.defaultBlockState().setValue(LEVEL,brightness), Block.UPDATE_ALL);
                   world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
                   SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, .3f,2f);
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LIGHT_CHARM_AUTOMATIC)); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_LIGHT_CHARM_AUTOMATIC)); // Add xp
                   ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED,1);
                }
             }
@@ -401,7 +403,7 @@ public class LightCharm extends ArcanaItem {
             world.setBlock(pos, Blocks.LIGHT.defaultBlockState().setValue(LEVEL,brightness), Block.UPDATE_ALL);
             world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
             SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, .3f,2f);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LIGHT_CHARM_MANUAL)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_LIGHT_CHARM_MANUAL)); // Add xp
             ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED,1);
             return InteractionResult.SUCCESS_SERVER;
          }

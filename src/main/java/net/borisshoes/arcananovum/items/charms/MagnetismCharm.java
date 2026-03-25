@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -120,8 +121,10 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
    }
    
    public void activeUse(ServerPlayer player, Level world, ItemStack charm){
-      int activeLength = 15 + 3*Math.max(0, ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.ELECTROMAGNET));;
-      int activeRange = 3;
+      double baseLength = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MAGNETISM_CHARM_ACTIVE_RANGE);
+      double extraLength = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.MAGNETISM_CHARM_ACTIVE_RANGE_PER_LVL).get(ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.ELECTROMAGNET));
+      double activeLength = baseLength + extraLength;
+      double activeRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MAGNETISM_CHARM_ACTIVE_WIDTH);
       int cooldown = getIntProperty(charm,COOLDOWN_TAG);
       if(cooldown != 0){
          return;
@@ -146,7 +149,7 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
          double heightMod = .08;
          item.setDeltaMovement(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
       }
-      ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MAGNETISM_CHARM_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MAGNETISM_CHARM_PER_ITEM)*items.size())); // Add xp
+      ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MAGNETISM_CHARM_CAP),ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MAGNETISM_CHARM_PER_ITEM)*items.size())); // Add xp
       if(items.size() >= 25) ArcanaAchievements.grant(player,ArcanaAchievements.MAGNETS);
       
       if(ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.NEODYMIUM) >= 1){
@@ -196,7 +199,7 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       }
    }
    
-   private boolean itemInRange(Vec3 itemPos, Vec3 start, Vec3 end, int activeRange){
+   private boolean itemInRange(Vec3 itemPos, Vec3 start, Vec3 end, double activeRange){
       double dist = itemPos.subtract(start).cross(end.subtract(start)).length() / end.subtract(start).length();
       return dist <= activeRange;
    }
@@ -356,7 +359,9 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
-         int passiveRange = 5 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERRITE_CORE));
+         double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MAGNETISM_CHARM_PASSIVE_RANGE);
+         double extraRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.MAGNETISM_CHARM_PASSIVE_RANGE_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERRITE_CORE));
+         double passiveRange = baseRange + extraRange;
          int cooldown = getIntProperty(stack,COOLDOWN_TAG);
          
          if(!player.isShiftKeyDown() && world.getServer().getTickCount() % 10 == 0 && getIntProperty(stack,MODE_TAG) > 0){

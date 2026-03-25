@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -131,7 +132,9 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public BlockPos getForgeRange(){
-      return ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STELLAR_RANGE) >= 1 ? new BlockPos(15, 8, 15) : new BlockPos(8, 5, 8);
+      int vertBonus = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STARLIGHT_FORGE_STELLAR_RANGE_VERTICAL);
+      int horizBonus = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STARLIGHT_FORGE_STELLAR_RANGE_HORIZONTAL);
+      return ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STELLAR_RANGE) >= 1 ? new BlockPos(8 + horizBonus, 5 + vertBonus, 8 + horizBonus) : new BlockPos(8, 5, 8);
    }
    
    public ArcanaBlockEntity getForgeAddition(ServerLevel world, BlockEntityType<? extends BlockEntity> additionBlockEntity){

@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
 import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
@@ -14,7 +14,6 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -24,8 +23,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -40,7 +37,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -136,8 +132,8 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
             living.addEffect(grace);
             
             if(living instanceof ServerPlayer player && world.getServer().getTickCount() % 20 == 0){
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CETACEA_CHARM_PER_SECOND));
-               stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CETACEA_CHARM_PER_SECOND));
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CETACEA_CHARM_PER_SECOND));
+               stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CETACEA_CHARM_PER_SECOND));
             }
          }
          if(living.isUnderWater() && gills){
@@ -208,7 +204,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
                player.addEffect(grace);
                
                if(world.getServer().getTickCount() % 20 == 0){
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CETACEA_CHARM_PER_SECOND));
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CETACEA_CHARM_PER_SECOND));
                }
             }
             if(player.isUnderWater() && gills){

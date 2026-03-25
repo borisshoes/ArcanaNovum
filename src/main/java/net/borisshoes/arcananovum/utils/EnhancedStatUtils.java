@@ -1,15 +1,17 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.particles.*;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
@@ -37,20 +39,20 @@ public class EnhancedStatUtils {
    
    public static boolean isItemEnhanceable(ItemStack stack){
       return (stack.is(ItemTags.ARMOR_ENCHANTABLE)) ||
-             (stack.is(ItemTags.WEAPON_ENCHANTABLE) || stack.is(ItemTags.SWORDS) || stack.is(ItemTags.AXES)) ||
-             (stack.has(DataComponents.TOOL)) ||
-             (stack.has(DataComponents.MAX_DAMAGE));
+            (stack.is(ItemTags.WEAPON_ENCHANTABLE) || stack.is(ItemTags.SWORDS) || stack.is(ItemTags.AXES)) ||
+            (stack.has(DataComponents.TOOL)) ||
+            (stack.has(DataComponents.MAX_DAMAGE));
    }
    
    public static double generatePercentile(int stars){
       double random = Math.random();
-      double uncapped = 0.2*(stars+1) * random*random + 0.1*stars;
-      return Math.min(1,uncapped);
+      double uncapped = 0.2 * (stars + 1) * random * random + 0.1 * stars;
+      return Math.min(1, uncapped);
    }
    
    public static double getPercentile(ItemStack stack){
-      if(ArcanaItem.hasProperty(stack,ENHANCED_STAT_TAG)){
-         return ArcanaItem.getDoubleProperty(stack,ENHANCED_STAT_TAG);
+      if(ArcanaItem.hasProperty(stack, ENHANCED_STAT_TAG)){
+         return ArcanaItem.getDoubleProperty(stack, ENHANCED_STAT_TAG);
       }else{
          return 0;
       }
@@ -86,20 +88,20 @@ public class EnhancedStatUtils {
             }
          }
          
-         Tool newComp = new Tool(newRules,comp.defaultMiningSpeed(),comp.damagePerBlock(),comp.canDestroyBlocksInCreative());
-         stack.set(DataComponents.TOOL,newComp);
+         Tool newComp = new Tool(newRules, comp.defaultMiningSpeed(), comp.damagePerBlock(), comp.canDestroyBlocksInCreative());
+         stack.set(DataComponents.TOOL, newComp);
       }
       if(stack.has(DataComponents.MAX_DAMAGE)){
          int maxDamage = stack.getItem().getDefaultInstance().getMaxDamage();
-         stack.set(DataComponents.MAX_DAMAGE,maxDamage);
+         stack.set(DataComponents.MAX_DAMAGE, maxDamage);
       }
       
       
       ItemAttributeModifiers newComponent = new ItemAttributeModifiers(attributeList);
-      stack.set(DataComponents.ATTRIBUTE_MODIFIERS,newComponent);
+      stack.set(DataComponents.ATTRIBUTE_MODIFIERS, newComponent);
       
       if(removeTag){
-         ArcanaItem.removeProperty(stack,ENHANCED_STAT_TAG);
+         ArcanaItem.removeProperty(stack, ENHANCED_STAT_TAG);
       }
       
       if(!ArcanaItemUtils.isArcane(stack)){
@@ -145,59 +147,67 @@ public class EnhancedStatUtils {
       if(stack.is(ItemTags.ARMOR_ENCHANTABLE) && stack.has(DataComponents.EQUIPPABLE)){
          Equippable equipComp = stack.get(DataComponents.EQUIPPABLE);
          
-         double newArmor = 5 * percentile;
-         double newToughness = 5 * percentile;
-         double newKbRes = 0.15 * percentile;
-         double maxHpBoost = percentile >= 0.95 ? percentile*5 : 0;
-         String stat_tag = ENHANCED_STAT_TAG +"_"+ equipComp.slot().getName();
+         double maxArmor = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.INFUSION_MAX_ARMOR);
+         double maxToughness = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.INFUSION_MAX_ARMOR_TOUGHNESS);
+         double maxKbRes = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.INFUSION_MAX_KNOCKBACK_RESISTANCE);
+         double maxHP = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.INFUSION_MAX_HEALTH_BOOST);
+         double newArmor = maxArmor * percentile;
+         double newToughness = maxToughness * percentile;
+         double newKbRes = maxKbRes * percentile;
+         double maxHpBoost = percentile >= 0.95 ? (maxHP / 0.05) * (percentile - 0.95) : 0;
+         String stat_tag = ENHANCED_STAT_TAG + "_" + equipComp.slot().getName();
          
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ARMOR,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,stat_tag),newArmor, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.bySlot(equipComp.slot())));
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ARMOR_TOUGHNESS,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,stat_tag),newToughness, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.bySlot(equipComp.slot())));
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.KNOCKBACK_RESISTANCE,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,stat_tag),newKbRes, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.bySlot(equipComp.slot())));
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MAX_HEALTH,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,stat_tag),maxHpBoost, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.bySlot(equipComp.slot())));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ARMOR, new AttributeModifier(ArcanaRegistry.arcanaId(stat_tag), newArmor, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.bySlot(equipComp.slot())));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(ArcanaRegistry.arcanaId(stat_tag), newToughness, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.bySlot(equipComp.slot())));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(ArcanaRegistry.arcanaId(stat_tag), newKbRes, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.bySlot(equipComp.slot())));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MAX_HEALTH, new AttributeModifier(ArcanaRegistry.arcanaId(stat_tag), maxHpBoost, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.bySlot(equipComp.slot())));
          enhanced = true;
       }
       
       if(stack.is(ItemTags.WEAPON_ENCHANTABLE) || stack.is(ItemTags.SWORDS) || stack.is(ItemTags.AXES)){
-         double newAttackSpeed = percentile >= 0.5 ? 0.5*(2*percentile-1) : 0;
-         double newAttackDamage = 5 * percentile;
+         double maxAttackSpeed = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.INFUSION_MAX_ATTACK_SPEED);
+         double maxAttackDamage = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.INFUSION_MAX_ATTACK_DAMAGE);
+         double newAttackSpeed = percentile >= 0.5 ? maxAttackSpeed * (2 * percentile - 1) : 0;
+         double newAttackDamage = maxAttackDamage * percentile;
          
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_DAMAGE,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,ENHANCED_STAT_TAG),newAttackDamage, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_SPEED,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,ENHANCED_STAT_TAG),newAttackSpeed, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_DAMAGE, new AttributeModifier(ArcanaRegistry.arcanaId(ENHANCED_STAT_TAG), newAttackDamage, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_SPEED, new AttributeModifier(ArcanaRegistry.arcanaId(ENHANCED_STAT_TAG), newAttackSpeed, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
          enhanced = true;
       }
       
       if(stack.has(DataComponents.TOOL)){
-         double speedBuff = 1 + (1.25 * percentile*percentile);
+         double maxMiningSpeed = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.INFUSION_MAX_MINING_SPEED);
+         double speedBuff = 1 + (maxMiningSpeed * percentile * percentile);
          Tool comp = stack.getItem().getDefaultInstance().get(DataComponents.TOOL);
          
          List<Tool.Rule> newRules = new ArrayList<>();
          for(Tool.Rule rule : comp.rules()){
             if(rule.speed().isPresent()){
-               float newSpeed = Math.min(Float.MAX_VALUE,(float)((rule.speed().get() + 4*percentile) * speedBuff));
+               float newSpeed = Math.min(Float.MAX_VALUE, (float) ((rule.speed().get() + 4 * percentile) * speedBuff));
                newRules.add(new Tool.Rule(rule.blocks(), Optional.of(newSpeed), rule.correctForDrops()));
             }else{
                newRules.add(rule);
             }
          }
          
-         Tool newComp = new Tool(newRules,comp.defaultMiningSpeed(),comp.damagePerBlock(),comp.canDestroyBlocksInCreative());
-         stack.set(DataComponents.TOOL,newComp);
+         Tool newComp = new Tool(newRules, comp.defaultMiningSpeed(), comp.damagePerBlock(), comp.canDestroyBlocksInCreative());
+         stack.set(DataComponents.TOOL, newComp);
          enhanced = true;
       }
       if(stack.has(DataComponents.MAX_DAMAGE)){
-         double durabilityBuff = 1 + (0.5 * percentile*percentile);
+         double maxDurability = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.INFUSION_MAX_DURABILITY);
+         double durabilityBuff = 1 + (maxDurability * percentile * percentile);
          int maxDamage = stack.getItem().getDefaultInstance().getMaxDamage();
-         stack.set(DataComponents.MAX_DAMAGE,(int)(maxDamage*durabilityBuff));
+         stack.set(DataComponents.MAX_DAMAGE, (int) (maxDamage * durabilityBuff));
          enhanced = true;
       }
       
       
       if(enhanced){
          ItemAttributeModifiers newComponent = new ItemAttributeModifiers(attributeList);
-         stack.set(DataComponents.ATTRIBUTE_MODIFIERS,newComponent);
+         stack.set(DataComponents.ATTRIBUTE_MODIFIERS, newComponent);
          
-         ArcanaItem.putProperty(stack,ENHANCED_STAT_TAG,percentile);
+         ArcanaItem.putProperty(stack, ENHANCED_STAT_TAG, percentile);
          
          if(!ArcanaItemUtils.isArcane(stack)){
             ItemLore lore = stack.getOrDefault(DataComponents.LORE, ItemLore.EMPTY);
@@ -220,7 +230,7 @@ public class EnhancedStatUtils {
             df.setRoundingMode(RoundingMode.DOWN);
             Component line = TextUtils.removeItalics(Component.literal("")
                   .append(Component.literal("Stardust Infusion: ").withStyle(ChatFormatting.YELLOW))
-                  .append(Component.literal(df.format(percentile*100)+"%").withStyle(ChatFormatting.GOLD)));
+                  .append(Component.literal(df.format(percentile * 100) + "%").withStyle(ChatFormatting.GOLD)));
             
             lines.add(line);
             styledLines.add(line);
@@ -228,22 +238,22 @@ public class EnhancedStatUtils {
             stack.set(DataComponents.LORE, new ItemLore(lines, styledLines));
          }else{
             ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
-            arcanaItem.buildItemLore(stack,BorisLib.SERVER);
+            arcanaItem.buildItemLore(stack, BorisLib.SERVER);
          }
       }
    }
    
    public static boolean isEnhanced(ItemStack stack){
       if(stack.isEmpty()) return false;
-      return ArcanaItem.hasProperty(stack,ENHANCED_STAT_TAG);
+      return ArcanaItem.hasProperty(stack, ENHANCED_STAT_TAG);
    }
    
    public static double combineStats(double p1, double p2){
-      double max = Math.max(p1,p2);
-      double min = Math.min(p1,p2);
+      double max = Math.max(p1, p2);
+      double min = Math.min(p1, p2);
       double magic = 0.07;
-      double increased = max + min*((2*magic) / (max*max+magic));
-      return Math.min(1,increased);
+      double increased = max + min * ((2 * magic) / (max * max + magic));
+      return Math.min(1, increased);
    }
    
    public static void glowInfusedGear(LivingEntity entity){
@@ -255,44 +265,45 @@ public class EnhancedStatUtils {
       ItemStack body = entity.getItemBySlot(EquipmentSlot.BODY);
       ItemStack mainhand = entity.getMainHandItem();
       ItemStack offhand = entity.getOffhandItem();
-      if(helmet.isEmpty() && chest.isEmpty() && legs.isEmpty() && boots.isEmpty() && body.isEmpty() && mainhand.isEmpty() && offhand.isEmpty()) return;
+      if(helmet.isEmpty() && chest.isEmpty() && legs.isEmpty() && boots.isEmpty() && body.isEmpty() && mainhand.isEmpty() && offhand.isEmpty())
+         return;
       
       double chance = 0.075;
-      double width = entity.getBbWidth()/3;
-      double leyway = entity.getBbHeight()/12.0;
-      Vec3 pos = entity.position().add(0,leyway,0);
+      double width = entity.getBbWidth() / 3;
+      double leyway = entity.getBbHeight() / 12.0;
+      Vec3 pos = entity.position().add(0, leyway, 0);
       double section = (entity.getEyePosition().y - entity.position().y - leyway) / 4.0;
-      ParticleOptions particle = new DustParticleOptions(0xf7ed57,0.61f);
+      ParticleOptions particle = new DustParticleOptions(0xf7ed57, 0.61f);
       ArrayList<Vec3> positions = new ArrayList<>();
       if(EnhancedStatUtils.isEnhanced(helmet) && entity.random.nextFloat() < chance){
-         positions.add(new Vec3(pos.x,pos.y+(section*4),pos.z));
+         positions.add(new Vec3(pos.x, pos.y + (section * 4), pos.z));
       }
       if((EnhancedStatUtils.isEnhanced(chest) || EnhancedStatUtils.isEnhanced(body)) && entity.random.nextFloat() < chance){
-         positions.add(new Vec3(pos.x,pos.y+(section*3),pos.z));
+         positions.add(new Vec3(pos.x, pos.y + (section * 3), pos.z));
       }
       if(EnhancedStatUtils.isEnhanced(legs) && entity.random.nextFloat() < chance){
-         positions.add(new Vec3(pos.x,pos.y+(section*2),pos.z));
+         positions.add(new Vec3(pos.x, pos.y + (section * 2), pos.z));
       }
       if(EnhancedStatUtils.isEnhanced(boots) && entity.random.nextFloat() < chance){
-         positions.add(new Vec3(pos.x,pos.y+(section*1),pos.z));
+         positions.add(new Vec3(pos.x, pos.y + (section * 1), pos.z));
       }
       if(EnhancedStatUtils.isEnhanced(mainhand) && entity.random.nextFloat() < chance){
-         Vec3 newPos = new Vec3(pos.x,pos.y+(section*2.5),pos.z);
-         Vec3 look = entity.getForward().multiply(1,0,1).normalize().scale(width*1.5);
-         Vec3 handPos = newPos.add(-look.z,0,look.x).add(entity.getForward().multiply(1,0,1).normalize().scale(width*3));
+         Vec3 newPos = new Vec3(pos.x, pos.y + (section * 2.5), pos.z);
+         Vec3 look = entity.getForward().multiply(1, 0, 1).normalize().scale(width * 1.5);
+         Vec3 handPos = newPos.add(-look.z, 0, look.x).add(entity.getForward().multiply(1, 0, 1).normalize().scale(width * 3));
          positions.add(handPos);
       }
       if(EnhancedStatUtils.isEnhanced(offhand) && entity.random.nextFloat() < chance){
-         Vec3 newPos = new Vec3(pos.x,pos.y+(section*2.5),pos.z);
-         Vec3 look = entity.getForward().multiply(1,0,1).normalize().scale(width*1.5);
-         Vec3 handPos = newPos.add(look.z,0,-look.x).add(entity.getForward().multiply(1,0,1).normalize().scale(width*3));
+         Vec3 newPos = new Vec3(pos.x, pos.y + (section * 2.5), pos.z);
+         Vec3 look = entity.getForward().multiply(1, 0, 1).normalize().scale(width * 1.5);
+         Vec3 handPos = newPos.add(look.z, 0, -look.x).add(entity.getForward().multiply(1, 0, 1).normalize().scale(width * 3));
          positions.add(handPos);
       }
       
       for(ServerPlayer player : world.getPlayers(p -> p.distanceTo(entity) < 25)){
          if(player.equals(entity)) continue;
          for(Vec3 poses : positions){
-            world.sendParticles(particle,poses.x,poses.y,poses.z,1,width,leyway,width,0.02);
+            world.sendParticles(particle, poses.x, poses.y, poses.z, 1, width, leyway, width, 0.02);
          }
       }
    }

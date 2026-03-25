@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTask;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -66,6 +67,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public static final String ID_TAG = "id";
    public static final String CATALYSTS_TAG = "catalysts";
    public static final String AUGMENTS_TAG = "augments";
+   public static final String SKIN_TAG = "skin";
    public static final String UNINITIALIZED_TAG = "uninitialized";
    
    public static final String MODE_TAG = "mode";
@@ -251,6 +253,12 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return getIntProperty(item, ORIGIN_TAG);
    }
    
+   public static ArcanaSkin getSkin(ItemStack item){
+      if(!ArcanaItemUtils.isArcane(item))
+         return null;
+      return ArcanaSkin.getSkinFromString(getStringProperty(item, SKIN_TAG));
+   }
+   
    
    protected void setPrefStack(ItemStack stack){
       prefItem = stack.copy();
@@ -266,7 +274,6 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    }
    
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      // For default just replace everything but UUID and crafter and update version
       ItemStack newStack = getNewItem();
       String uuid = getStringProperty(stack,UUID_TAG);
       if(uuid.isEmpty() || uuid.equals("-") || uuid.equals(ArcanaNovum.BLANK_UUID)){
@@ -276,8 +283,10 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       }
       CompoundTag augments = getCompoundProperty(stack,AUGMENTS_TAG);
       ListTag catalysts = getListProperty(stack,CATALYSTS_TAG);
+      ArcanaSkin skin = ArcanaSkin.getSkinFromString(getStringProperty(stack,SKIN_TAG));
       if(!augments.isEmpty()) putProperty(newStack, AUGMENTS_TAG, augments);
       if(!catalysts.isEmpty()) putProperty(newStack, CATALYSTS_TAG, catalysts);
+      if(skin != null) putProperty(newStack,SKIN_TAG,skin.getSerializedName());
       addCrafter(newStack,getCrafter(stack), getOrigin(stack),server);
       
       EnchantmentHelper.setEnchantments(newStack,stack.getEnchantments());
@@ -474,6 +483,16 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       int origin = getOrigin(item); // Origin 0 - Crafted, 1 - Synthesized, 2 - Found, 3 - Earned
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
       ArcanaRarity rarity = arcanaItem == null ? ArcanaRarity.MUNDANE : arcanaItem.getRarity();
+      ArcanaSkin skin = getSkin(item);
+      
+      if(skin != null){
+         loreList.add(Component.literal(""));
+         loreList.add(TextUtils.removeItalics(Component.translatable("text.arcananovum.item_skin",skin.getName()).withColor(skin.getPrimaryColor())));
+         List<MutableComponent> descLines = skin.getDescription();
+         for(MutableComponent descLine : descLines){
+            loreList.add(descLine.withStyle(ChatFormatting.ITALIC).withColor(skin.getSecondaryColor()));
+         }
+      }
       
       loreList.add(Component.literal(""));
       if(!player.isBlank() && server != null){
@@ -547,7 +566,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
             ArcanaAugment augment = ArcanaAugments.registry.get(key);
             MutableComponent txt = augment.getTranslatedName();
             if(augment.getTiers().length > 1){
-               txt.append(Component.literal(" "+LevelUtils.intToRoman(augmentTag.getIntOr(key, 0))));
+               txt.append(Component.literal(" "+TextUtils.intToRoman(augmentTag.getIntOr(key, 0))));
             }
             loreList.add(TextUtils.removeItalics(txt.withStyle(ChatFormatting.BLUE)));
          }

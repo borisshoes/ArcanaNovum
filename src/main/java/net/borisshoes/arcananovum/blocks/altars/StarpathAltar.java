@@ -27,7 +27,6 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -67,7 +66,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity.COST;
 
 public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "starpath_altar";
@@ -266,7 +264,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
                ));
             }
             
-            boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new AABB(pos.above()),(itemStack) -> itemStack.is(COST),altar.calculateCost());
+            boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new AABB(pos.above()),(itemStack) -> itemStack.is(StarpathAltarBlockEntity.getCost()),altar.calculateCost());
             if(paid) altar.startTeleport(null);
          }
       }
@@ -293,8 +291,8 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack STARPATH_ALTAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starpath_altar"));
-      public static final ItemStack STAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starlight_forge_pulsar"));
+      public static final ItemStack STARPATH_ALTAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starpath_altar"));
+      public static final ItemStack STAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_pulsar"));
       
       // Star particle constants
       private static final int MAX_STARS = 8;

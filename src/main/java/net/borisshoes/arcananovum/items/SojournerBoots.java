@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -23,7 +24,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -126,8 +126,9 @@ public class SojournerBoots extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // +250% speed base
-      int boostLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARATHON_RUNNER));
-      return 250 + 50*boostLvl;
+      int baseSpeed = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SOJOURNER_BOOTS_ENERGY_MAX);
+      int extraSpeed = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SOJOURNER_BOOTS_ENERGY_MAX_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARATHON_RUNNER));
+      return Math.max(1, baseSpeed + extraSpeed);
    }
    
    @Override
@@ -163,11 +164,11 @@ public class SojournerBoots extends EnergyItem {
       }
       
       if(active){
-         double height = 0.65 + Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS));
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.STEP_HEIGHT,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,STEP_TAG),height, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.FEET));
+         double height = 0.65 + ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS);
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.STEP_HEIGHT,new AttributeModifier(ArcanaRegistry.arcanaId(STEP_TAG),height, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.FEET));
       }
       
-      attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MOVEMENT_SPEED,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,SPEED_TAG),getEnergy(stack)/100.0, AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.FEET));
+      attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MOVEMENT_SPEED,new AttributeModifier(ArcanaRegistry.arcanaId(SPEED_TAG),getEnergy(stack)/100.0, AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.FEET));
       
       ItemAttributeModifiers newComponent = new ItemAttributeModifiers(attributeList);
       stack.set(DataComponents.ATTRIBUTE_MODIFIERS,newComponent);
@@ -210,7 +211,7 @@ public class SojournerBoots extends EnergyItem {
                .humanoidArmor(ArmorMaterials.NETHERITE, ArmorType.BOOTS)
                .component(DataComponents.DYED_COLOR,new DyedItemColor(0xFF33A900))
                .attributes(ArmorMaterials.NETHERITE.createAttributes(ArmorType.BOOTS)
-                     .withModifierAdded(Attributes.STEP_HEIGHT, new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.FEET)
+                     .withModifierAdded(Attributes.STEP_HEIGHT, new AttributeModifier(ArcanaRegistry.arcanaId(STEP_TAG), 0.65, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.FEET)
                )
          );
       }
@@ -219,7 +220,7 @@ public class SojournerBoots extends EnergyItem {
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
-         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.fromNamespaceAndPath(MOD_ID,ID))).build();
+         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, ArcanaRegistry.arcanaId(ID))).build();
          baseStack.set(DataComponents.EQUIPPABLE,newComp);
          return baseStack;
       }
@@ -265,12 +266,14 @@ public class SojournerBoots extends EnergyItem {
                if(player.isSprinting()){
                   if(player.onGround()){
                      int curEnergy = getEnergy(stack);
-                     int sprintLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPRINTER));
-                     addEnergy(stack,2*(1+sprintLvl));
+                     int sprintLvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPRINTER);
+                     int baseRamp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SOJOURNER_BOOTS_RAMP);
+                     int extraRamp = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SOJOURNER_BOOTS_RAMP_PER_LVL).get(sprintLvl);
+                     addEnergy(stack,baseRamp + extraRamp);
                      int newEnergy = getEnergy(stack);
                      if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
                         player.displayClientMessage(Component.literal("Sojourner Boots Energy: "+newEnergy).withStyle(ChatFormatting.DARK_GREEN),true);
-                     if(world.getServer().getTickCount() % 20 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
+                     if(world.getServer().getTickCount() % 20 == 0) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
                      if(newEnergy >= getMaxEnergy(stack)){
                         Event.addEvent(new SojournersMaxRunEvent(player));
                         if(Event.getEventsOfType(SojournersMaxRunEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count() >= ((TimedAchievement) ArcanaAchievements.RUNNING).getGoal()){

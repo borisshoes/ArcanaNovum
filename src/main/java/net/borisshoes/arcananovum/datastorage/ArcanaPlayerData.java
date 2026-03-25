@@ -1,8 +1,11 @@
 package net.borisshoes.arcananovum.datastorage;
 
 import com.mojang.serialization.Codec;
+import java.time.LocalDate;
+import java.time.Month;
 import io.github.ladysnake.pal.VanillaAbilities;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
@@ -24,6 +27,7 @@ import net.borisshoes.arcananovum.events.special.ZeraiyaStartEvent;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.Dialog;
 import net.borisshoes.arcananovum.utils.DialogHelper;
@@ -78,7 +82,6 @@ import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.DRAGON_TOWER_ABILITY;
 import static net.borisshoes.arcananovum.ArcanaRegistry.LEVITATION_HARNESS_ABILITY;
 
@@ -107,7 +110,7 @@ public class ArcanaPlayerData implements StorableData {
    private int xp;
    private ItemStack storedOffhand = ItemStack.EMPTY;
    
-   public static final DataKey<ArcanaPlayerData> KEY = DataRegistry.register(DataKey.ofPlayer(Identifier.fromNamespaceAndPath(MOD_ID, "playerdata"), ArcanaPlayerData::new));
+   public static final DataKey<ArcanaPlayerData> KEY = DataRegistry.register(DataKey.ofPlayer(ArcanaRegistry.arcanaId("playerdata"), ArcanaPlayerData::new));
    
    public ArcanaPlayerData(UUID playerId){
       this.playerId = playerId;
@@ -241,7 +244,7 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public boolean hasResearched(ArcanaItem arcanaItem){
-      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.RESEARCH_ENABLED)) return true;
+      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.RESEARCH_ENABLED)) return true;
       return researchedItems.stream().anyMatch(s -> s.equals(arcanaItem.getId()));
    }
    
@@ -372,7 +375,7 @@ public class ArcanaPlayerData implements StorableData {
             server.getPlayerList().broadcastSystemMessage(lvlUpMsg, false);
          }
          
-         if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
+         if(ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ANNOUNCE_ACHIEVEMENTS)){
             for(MutableComponent msg : msgs){
                server.getPlayerList().broadcastSystemMessage(msg, false);
             }
@@ -698,10 +701,21 @@ public class ArcanaPlayerData implements StorableData {
             }
          }
          
-         if(ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.0000075){ //0.0000075
-            dragonEggDialog(player);
+         if(ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG)){
+            double eggDialogChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.DRAGON_EGG_DIALOG_CHANCE);
+            double zeraiyaEventChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.ZERAIYA_EVENT_CHANCE);
+            if(Math.random() < eggDialogChance){
+               dragonEggDialog(player);
+            }else if(Math.random() < zeraiyaEventChance){
+               if(!completedZeraiya() && getLastZeraiyaAttempt() <= 0 && player.getRandom().nextInt(10) == 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ZERAIYA_EVENT_ENABLED)){
+                  startZeraiya(player);
+                  setLastZeraiyaAttempt(36000);
+                  return;
+               }
+            }
          }
-         if(Math.random() < 0.0000075){
+         double gaialtusEventChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.GAIALTUS_EVENT_CHANCE);
+         if(Math.random() < gaialtusEventChance){
             tryStartGaialtus(player);
          }
          
@@ -763,7 +777,7 @@ public class ArcanaPlayerData implements StorableData {
          ArcanaAchievements.grant(player, ArcanaAchievements.ARCANE_ADDICT);
       if(curConc > maxConc && !player.isCreative() && !player.isSpectator()){
          int concTick = ((IntTag) arcaneProfile.getMiscDataOr(ArcanaPlayerData.CONCENTRATION_TICK_TAG, IntTag.valueOf(0))).intValue() + 1;
-         if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.DO_CONCENTRATION_DAMAGE)){
+         if(ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.DO_CONCENTRATION_DAMAGE)){
             player.displayClientMessage(Component.literal("Your mind burns as your Arcana overwhelms you!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC, ChatFormatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL, 2, .1f);
             player.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(), ArcanaDamageTypes.CONCENTRATION), concTick * 2);
@@ -825,12 +839,6 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public void dragonEggDialog(ServerPlayer player){
-      if(!completedZeraiya() && getLastZeraiyaAttempt() <= 0 && player.getRandom().nextInt(10) == 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.ZERAIYA_EVENT_ENABLED)){
-         startZeraiya(player);
-         setLastZeraiyaAttempt(36000);
-         return;
-      }
-      
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
       // Conditions: 0 - Crafted Memento, 1 - Crafted Aequalis, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Aequalis, 5 - Has Greaves, 6 - Has Spear
       boolean[] conditions = new boolean[]{
@@ -1100,7 +1108,7 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public void tryStartGaialtus(ServerPlayer player){
-      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.GAIALTUS_EVENT_ENABLED)) return;
+      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.GAIALTUS_EVENT_ENABLED)) return;
       if(completedGaialtus() || getLastGaialtusAttempt() > 0) return;
       if(!player.level().equals(player.level().getServer().overworld())) return;
       if(player.level().getBrightness(LightLayer.SKY, player.blockPosition()) == 0) return;
@@ -1215,7 +1223,7 @@ public class ArcanaPlayerData implements StorableData {
             Component.literal("\n")
                   .append(Component.literal("You feel a presence in the ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
                   .append(Component.literal("warm breeze").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
-                  .append(Component.literal(" hear a gentle voice...\n").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)),
+                  .append(Component.literal(" and hear a gentle voice...\n").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)),
             Component.literal("")
                   .append(Component.literal("Why have you come to fish, ").withStyle(ChatFormatting.DARK_GREEN))
                   .append(player.getDisplayName().copy())
@@ -1396,7 +1404,7 @@ public class ArcanaPlayerData implements StorableData {
             if(msg.equalsIgnoreCase("g_past")){
                DialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                      Component.literal("\n")
-                           .append(Component.literal("I suppose you are right, all those stars are as they were billions of years ago. Well, not these stars, they are only ones and zeroes in the game you dream of. Keep looking up into the night, and I hope to see you again, ").withStyle(ChatFormatting.DARK_GREEN))
+                           .append(Component.literal("I suppose you are right, all those stars are as they were billions of years ago. Well, not these stars, they are only ones and zeros in the game you dream of. Keep looking up into the night, and I hope to see you again, ").withStyle(ChatFormatting.DARK_GREEN))
                            .append(player.getDisplayName())
                            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)),
                      Component.literal("\n")
@@ -1420,7 +1428,7 @@ public class ArcanaPlayerData implements StorableData {
             }else if(msg.equalsIgnoreCase("g_stars")){
                DialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                      Component.literal("\n")
-                           .append(Component.literal("I suppose you are right. Well, not for these stars, they are only ones and zeroes in the game you dream of. Keep looking up into the night, and I hope to see you again, ").withStyle(ChatFormatting.DARK_GREEN))
+                           .append(Component.literal("I suppose you are right. Well, not for these stars, they are only ones and zeros in the game you dream of. Keep looking up into the night, and I hope to see you again, ").withStyle(ChatFormatting.DARK_GREEN))
                            .append(player.getDisplayName())
                            .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)),
                      Component.literal("\n")
@@ -1560,6 +1568,7 @@ public class ArcanaPlayerData implements StorableData {
                         s.withBold(true).withColor(ChatFormatting.DARK_PURPLE).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action c_tinker"))), false);
                   cEventFound.setSentTinker();
                }else{
+                  player.sendSystemMessage(Component.literal("\nYou wonder if there is some way to reactivate it...").withStyle(ChatFormatting.ITALIC,ChatFormatting.GRAY));
                   cEventFound.markForRemoval();
                }
                return;
@@ -1641,5 +1650,44 @@ public class ArcanaPlayerData implements StorableData {
             SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 0.5f, 0.7f);
          }
       }
+   }
+   
+   public List<ArcanaSkin> getSkinsForItem(ArcanaItem item){
+      ArrayList<ArcanaSkin> skins = new ArrayList<>();
+      if(playerId.equals(UUID.fromString("fee11d1a-2536-4891-8757-25f3063a1dc1")) ||
+            playerId.equals(UUID.fromString("883d74be-9200-4d06-b629-22a12ef398f5")) ||
+            playerId.equals(UUID.fromString("5de15dee-0e50-4440-a19e-1a44da3f79dd"))) return ArcanaSkin.getAllSkinsForItem(item);
+      if(playerId.equals(UUID.fromString("f42869e3-3d93-45ba-be11-7ce76a77b64e"))) skins.add(ArcanaSkin.VESTIGE_WINGS);
+      if(playerId.equals(UUID.fromString("66063256-a19f-4fe0-8c29-0faf413c426e"))) skins.add(ArcanaSkin.FEATHER_WINGS);
+      if(playerId.equals(UUID.fromString("b25b760d-d167-437b-a948-9f6d0a426388"))) skins.add(ArcanaSkin.RESPLENDENT_HARNESS);
+      if(playerId.equals(UUID.fromString("0797c485-623b-4955-9af3-16c54e03099e"))) skins.add(ArcanaSkin.COLEOPTERA_WINGS);
+      if(playerId.equals(UUID.fromString("ff7289c6-5170-41f7-8195-79df491927d4"))) skins.add(ArcanaSkin.CATGIRL_MEMENTO);
+      if(playerId.equals(UUID.fromString("d134c5a2-1e99-48ac-b8f2-a814d25a1d17"))){
+         skins.add(ArcanaSkin.LUNAR_BOW);
+         skins.add(ArcanaSkin.LUNAR_QUIVER);
+      }
+      LocalDate today = LocalDate.now();
+      boolean isTDOVOrPride = (today.getMonth() == Month.MARCH && today.getDayOfMonth() == 31) || today.getMonth() == Month.JUNE;
+      if(isTDOVOrPride) skins.add(ArcanaSkin.AEQUALIS_RIGHTS);
+      return skins;
+   }
+   
+   public List<ArcanaSkin> getAllSkins(){
+      List<ArcanaSkin> skins = new ArrayList<>();
+      for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
+         skins.addAll(getSkinsForItem(arcanaItem));
+      }
+      return skins;
+   }
+   
+   public boolean hasAnySkin(){
+      for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
+         if(!getSkinsForItem(arcanaItem).isEmpty()) return true;
+      }
+      return false;
+   }
+   
+   public boolean hasSkin(ArcanaSkin cataSkin){
+      return getSkinsForItem(cataSkin.getArcanaItem()).contains(cataSkin);
    }
 }

@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.blocks.forge;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -190,7 +191,8 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
                if(enhanced1 && enhanced2){ // Perform combination calculation
                   double stat1 = ArcanaItem.getDoubleProperty(input1,EnhancedStatUtils.ENHANCED_STAT_TAG);
                   double stat2 = ArcanaItem.getDoubleProperty(input2,EnhancedStatUtils.ENHANCED_STAT_TAG);
-                  double combined = Math.min(1,EnhancedStatUtils.combineStats(stat1,stat2) + 0.025*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ENHANCED_ENHANCEMENTS));
+                  double buff = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.TWILIGHT_ANVIL_INFUSION_BUFF_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ENHANCED_ENHANCEMENTS));
+                  double combined = Math.min(1,EnhancedStatUtils.combineStats(stat1,stat2) + buff);
                   EnhancedStatUtils.enhanceItem(output,combined);
                   runningLevelCost += (int) (40*combined);
                }else if(enhanced2){ // Enhance output with stats of 2nd slot

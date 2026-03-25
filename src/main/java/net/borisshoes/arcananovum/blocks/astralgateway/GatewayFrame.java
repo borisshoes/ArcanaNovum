@@ -186,7 +186,9 @@ public class GatewayFrame {
    
    private List<BlockPos> validMoves(ServerLevel level){
       List<BlockPos> moves = new ArrayList<>();
-      if(size >= maxSize) return moves;
+      if(size > maxSize){
+         return moves;
+      }
       BlockPos head = blocks.getLast();
       for(Vec3i moveVec : moveVecs){
          BlockPos move = head.offset(moveVec);
@@ -365,7 +367,7 @@ public class GatewayFrame {
    }
    
    private int getRemainingBudget(){
-      return maxSize - size;
+      return maxSize - size + 1;
    }
    
    /**
@@ -733,7 +735,9 @@ public class GatewayFrame {
       
       // Early termination: if we can't possibly reach an ending with remaining budget, prune
       int minDistToEnd = frame.getMinDistanceToEnding();
-      if(minDistToEnd > frame.getRemainingBudget()) return null;
+      if(minDistToEnd > frame.getRemainingBudget()){
+         return null;
+      }
       
       // Get and sort moves by distance to ending (greedy heuristic)
       List<BlockPos> moves = frame.validMoves(level);

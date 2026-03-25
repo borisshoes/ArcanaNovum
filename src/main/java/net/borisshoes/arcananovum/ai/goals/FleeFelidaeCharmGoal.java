@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.ai.goals;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -76,7 +77,7 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends AvoidEntityGoa
       super.start();
       this.mob.playSound(SoundEvents.CREEPER_HURT, 1, 1);
       if(this.toAvoid instanceof ServerPlayer player){
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_SCARE_CREEPER)); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_CREEPER)); // Add xp
          SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
       }
    }

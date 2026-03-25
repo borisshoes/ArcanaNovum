@@ -8,11 +8,11 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.forge.TwilightAnvil;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -28,7 +28,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -57,7 +56,6 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 import static net.minecraft.world.level.block.Block.dropResources;
 
 public class FractalSponge extends ArcanaBlock {
@@ -119,19 +117,24 @@ public class FractalSponge extends ArcanaBlock {
    }
    
    private int absorb(ItemStack item, Level world, BlockPos pos){
-      int depthLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MANDELBROT));
-      int absorbLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.SIERPINSKI));
-      int maxDepth = 16 + depthLevel*2;
-      int maxBlocks = 512 + 256*absorbLevel;
+      int depthLevel = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MANDELBROT);
+      int absorbLevel = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.SIERPINSKI);
+      int baseDepth = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FRACTAL_SPONGE_RANGE);
+      int extraDepth = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FRACTAL_SPONGE_RANGE_PER_LVL).get(depthLevel);
+      int baseBlocks = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FRACTAL_SPONGE_BLOCKS);
+      int extraBlocks = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FRACTAL_SPONGE_BLOCKS_PER_LVL).get(absorbLevel);
+      
+      int maxDepth = baseDepth + extraDepth;
+      int maxBlocks = baseBlocks + extraBlocks;
       
       Queue<Tuple<BlockPos, Integer>> queue = Lists.newLinkedList();
-      queue.add(new Tuple(pos, 0));
+      queue.add(new Tuple<>(pos, 0));
       int blocksAbsorbed = 0;
       
       while(!queue.isEmpty()){
-         Tuple<BlockPos, Integer> pair = (Tuple)queue.poll();
-         BlockPos blockPos = (BlockPos)pair.getA();
-         int depth = (Integer)pair.getB();
+         Tuple<BlockPos, Integer> pair = queue.poll();
+         BlockPos blockPos = pair.getA();
+         int depth = pair.getB();
          Direction[] dirs = Direction.values();
          int numDirs = dirs.length;
          
@@ -191,7 +194,7 @@ public class FractalSponge extends ArcanaBlock {
       if(absorbed > 0){
          SoundUtils.playSound(world,pos, SoundEvents.ELDER_GUARDIAN_HURT, SoundSource.BLOCKS,1,.8f);
          if(placer instanceof ServerPlayer player){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
             ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_CLEANUP, absorbed);
          }
       }
@@ -250,12 +253,13 @@ public class FractalSponge extends ArcanaBlock {
             
             try{
                int absorbed = absorbHelper(placer,world,stack,pos,false);
-               
-               boolean cantor = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CANTOR)) >= 1;
+               boolean cantor = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CANTOR) >= 1;
                if(cantor && absorbed > 0){
-                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(50, () -> absorbHelper(placer,world,stack,pos,true)));
-                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> absorbHelper(placer,world,stack,pos,true)));
-                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(150, () -> absorbHelper(placer,world,stack,pos,true)));
+                  int times = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FRACTAL_SPONGE_PULSES);
+                  int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FRACTAL_SPONGE_PULSE_DURATION);
+                  for(int i = 1; i <= times; i++){
+                     BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(duration*i, () -> absorbHelper(placer,world,stack,pos,true)));
+                  }
                }
             }catch(Exception e){
                e.printStackTrace();
@@ -270,8 +274,8 @@ public class FractalSponge extends ArcanaBlock {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack SPONGE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/fractal_sponge"));
-      public static final ItemStack SPONGE_WET = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/fractal_sponge_wet"));
+      public static final ItemStack SPONGE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/fractal_sponge"));
+      public static final ItemStack SPONGE_WET = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/fractal_sponge_wet"));
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

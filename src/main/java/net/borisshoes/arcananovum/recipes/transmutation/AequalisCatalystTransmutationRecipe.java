@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -24,8 +25,8 @@ import java.util.*;
 
 public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    
-   public AequalisCatalystTransmutationRecipe(String id){
-      super(id,new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
+   public AequalisCatalystTransmutationRecipe(){
+      super("reclaim_catalysts",new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
    }
    
    @Override // This transmutation cannot be done by an Aequalis
@@ -172,7 +173,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          }
       }
       if(player != null){
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE));
       }
       return outputs;
    }

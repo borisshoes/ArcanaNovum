@@ -58,6 +58,10 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
       this.outputCount = outputCount;
    }
    
+   public int getOutputCount(){
+      return outputCount;
+   }
+   
    @Override
    public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayer player){
       List<ItemStack> returnItems = new ArrayList<>();

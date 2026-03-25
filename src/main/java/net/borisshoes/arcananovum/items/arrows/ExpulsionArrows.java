@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -8,6 +10,7 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -86,11 +89,19 @@ public class ExpulsionArrows extends RunicArrow {
       if(arrow.level() instanceof ServerLevel serverWorld){
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST) > 0;
          if(evict){
-            double range = Mth.clamp(arrow.getDeltaMovement().length()*2,1,5);
+            double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MIN);
+            double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MAX);
+            double percentage = ArcanaUtils.getArrowPercentage(arrow);
+            double range = Mth.clamp(percentage*maxRange,minRange,maxRange);
             BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,entityHitResult.getLocation(),range)));
          }else{
-            int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20); // Measured in quarter seconds
-            double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION);
+            double minDur = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_DURATION_MIN);
+            double maxDur = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_DURATION_MAX);
+            double percentage = ArcanaUtils.getArrowPercentage(arrow);
+            int duration = (int) Mth.clamp(percentage*maxDur,minDur,maxDur); // Measured in quarter seconds
+            double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_RANGE);
+            double extraRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.EXPULSION_ARROW_REPULSION_RANGE_PER_LVL).get(arrow.getAugment(ArcanaAugments.REPULSION)).floatValue();
+            double range = baseRange + extraRange;
             expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
          }
       }
@@ -101,11 +112,19 @@ public class ExpulsionArrows extends RunicArrow {
       if(arrow.level() instanceof ServerLevel serverWorld){
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST) > 0;
          if(evict){
-            double range = Mth.clamp(arrow.getDeltaMovement().length()*2,1,5);
+            double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MIN);
+            double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MAX);
+            double percentage = ArcanaUtils.getArrowPercentage(arrow);
+            double range = Mth.clamp(percentage*maxRange,minRange,maxRange);
             BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,blockHitResult.getLocation(),range)));
          }else{
-            int duration = (int) Mth.clamp(arrow.getDeltaMovement().length()*7,2,20); // Measured in quarter seconds
-            double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION);
+            double minDur = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_DURATION_MIN);
+            double maxDur = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_DURATION_MAX);
+            double percentage = ArcanaUtils.getArrowPercentage(arrow);
+            int duration = (int) Mth.clamp(percentage*maxDur,minDur,maxDur); // Measured in quarter seconds
+            double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_RANGE);
+            double extraRange = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.EXPULSION_ARROW_REPULSION_RANGE_PER_LVL).get(arrow.getAugment(ArcanaAugments.REPULSION));
+            double range = baseRange + extraRange;
             expulsionPulse(arrow, serverWorld,blockHitResult.getLocation(),null,duration,range,0);
          }
       }
@@ -116,7 +135,8 @@ public class ExpulsionArrows extends RunicArrow {
       List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 1.5*range*range && !(e instanceof AbstractArrow) && !(e instanceof EnderDragon));
       for(Entity entity1 : entities){
          Vec3 diff = entity1.position().subtract(pos);
-         double multiplier = Mth.clamp(3-diff.length()*.5,.1,7.5);
+         double extraMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.EXPULSION_ARROW_EVICTION_POWER_PER_LVL).getFirst();
+         double multiplier = extraMod*Mth.clamp(3-diff.length()*.5,.1,7.5);
          Vec3 motion = diff.add(0,0,0).normalize().scale(multiplier);
          entity1.setDeltaMovement(motion.x,motion.y,motion.z);
          if(entity1 instanceof ServerPlayer player){
@@ -129,7 +149,7 @@ public class ExpulsionArrows extends RunicArrow {
       ArcanaEffectUtils.expulsionArrowEmit(world,pos,range,0);
       SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.ALLAY_ITEM_TAKEN, SoundSource.PLAYERS,.5f,.5f);
    }
-   
+   // TODO these repulsion power calcs might need standardizing
    private void expulsionPulse(AbstractArrow arrow, ServerLevel world, @Nullable Vec3 start, @Nullable Entity entity, int duration, double range, int calls){
       if(start == null && entity == null) return;
       Vec3 pos = entity == null ? start : entity.position();

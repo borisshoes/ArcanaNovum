@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -157,7 +158,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
             this.getLevel().addFreshEntity(new ItemEntity(this.getLevel(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
          }
          if(transmuteCount > 0 && player != null){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TRANSMUTATION_ALTAR_TRANSMUTE));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TRANSMUTATION_ALTAR_TRANSMUTE));
             ArcanaAchievements.progress(player,ArcanaAchievements.STATE_ALCHEMIST,transmuteCount);
          }
          
@@ -290,7 +291,10 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    public void resetCooldown(){
-      this.cooldown = 13200 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.HASTY_BARGAIN) * 2400;
+      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.HASTY_BARGAIN);
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.TRANSMUTATION_ALTAR_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.TRANSMUTATION_ALTAR_COOLDOWN_PER_LVL).get(cooldownLevel);
+      this.cooldown = Math.max(1, baseCooldown - cooldownReduction);
    }
    
    public void refundCooldown(){

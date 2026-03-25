@@ -23,7 +23,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -234,12 +233,12 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack FORGE_BASE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starlight_forge"));
-      public static final ItemStack FORGE_APPLE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starlight_forge_apple"));
-      public static final ItemStack STAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starlight_forge_star"));
-      public static final ItemStack PULSAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starlight_forge_pulsar"));
-      public static final ItemStack QUASAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starlight_forge_quasar"));
-      public static final ItemStack BLACK_HOLE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/starlight_forge_black_hole"));
+      public static final ItemStack FORGE_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge"));
+      public static final ItemStack FORGE_APPLE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_apple"));
+      public static final ItemStack STAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_star"));
+      public static final ItemStack PULSAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_pulsar"));
+      public static final ItemStack QUASAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_quasar"));
+      public static final ItemStack BLACK_HOLE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_black_hole"));
       
       // Apple animation constants
       private static final float APPLE_SPIN_SPEED = 1.0f * Mth.DEG_TO_RAD; // Degrees per tick

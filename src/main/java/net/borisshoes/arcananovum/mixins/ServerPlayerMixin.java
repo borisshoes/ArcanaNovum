@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.mixins;
 import com.llamalad7.mixinextras.sugar.Local;
 import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.gui.GuiInterface;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -12,12 +13,6 @@ import net.borisshoes.arcananovum.callbacks.EntityKilledCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.entities.StasisPearlEntity;
-import net.borisshoes.arcananovum.gui.arcanistsbelt.ArcanistsBeltGui;
-import net.borisshoes.arcananovum.gui.greaves.GreavesOfGaialtusGui;
-import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
-import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
-import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
-import net.borisshoes.arcananovum.items.GreavesOfGaialtus;
 import net.borisshoes.arcananovum.items.SojournerBoots;
 import net.borisshoes.arcananovum.research.EffectResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTask;
@@ -60,6 +55,7 @@ public class ServerPlayerMixin {
       if(uuidTag instanceof StringTag stringTag && !stringTag.asString().orElse("").isEmpty()){
          ArcanaAchievements.progress(AlgoUtils.getUUID(stringTag.asString().get()),ArcanaAchievements.ARCANA_BOULEVARD,cm);
          if(player.random.nextFloat() < 0.1) player.level().sendParticles(ParticleTypes.END_ROD,player.getX(),player.getY()+0.1,player.getZ(),1,player.getBbWidth()/2.0,0.05,player.getBbWidth()/2.0,0.025);
+         if(player.random.nextFloat() < 0.001) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ITINERANTEUR_BLOCK_TRAVELLED_PER_10));
       }
       if(fedTag instanceof ByteTag byteTag && byteTag.byteValue() != 0){
          return in*0.0f;

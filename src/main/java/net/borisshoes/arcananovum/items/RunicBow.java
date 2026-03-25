@@ -1,13 +1,14 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
@@ -148,7 +149,6 @@ public class RunicBow extends ArcanaItem {
    
    public class RunicBowItem extends ArcanaPolymerBowItem {
       public static final Predicate<ItemStack> RUNIC_BOW_PROJECTILES = stack -> (stack.is(ItemTags.ARROWS) || ArcanaItemUtils.identifyItem(stack) instanceof RunicArrow);
-      public static final float[] STABILITY = new float[]{1f, .75f, .5f, 0f};
       
       public RunicBowItem(){
          super(getThis(),getEquipmentArcanaItemComponents());
@@ -190,7 +190,7 @@ public class RunicBow extends ArcanaItem {
             }
             List<ItemStack> list = draw(bow, arrowStack, playerEntity);
             if(world instanceof ServerLevel serverWorld && !list.isEmpty()){
-               float divergence = STABILITY[Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_STABILIZATION))];
+               float divergence = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.RUNIC_BOW_ACCURACY_PER_LVL).get(ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_STABILIZATION));
                this.shoot(serverWorld, playerEntity, playerEntity.getUsedItemHand(), bow, list, pullPercent * 3.0F, divergence, pullPercent == 1.0F, null);
             }
             
@@ -207,7 +207,7 @@ public class RunicBow extends ArcanaItem {
                   volume = 1.2f;
                }
                
-               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_RUNIC_ARROW_SHOOT) * list.size());
+               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_RUNIC_ARROW_SHOOT) * list.size());
                if(playerEntity instanceof ServerPlayer player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER, list.size());
             }
             
@@ -233,9 +233,9 @@ public class RunicBow extends ArcanaItem {
                this.shootProjectile(shooter, projectileEntity, j, speed, divergence, k, target);
                world.addFreshEntity(projectileEntity);
                
-               if(ArcanaItemUtils.identifyRunicArrow(arrowStack) instanceof PhotonicArrows photonArrows){
-                  int alignmentLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(arrowStack, ArcanaAugments.PRISMATIC_ALIGNMENT));
-                  photonArrows.shoot(world, shooter, projectileEntity, alignmentLvl);
+               if(ArcanaItemUtils.identifyRunicArrow(arrowStack) instanceof PhotonicArrows photonArrows && projectileEntity instanceof RunicArrowEntity runicArrow){
+                  int alignmentLvl = ArcanaAugments.getAugmentOnItem(arrowStack, ArcanaAugments.PRISMATIC_ALIGNMENT);
+                  photonArrows.shoot(world, shooter, runicArrow, alignmentLvl);
                   projectileEntity.kill(world);
                }
                bow.hurtAndBreak(this.getDurabilityUse(arrowStack), shooter, hand.asEquipmentSlot());
@@ -266,7 +266,7 @@ public class RunicBow extends ArcanaItem {
          float maxPullTicks = 20f;
          ArcanaItem arcanaBow = ArcanaItemUtils.identifyItem(bow);
          if(arcanaBow instanceof RunicBow){
-            int accelLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION));
+            int accelLvl = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION);
             final float[] accel = {20,18,17,16,15,10};
             maxPullTicks = accel[accelLvl];
          }

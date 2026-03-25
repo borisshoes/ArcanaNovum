@@ -92,7 +92,7 @@ public class TransmutationAltarGui extends SimpleGui {
       
       
       if(blockEntity.getCooldown() <= 0){
-         GuiElementBuilder activateItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ORB, ArcanaColors.EQUAYUS_COLOR));
+         GuiElementBuilder activateItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.CONFIRM_COLOR, ArcanaColors.EQUAYUS_COLOR));
          activateItem.setName((Component.literal("")
                .append(Component.literal("Activate Altar").withStyle(ChatFormatting.LIGHT_PURPLE))));
          activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")

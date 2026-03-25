@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -95,9 +95,9 @@ public class AncientDowsingRod extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      // 30 second base recharge
-      int lvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SONIC_REABSORPTION));
-      return 30 - 5*lvl;
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ANCIENT_DOWSING_ROD_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ANCIENT_DOWSING_ROD_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SONIC_REABSORPTION));
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    @Override
@@ -152,7 +152,12 @@ public class AncientDowsingRod extends EnergyItem {
             int curEnergy = getEnergy(item);
             if(curEnergy >= getMaxEnergy(item)){
                setEnergy(item,0);
-               final int scanRange = 25 + 5*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ENHANCED_RESONANCE));
+               int baseRange = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ANCIENT_DOWSING_ROD_RANGE);
+               int extraRange = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ANCIENT_DOWSING_ROD_RANGE_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ENHANCED_RESONANCE));
+               int baseDuration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ANCIENT_DOWSING_ROD_EFFECT_DURATION);
+               int extraDuration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ANCIENT_DOWSING_ROD_EFFECT_DURATION_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.HARMONIC_FEEDBACK));
+               final int duration = baseDuration + extraDuration;
+               final int scanRange = baseRange + extraRange;
                BlockPos curBlock = playerEntity.blockPosition();
                SoundUtils.playSound(world, curBlock, SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1f, .5f);
                
@@ -197,8 +202,9 @@ public class AncientDowsingRod extends EnergyItem {
                         }
                         locations[ind]++;
                         
-                        if(count < 12)
-                           ArcanaEffectUtils.dowsingRodEmitter(serverWorld,new Vec3(b.getX(),b.getY(),b.getZ()),1,100 + 33*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.HARMONIC_FEEDBACK)));
+                        if(count < 12){
+                           ArcanaEffectUtils.dowsingRodEmitter(serverWorld,new Vec3(b.getX(),b.getY(),b.getZ()),1,duration);
+                        }
                         count++;
                      }
                      double radius = 1.5;
@@ -231,7 +237,7 @@ public class AncientDowsingRod extends EnergyItem {
                         Vec3 end = eyePos.add(blockPos.subtract(eyePos).normalize().scale(1.5+3));
                         ArcanaEffectUtils.dowsingRodArrow(player.level(),start,end,1);
                         
-                        ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ANCIENT_DOWSING_ROD_CAP),ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
+                        ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ANCIENT_DOWSING_ROD_CAP),ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
                         SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1f, .5f);
                         
                         if(debris.size() >= 10){

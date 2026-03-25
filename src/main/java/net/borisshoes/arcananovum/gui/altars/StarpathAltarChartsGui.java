@@ -46,7 +46,7 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
       primaryTextColor(ChatFormatting.DARK_AQUA.getColor().intValue());
       secondaryTextColor(ChatFormatting.BLUE.getColor().intValue());
       
-      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,0x20224B)));
+      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,0x20224B)).hideTooltip());
       
       itemElemBuilder((entry, index) -> {
          GuiElementBuilder destItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();

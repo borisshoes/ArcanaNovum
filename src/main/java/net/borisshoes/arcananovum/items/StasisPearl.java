@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -131,7 +131,9 @@ public class StasisPearl extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // 1 minute base recharge time
-      return 60 - 10*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.STASIS_ACCELERATION));
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STASIS_PEARL_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.STASIS_PEARL_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.STASIS_ACCELERATION));
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    @Override
@@ -220,7 +222,7 @@ public class StasisPearl extends EnergyItem {
          ItemStack stack = playerEntity.getItemInHand(hand);
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);
          String pearlID = getStringProperty(stack,PEARL_ID_TAG);
-         boolean canDelete = playerEntity.isShiftKeyDown() && Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPATIAL_FOLD)) >= 1;
+         boolean canDelete = playerEntity.isShiftKeyDown() && ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPATIAL_FOLD) >= 1;
          
          try{
             if(pearlID.isEmpty()){ // Throw new pearl
@@ -235,7 +237,7 @@ public class StasisPearl extends EnergyItem {
                      putProperty(stack,PEARL_ID_TAG,newPearlID);
                      
                      setEnergy(stack,0);
-                     ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STASIS_PEARL_USE));
+                     ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STASIS_PEARL_USE));
                   }
                }else{
                   playerEntity.getCooldowns().addCooldown(stack, 0);

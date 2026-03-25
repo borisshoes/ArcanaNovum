@@ -39,11 +39,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
-
 public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    private static final Logger LOGGER = LogManager.getLogger("Arcana Novum");
+   public static final String MOD_ID = "arcananovum";
+   public static final ConfigManager CONFIG = new ConfigManager(MOD_ID,"Arcana Novum",ArcanaConfig.CONFIG_NAME,ArcanaConfig.CONFIG_SETTINGS);
    public static final HashMap<ServerLevel, Long2IntOpenHashMap> ANCHOR_CHUNKS = new HashMap<>();
    public static final HashMap<Tuple<BlockEntity, ArcanaBlockEntity>,Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
    public static final HashMap<ServerPlayer, ItineranteurBlockEntity> ITINERANTEUR_USERS = new HashMap<>();
@@ -51,17 +51,12 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
    public static MinecraftServer SERVER = null;
    public static final boolean DEV_MODE = false;
-   private static final String CONFIG_NAME = "ArcanaNovum.properties";
-   public static final String MOD_ID = "arcananovum";
    public static final String BLANK_UUID = "00000000-0000-4000-8000-000000000000";
    public static final ItemModDataHandler ITEM_DATA = new ItemModDataHandler(MOD_ID);
-   public static ConfigManager CONFIG;
    public static int DEBUG_VALUE = 0;
    
    @Override
-   
    public void onInitialize(){
-      CONFIG = new ConfigManager(MOD_ID,"Arcana Novum",CONFIG_NAME,ArcanaRegistry.CONFIG_SETTINGS);
       ArcanaRegistry.initialize();
       
       ServerTickEvents.END_WORLD_TICK.register(WorldTickCallback::onWorldTick);
@@ -154,7 +149,8 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       List<Component> pages = new ArrayList<>();
       
       pages.add(Component.literal("       Welcome to\n     Arcana Novum!\n\nArcana Novum is a server-sided fabric Magic mod that adds various power Arcana Items to the game. It also includes new game mechanics and multiblocks!").withStyle(ChatFormatting.BLACK));
-      pages.add(Component.literal("      Introduction\n\nYou are probably reading this in your Tome, which will be your guidebook for the entirety of the mod.\n\nThe first page of the tome is your profile.\nThe profile has 3 main sections to it.").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Introduction\n\nYou are probably reading this in your Tome, which will be your guidebook for the entirety of the mod.\n\nIf not, you can craft one by surrounding any enchanted book with 4 paper, and then throwing the resulting").withStyle(ChatFormatting.BLACK));
+      pages.add(Component.literal("      Introduction\n\n4 Mundane Arcane Paper onto an Enchanting Table with an Eye of Ender. The items should quickly combine into your very own Tome of Arcana Novum!\n\nThe first page of the tome is your profile.\nThe profile has 3 main sections to it.").withStyle(ChatFormatting.BLACK));
       pages.add(Component.literal("      Arcane Level\n\nYour level decides how many Arcana Items you can carry through Concentration\n\nYou gain XP by using and crafting items.\nCrafting an item for the first time gives additional XP.\nArcana Achievements also grant XP.   ").withStyle(ChatFormatting.BLACK));
       pages.add(Component.literal("     Concentration\n\nArcana Items each take a certain amount of focus to channel Arcana into. Each rarity tier of item takes a different amount of concentration to use.\nIf you go over your concentration limit, your mind will collapse and you will die.").withStyle(ChatFormatting.BLACK));
       pages.add(Component.literal("     Concentration\n\nItems take full concentration while in your inventory, but half concentration in your Ender Chest or Shulker Boxes.\n\nBlocks that are placed down take a quarter of the concentration when loaded in the world.").withStyle(ChatFormatting.BLACK));

@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
@@ -43,7 +43,6 @@ import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,7 +50,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -160,11 +158,11 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
             for(BlockPos floodPos : BlockPos.betweenClosed(geyserPos.offset(-1, 0, -1), geyserPos.offset(1, 0, 1))){
                if(floodPos.equals(geyserPos)) continue;
                if(placeFluid(Fluids.WATER,null, world, floodPos, null, true, true) > 0){
-                  stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE));
+                  stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE));
                }
             }
          }
-         stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE));
+         stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE));
       }
    }
    
@@ -304,12 +302,12 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
                   for(BlockPos floodPos : BlockPos.betweenClosed(blockPos3.offset(-1, 0, -1), blockPos3.offset(1, 0, 1))){
                      if(floodPos.equals(blockPos3)) continue;
                      if(placeFluid(fluid,playerEntity, world, floodPos, null, true, false) > 0){
-                        ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
+                        ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
                         ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN,1);
                      }
                   }
                }
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN,1);
                playerEntity.awardStat(Stats.ITEM_USED.get(this));
                playerEntity.getCooldowns().addCooldown(stack,5);

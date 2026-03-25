@@ -1,6 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
@@ -19,7 +22,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -159,14 +161,16 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    
    @Override
    protected int getRefillMod(ItemStack item){ // Ticks between arrow refill, once per minute
-      int refillLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.QUIVER_DUPLICATION));
-      return 1200 - refillReduction[refillLvl];
+      int refillLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.QUIVER_DUPLICATION);
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.RUNIC_QUIVER_RESTOCK_TIME);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.RUNIC_QUIVER_RESTOCK_TIME_PER_LVL).get(refillLvl);
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    @Override
-   protected double getEfficiencyMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
-      int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RUNIC_BOTTOMLESS));
-      return efficiencyChance[effLvl];
+   protected double getEfficiencyMod(ItemStack item){
+      int effLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RUNIC_BOTTOMLESS);
+      return ArcanaNovum.CONFIG.getIntList(ArcanaConfig.QUIVER_EFFICIENCY_PER_LVL).get(effLvl);
    }
    
    @Override
@@ -205,7 +209,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES) > 0 ? 0.25 : 0.5;
       
       return new ArcanaItemContainer(
-            Identifier.fromNamespaceAndPath(MOD_ID,this.id),
+            ArcanaRegistry.arcanaId(this.id),
             inv, size,20,
             Component.literal("RQ"),
             getTranslatedName(),

@@ -14,8 +14,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
-
 public class DragonRespawnTimerCallback extends TickTimerCallback {
    private MinecraftServer server;
    

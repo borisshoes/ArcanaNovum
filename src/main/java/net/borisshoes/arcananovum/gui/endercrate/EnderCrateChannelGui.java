@@ -61,12 +61,12 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
    public void build(){
       DyeColor[] colors = channel.getColors();
       for(int i = 0; i < 9; i++){
-         GuiElementBuilder bottom = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM, channel.getColor())).setName(Component.literal("")).hideTooltip();
-         GuiElementBuilder top = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, channel.getColor())).setName(Component.literal("")).hideTooltip();
+         GuiElementBuilder bottom = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR, channel.getColor())).setName(Component.literal("")).hideTooltip();
+         GuiElementBuilder top = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR, channel.getColor())).setName(Component.literal("")).hideTooltip();
          DyeColor color = colors[i];
          int finalI = i;
          Consumer<ClickType> click = (type) -> {
-            if(isOnClickCooldown()) return;
+            if(isOnClickCooldown() || type == ClickType.MOUSE_DOUBLE_CLICK) return;
             resetClickCooldown();
             ArrayList<DyeColor> options = new ArrayList<>();
             options.add(null);
@@ -89,7 +89,7 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
          setSlot(i,top.setCallback(click));
          setSlot(i+18,bottom.setCallback(click));
          
-         GuiElementBuilder dye = GuiElementBuilder.from(color == null ? Items.GLASS_PANE.getDefaultInstance() : GraphicalItem.withColor(GraphicalItem.ORB, color.getFireworkColor())).hideDefaultTooltip();
+         GuiElementBuilder dye = GuiElementBuilder.from(GraphicalItem.with(EnderCrateChannel.colorToGraphicElement(color))).hideDefaultTooltip();
          MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(DyeItem.byColor(color));
          dye.setName(Component.literal("")
                .append(Component.literal("Frequency "+(i+1)+": ").withStyle(ChatFormatting.DARK_PURPLE))

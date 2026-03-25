@@ -1,9 +1,6 @@
 package net.borisshoes.arcananovum.events.special;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.Dialog;
-import net.borisshoes.arcananovum.utils.DialogHelper;
 import net.borisshoes.borislib.events.Event;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
@@ -11,18 +8,11 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.levelgen.structure.*;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class CeptyusStartEvent extends Event {
-   public static final Identifier ID = Identifier.fromNamespaceAndPath(MOD_ID,"ceptyus_start");
+   public static final Identifier ID = ArcanaRegistry.arcanaId("ceptyus_start");
    
    private final ServerPlayer player;
    private boolean sentTinker = false;

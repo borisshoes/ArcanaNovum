@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -26,7 +27,6 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -133,8 +133,9 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RAPID_TRANSLOCATION));
-      return 30 - 8*cdLvl;
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RAPID_TRANSLOCATION));
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    @Override
@@ -160,7 +161,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          }
       }
       return new ArcanaItemContainer(
-            Identifier.fromNamespaceAndPath(MOD_ID,this.id),
+            ArcanaRegistry.arcanaId(this.id),
             inv, 27,25,
             Component.literal("CT"),
             getTranslatedName(),
@@ -277,7 +278,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                
                putProperty(stack,CONTENTS_TAG,new CompoundTag());
                putProperty(stack,STATE_TAG,new CompoundTag());
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CHEST_TRANSLOCATOR_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CHEST_TRANSLOCATOR_USE)); // Add xp
                SoundUtils.playSound(world,placePos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1,1);
             }else{
                player.displayClientMessage(Component.literal("The chest cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);

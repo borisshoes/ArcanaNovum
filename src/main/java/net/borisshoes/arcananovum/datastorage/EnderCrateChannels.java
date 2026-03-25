@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.datastorage;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.datastorage.DataAccess;
@@ -9,7 +10,6 @@ import net.borisshoes.borislib.datastorage.StorableData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.storage.ValueInput;
@@ -17,11 +17,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class EnderCrateChannels implements StorableData {
    
-   public static final DataKey<EnderCrateChannels> KEY = DataRegistry.register(DataKey.ofGlobal(Identifier.fromNamespaceAndPath(MOD_ID, "ender_crates"), EnderCrateChannels::new));
+   public static final DataKey<EnderCrateChannels> KEY = DataRegistry.register(DataKey.ofGlobal(ArcanaRegistry.arcanaId("ender_crates"), EnderCrateChannels::new));
    
    private final Map<ChannelKey, EnderCrateChannel> channels = new HashMap<>();
    

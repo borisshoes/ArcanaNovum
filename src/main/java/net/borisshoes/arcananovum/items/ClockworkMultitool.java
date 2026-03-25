@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.EnderCrate;
@@ -36,7 +38,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 import xyz.nucleoid.packettweaker.PacketContext;
@@ -85,6 +88,11 @@ public class ClockworkMultitool extends EnergyItem {
       putProperty(newStack,EnderCrate.CHANNEL_TAG,channel);
       putProperty(newStack,EnderCrate.LOCK_TAG,lock);
       return buildItemLore(newStack,server);
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override
@@ -187,26 +195,26 @@ public class ClockworkMultitool extends EnergyItem {
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          setEnergy(stack,0);
-         player.getCooldowns().addCooldown(playerEntity.getMainHandItem(),1);
-         player.getCooldowns().addCooldown(playerEntity.getOffhandItem(),1);
+         player.getCooldowns().addCooldown(playerEntity.getMainHandItem(),2);
+         player.getCooldowns().addCooldown(playerEntity.getOffhandItem(),2);
          if(hand == InteractionHand.OFF_HAND && player.isShiftKeyDown()){
             MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack,MODE_TAG));
             putProperty(stack, SAVED_TAG,mode.getName());
             SoundUtils.playSongToPlayer(player, SoundEvents.SPYGLASS_USE,0.75f,1.25f+player.random.nextFloat()*0.25f);
             player.sendSystemMessage(Component.literal("Set favorite mode to ").withStyle(ChatFormatting.GOLD).append(mode.getBlock().getName()),true);
-            return InteractionResult.SUCCESS_SERVER;
+            return InteractionResult.CONSUME;
          }else if(player.isShiftKeyDown()){
             MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack, SAVED_TAG));
             putProperty(stack,MODE_TAG,mode.getName());
             SoundUtils.playSongToPlayer(player, SoundEvents.SPYGLASS_USE,0.75f,0.2f+player.random.nextFloat()*0.25f);
             player.sendSystemMessage(Component.literal("Reconfigured to ").withStyle(ChatFormatting.GOLD).append(mode.getBlock().getName()),true);
             openGui(player,stack,mode);
-            return InteractionResult.SUCCESS_SERVER;
+            return InteractionResult.CONSUME;
          }else{
             MultitoolMode mode = MultitoolMode.fromName(getStringProperty(stack,MODE_TAG));
             openGui(player,stack,mode);
             SoundUtils.playSongToPlayer(player, SoundEvents.SPYGLASS_USE,0.75f,0.2f+player.random.nextFloat()*0.25f);
-            return InteractionResult.SUCCESS_SERVER;
+            return InteractionResult.CONSUME;
          }
       }
       
@@ -226,6 +234,9 @@ public class ClockworkMultitool extends EnergyItem {
       }
       
       private void openGui(ServerPlayer player, ItemStack stack, MultitoolMode mode){
+         player.getCooldowns().addCooldown(player.getMainHandItem(),1);
+         player.getCooldowns().addCooldown(player.getOffhandItem(),1);
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CLOCKWORK_MULTITOOL_USE));
          if(mode == MultitoolMode.ENDERCHEST && ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENDER_MECHANISM) > 1){
             ClockworkMultitoolEnderGui gui = new ClockworkMultitoolEnderGui(player, stack);
             gui.build();

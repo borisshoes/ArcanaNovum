@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
@@ -21,7 +23,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -77,17 +79,27 @@ public class PhotonicArrows extends RunicArrow {
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   public void shoot(Level world, LivingEntity entity, Projectile proj, int alignmentLvl){
+   public void shoot(Level world, LivingEntity entity, AbstractArrow proj, int alignmentLvl){
       if(!(world instanceof ServerLevel serverWorld)) return;
-      MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, entity.getEyePosition(), entity.getForward(), 100, true, entity);
+      double minDamage = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_DMG_MIN);
+      double maxDamage = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_DMG_MAX);
+      double falloff = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_DMG_FALLOFF_PER_BLOCK);
+      double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_RANGE_MAX);
+      double playerDmgMod = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_PLAYER_DMG_MULTIPLIER);
+      double prismaticCap = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_DMG_MAX);
+      double prismaticMaxBuff = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_FLAT_DMG_INCREASE);
+      double prismaticPerMob = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_PER_LVL).get(alignmentLvl);
+      MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, entity.getEyePosition(), entity.getForward(), maxRange, true, entity);
       
-      float damage = (float) Mth.clamp(proj.getDeltaMovement().length()*5,1,20);
-      if(alignmentLvl == 5) damage += (float) (4 + damage*0.2);
+      float percentage = ArcanaUtils.getArrowPercentage(proj);
+      float baseDmg = (float) (percentage * (maxDamage - minDamage) + minDamage);
+      if(alignmentLvl == 5) baseDmg += (float) prismaticMaxBuff;
       float bonusDmg = 0;
       
       int killCount = 0;
       for(Entity hit : lasercast.sortedHits()){
-         float finalDmg = (float) ((damage+bonusDmg) * Math.min(1,-0.01*(hit.position().distanceTo(lasercast.startPos())-100)+0.25)) * (hit instanceof ServerPlayer ? 0.5f : 1f);
+         float falloffDmg = (float) (falloff * hit.position().distanceTo(lasercast.startPos()));
+         float finalDmg = (float) ((hit instanceof ServerPlayer ? playerDmgMod : 1) * Math.max(minDamage,baseDmg+bonusDmg-falloffDmg));
          if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
             double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
             if(dp < -0.6){
@@ -100,7 +112,7 @@ public class PhotonicArrows extends RunicArrow {
          if(hit instanceof Mob mob && mob.isDeadOrDying()){
             killCount++;
          }
-         bonusDmg = Math.min(25,bonusDmg + alignmentLvl);
+         bonusDmg = (float) Math.min(prismaticCap,bonusDmg + prismaticPerMob);
       }
       
       if(proj.getOwner() instanceof ServerPlayer player && killCount >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.X);
@@ -109,7 +121,7 @@ public class PhotonicArrows extends RunicArrow {
          runicArrowEntity.incArrowForEveryFoe(player);
       }
       
-      ArcanaEffectUtils.photonArrowShot(serverWorld,entity.getEyePosition().subtract(0,entity.getBbHeight()/4,0),lasercast.endPos(), Mth.clamp(damage/15,.4f,1f),0);
+      ArcanaEffectUtils.photonArrowShot(serverWorld,entity.getEyePosition().subtract(0,entity.getBbHeight()/4,0),lasercast.endPos(), Mth.clamp(percentage+0.3f,.4f,1f),0);
    }
    
    @Override

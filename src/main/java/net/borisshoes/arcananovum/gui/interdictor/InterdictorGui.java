@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.gui.interdictor;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.InterdictorBlockEntity;
 import net.borisshoes.arcananovum.utils.ArcanaColors;

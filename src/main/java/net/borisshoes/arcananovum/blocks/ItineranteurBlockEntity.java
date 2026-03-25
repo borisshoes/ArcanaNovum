@@ -4,6 +4,7 @@ import eu.pb4.polymer.core.api.utils.PolymerObject;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ManualAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -11,7 +12,6 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
-import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -20,17 +20,16 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -46,12 +45,9 @@ import org.joml.Vector3f;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class ItineranteurBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    
    private static final Map<ResourceKey<Level>, Map<Long, Set<ItineranteurZone>>> ACTIVE_ZONES = new HashMap<>();
-   private static final float[] BOOST_LEVELS = new float[]{0.5f, 1.0f, 1.5f, 2.5f};
    private static final String BLOCKS_TAG = "itineranteur_blocks";
    public static final String CRAFTER_TAG = "itineranteur_crafter";
    public static final String FED_TAG = "itineranteur_fed";
@@ -83,9 +79,9 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
       this.uuid = uuid;
       this.origin = origin;
       this.customName = customName == null ? "" : customName;
-      this.maxRange = 16 * (1 + ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.GUIDING_LIGHT));
-      this.maxBlocks = 64 * (2 + ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.THOROUGHFARE));
-      this.speedBoost = BOOST_LEVELS[ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.PAVED_WARMTH)];
+      this.maxRange = getMaxRange();
+      this.maxBlocks = getMaxBlocks();
+      this.speedBoost = getSpeedBoost();
       this.keepFed = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.ROAD_SNACKS) > 0;
    }
    
@@ -93,6 +89,27 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
       if(e instanceof ItineranteurBlockEntity itineranteur){
          itineranteur.tick();
       }
+   }
+   
+   public int getMaxRange(){
+      int rangeLvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.GUIDING_LIGHT);
+      int baseRange = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ITINERANTEUR_RANGE);
+      int extraRange = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ITINERANTEUR_RANGE_PER_LVL).get(rangeLvl);
+      return baseRange + extraRange;
+   }
+   
+   public int getMaxBlocks(){
+      int blocksLvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.THOROUGHFARE);
+      int baseBlocks = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ITINERANTEUR_BLOCKS);
+      int extraBlocks = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ITINERANTEUR_BLOCKS_PER_LVL).get(blocksLvl);
+      return baseBlocks + extraBlocks;
+   }
+   
+   public float getSpeedBoost(){
+      int speedLvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.PAVED_WARMTH);
+      float baseSpeed = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.ITINERANTEUR_SPEED);
+      float extraSpeed = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.ITINERANTEUR_SPEED_PER_LVL).get(speedLvl);
+      return baseSpeed + extraSpeed;
    }
    
    private void tick(){
@@ -515,9 +532,9 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
       });
       this.blocks.clear();
       this.blocks.addAll(view.read(BLOCKS_TAG, BlockPos.CODEC.listOf()).orElse(new ArrayList<>()));
-      this.maxRange = 16 * (1 + ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.GUIDING_LIGHT));
-      this.maxBlocks = 64 * (2 + ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.THOROUGHFARE));
-      this.speedBoost = BOOST_LEVELS[ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.PAVED_WARMTH)];
+      this.maxRange = getMaxRange();
+      this.maxBlocks = getMaxBlocks();
+      this.speedBoost = getSpeedBoost();
       this.keepFed = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.ROAD_SNACKS) > 0;
       updateZoneRegistration();
    }
@@ -744,7 +761,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, Identifier.fromNamespaceAndPath(MOD_ID,ArcanaRegistry.ITINERANTEUR.getId()),true);
+         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()),true);
          return;
       }
       
@@ -754,7 +771,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, Identifier.fromNamespaceAndPath(MOD_ID,ArcanaRegistry.ITINERANTEUR.getId()),true);
+         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()),true);
          return;
       }
       
@@ -775,12 +792,12 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
             data.removeMiscData(CRAFTER_TAG);
          }
          data.addMiscData(FED_TAG, ByteTag.valueOf(feed));
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, Identifier.fromNamespaceAndPath(MOD_ID,ArcanaRegistry.ITINERANTEUR.getId()),false);
+         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()),false);
       }else{
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, Identifier.fromNamespaceAndPath(MOD_ID,ArcanaRegistry.ITINERANTEUR.getId()),true);
+         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()),true);
       }
    }
    

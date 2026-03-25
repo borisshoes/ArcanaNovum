@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.GravitonMaul;
 import net.borisshoes.arcananovum.items.PickaxeOfCeptyus;
@@ -19,7 +19,7 @@ public class BlockBreakCallback {
    public static boolean breakBlock(Level world, Player playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity){
       ItemStack tool = playerEntity.getMainHandItem();
       if(ArcanaItemUtils.identifyItem(tool) instanceof PickaxeOfCeptyus pick){
-         ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_PICKAXE_OF_CEPTYUS_MINE_BLOCK));
+         ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_MINE_BLOCK));
          if(!playerEntity.isShiftKeyDown()){
             pick.veinMine(world,playerEntity,tool,blockPos);
          }

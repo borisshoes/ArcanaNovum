@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.mixins;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,7 +41,7 @@ public class ExplosionMixin {
    private float arcananovum$detArrowDamage(float original, @Local Entity entity){
       if(damageSource.is(ArcanaDamageTypes.DETONATION_DAMAGE)){
          if(entity instanceof Player){
-            return original / 5;
+            return original * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.DETONATION_ARROW_PLAYER_DMG_MULTIPLIER);
          }
       }else if(damageSource.is(ArcanaDamageTypes.DETONATION_TERRAIN)){
          return 0;

@@ -23,7 +23,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -227,8 +226,8 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack FLETCHERY = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/radiant_fletchery"));
-      public static final ItemStack MATRIX = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/radiant_fletchery_matrix"));
+      public static final ItemStack FLETCHERY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/radiant_fletchery"));
+      public static final ItemStack MATRIX = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/radiant_fletchery_matrix"));
       
       // Rubik's cube-like basis vectors - each disc rotates around its assigned axis
       private static final Vector3f[] BASIS_VECTORS = {

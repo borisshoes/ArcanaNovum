@@ -1,12 +1,13 @@
 package net.borisshoes.arcananovum.achievements;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -55,11 +57,11 @@ public abstract class ArcanaAchievement {
    }
    
    public String getTranslationKey(){
-      return "achievement."+MOD_ID+".name."+this.id;
+      return "achievement." + MOD_ID + ".name." + this.id;
    }
    
    public String getDescriptionTranslationKey(){
-      return "achievement."+MOD_ID+".description."+this.id;
+      return "achievement." + MOD_ID + ".description." + this.id;
    }
    
    public MutableComponent getTranslatedName(){
@@ -131,16 +133,16 @@ public abstract class ArcanaAchievement {
                                  .append(getTranslatedName().withStyle(ChatFormatting.DARK_AQUA))
                                  .append(descComp)
                                  .append(Component.literal("")
-                                       .append(Component.literal("\n"+LevelUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
+                                       .append(Component.literal("\n" + TextUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
                                        .append(Component.literal(" | ").withStyle(ChatFormatting.DARK_AQUA))
-                                       .append(Component.literal(""+pointsReward).withStyle(ChatFormatting.AQUA))
+                                       .append(Component.literal("" + pointsReward).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" Skill Points").withStyle(ChatFormatting.DARK_AQUA)))))
                      .withColor(ChatFormatting.DARK_AQUA).withBold(true)))
                .append(Component.literal("!!!").withStyle(ChatFormatting.DARK_PURPLE))
                .append(Component.literal(" ===").withStyle(ChatFormatting.OBFUSCATED, ChatFormatting.BOLD, ChatFormatting.BLACK)));
          msgs.add(Component.literal("=============================================").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE));
-         if(player != null) SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
+         if(player != null) SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1, 1);
       }else if(pointsReward >= 5){
          msgs.add(Component.literal("")
                .append(player == null ? Component.literal(data.getUsername()).withStyle(ChatFormatting.LIGHT_PURPLE) : player.getDisplayName())
@@ -150,14 +152,14 @@ public abstract class ArcanaAchievement {
                                  .append(getTranslatedName().withStyle(ChatFormatting.DARK_AQUA))
                                  .append(descComp)
                                  .append(Component.literal("")
-                                       .append(Component.literal("\n"+LevelUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
+                                       .append(Component.literal("\n" + TextUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
                                        .append(Component.literal(" | ").withStyle(ChatFormatting.DARK_AQUA))
-                                       .append(Component.literal(""+pointsReward).withStyle(ChatFormatting.AQUA))
+                                       .append(Component.literal("" + pointsReward).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" Skill Points").withStyle(ChatFormatting.DARK_AQUA)))))
                      .withColor(ChatFormatting.DARK_AQUA).withBold(true)))
                .append(Component.literal("!!!").withStyle(ChatFormatting.DARK_PURPLE)));
-         if(player != null)  SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
+         if(player != null) SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1, 1);
       }else{
          msgs.add(Component.literal("")
                .append(player == null ? Component.literal(data.getUsername()).withStyle(ChatFormatting.LIGHT_PURPLE) : player.getDisplayName())
@@ -167,17 +169,17 @@ public abstract class ArcanaAchievement {
                                  .append(getTranslatedName().withStyle(ChatFormatting.AQUA))
                                  .append(descComp)
                                  .append(Component.literal("")
-                                       .append(Component.literal("\n"+ LevelUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
+                                       .append(Component.literal("\n" + TextUtils.readableInt(xpReward)).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
                                        .append(Component.literal(" | ").withStyle(ChatFormatting.DARK_AQUA))
-                                       .append(Component.literal(""+pointsReward).withStyle(ChatFormatting.AQUA))
+                                       .append(Component.literal("" + pointsReward).withStyle(ChatFormatting.AQUA))
                                        .append(Component.literal(" Skill Points").withStyle(ChatFormatting.DARK_AQUA)))))
                      .withColor(ChatFormatting.AQUA)))
                .append(Component.literal("!").withStyle(ChatFormatting.LIGHT_PURPLE)));
          
-         if(player != null) SoundUtils.playSongToPlayer(player, SoundEvents.PLAYER_LEVELUP,1,1);
+         if(player != null) SoundUtils.playSongToPlayer(player, SoundEvents.PLAYER_LEVELUP, 1, 1);
       }
-      if(ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
+      if(ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ANNOUNCE_ACHIEVEMENTS)){
          for(MutableComponent msg : msgs){
             server.getPlayerList().broadcastSystemMessage(msg, false);
          }
@@ -189,19 +191,22 @@ public abstract class ArcanaAchievement {
          }
       }
       data.addXP(xpReward); // Add xp
-   
+      
       boolean abyssCheck = true;
+      boolean acolyteCheck = true;
+      Set<ArcanaAchievement> abyssalExcluded = ArcanaAchievements.getOwtAExcludedAchievements(playerId);
+      Set<ArcanaAchievement> acolyteExcluded = ArcanaAchievements.getAcolyteExcludedAchievements(playerId);
       for(ArcanaAchievement achievement : ArcanaAchievements.ARCANA_ACHIEVEMENTS.values()){
-         if(ArcanaAchievements.EXCLUDED_ACHIEVEMENTS.contains(achievement)) continue;
          if(!data.hasAcheivement(achievement)){
-            abyssCheck = false;
-            break;
+            if(!abyssalExcluded.contains(achievement)) abyssCheck = false;
+            if(!acolyteExcluded.contains(achievement)) acolyteCheck = false;
          }
+         if(!abyssCheck && !acolyteCheck) break;
       }
       if(abyssCheck){
-         for(ArcanaAchievement achievement : ArcanaAchievements.EXCLUDED_ACHIEVEMENTS){
-            ArcanaAchievements.grant(playerId,achievement);
-         }
+         ArcanaAchievements.grant(playerId, ArcanaAchievements.ALL_ACHIEVEMENTS);
+      }else if(acolyteCheck){
+         ArcanaAchievements.grant(playerId, ArcanaAchievements.MOST_ACHIEVEMENTS);
       }
    }
 }

@@ -1,24 +1,22 @@
 package net.borisshoes.arcananovum.datastorage;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.borislib.datastorage.DataKey;
 import net.borisshoes.borislib.datastorage.DataRegistry;
 import net.borisshoes.borislib.datastorage.StorableData;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class BossFightData implements StorableData {
    
    public Tuple<BossFights, CompoundTag> bossFight;
    private final ResourceKey<Level> worldKey;
    
-   public static final DataKey<BossFightData> KEY = DataRegistry.register(DataKey.ofWorld(Identifier.fromNamespaceAndPath(MOD_ID, "boss_fight"), BossFightData::new));
+   public static final DataKey<BossFightData> KEY = DataRegistry.register(DataKey.ofWorld(ArcanaRegistry.arcanaId("boss_fight"), BossFightData::new));
    
    public BossFightData(ResourceKey<Level> worldKey){
       this.worldKey = worldKey;

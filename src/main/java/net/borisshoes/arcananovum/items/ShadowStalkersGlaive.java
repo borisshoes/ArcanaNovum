@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -14,6 +15,8 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -35,6 +38,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -53,14 +57,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class ShadowStalkersGlaive extends EnergyItem {
 	public static final String ID = "shadow_stalkers_glaive";
    
    public static final String TETHER_TARGET_TAG = "tetherTarget";
    public static final String TETHER_TIME_TAG = "tetherTime";
-   
-   private final int teleportLength = 10;
    
    public ShadowStalkersGlaive(){
       id = ID;
@@ -142,6 +145,16 @@ public class ShadowStalkersGlaive extends EnergyItem {
       }
    }
    
+   public void sendEnergyMessage(Player player, int oldEnergy, int newEnergy, boolean force){
+      if(oldEnergy/20 != newEnergy/20 || force){
+         String message = "Glaive Charges: ";
+         for(int i=1; i<=5; i++){
+            message += newEnergy >= i*20 ? "✦ " : "✧ ";
+         }
+         player.displayClientMessage(Component.literal(message).withStyle(ChatFormatting.BLACK),true);
+      }
+   }
+   
    @Override
    public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
       ItemStack newArcanaItem = getNewItem();
@@ -206,22 +219,21 @@ public class ShadowStalkersGlaive extends EnergyItem {
                putProperty(stack,TETHER_TARGET_TAG,"");
             }
             
+            float bloodletterDmg = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SHADOW_STALKERS_GLAIVE_BLOODLETTER_DAMAGE);
             if(world.getServer().getTickCount() % (100) == 0){
                int energy = getEnergy(stack);
                boolean recharge = false;
-               if(energy < 20){
+               int passiveCap = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHADOW_STALKERS_GLAIVE_PASSIVE_ENERGY_CAP);
+               if(energy < passiveCap){
                   recharge = true;
-               }else if(energy < getMaxEnergy(stack) && ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.BLOODLETTER) >= 1 && player.getHealth() > 2){
+               }else if(energy < getMaxEnergy(stack) && ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.BLOODLETTER) >= 1 && player.getHealth() > bloodletterDmg){
                   recharge = true;
-                  if(!player.isCreative() && !player.isSpectator()) player.setHealth(player.getHealth() - 2);
+                  if(!player.isCreative() && !player.isSpectator()) player.setHealth(player.getHealth() - bloodletterDmg);
                }
                if(recharge){
-                  addEnergy(stack, 20);
-                  StringBuilder message = new StringBuilder("Glaive Charges: ");
-                  for(int i = 1; i <= 5; i++){
-                     message.append(getEnergy(stack) >= i * 20 ? "✦ " : "✧ ");
-                  }
-                  player.displayClientMessage(Component.literal(message.toString()).withColor(ArcanaColors.NUL_COLOR), true);
+                  int passiveRate = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHADOW_STALKERS_GLAIVE_PASSIVE_ENERGY_RATE);
+                  addEnergy(stack, passiveRate);
+                  sendEnergyMessage(player,0,getEnergy(stack),true);
                }
             }
          }
@@ -237,7 +249,8 @@ public class ShadowStalkersGlaive extends EnergyItem {
          String tetherTarget = getStringProperty(stack,TETHER_TARGET_TAG);
          
          if(tetherTarget != null && !tetherTarget.isEmpty() && !player.isShiftKeyDown()){
-            if(energy >= 80){
+            int stalkEnergy = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHADOW_STALKERS_GLAIVE_STALK_ENERGY);
+            if(energy >= stalkEnergy){
                Entity target = player.level().getEntity(AlgoUtils.getUUID(tetherTarget));
                if(target == null || !target.isAlive() || player.level().dimension() != target.level().dimension()){
                   player.displayClientMessage(Component.literal("The Glaive Has No Target").withColor(ArcanaColors.NUL_COLOR),true);
@@ -246,17 +259,13 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   Vec3 targetView = target.getForward();
                   Vec3 tpPos = targetPos.add(targetView.multiply(-1.5,0,-1.5));
                   
-                  ArcanaEffectUtils.shadowGlaiveTp(player.level(),player);
+                  ArcanaEffectUtils.shadowGlaiveTp(player.level(),player.position());
                   player.teleport(new TeleportTransition(player.level(),tpPos.add(0,0.25,0), Vec3.ZERO, target.getYRot(),target.getXRot(), TeleportTransition.DO_NOTHING));
-                  ArcanaEffectUtils.shadowGlaiveTp(player.level(),player);
+                  ArcanaEffectUtils.shadowGlaiveTp(player.level(),player.position());
                   SoundUtils.playSound(world,player.blockPosition(), SoundEvents.ILLUSIONER_CAST_SPELL, SoundSource.PLAYERS,.8f,.8f);
-                  addEnergy(stack,-80);
-                  String message = "Glaive Charges: ";
-                  for(int i=1; i<=5; i++){
-                     message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
-                  }
-                  player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
+                  addEnergy(stack,-stalkEnergy);
+                  sendEnergyMessage(player,0,getEnergy(stack),true);
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
                   
                   if(target instanceof ServerPlayer || target instanceof Warden) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA,0);
                   if(target instanceof Mob){
@@ -269,46 +278,46 @@ public class ShadowStalkersGlaive extends EnergyItem {
                      }
                   }
                   
-                  int blindDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PARANOIA))];
-                  int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE))];
+                  int blindDur = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SHADOW_STALKERS_GLAIVE_NEARSIGHT_DURATION).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PARANOIA));
+                  int invisDur = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SHADOW_STALKERS_GLAIVE_INVIS_DURATION).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE));
                   MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                   player.addEffect(invis);
                   if(target instanceof LivingEntity living){
-                     MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, blindDur, 5, false, true, true);
-                     living.addEffect(blind);
+                     ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId(ID),blindDur,2.0f,false,true,false, AttributeModifier.Operation.ADD_VALUE,player.getUUID());
+                     Conditions.addCondition(world.getServer(),living,nearsight);
                   }
                   
                   return InteractionResult.SUCCESS_SERVER;
                }
             }else{
-               player.displayClientMessage(Component.literal("The Glaive Needs At Least 4 Charges").withColor(ArcanaColors.NUL_COLOR),true);
+               double stalkCharges = stalkEnergy / 20.0;
+               player.displayClientMessage(Component.literal("The Glaive Needs At Least "+TextUtils.readableDouble(stalkCharges,2)+" Charge(s)").withColor(ArcanaColors.NUL_COLOR),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
             }
          }else if(player.isShiftKeyDown()){
-            if(energy >= 20){
+            int blinkEnergy = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHADOW_STALKERS_GLAIVE_BLINK_ENERGY);
+            if(energy >= blinkEnergy){
+               double teleportLength = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SHADOW_STALKERS_GLAIVE_BLINK_DISTANCE);
                Vec3 playerPos = player.position();
                Vec3 view = player.getForward();
                Vec3 tpPos = playerPos.add(view.scale(teleportLength));
                
-               ArcanaEffectUtils.shadowGlaiveTp(player.level(),player);
+               ArcanaEffectUtils.shadowGlaiveTp(player.level(),player.position());
                player.teleport(new TeleportTransition(player.level(),tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(),player.getXRot(), TeleportTransition.DO_NOTHING));
-               ArcanaEffectUtils.shadowGlaiveTp(player.level(),player);
+               ArcanaEffectUtils.shadowGlaiveTp(player.level(),player.position());
                SoundUtils.playSound(world,player.blockPosition(), SoundEvents.ILLUSIONER_CAST_SPELL, SoundSource.PLAYERS,.8f,.8f);
-               addEnergy(stack,-20);
-               String message = "Glaive Charges: ";
-               for(int i=1; i<=5; i++){
-                  message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
-               }
-               player.displayClientMessage(Component.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
+               addEnergy(stack,-blinkEnergy);
+               sendEnergyMessage(player,0,getEnergy(stack),true);
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
                
-               int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE))];
+               int invisDur = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SHADOW_STALKERS_GLAIVE_INVIS_DURATION).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE));
                MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                player.addEffect(invis);
                
                return InteractionResult.SUCCESS_SERVER;
             }else{
-               player.displayClientMessage(Component.literal("The Glaive Needs At Least 1 Charge").withColor(ArcanaColors.NUL_COLOR),true);
+               double blinkCharges = blinkEnergy / 20.0;
+               player.displayClientMessage(Component.literal("The Glaive Needs At Least "+TextUtils.readableDouble(blinkCharges,2)+" Charge(s)").withColor(ArcanaColors.NUL_COLOR),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
             }
          }

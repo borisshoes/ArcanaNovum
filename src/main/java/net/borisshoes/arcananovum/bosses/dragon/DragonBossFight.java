@@ -91,7 +91,6 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.devPrint;
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.utils.SpawnPile.makeSpawnLocations;
 
 public class DragonBossFight {

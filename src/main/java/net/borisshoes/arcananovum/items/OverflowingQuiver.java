@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -48,8 +50,6 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class OverflowingQuiver extends QuiverItem{
 	public static final String ID = "overflowing_quiver";
    
-   private static final int[] refillReduction = {0,300,600,900,1200,1800};
-   private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
    private static final Item textureItem = Items.ARROW;
    
    public OverflowingQuiver(){
@@ -144,14 +144,16 @@ public class OverflowingQuiver extends QuiverItem{
    
    @Override
    protected int getRefillMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
-      int refillLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ABUNDANT_AMMO));
-      return 3000 - refillReduction[refillLvl];
+      int refillLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ABUNDANT_AMMO);
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.OVERFLOWING_QUIVER_RESTOCK_TIME);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.OVERFLOWING_QUIVER_RESTOCK_TIME_PER_LVL).get(refillLvl);
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    @Override
-   protected double getEfficiencyMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
-      int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.OVERFLOWING_BOTTOMLESS));
-      return efficiencyChance[effLvl];
+   protected double getEfficiencyMod(ItemStack item){
+      int effLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.OVERFLOWING_BOTTOMLESS);
+      return ArcanaNovum.CONFIG.getIntList(ArcanaConfig.QUIVER_EFFICIENCY_PER_LVL).get(effLvl);
    }
    
    private OverflowingQuiver getOuter(){

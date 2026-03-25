@@ -30,8 +30,8 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
@@ -84,8 +84,9 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.*;
-import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.function.TriConsumer;
@@ -1009,6 +1010,48 @@ public class ArcanaCommands {
       }
    }
    
+   public static int changeSkin(CommandContext<CommandSourceStack> ctx, String skin){
+      try{
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
+            return -1;
+         }
+         
+         ServerPlayer player = src.getPlayer();
+         ItemStack handItem = player.getMainHandItem();
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(handItem);
+         
+         if(arcanaItem == null){
+            src.sendFailure(Component.literal("Player is not holding a valid Arcana Item"));
+            return -1;
+         }
+         
+         Component name = null;
+         if(skin.equals("minecraft:none")){
+            ArcanaItem.removeProperty(handItem,ArcanaItem.SKIN_TAG);
+            name = Component.translatable("text.arcananovum.default");
+         }else{
+            ArcanaSkin parsedSkin = ArcanaSkin.getSkinFromString(skin);
+            ArcanaPlayerData data = ArcanaNovum.data(player);
+            if(parsedSkin == null || !data.hasSkin(parsedSkin) || !parsedSkin.getArcanaItem().getId().equals(arcanaItem.getId())){
+               src.sendFailure(Component.translatable("commands.arcananovum.skin_change_invalid"));
+               return -1;
+            }
+            ArcanaItem.putProperty(handItem,ArcanaItem.SKIN_TAG,parsedSkin.getSerializedName());
+            name = parsedSkin.getName();
+         }
+         arcanaItem.buildItemLore(handItem,src.getServer());
+         
+         Component finalName = name;
+         src.sendSuccess(() -> Component.translatable("command.arcananovum.skin_change_success", finalName), false);
+         return 1;
+      }catch(Exception e){
+         log(2, e.toString());
+         return -1;
+      }
+   }
+   
    public static int applyAugment(CommandContext<CommandSourceStack> ctx, String id, int level, ServerPlayer player){
       try{
          CommandSourceStack src = ctx.getSource();
@@ -1620,7 +1663,7 @@ public class ArcanaCommands {
          if(!src.isPlayer()){
             return -1;
          }
-         ArcanaNovum.data(player).specialEventResponse(player,arg);
+         ArcanaNovum.data(player).specialEventResponse(player, arg);
          return 1;
       }catch(Exception e){
          log(2, e.toString());
@@ -1635,7 +1678,7 @@ public class ArcanaCommands {
             ArcanaNovum.data(player).startGaialtus(player);
             ArcanaNovum.data(player).setLastGaialtusAttempt(36000);
          }
-         src.sendSuccess(() -> Component.literal("Began Gaialtus event for "+players.size()+" players"), true);
+         src.sendSuccess(() -> Component.literal("Began Gaialtus event for " + players.size() + " players"), true);
          return players.size();
       }catch(Exception e){
          log(2, e.toString());
@@ -1650,7 +1693,7 @@ public class ArcanaCommands {
             ArcanaNovum.data(player).startCeptyus(player);
             ArcanaNovum.data(player).setLastCeptyusAttempt(36000);
          }
-         src.sendSuccess(() -> Component.literal("Began Ceptyus event for "+players.size()+" players"), true);
+         src.sendSuccess(() -> Component.literal("Began Ceptyus event for " + players.size() + " players"), true);
          return players.size();
       }catch(Exception e){
          log(2, e.toString());
@@ -1665,7 +1708,7 @@ public class ArcanaCommands {
             ArcanaNovum.data(player).startZeraiya(player);
             ArcanaNovum.data(player).setLastZeraiyaAttempt(36000);
          }
-         src.sendSuccess(() -> Component.literal("Began Zeraiya event for "+players.size()+" players"), true);
+         src.sendSuccess(() -> Component.literal("Began Zeraiya event for " + players.size() + " players"), true);
          return players.size();
       }catch(Exception e){
          log(2, e.toString());
@@ -1678,32 +1721,32 @@ public class ArcanaCommands {
          CommandSourceStack src = ctx.getSource();
          ArcanaPlayerData data = ArcanaNovum.data(player);
          MutableComponent feedback = Component.literal("");
-         boolean hasEgg = ArcanaItemUtils.hasItemInInventory(player,Items.DRAGON_EGG);
+         boolean hasEgg = ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG);
          int zTimer = data.getLastZeraiyaAttempt();
          boolean zDone = data.completedZeraiya();
-         feedback.append(Component.literal("\nZeraiya: ").withStyle(ChatFormatting.DARK_PURPLE,ChatFormatting.BOLD));
-         feedback.append(Component.literal("\n - Has Egg: "+hasEgg).withStyle(hasEgg ? ChatFormatting.GREEN : ChatFormatting.RED));
-         feedback.append(Component.literal("\n - Timer: "+zTimer).withStyle(zTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
-         feedback.append(Component.literal("\n - Completed: "+zDone).withStyle(zDone ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\nZeraiya: ").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
+         feedback.append(Component.literal("\n - Has Egg: " + hasEgg).withStyle(hasEgg ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Timer: " + zTimer).withStyle(zTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Completed: " + zDone).withStyle(zDone ? ChatFormatting.RED : ChatFormatting.GREEN));
          feedback.append(Component.literal("\n"));
          
          Structure structure = player.level().structureManager().registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.ANCIENT_CITY);
-         StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(),structure);
-         boolean hasAequalis = ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem());
+         StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(), structure);
+         boolean hasAequalis = ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.AEQUALIS_SCIENTIA.getItem());
          boolean validStructure = start.isValid() && start.canBeReferenced();
          int cTimer = data.getLastCeptyusAttempt();
          boolean cDone = data.completedCeptyus();
          boolean cBlocked = data.canAttemptCeptyus();
-         feedback.append(Component.literal("\nCeptyus: ").withStyle(ChatFormatting.DARK_AQUA,ChatFormatting.BOLD));
-         feedback.append(Component.literal("\n - Has Aequalis: "+hasAequalis).withStyle(hasAequalis ? ChatFormatting.GREEN : ChatFormatting.RED));
-         feedback.append(Component.literal("\n - Timer: "+cTimer).withStyle(cTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
-         feedback.append(Component.literal("\n - Completed: "+cDone).withStyle(cDone ? ChatFormatting.RED : ChatFormatting.GREEN));
-         feedback.append(Component.literal("\n - Blocked: "+cBlocked).withStyle(cBlocked ? ChatFormatting.RED : ChatFormatting.GREEN));
-         feedback.append(Component.literal("\n - In City: "+validStructure).withStyle(validStructure ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\nCeptyus: ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD));
+         feedback.append(Component.literal("\n - Has Aequalis: " + hasAequalis).withStyle(hasAequalis ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Timer: " + cTimer).withStyle(cTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Completed: " + cDone).withStyle(cDone ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n - Blocked: " + cBlocked).withStyle(cBlocked ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n - In City: " + validStructure).withStyle(validStructure ? ChatFormatting.GREEN : ChatFormatting.RED));
          feedback.append(Component.literal("\n"));
          
-         boolean hasSkyLight = player.level().getBrightness(LightLayer.SKY,player.blockPosition()) > 0;
-         boolean isFishing = !player.level().getEntities(EntityType.FISHING_BOBBER,player.getBoundingBox().inflate(20.0, 8.0, 20.0),(hook) -> player.equals(hook.getPlayerOwner())).isEmpty();
+         boolean hasSkyLight = player.level().getBrightness(LightLayer.SKY, player.blockPosition()) > 0;
+         boolean isFishing = !player.level().getEntities(EntityType.FISHING_BOBBER, player.getBoundingBox().inflate(20.0, 8.0, 20.0), (hook) -> player.equals(hook.getPlayerOwner())).isEmpty();
          boolean inOverworld = player.level().equals(player.level().getServer().overworld());
          int gTimer = data.getLastGaialtusAttempt();
          boolean gDone = data.completedGaialtus();
@@ -1717,21 +1760,58 @@ public class ArcanaCommands {
                placed.addAndGet(stats.getInt(key));
             }
          });
-         feedback.append(Component.literal("\nGaialtus: ").withStyle(ChatFormatting.DARK_GREEN,ChatFormatting.BOLD));
-         feedback.append(Component.literal("\n - In Overworld: "+inOverworld).withStyle(inOverworld ? ChatFormatting.GREEN : ChatFormatting.RED));
-         feedback.append(Component.literal("\n - Has Skylight: "+hasSkyLight).withStyle(hasSkyLight ? ChatFormatting.GREEN : ChatFormatting.RED));
-         feedback.append(Component.literal("\n - Is Fishing: "+isFishing).withStyle(isFishing ? ChatFormatting.GREEN : ChatFormatting.RED));
-         feedback.append(Component.literal("\n - Timer: "+gTimer).withStyle(gTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
-         feedback.append(Component.literal("\n - Completed: "+gDone).withStyle(gDone ? ChatFormatting.RED : ChatFormatting.GREEN));
-         feedback.append(Component.literal("\n - Mined: "+mined.get()).withStyle(mined.get() < 10000 ? ChatFormatting.RED : ChatFormatting.GREEN));
-         feedback.append(Component.literal("\n - Placed: "+placed.get()).withStyle(placed.get() < 10000 ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\nGaialtus: ").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD));
+         feedback.append(Component.literal("\n - In Overworld: " + inOverworld).withStyle(inOverworld ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Has Skylight: " + hasSkyLight).withStyle(hasSkyLight ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Is Fishing: " + isFishing).withStyle(isFishing ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Timer: " + gTimer).withStyle(gTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
+         feedback.append(Component.literal("\n - Completed: " + gDone).withStyle(gDone ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n - Mined: " + mined.get()).withStyle(mined.get() < 10000 ? ChatFormatting.RED : ChatFormatting.GREEN));
+         feedback.append(Component.literal("\n - Placed: " + placed.get()).withStyle(placed.get() < 10000 ? ChatFormatting.RED : ChatFormatting.GREEN));
          feedback.append(Component.literal("\n"));
          
-         src.sendSuccess(() -> feedback,false);
+         src.sendSuccess(() -> feedback, false);
          return 0;
       }catch(Exception e){
          log(2, e.toString());
          return -1;
       }
+   }
+   
+   public static int versionCommand(CommandContext<CommandSourceStack> ctx){
+      CommandSourceStack source = ctx.getSource();
+      String version = FabricLoader.getInstance().getModContainer(MOD_ID)
+            .map(container -> container.getMetadata().getVersion().getFriendlyString())
+            .orElse("Unknown");
+      source.sendSuccess(() -> Component.literal("Arcana Novum Version: ").withStyle(ChatFormatting.DARK_PURPLE)
+            .append(Component.literal(version).withStyle(ChatFormatting.LIGHT_PURPLE)), false);
+      return 1;
+   }
+   
+   public static int itemsCommand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException{
+      CommandSourceStack source = ctx.getSource();
+      if(!source.isPlayer() || source.getPlayer() == null){
+         source.sendSuccess(() -> Component.literal("Command must be executed by a player"), false);
+         return -1;
+      }
+      ServerPlayer player = ctx.getSource().getPlayerOrException();
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
+      
+      int resolve = profile.getAugmentLevel(ArcanaAugments.RESOLVE);
+      int maxConc = LevelUtils.concFromLevel(profile.getLevel(), resolve);
+      int usedConc = ArcanaItemUtils.getUsedConcentration(player);
+      
+      source.sendSuccess(() -> Component.literal("Arcane Concentration").withStyle(ChatFormatting.BLUE), false);
+      source.sendSuccess(() -> Component.literal("Concentration: " + usedConc + "/" + maxConc).withStyle(ChatFormatting.AQUA), false);
+      
+      List<MutableComponent> concBreakdown = ArcanaItemUtils.getConcBreakdown(player);
+      if(!concBreakdown.isEmpty()){
+         source.sendSuccess(() -> Component.literal(""), false);
+         source.sendSuccess(() -> Component.literal("Items Taking Concentration:").withStyle(ChatFormatting.DARK_AQUA), false);
+         for(MutableComponent item : concBreakdown){
+            source.sendSuccess(() -> item, false);
+         }
+      }
+      return 1;
    }
 }

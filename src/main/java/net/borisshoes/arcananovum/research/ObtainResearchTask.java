@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.research;
 
 import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;

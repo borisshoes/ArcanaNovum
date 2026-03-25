@@ -7,8 +7,6 @@ import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Locale;
-
 public class ShulkerCoreIngredient extends ArcanaIngredient {
    
    private final boolean needsStone;

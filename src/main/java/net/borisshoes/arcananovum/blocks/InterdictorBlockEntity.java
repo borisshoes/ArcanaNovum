@@ -1,20 +1,18 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.altars.TransmutationAltar;
-import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
-import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.datastorage.InterdictionZones;
+import net.borisshoes.arcananovum.entities.NulGuardianEntity;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.utils.AlgoUtils;
@@ -22,6 +20,7 @@ import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.ParticleEffectUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -29,8 +28,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -41,6 +38,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
@@ -54,10 +52,9 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    private int origin;
    private String customName;
    private final Multiblock multiblock;
-   private static final int[] RIFT_RANGE = new int[]{32, 48, 64, 96};
-   private int xRange = RIFT_RANGE[0];
-   private int yRange = RIFT_RANGE[0];
-   private int zRange = RIFT_RANGE[0];
+   private int xRange = getMaxRange(0);
+   private int yRange = getMaxRange(0);
+   private int zRange = getMaxRange(0);
    private boolean decoalescence, redirect, wasActive;
    private AABB interdictionZone;
    
@@ -74,9 +71,9 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       this.customName = customName == null ? "" : customName;
       
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
-      this.xRange = RIFT_RANGE[riftLvl];
-      this.yRange = RIFT_RANGE[riftLvl];
-      this.zRange = RIFT_RANGE[riftLvl];
+      this.xRange = getMaxRange(riftLvl);
+      this.yRange = getMaxRange(riftLvl);
+      this.zRange = getMaxRange(riftLvl);
       this.decoalescence = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.DECOALESCENCE) > 0;
       this.redirect = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.COALESCENCE_REDIRECTION) > 0;
       BlockPos here = this.getBlockPos();
@@ -87,6 +84,12 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       if(e instanceof InterdictorBlockEntity interdictor){
          interdictor.tick(world, blockPos, blockState);
       }
+   }
+   
+   public int getMaxRange(int riftLvl){
+      int baseRange = ArcanaNovum.CONFIG.getInt(ArcanaConfig.INTERDICTOR_RANGE);
+      int extraRange = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.INTERDICTOR_RANGE_PER_LVL).get(riftLvl);
+      return baseRange + extraRange;
    }
    
    private void tick(Level world, BlockPos blockPos, BlockState blockState){
@@ -113,8 +116,13 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
             UUID crafterId = AlgoUtils.getUUID(this.getCrafterId());
             for(Entity entity : serverWorld.getEntities(null, getInterdictionZone())){
                if(entity instanceof Enemy && entity.isAlive() && !entity.hasCustomName()){
-                  entity.discard();
-                  if(this.getCrafterId() != null && !this.getCrafterId().isEmpty()) ArcanaAchievements.progress(crafterId, ArcanaAchievements.UNMOBBED, 1);
+                  if(!entity.getType().is(ArcanaRegistry.INTERDICTOR_IMMUNE)){
+                     entity.discard();
+                     if(this.getCrafterId() != null && !this.getCrafterId().isEmpty()) ArcanaAchievements.progress(crafterId, ArcanaAchievements.UNMOBBED, 1);
+                  }else if(serverWorld.getServer().getTickCount() % 40 == 0 && entity.getType() == ArcanaRegistry.NUL_GUARDIAN_ENTITY && entity instanceof NulGuardianEntity guardian){
+                     guardian.hurtServer(serverWorld,serverWorld.damageSources().magic(),12.0f);
+                  }
+                  
                }
             }
          }
@@ -144,8 +152,9 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    public void onSpawn(){
       if(this.crafterId != null && !this.crafterId.isEmpty()){
          ArcanaAchievements.progress(AlgoUtils.getUUID(this.crafterId),ArcanaAchievements.UNMOBBED,1);
+         if(this.level instanceof ServerLevel && this.level.random.nextFloat() < 0.01) ArcanaNovum.data(AlgoUtils.getUUID(this.crafterId)).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_INTERDICTOR_MOB_BLOCKED_PER_100));
       }
-      if(this.level instanceof ServerLevel serverLevel && this.level.random.nextFloat() < 0.01){
+      if(this.level instanceof ServerLevel serverLevel && this.level.random.nextFloat() < 0.005){
          Vec3 p1 = this.getBlockPos().getBottomCenter().add(this.level.random.nextBoolean() ? -1 : 1, 1.85, this.level.random.nextBoolean() ? -1 : 1);
          Vec3 p2 = MathUtils.randomSpherePoint(p1, 5,3);
          ParticleEffectUtils.animatedLightningBolt(serverLevel,p1,p2,
@@ -215,17 +224,17 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    
    public void setxRange(int xRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
-      this.xRange = Mth.clamp(xRange,1,RIFT_RANGE[riftLvl]);
+      this.xRange = Mth.clamp(xRange,1,getMaxRange(riftLvl));
    }
    
    public void setyRange(int yRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
-      this.yRange = Mth.clamp(yRange,1,RIFT_RANGE[riftLvl]);
+      this.yRange = Mth.clamp(yRange,1,getMaxRange(riftLvl));
    }
    
    public void setzRange(int zRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
-      this.zRange = Mth.clamp(zRange,1,RIFT_RANGE[riftLvl]);
+      this.zRange = Mth.clamp(zRange,1,getMaxRange(riftLvl));
    }
    
    @Override
@@ -235,9 +244,9 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.xRange = view.getIntOr("xRange", RIFT_RANGE[0]);
-      this.yRange = view.getIntOr("yRange", RIFT_RANGE[0]);
-      this.zRange = view.getIntOr("zRange", RIFT_RANGE[0]);
+      this.xRange = view.getIntOr("xRange", getMaxRange(0));
+      this.yRange = view.getIntOr("yRange", getMaxRange(0));
+      this.zRange = view.getIntOr("zRange", getMaxRange(0));
       this.augments = new TreeMap<>();
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;

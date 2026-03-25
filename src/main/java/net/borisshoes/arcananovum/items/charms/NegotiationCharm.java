@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -22,16 +24,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
-import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
-import net.minecraft.world.item.trading.Merchant;
-import net.minecraft.world.item.trading.MerchantOffer;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 import xyz.nucleoid.packettweaker.PacketContext;
@@ -141,11 +139,13 @@ public class NegotiationCharm extends ArcanaItem {
          if(!(entity instanceof ServerPlayer player)) return;
          
          if(world.getServer().getTickCount() % 100 == 0){
-            for(Villager villager : world.getEntitiesOfClass(Villager.class, player.getBoundingBox().inflate(25))){
+            double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.NEGOTIATION_CHARM_RANGE);
+            for(Villager villager : world.getEntitiesOfClass(Villager.class, player.getBoundingBox().inflate(baseRange))){
                int reputation = villager.getPlayerReputation(player);
                if(reputation < 100){
                   world.onReputationEvent(ReputationEventType.ZOMBIE_VILLAGER_CURED, player, villager);
                   world.onReputationEvent(ReputationEventType.TRADE, player, villager);
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_NEGOTIATION_CHARM_INFLUENCE));
                }
             }
          }

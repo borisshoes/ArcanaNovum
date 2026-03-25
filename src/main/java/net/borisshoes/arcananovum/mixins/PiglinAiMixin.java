@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -22,12 +24,14 @@ public class PiglinAiMixin {
       if(!(piglin.level() instanceof ServerLevel level)) return original;
       for(ServerPlayer player : level.getPlayers(p -> p.distanceTo(piglin) <= 10)){
          if(!ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.NEGOTIATION_CHARM.getItem())) continue;
+         double modifier = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.NEGOTIATION_CHARM_BARTER_BUFF_MULTIPLIER);
          for(ItemStack itemStack : original){
             int count = itemStack.getCount();
-            int newCount = Math.toIntExact(Math.round(Math.min(itemStack.getMaxStackSize(), count * (1 + player.random.nextFloat() * 2.5))));
+            int newCount = Math.toIntExact(Math.round(Math.min(itemStack.getMaxStackSize(), count * (1 + player.random.nextFloat() * modifier))));
             int diff = newCount - count;
             itemStack.setCount(newCount);
             ArcanaAchievements.progress(player,ArcanaAchievements.WOLF_OF_BLOCK_STREET, diff);
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_NEGOTIATION_CHARM_BARTER));
          }
          return original;
       }

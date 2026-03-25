@@ -1,10 +1,12 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -114,7 +116,7 @@ public class WingsOfEnderia extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      return 10000; // Store up to 100 points of dmg mitigation at 5 seconds of flight per damage point stored aka 100 ticks/energy per 1 dmg point
+      return ArcanaNovum.CONFIG.getInt(ArcanaConfig.WINGS_OF_ENDERIA_MAX_ENERGY); // Store up to 100 points of dmg mitigation at 5 seconds of flight per damage point stored aka 100 ticks/energy per 1 dmg point
    }
    
    @Override
@@ -140,7 +142,8 @@ public class WingsOfEnderia extends EnergyItem {
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
-         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.fromNamespaceAndPath(MOD_ID,ID))).build();
+         Identifier modelId = ArcanaItem.getSkin(itemStack) != null ? ArcanaItem.getSkin(itemStack).getModelId() : ArcanaRegistry.arcanaId(ID);
+         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, modelId)).build();
          baseStack.set(DataComponents.EQUIPPABLE,newComp);
          return baseStack;
       }
@@ -156,10 +159,12 @@ public class WingsOfEnderia extends EnergyItem {
          ItemStack item = player.getItemBySlot(EquipmentSlot.CHEST);
          if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
             if(player.isFallFlying()){ // Wings of Enderia
-               wings.addEnergy(item,1); // Add 1 energy for each tick of flying
-               if(EnergyItem.getEnergy(item) % 1000 == 999)
-                  player.displayClientMessage(Component.literal("Wing Energy Stored: "+ (EnergyItem.getEnergy(item) + 1)).withStyle(ChatFormatting.DARK_PURPLE),true);
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WINGS_OF_ENDERIA_FLY)); // Add xp
+               int beforeE = getEnergy(item);
+               int toAdd = ArcanaNovum.CONFIG.getInt(ArcanaConfig.WINGS_OF_ENDERIA_ENERGY_RATE);
+               wings.addEnergy(item,toAdd); // Add 1 energy for each tick of flying
+               if(beforeE / 1000 != EnergyItem.getEnergy(item) / 1000)
+                  player.displayClientMessage(Component.literal("Wing Energy Stored: "+ EnergyItem.getEnergy(item)).withStyle(ChatFormatting.DARK_PURPLE),true);
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WINGS_OF_ENDERIA_FLY)); // Add xp
             }
             CompoundTag leftShoulder = player.getShoulderEntityLeft();
             CompoundTag rightShoulder = player.getShoulderEntityRight();

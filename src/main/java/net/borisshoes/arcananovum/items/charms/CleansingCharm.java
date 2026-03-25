@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import com.mojang.datafixers.util.Either;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -13,6 +15,8 @@ import net.borisshoes.arcananovum.events.CleansingCharmEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -37,6 +41,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -57,6 +62,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class CleansingCharm extends EnergyItem implements GeomanticStele.Interaction {
    public static final String ID = "cleansing_charm";
@@ -89,8 +95,10 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.INFUSED_CHARCOAL));
-      return 30 - 5*cdLvl;
+      int cdLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.INFUSED_CHARCOAL);
+      int baseCD = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CLEANSING_CHARM_COOLDOWN);
+      int cdReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.CLEANSING_CHARM_CHARCOAL_COOLDOWN_PER_LVL).get(cdLvl);
+      return baseCD - cdReduction;
    }
    
    public boolean cleanseEffect(LivingEntity living, ItemStack stack){
@@ -98,9 +106,14 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       if(getEnergy(stack) > 0) return false;
       
       boolean removed = false;
-      List<Map.Entry<Holder<MobEffect>, MobEffectInstance>> canCleanse = new ArrayList<>(living.getActiveEffectsMap().entrySet().stream().filter(entry ->
-            entry.getKey().value().getCategory() == MobEffectCategory.HARMFUL && !entry.getKey().equals(ArcanaRegistry.GREATER_BLINDNESS_EFFECT)
+      List<Map.Entry<Holder<MobEffect>, MobEffectInstance>> canCleanseEffects = new ArrayList<>(living.getActiveEffectsMap().entrySet().stream().filter(entry ->
+            entry.getKey().value().getCategory() == MobEffectCategory.HARMFUL
       ).toList());
+      List<ConditionInstance> canCleanseConditions = new ArrayList<>(Conditions.getConditionInstances(living.getUUID()).stream().filter(cond -> !cond.isPersistent() && cond.getCondition().value().isHarmful()).toList());
+      
+      List<Either<Map.Entry<Holder<MobEffect>, MobEffectInstance>, ConditionInstance>> canCleanse = new ArrayList<>();
+      canCleanseEffects.forEach(e -> canCleanse.add(Either.left(e)));
+      canCleanseConditions.forEach(e -> canCleanse.add(Either.right(e)));
       Collections.shuffle(canCleanse);
       
       if(canCleanse.size() >= 10 && living instanceof ServerPlayer player){
@@ -110,22 +123,37 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       int toRemove = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ANTIDOTE) > 0 ? 2 : 1;
       for(int i = 0; i < toRemove; i++){
          if(canCleanse.isEmpty()) break;
-         Holder<MobEffect> effect = canCleanse.removeFirst().getKey();
-         living.removeEffect(effect);
-         if(living instanceof ServerPlayer player) Event.addEvent(new CleansingCharmEvent(player,effect));
+         Either<Map.Entry<Holder<MobEffect>, MobEffectInstance>, ConditionInstance> next = canCleanse.removeFirst();
          
-         if(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REJUVENATION) > 0){
-            MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 100, 1, false, false, true);
-            living.addEffect(regen);
+         if(next.right().isPresent()){
+            ConditionInstance condition = next.right().get();
+            Conditions.removeCondition(living.level().getServer(),living,condition.getCondition(),condition.getId());
+            if(living instanceof ServerPlayer player){
+               Event.addEvent(new CleansingCharmEvent(player, Either.right(condition)));
+            }
+         }else if(next.left().isPresent()){
+            Holder<MobEffect> effect = next.left().get().getKey();
+            living.removeEffect(effect);
+            if(living instanceof ServerPlayer player){
+               Event.addEvent(new CleansingCharmEvent(player, Either.left(effect)));
+               if(effect.equals(MobEffects.HUNGER)){
+                  ArcanaAchievements.grant(player,ArcanaAchievements.FOOD_POISONT);
+               }
+            }
+         }else{
+            return false;
          }
          
-         if(effect.equals(MobEffects.HUNGER) && living instanceof ServerPlayer player){
-            ArcanaAchievements.grant(player,ArcanaAchievements.FOOD_POISONT);
+         if(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REJUVENATION) > 0){
+            int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CLEANSING_CHARM_REJUVENATION_DURATION);
+            float hpPerTick = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CLEANSING_CHARM_REJUVENATION_HEALTH_PER_TICK);
+            ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION,arcanaId(ArcanaRegistry.CLEANSING_CHARM.getId()),duration,hpPerTick,true,true,false, AttributeModifier.Operation.ADD_VALUE, living.getUUID());
+            Conditions.addCondition(living.level().getServer(),living,rejuv);
          }
          
          removed = true;
          setEnergy(stack,getMaxEnergy(stack));
-         if(living instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CLEANSING_CHARM_CLEANSE));
+         if(living instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CLEANSING_CHARM_CLEANSE));
       }
       return removed;
    }
@@ -180,12 +208,14 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class,box);
       for(LivingEntity living : inRangeEntities){
          if(cleanseEffect(living,stack) && living instanceof ServerPlayer player){
-            stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CLEANSING_CHARM_CLEANSE));
+            stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CLEANSING_CHARM_CLEANSE));
+            stele.setChanged();
          }
       }
       
       if(world.getServer().getTickCount() % 20 == 0){
          addEnergy(stack, -5); // Recharge
+         stele.setChanged();
       }
       
       if(world.random.nextFloat() < 0.35){

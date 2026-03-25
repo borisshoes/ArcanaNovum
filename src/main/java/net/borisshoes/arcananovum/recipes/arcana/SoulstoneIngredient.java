@@ -8,8 +8,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Locale;
-
 public class SoulstoneIngredient extends ArcanaIngredient {
    
    private final int souls;

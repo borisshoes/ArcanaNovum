@@ -8,7 +8,10 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.*;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
@@ -21,7 +24,6 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -285,7 +287,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack STELE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/geomantic_stele"));
+      public static final ItemStack STELE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/geomantic_stele"));
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

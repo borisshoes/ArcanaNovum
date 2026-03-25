@@ -1,8 +1,13 @@
 package net.borisshoes.arcananovum.areaeffects;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.items.arrows.SmokeArrows;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -15,6 +20,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -22,6 +28,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
    
@@ -80,7 +88,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          this.fromEntity = sourceEntity != null;
          this.contributor = contributor;
          this.age = 0;
-         this.duration = 100;
+         this.duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SMOKE_ARROW_DURATION);
       }
       
       public Level getSourceWorld(){
@@ -115,15 +123,16 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
       public void affectEntities(ServerLevel world){
          if(age % 5 != 0) return;
          
+         int effectDur = duration + ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SMOKE_ARROW_GAS_DURATION_PER_LVL).get(gasLvl);
          int mobCount = 0;
          boolean withOwner = false;
          for(Entity affectedEntity : getAffectedEntities(world)){
             if(affectedEntity instanceof LivingEntity e){
                int amp = e instanceof Mob ? 5 : 0;
-               MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 60*(gasLvl+1), 7, false, false, true);
-               MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, 60*(gasLvl+1), amp+gasLvl, false, false, true);
-               MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, 60*(gasLvl+1), 0, false, false, true);
-               e.addEffect(blind);
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()+"_"+gasLvl),effectDur,7.5f,false,true,true, AttributeModifier.Operation.ADD_VALUE,contributor != null ? contributor.getUUID() : null);
+               MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, effectDur, amp+gasLvl, false, false, true);
+               MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, effectDur, 0, false, false, true);
+               Conditions.addCondition(world.getServer(),e,nearsight);
                e.addEffect(weakness);
                if(e instanceof ServerPlayer){
                   e.addEffect(invis);

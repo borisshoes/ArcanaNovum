@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
@@ -52,8 +52,6 @@ public class PearlOfRecall extends EnergyItem {
    
    public static final String HEAT_TAG = "heat";
    public static final String LOCATION_TAG = "location";
-   
-   public static final int[] cdReduction = {0,60,120,240,360,480};
    
    public PearlOfRecall(){
       id = ID;
@@ -166,8 +164,9 @@ public class PearlOfRecall extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RECALL_ACCELERATION));
-      return 600 - cdReduction[cdLvl];
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PEARL_OF_RECALL_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PEARL_OF_RECALL_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RECALL_ACCELERATION));
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    @Override
@@ -266,20 +265,22 @@ public class PearlOfRecall extends EnergyItem {
          
 
          int heat = getIntProperty(stack,HEAT_TAG);
+         int warmup = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PEARL_OF_RECALL_WARMUP);
          
-         if(heat == 100){
+         if(heat >= warmup){
             teleport(stack,player);
             putProperty(stack,HEAT_TAG, 0);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_PEARL_OF_RECALL_USE)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_PEARL_OF_RECALL_USE)); // Add xp
          }else if(heat > 0){
             putProperty(stack,HEAT_TAG, heat+1);
             ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.position());
          }else if(heat == -1){
             // Teleport was cancelled by damage
+            double cancelPercent = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PEARL_OF_RECALL_CANCEL_PERCENT);
             ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.position());
             SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.ENDERMAN_HURT, SoundSource.PLAYERS, 8,0.8f);
             putProperty(stack,HEAT_TAG, 0);
-            setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));
+            setEnergy(stack,(int)(getMaxEnergy(stack)*cancelPercent));
          }
          
          if(ItemStack.isSameItemSameComponents(stack,player.getMainHandItem()) || ItemStack.isSameItemSameComponents(stack,player.getOffhandItem())){

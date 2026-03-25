@@ -8,7 +8,6 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.blocks.altars.TransmutationAltar;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -20,16 +19,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EndPortalBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -48,8 +44,6 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class IgneousCollider extends ArcanaBlock {
 	public static final String ID = "igneous_collider";
-   
-   public static final int COOLDOWN = 15; /// Cooldown is 15 seconds
    
    public IgneousCollider(){
       id = ID;
@@ -158,7 +152,7 @@ public class IgneousCollider extends ArcanaBlock {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack COLLIDER = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/igneous_collider"));
+      public static final ItemStack COLLIDER = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/igneous_collider"));
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

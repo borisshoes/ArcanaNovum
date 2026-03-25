@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.twilightanvil;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -17,7 +18,6 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
@@ -113,7 +113,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
             if(finalMaxEnhanced && !input1MaxEnhanced && !input2MaxEnhanced){
                ArcanaAchievements.grant(player, ArcanaAchievements.TINKER_TO_THE_TOP);
             }
-            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TWILIGHT_ANVIL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TWILIGHT_ANVIL_PER_10) * points / 10.0));
+            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TWILIGHT_ANVIL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TWILIGHT_ANVIL_PER_10) * points / 10.0));
             
             listener.setUpdating();
             inventory.setItem(0, ItemStack.EMPTY);
@@ -220,7 +220,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                   int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment);
                   if(curItemLevel == -1) curItemLevel = 0;
                   
-                  boolean generic = arcanaItem.getId().equals(ArcaneTome.ID);
+                  boolean generic = arcanaItem.getId().equals(ArcanaRegistry.ARCANE_TOME.getId());
                   
                   if(generic){
                      player.displayClientMessage(Component.literal("These augments are active by default").withStyle(ChatFormatting.AQUA), false);
@@ -437,7 +437,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<S
                   setSlot(19 + i, lockedPane);
                }
             }else{
-               boolean generic = arcanaItem.getId().equals(ArcaneTome.ID);
+               boolean generic = arcanaItem.getId().equals(ArcanaRegistry.ARCANE_TOME.getId());
                
                List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
                int[] augmentSlots = dynamicSlots[augments.size()];

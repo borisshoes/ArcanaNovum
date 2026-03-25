@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -29,14 +31,12 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class ExoticMatter extends EnergyItem {
 	public static final String ID = "exotic_matter";
    
-   private static final double[] lvlMultiplier = {1,1.5,2,2.5,3,5};
-   
    public ExoticMatter(){
       id = ID;
       name = "Exotic Matter";
       rarity = ArcanaRarity.MUNDANE;
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
-      initEnergy = 600000;
+      initEnergy = ArcanaNovum.CONFIG.getInt(ArcanaConfig.EXOTIC_MATTER_DURATION);
       vanillaItem = Items.STRUCTURE_BLOCK;
       item = new ExoticMatterItem();
       displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
@@ -93,8 +93,9 @@ public class ExoticMatter extends EnergyItem {
    @Override
    public int getMaxEnergy(ItemStack item){
       // Maximum seconds of chunk loading per exotic matter fuel (1 week baseline)
-      int level = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TIME_IN_A_BOTTLE));
-      return (int) (600000 * lvlMultiplier[level]);
+      int baseDuration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.EXOTIC_MATTER_DURATION);
+      int extraDuration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.EXOTIC_MATTER_DURATION_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TIME_IN_A_BOTTLE));
+      return baseDuration + extraDuration;
    }
    
    public int useFuel(ItemStack item, int fuel){

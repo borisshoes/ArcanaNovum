@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
@@ -26,6 +28,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageSources;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -49,8 +53,6 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class StormArrows extends RunicArrow {
 	public static final String ID = "storm_arrows";
-   
-   private static final double[] stormChance = {.1,.2,.4,.6,.8,1};
    
    public StormArrows(){
       id = ID;
@@ -109,10 +111,17 @@ public class StormArrows extends RunicArrow {
    
    private void strike(AbstractArrow arrow, Vec3 pos, int stableLevel, int shockLvl){
       Level world = arrow.level();
-      if(arrow.isCritArrow() && (world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel])){
+      double stormChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STORM_ARROW_STRIKE_CHANCE).get(stableLevel);
+      float damage = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.STORM_ARROW_STRIKE_DMG);
+      if(arrow.isCritArrow() && (world.isRaining() || world.isThundering() || arrow.random.nextFloat() < stormChance)){
          LightningBolt lightning = new LightningBolt(EntityType.LIGHTNING_BOLT, arrow.level());
          lightning.setPos(pos);
          world.addFreshEntity(lightning);
+         
+         lightning.getHitEntities().forEach(entity -> {
+            if(!(entity instanceof LivingEntity living)) return;
+            living.hurtServer((ServerLevel)arrow.level(),ArcanaDamageTypes.of(arrow.level(),ArcanaDamageTypes.ARCANE_LIGHTNING,arrow,arrow.getOwner()),damage);
+         });
          
          if(arrow.getOwner() instanceof ServerPlayer player){
             BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2, () -> {
@@ -130,7 +139,8 @@ public class StormArrows extends RunicArrow {
    private void chainLightning(AbstractArrow arrow, Entity hitEntity, int lvl){
       if(!(arrow.level() instanceof ServerLevel world)) return;
       Vec3 pos = hitEntity.position();
-      double range = 5;
+      double range = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.STORM_ARROW_CHAIN_RANGE);
+      float damage = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.STORM_ARROW_CHAIN_DMG);
       
       AABB rangeBox = new AABB(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
       List<Entity> entities = world.getEntities(arrow.getOwner(),rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range*range && !(e instanceof AbstractArrow));
@@ -150,7 +160,7 @@ public class StormArrows extends RunicArrow {
                
                DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow,arrow.getOwner());
                e.invulnerableTime = 1;
-               e.hurtServer(world,source,6);
+               e.hurtServer(world,source,damage);
                hits.add(e);
             }
          }

@@ -10,17 +10,19 @@ import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.SpearOfTenbrousEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
-import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -277,11 +279,15 @@ public class SpearOfTenbrous extends ArcanaItem {
       @Override
       public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
          if(attacker.level() instanceof ServerLevel serverWorld){
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> attacker.position().add(0,attacker.getBbHeight()/2,0), () -> target.position().add(0,target.getBbHeight()/2,0), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+            ParticleOptions particles = ParticleTypes.COMPOSTER;
+            if(ArcanaItem.getSkin(stack) == ArcanaSkin.ZEPHOS_LANCE){
+               particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT,0x53D1FF,0.0f);
+            }
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> attacker.position().add(0,attacker.getBbHeight()/2,0), () -> target.position().add(0,target.getBbHeight()/2,0), (int)(Math.random()*5+5), 0.5, particles,
                   8, 1, 0, 1, false, 0, 5);
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, target::position, () -> target.position().add(0,target.getEyeHeight(),0), (int)(5 + 2*target.getEyeHeight()), target.getBbWidth(), ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, target::position, () -> target.position().add(0,target.getEyeHeight(),0), (int)(5 + 2*target.getEyeHeight()), target.getBbWidth(), particles,
                   8, 1, 0, 1, false, 0, 5);
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> target.position().add(0,target.getEyeHeight(),0), target::position, (int)(5 + 2*target.getEyeHeight()), target.getBbWidth(), ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> target.position().add(0,target.getEyeHeight(),0), target::position, (int)(5 + 2*target.getEyeHeight()), target.getBbWidth(), particles,
                   8, 1, 0, 1, false, 0, 5);
          }
       }

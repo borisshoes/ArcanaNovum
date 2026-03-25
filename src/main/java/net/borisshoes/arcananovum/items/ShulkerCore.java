@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -165,7 +166,7 @@ public class ShulkerCore extends EnergyItem {
       ItemStack stack = playerEntity.getItemInHand(hand);
       int speed = getIntProperty(stack,SPEED_TAG);
       int speedCD = getIntProperty(stack,SPEED_CD_TAG);
-      boolean reabsorb = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.LEVITATIVE_REABSORPTION)) >= 1;
+      boolean reabsorb = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.LEVITATIVE_REABSORPTION) >= 1;
       int maxSpeed = reabsorb ? 11 : 9;
       
       if(speedCD == 0){
@@ -208,11 +209,11 @@ public class ShulkerCore extends EnergyItem {
             MobEffectInstance effect = playerEntity.getEffect(MobEffects.LEVITATION);
             if(!(effect != null && effect.getEffect() == MobEffects.LEVITATION && effect.getAmplifier() >= speed && !(effect.getDuration() < 10 || effect.getDuration() > duration))){
                MobEffectInstance levit = new MobEffectInstance(MobEffects.LEVITATION, duration, speed, false, false, false);
-               if(Math.random() >= (new double[]{0,0.1,0.25,0.5})[Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER))])
+               if(Math.random() >= (new double[]{0,0.1,0.25,0.5})[ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER)])
                   addEnergy(stack, -(speed / 2 + 1));
                playerEntity.addEffect(levit);
                SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
-               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
+               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
                if(world instanceof ServerLevel serverWorld){
                   ArcanaEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }
@@ -237,7 +238,7 @@ public class ShulkerCore extends EnergyItem {
       }
       
       GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
-      String paneText = hasStone ? LevelUtils.readableInt(getEnergy(stack)) + " Shulker Souls" : "No Soulstone Inserted";
+      String paneText = hasStone ? TextUtils.readableInt(getEnergy(stack)) + " Shulker Souls" : "No Soulstone Inserted";
       ChatFormatting textColor = hasStone ? ChatFormatting.YELLOW : ChatFormatting.RED;
       
       gui.setSlot(0,pane.setName(Component.literal(paneText).withStyle(textColor)));

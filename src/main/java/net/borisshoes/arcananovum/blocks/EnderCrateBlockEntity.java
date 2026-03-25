@@ -18,7 +18,6 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -55,6 +54,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    
    public void setChannel(EnderCrateChannel channel){
       this.channel = channel;
+      this.setChanged();
    }
    
    public EnderCrateChannel getChannel(){

@@ -25,7 +25,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -36,7 +35,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SculkShriekerBlock;
-import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -46,7 +44,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class ArcanaEffectUtils extends ParticleEffectUtils {
    
@@ -1527,8 +1524,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
    }
    
-   public static void shadowGlaiveTp(ServerLevel world, ServerPlayer player){
-      Vec3 pos = player.position();
+   public static void shadowGlaiveTp(ServerLevel world, Vec3 pos){
       world.sendParticles(ParticleTypes.LARGE_SMOKE,pos.x,pos.y+0.5,pos.z,100,.4,.4,.4,0.07);
    }
    

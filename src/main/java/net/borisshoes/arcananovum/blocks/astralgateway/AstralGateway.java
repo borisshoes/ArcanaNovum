@@ -11,8 +11,6 @@ import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.SpawnerInfuser;
-import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -22,7 +20,6 @@ import net.borisshoes.arcananovum.gui.astralgateway.AstralGatewayGui;
 import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -31,7 +28,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -41,8 +37,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -54,7 +48,6 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -344,14 +337,14 @@ public class AstralGateway extends ArcanaBlock {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack GATEWAY_BASE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/astral_gateway"));
-      public static final ItemStack GATEWAY_BASE_EMPTY = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/astral_gateway_empty"));
-      public static final ItemStack GATEWAY_SMALL_RING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/astral_gateway_small_ring"));
-      public static final ItemStack GATEWAY_SMALL_RING_EMPTY = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/astral_gateway_small_ring_empty"));
-      public static final ItemStack GATEWAY_BIG_RING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/astral_gateway_big_ring"));
-      public static final ItemStack GATEWAY_BIG_RING_EMPTY = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/astral_gateway_big_ring_empty"));
-      public static final ItemStack GATEWAY_KNOBS = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/astral_gateway_knobs"));
-      public static final ItemStack GATEWAY_KNOBS_EMPTY = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/astral_gateway_knobs_empty"));
+      public static final ItemStack GATEWAY_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway"));
+      public static final ItemStack GATEWAY_BASE_EMPTY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_empty"));
+      public static final ItemStack GATEWAY_SMALL_RING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_small_ring"));
+      public static final ItemStack GATEWAY_SMALL_RING_EMPTY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_small_ring_empty"));
+      public static final ItemStack GATEWAY_BIG_RING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_big_ring"));
+      public static final ItemStack GATEWAY_BIG_RING_EMPTY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_big_ring_empty"));
+      public static final ItemStack GATEWAY_KNOBS = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_knobs"));
+      public static final ItemStack GATEWAY_KNOBS_EMPTY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_knobs_empty"));
       
       // Knob animation constants
       private static final float KNOB_AMPLITUDE_NORMAL = 0.01f;

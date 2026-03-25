@@ -10,7 +10,6 @@ import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.Itineranteur;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
@@ -30,14 +29,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -130,6 +127,9 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
             return false;
          }
          if(recipe instanceof AequalisUnattuneTransmutationRecipe && !(ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.IMPERMANENT_PERMUTATION) > 0)){
+            return false;
+         }
+         if(recipe instanceof TransmogrificationTransmutationRecipe && (!ArcanaNovum.data(player).hasAnySkin() || !ArcanaNovum.data(player).hasResearched(ArcanaRegistry.TRANSMOGRIFICATION_CATALYST))){
             return false;
          }
          return true;
@@ -271,7 +271,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack TRANSMUTATION_ALTAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/transmutation_altar"));
+      public static final ItemStack TRANSMUTATION_ALTAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/transmutation_altar"));
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

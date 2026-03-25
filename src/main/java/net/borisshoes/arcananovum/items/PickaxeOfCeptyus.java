@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -122,9 +123,9 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       Block type = world.getBlockState(pos).getBlock();
       if(!world.getBlockState(pos).is(ArcanaRegistry.CEPTYUS_VEIN_MINEABLE)) return;
       
-      int veinLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.WITH_THE_DEPTHS));
-      int maxDepth = 8 + 2*veinLevel;
-      int maxBlocks = 64 + 32*veinLevel;
+      int veinLevel = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.WITH_THE_DEPTHS);
+      int maxDepth = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_RANGE_PER_LVL).get(veinLevel);
+      int maxBlocks = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_BLOCKS_PER_LVL).get(veinLevel);
       
       Queue<Tuple<BlockPos, Integer>> queue = Lists.newLinkedList();
       Queue<BlockPos> visited = Lists.newLinkedList();
@@ -156,13 +157,13 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          }
       }
       
-      int greedLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.GREED));
-      final int[] greed = {0,1,3,5};
+      int greedLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.GREED);
+      int greed = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_FORTUNE_PER_LVL).get(greedLvl);
       
       List<ItemStack> drops = new ArrayList<>();
       ItemStack veinPick = new ItemStack(Items.NETHERITE_PICKAXE);
       if(EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),item) <= 0){
-         veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.FORTUNE),5 + greed[greedLvl]);
+         veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.FORTUNE),5 + greed);
       }else{
          veinPick.enchant(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),1);
       }
@@ -177,7 +178,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          if(type instanceof RedStoneOreBlock ore){
             ore.spawnAfterBreak(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
          }
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
       }
       for(ItemStack stack : drops){
          Block.popResource(world, pos, stack);
@@ -186,9 +187,13 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    }
    
    public void mining(ServerPlayer player, ItemStack stack){
-      int wHaste = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE));
-      int energyGain = 5+(wHaste * 2);
-      int maxEnergy = 1000 + 100 * wHaste;
+      int wardenLvl = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE);
+      int baseGain = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN);
+      int extraGain = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN_PER_LVL).get(wardenLvl);
+      int baseMax = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY);
+      int extraMax = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY_PER_LVL).get(wardenLvl);
+      int energyGain = baseGain + extraGain;
+      int maxEnergy = baseMax + extraMax;
       ArcanaPlayerData profile = ArcanaNovum.data(player);
       
       profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(0));
@@ -231,11 +236,15 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          int energy = energyEle == null ? 0 : energyEle.intValue();
          
          if(energy > 0){
+            double energyPerHaste = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_PER_HASTE);
             int lastTick = ((IntTag)profile.getMiscData(CEPTYUS_TICK)).intValue();
+            int grace = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GRACE);
+            if(lastTick > grace){
+               int loss = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_LOSS);
+               profile.addMiscData(CEPTYUS_ENERGY, IntTag.valueOf(Math.max(0,energy-loss)));
+            }
             profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(lastTick+1));
-            profile.addMiscData(CEPTYUS_ENERGY, IntTag.valueOf(Math.max(0,energy-lastTick/3)));
-            int speed = energy / 100;
-            
+            int speed = (int) (energy / energyPerHaste);
             MobEffectInstance haste = new MobEffectInstance(MobEffects.HASTE, 100, speed, false, false, false);
             player.addEffect(haste);
             if(speed == 10) ArcanaAchievements.progress(player,ArcanaAchievements.BACK_IN_THE_MINE,1);
@@ -245,8 +254,13 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       @Override
       public boolean mineBlock(ItemStack stack, Level world, BlockState state, BlockPos pos, LivingEntity miner){
          if(miner instanceof ServerPlayer player){
-            int energyGain = 3 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE));
-            int maxEnergy = 1000 + 100 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE));
+            int wardenLvl = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE);
+            int baseGain = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN);
+            int extraGain = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN_PER_LVL).get(wardenLvl);
+            int baseMax = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY);
+            int extraMax = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY_PER_LVL).get(wardenLvl);
+            int energyGain = baseGain + extraGain;
+            int maxEnergy = baseMax + extraMax;
             ArcanaPlayerData profile = ArcanaNovum.data(player);
             
             profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(0));

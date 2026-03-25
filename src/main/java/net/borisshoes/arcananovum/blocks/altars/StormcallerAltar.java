@@ -8,7 +8,6 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.blocks.Itineranteur;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
@@ -24,14 +23,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -59,7 +57,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity.COST;
 
 public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "stormcaller_altar";
@@ -212,7 +209,8 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       private void tryActivate(BlockState state, Level world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof StormcallerAltarBlockEntity altar && world instanceof ServerLevel serverWorld){
-            boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new AABB(pos.above()),(itemStack) -> itemStack.is(COST.getA()),COST.getB());
+            Tuple<Item,Integer> cost = StormcallerAltarBlockEntity.getCost();
+            boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new AABB(pos.above()),(itemStack) -> itemStack.is(cost.getA()),cost.getB());
             if(paid) altar.startWeatherChange(null);
          }
       }
@@ -234,7 +232,7 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack STORMCALLER_ALTAR = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/stormcaller_altar"));
+      public static final ItemStack STORMCALLER_ALTAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/stormcaller_altar"));
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

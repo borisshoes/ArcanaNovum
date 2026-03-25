@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
@@ -11,6 +14,8 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
@@ -24,6 +29,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -33,9 +39,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Interaction {
 	public static final String ID = "leadership_charm";
@@ -99,11 +107,11 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      int invigor = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION));
+      int invigor = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION);
       AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range),stele.getBlockPos().getCenter().add(range));
       List<ServerPlayer> inRangePlayers = world.getPlayers(p -> !p.isSpectator() && p.getBoundingBox().intersects(box));
       for(ServerPlayer plyr: inRangePlayers){
-         applyEffect(plyr,invigor);
+         applyEffect(plyr,invigor,null);
       }
       
       if(world.getServer().getTickCount() % 20 == 0){
@@ -117,7 +125,17 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
       return new Vec3(12,8,12);
    }
    
-   private void applyEffect(ServerPlayer player, int invigor){
+   private void applyEffect(ServerPlayer player, int invigor, @Nullable UUID causingEntity){
+      float mightStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_MIGHT_PER_LVL).get(invigor);
+      float fortStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_FORTITUDE_PER_LVL).get(invigor);
+      float rejuvStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_REJUVENATION_PER_LVL).get(invigor);
+      ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION,arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()+"_"+invigor),100,rejuvStr,true,true,false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
+      ConditionInstance might = new ConditionInstance(Conditions.MIGHT,arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()+"_"+invigor),100,mightStr,true,true,false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
+      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE,arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()+"_"+invigor),100, -(fortStr),true,true,false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
+      Conditions.addCondition(player.level().getServer(),player,rejuv);
+      Conditions.addCondition(player.level().getServer(),player,might);
+      Conditions.addCondition(player.level().getServer(),player,fortitude);
+      
       MobEffectInstance str = new MobEffectInstance(MobEffects.STRENGTH, 20 * 5 + 5, 1+invigor, false, false, true);
       MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5 + 5, 1+invigor/2, false, false, true);
       MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 20 * 5 + 5, 1+invigor, false, false, true);
@@ -162,9 +180,11 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          // Give AoE resistance, regen, and strength, and repair gear.
-         int invigor = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION));
+         int invigor = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION);
+         double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.LEADERSHIP_CHARM_RADIUS);
+         double extraRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.LEADERSHIP_CHARM_INVIGORATION_RADIUS_PER_LVL).get(invigor);
          
-         double effectRange = 8.5+invigor;
+         double effectRange = baseRange+extraRange;
          Vec3 playerPos = player.position();
          List<ServerPlayer> inRangePlayers = serverWorld.getPlayers(p -> !p.isSpectator() && p.distanceToSqr(playerPos) <= effectRange*effectRange);
          
@@ -172,7 +192,7 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
          player.addEffect(glow);
          
          for(ServerPlayer plyr: inRangePlayers){
-            applyEffect(plyr,invigor);
+            applyEffect(plyr,invigor,entity.getUUID());
             if(world.getServer().getTickCount() % 10 == 0){
                world.sendParticles(player, ParticleTypes.HAPPY_VILLAGER, false,true, player.getX(), player.getY()+3, player.getZ(), 5, .1, .3, .1, 10);
             }

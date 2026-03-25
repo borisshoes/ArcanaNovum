@@ -4,13 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
+import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.CodecUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -21,8 +21,6 @@ import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContainerHaver {
    private final UUID idLock;
@@ -135,10 +133,32 @@ public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContaine
       }
       
       return new ArcanaItemContainer(
-            Identifier.fromNamespaceAndPath(MOD_ID, ArcanaRegistry.ENDER_CRATE.getId()),
+            ArcanaRegistry.arcanaId( ArcanaRegistry.ENDER_CRATE.getId()),
             inv, 54,101,
             Component.literal("ECr"),
             name,
             0.5);
+   }
+   
+   public static GraphicalItem.GraphicElement colorToGraphicElement(@Nullable DyeColor color){
+      if(color == null) return ArcanaRegistry.CHANNEL_BLANK;
+      return switch(color){
+         case WHITE -> ArcanaRegistry.CHANNEL_WHITE;
+         case ORANGE -> ArcanaRegistry.CHANNEL_ORANGE;
+         case MAGENTA -> ArcanaRegistry.CHANNEL_MAGENTA;
+         case LIGHT_BLUE -> ArcanaRegistry.CHANNEL_LIGHT_BLUE;
+         case YELLOW -> ArcanaRegistry.CHANNEL_YELLOW;
+         case LIME -> ArcanaRegistry.CHANNEL_LIME;
+         case PINK -> ArcanaRegistry.CHANNEL_PINK;
+         case GRAY -> ArcanaRegistry.CHANNEL_GRAY;
+         case LIGHT_GRAY -> ArcanaRegistry.CHANNEL_LIGHT_GRAY;
+         case CYAN -> ArcanaRegistry.CHANNEL_CYAN;
+         case PURPLE -> ArcanaRegistry.CHANNEL_PURPLE;
+         case BLUE -> ArcanaRegistry.CHANNEL_BLUE;
+         case BROWN -> ArcanaRegistry.CHANNEL_BROWN;
+         case GREEN -> ArcanaRegistry.CHANNEL_GREEN;
+         case RED -> ArcanaRegistry.CHANNEL_RED;
+         case BLACK -> ArcanaRegistry.CHANNEL_BLACK;
+      };
    }
 }

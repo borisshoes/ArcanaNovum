@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -19,8 +19,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class DragonPhantomEntity extends Phantom implements PolymerEntity {
    
    private int numPlayers;
@@ -28,7 +26,7 @@ public class DragonPhantomEntity extends Phantom implements PolymerEntity {
    public DragonPhantomEntity(EntityType<? extends DragonPhantomEntity> entityType, Level world){
       super(entityType, world);
       this.numPlayers = 5;
-      getAttributes().getInstance(Attributes.SCALE).addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(MOD_ID,"phantom_scale"), 4.0, AttributeModifier.Operation.ADD_VALUE));
+      getAttributes().getInstance(Attributes.SCALE).addPermanentModifier(new AttributeModifier(ArcanaRegistry.arcanaId("phantom_scale"), 4.0, AttributeModifier.Operation.ADD_VALUE));
    }
    
    @Override

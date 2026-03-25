@@ -7,8 +7,6 @@ import net.borisshoes.arcananovum.utils.TreeNode;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
@@ -24,10 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class ResearchTasks {
-   public static final Registry<ResearchTask> RESEARCH_TASKS = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(MOD_ID,"research_task")), Lifecycle.stable());
+   public static final Registry<ResearchTask> RESEARCH_TASKS = new MappedRegistry<>(ResourceKey.createRegistryKey(ArcanaRegistry.arcanaId("research_task")), Lifecycle.stable());
    public static final String BIOMES_VISITED_TAG = "biomes";
    
    public static final ResourceKey<ResearchTask> OBTAIN_SPONGE = of("obtain_sponge");
@@ -182,6 +178,8 @@ public class ResearchTasks {
    public static final ResourceKey<ResearchTask> MILK_CLEANSE = of("milk_cleanse");
    public static final ResourceKey<ResearchTask> VISIT_DOZEN_BIOMES = of("visit_dozen_biomes");
    public static final ResourceKey<ResearchTask> TAME_CAT = of("tame_cat");
+   public static final ResourceKey<ResearchTask> CONTRIBUTE = of("contribute");
+   public static final ResourceKey<ResearchTask> HAVE_A_SKIN = of("have_a_skin");
    public static final ResourceKey<ResearchTask> EFFECT_ABSORPTION = of("effect_absorption");
    public static final ResourceKey<ResearchTask> EFFECT_SWIFTNESS = of("effect_swiftness");
    public static final ResourceKey<ResearchTask> EFFECT_JUMP_BOOST = of("effect_jump_boost");
@@ -961,6 +959,17 @@ public class ResearchTasks {
             new ItemStack(Items.SALMON)
       ));
       
+      ResearchTasks.register(CONTRIBUTE, new CustomResearchTask(
+            CONTRIBUTE.identifier().getPath(),
+            ArcanaRegistry.TRANSMOGRIFICATION_CATALYST.getPrefItemNoLore()
+      ));
+      
+      ResearchTasks.register(HAVE_A_SKIN, new CustomResearchTask(
+            HAVE_A_SKIN.identifier().getPath(),
+            ArcanaRegistry.TRANSMOGRIFICATION_CATALYST.getPrefItemNoLore()
+      ));
+      
+      
       ResearchTasks.register(EFFECT_ABSORPTION, new EffectResearchTask(
             EFFECT_ABSORPTION.identifier().getPath(), MobEffects.ABSORPTION,
             new ItemStack(Items.GOLDEN_APPLE)
@@ -1033,7 +1042,7 @@ public class ResearchTasks {
    }
    
    private static ResourceKey<ResearchTask> of(String id){
-      return ResourceKey.create(RESEARCH_TASKS.key(), Identifier.fromNamespaceAndPath(MOD_ID,id));
+      return ResourceKey.create(RESEARCH_TASKS.key(), ArcanaRegistry.arcanaId(id));
    }
    
    public static List<TreeNode<ResearchTask>> buildTaskTrees(ResourceKey<ResearchTask>[] tasks){

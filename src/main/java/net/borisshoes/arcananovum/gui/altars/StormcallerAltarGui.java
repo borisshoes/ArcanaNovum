@@ -14,14 +14,15 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-import static net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity.COST;
 import static net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity.DURATIONS;
 
 public class StormcallerAltarGui  extends SimpleGui {
@@ -46,12 +47,13 @@ public class StormcallerAltarGui  extends SimpleGui {
             blockEntity.setMode((mode+1) % 3);
          }else{
             if(blockEntity.getCooldown() <= 0){
-               if(MinecraftUtils.removeItems(player, COST.getA(),COST.getB())){
+               Tuple<Item,Integer> cost = StormcallerAltarBlockEntity.getCost();
+               if(MinecraftUtils.removeItems(player, cost.getA(),cost.getB())){
                   blockEntity.startWeatherChange(player);
                   close();
                }else{
-                  player.displayClientMessage(Component.literal("You do not have "+COST.getB()+" ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                        .append(Component.translatable(COST.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
+                  player.displayClientMessage(Component.literal("You do not have "+cost.getB()+" ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
                         .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)),false);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
                   close();
@@ -134,6 +136,7 @@ public class StormcallerAltarGui  extends SimpleGui {
          case 2 -> "Charge the Clouds";
          default -> "-";
       };
+      Tuple<Item,Integer> cost = StormcallerAltarBlockEntity.getCost();
       GuiElementBuilder activateItem = new GuiElementBuilder(Items.LIGHTNING_ROD);
       activateItem.setName((Component.literal("")
             .append(Component.literal("Activate Altar").withStyle(ChatFormatting.BLUE))));
@@ -146,8 +149,8 @@ public class StormcallerAltarGui  extends SimpleGui {
             .append(Component.literal("Right Click to switch modes").withStyle(ChatFormatting.GOLD)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("The Altar Requires "+COST.getB()+" ").withStyle(ChatFormatting.AQUA))
-            .append(Component.translatable(COST.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+            .append(Component.literal("The Altar Requires "+cost.getB()+" ").withStyle(ChatFormatting.AQUA))
+            .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
       setSlot(4,activateItem);
    }
    

@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
@@ -129,11 +131,13 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
          }
          
          if(armTime == 0){
-            double senseRange = 4;
+            double senseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.FLAK_ARROW_SENSE_RANGE);
             List<Entity> triggerTargets = level().getEntities(this,this.getBoundingBox().inflate(senseRange*2),
                   e -> !e.isSpectator() && e.distanceTo(this) <= senseRange && e instanceof LivingEntity && !e.onGround());
             if(!triggerTargets.isEmpty()){
-               double radius = 4 + 1.25*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.AIRBURST);
+               double baseR = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.FLAK_ARROW_RANGE);
+               double extraR = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.FLAK_ARROW_AIRBURST_RANGE_BUFF_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.AIRBURST));
+               double radius = baseR + extraR;
                ArcaneFlakArrows.detonate(this,radius);
             }
          }
@@ -146,7 +150,7 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
             data.store("initPos", Vec3.CODEC, this.position());
          }
          
-         double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE))+5;
+         double viewWidth = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.TRACKING_ARROW_DETECTION_WIDTH_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE));
          double distance = 15;
          List<LivingEntity> possibleTargets = level().getEntitiesOfClass(LivingEntity.class,getBoundingBox().inflate(distance), e ->
                !e.isSpectator() && MathUtils.inCone(this.position(),velocityUnit,distance,1,viewWidth,e.position().add(0,e.getBbHeight()/2,0)) && !e.isInvisible()

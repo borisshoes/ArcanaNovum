@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -35,14 +36,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ArcanaItemUtils {
    
    public static boolean isArcane(ItemStack item){
       try{
          if(item == null) return false;
-         ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.getValue(Identifier.fromNamespaceAndPath(MOD_ID, ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
+         ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.getValue(ArcanaRegistry.arcanaId( ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
          return arcanaItem != null;
       }catch(Exception e){
          e.printStackTrace();
@@ -100,7 +100,7 @@ public class ArcanaItemUtils {
    
    public static ArcanaItem identifyItem(ItemStack item){
       if(isArcane(item)){
-         return ArcanaRegistry.ARCANA_ITEMS.getValue(Identifier.fromNamespaceAndPath(MOD_ID, ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
+         return ArcanaRegistry.ARCANA_ITEMS.getValue(ArcanaRegistry.arcanaId( ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
       }
       return null;
    }
@@ -339,7 +339,7 @@ public class ArcanaItemUtils {
    public static int countRarityInList(List<String> ids, ArcanaRarity rarity, boolean exclude){
       int count = 0;
       for(String id : ids){
-         Identifier identifier = id.contains(":") ? Identifier.parse(id) : Identifier.fromNamespaceAndPath(MOD_ID,id);
+         Identifier identifier = id.contains(":") ? Identifier.parse(id) : ArcanaRegistry.arcanaId(id);
          if(!ArcanaRegistry.ARCANA_ITEMS.containsKey(identifier)) continue;
          if(getItemFromId(id).getRarity() == rarity ^ exclude) count++;
       }
@@ -348,7 +348,7 @@ public class ArcanaItemUtils {
    
    public static ArcanaItem getItemFromId(String id){
       if(id == null) return null;
-      Identifier identifier = id.contains(":") ? Identifier.parse(id) : Identifier.fromNamespaceAndPath(MOD_ID,id);
+      Identifier identifier = id.contains(":") ? Identifier.parse(id) : ArcanaRegistry.arcanaId(id);
       return ArcanaRegistry.ARCANA_ITEMS.getValue(identifier);
    }
    
@@ -422,6 +422,7 @@ public class ArcanaItemUtils {
       public int getAugmentConc(ServerPlayer player){
          ArcanaPlayerData profile = ArcanaNovum.data(player);
          int adaptability = profile.getAugmentLevel(ArcanaAugments.ADAPTABILITY);
+         int adaptabilityBonus = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ADAPTABILITY_CONCENTRATION_PER_LVL).get(adaptability);
          int augmentConc = 0;
          
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
@@ -430,7 +431,7 @@ public class ArcanaItemUtils {
             int profileLvl = profile.getAugmentLevel(aug);
             augmentConc += Math.max(0,itemLvl-profileLvl);
          }
-         return Math.max(0,augmentConc-adaptability);
+         return Math.max(0,augmentConc-adaptabilityBonus);
       }
       
       public double getFocusedConcMod(ServerPlayer player){
@@ -487,7 +488,7 @@ public class ArcanaItemUtils {
                comp.append(" + ");
             }
          }
-         if(comp.getString().length() > 30 && !(containers.size() == 1 && containers.getFirst().getId().equals(Identifier.fromNamespaceAndPath(MOD_ID,ArcanaRegistry.ENDER_CRATE.getId())))){
+         if(comp.getString().length() > 30 && !(containers.size() == 1 && containers.getFirst().getId().equals(ArcanaRegistry.arcanaId(ArcanaRegistry.ENDER_CRATE.getId())))){
             return Component.literal("[").append(getShortContainerString()).append("]");
          }else{
             return comp.append("]");

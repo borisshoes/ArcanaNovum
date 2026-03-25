@@ -9,6 +9,8 @@ import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -20,6 +22,8 @@ import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -59,6 +63,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -157,6 +162,17 @@ public class SpawnerInfuser extends ArcanaBlock {
       return list;
    }
    
+   public static Item getPointsItem(){
+      try{
+         String itemId = ArcanaNovum.CONFIG.getValue(ArcanaConfig.SPAWNER_INFUSER_ITEM_ID).toString();
+         Optional<Holder.Reference<Item>> opt = BuiltInRegistries.ITEM.get(Identifier.parse(itemId));
+         assert opt.isPresent();
+         return opt.get().value();
+      }catch(Exception e){
+         return Items.NETHER_STAR;
+      }
+   }
+   
    public class SpawnerInfuserItem extends ArcanaPolymerBlockItem {
       public SpawnerInfuserItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
@@ -248,8 +264,8 @@ public class SpawnerInfuser extends ArcanaBlock {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack INFUSER = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/spawner_infuser"));
-      public static final ItemStack INFUSER_ARM = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/spawner_infuser_arm"));
+      public static final ItemStack INFUSER = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/spawner_infuser"));
+      public static final ItemStack INFUSER_ARM = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/spawner_infuser_arm"));
       
       // Arm rotation constants - each arm points to a corner (45, 135, 225, 315 degrees)
       private static final float[] ARM_YAW = {45f, 135f, 225f, 315f};

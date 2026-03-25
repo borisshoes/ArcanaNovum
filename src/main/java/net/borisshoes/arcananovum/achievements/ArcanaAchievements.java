@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.achievements;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -13,7 +14,6 @@ import java.util.*;
 
 public class ArcanaAchievements {
    public static final HashMap<String, ArcanaAchievement> ARCANA_ACHIEVEMENTS = new HashMap<>();
-   public static final List<ArcanaAchievement> EXCLUDED_ACHIEVEMENTS = new ArrayList<>();
    
    // Divine Catalyst
    public static final ArcanaAchievement DOOR_OF_DIVINITY = ArcanaAchievements.register(
@@ -114,6 +114,8 @@ public class ArcanaAchievements {
          new EventAchievement("arcane_addict", new ItemStack(Items.KNOWLEDGE_BOOK), ArcanaRegistry.ARCANE_TOME, 50000, 4));
    public static final ArcanaAchievement ALL_ACHIEVEMENTS = ArcanaAchievements.register(
          new EventAchievement("all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000, 6666));
+   public static final ArcanaAchievement MOST_ACHIEVEMENTS = ArcanaAchievements.register(
+         new EventAchievement("most_achievements", new ItemStack(Items.ENDER_PEARL), ArcanaRegistry.ARCANE_TOME, 100000, 66));
    
    // Brain in a Jar
    public static final ArcanaAchievement BREAK_BANK = ArcanaAchievements.register(
@@ -513,16 +515,69 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement ARCANA_BOULEVARD = ArcanaAchievements.register(
          new ProgressAchievement("arcana_boulevard", new ItemStack(Items.CHERRY_SIGN), ArcanaRegistry.ITINERANTEUR, 50000, 4, 1000000));
    
+   // Transmogrification Catalyst
+   public static final ArcanaAchievement ANOTHER_TOUCH_OF_PERSONALITY = ArcanaAchievements.register(
+         new EventAchievement("another_touch_of_personality", new ItemStack(Items.MAGENTA_DYE), ArcanaRegistry.TRANSMOGRIFICATION_CATALYST, 10000, 3)).setHidden(true);
    
-   static{
-      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.PICKAXE_OF_CEPTYUS));
-      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.WINGS_OF_ENDERIA));
-      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.LEADERSHIP_CHARM));
-      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.GREAVES_OF_GAIALTUS));
-      EXCLUDED_ACHIEVEMENTS.addAll(getItemAchievements(ArcanaRegistry.SPEAR_OF_TENBROUS));
-      EXCLUDED_ACHIEVEMENTS.add(ALL_ACHIEVEMENTS);
+   public static final ArcanaAchievement MOGGED = ArcanaAchievements.register(
+         new EventAchievement("mogged", new ItemStack(Items.DIAMOND), ArcanaRegistry.TRANSMOGRIFICATION_CATALYST, 10000, 3)).setHidden(true);
+   
+   public static Set<ArcanaAchievement> getOwtAExcludedAchievements(UUID playerId){
+      Set<ArcanaAchievement> excluded = new HashSet<>();
+      excluded.add(ALL_ACHIEVEMENTS);
+      excluded.add(MOST_ACHIEVEMENTS);
+      excluded.addAll(getItemAchievements(ArcanaRegistry.LEADERSHIP_CHARM));
+      excluded.addAll(getItemAchievements(ArcanaRegistry.TRANSMOGRIFICATION_CATALYST));
+      
+      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.GAIALTUS_EVENT_ENABLED)){
+         excluded.addAll(getItemAchievements(ArcanaRegistry.GREAVES_OF_GAIALTUS));
+      }
+      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.CEPTYUS_EVENT_ENABLED)){
+         excluded.addAll(getItemAchievements(ArcanaRegistry.PICKAXE_OF_CEPTYUS));
+      }
+      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ZERAIYA_EVENT_ENABLED)){
+         excluded.addAll(getItemAchievements(ArcanaRegistry.SPEAR_OF_TENBROUS));
+      }
+      if(!ArcanaNovum.data(playerId).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA)){
+         excluded.addAll(getItemAchievements(ArcanaRegistry.WINGS_OF_ENDERIA));
+      }
+      return excluded;
    }
    
+   public static Set<ArcanaAchievement> getAcolyteExcludedAchievements(UUID playerId){
+      Set<ArcanaAchievement> excluded = new HashSet<>();
+      excluded.addAll(getOwtAExcludedAchievements(playerId));
+      excluded.addAll(getItemAchievements(ArcanaRegistry.LEADERSHIP_CHARM));
+      excluded.addAll(getItemAchievements(ArcanaRegistry.GREAVES_OF_GAIALTUS));
+      excluded.addAll(getItemAchievements(ArcanaRegistry.PICKAXE_OF_CEPTYUS));
+      excluded.addAll(getItemAchievements(ArcanaRegistry.SPEAR_OF_TENBROUS));
+      excluded.addAll(getItemAchievements(ArcanaRegistry.WINGS_OF_ENDERIA));
+      
+      excluded.add(ArcanaAchievements.CLINICALLY_INSANE);
+      excluded.add(ArcanaAchievements.MODERATELY_INSANE);
+      excluded.add(ArcanaAchievements.FREQUENT_FLIER);
+      excluded.add(ArcanaAchievements.TIMEY_WIMEY);
+      excluded.add(ArcanaAchievements.DIGGY_HOLE);
+      excluded.add(ArcanaAchievements.STATE_ALCHEMIST);
+      excluded.add(ArcanaAchievements.OCEAN_MIGRATION);
+      excluded.add(ArcanaAchievements.HELLGATE);
+      excluded.add(ArcanaAchievements.RECLAMATION);
+      excluded.add(ArcanaAchievements.STORAGE_RELOCATION);
+      excluded.add(ArcanaAchievements.BOUNTIFUL_HARVEST);
+      excluded.add(ArcanaAchievements.PRIME_EVIL);
+      excluded.add(ArcanaAchievements.POWER_OVERWHELMING);
+      excluded.add(ArcanaAchievements.INNOCENT_SOULS);
+      excluded.add(ArcanaAchievements.PHEIDIPPIDES);
+      excluded.add(ArcanaAchievements.RUNNING);
+      excluded.add(ArcanaAchievements.ENDLESS_EXTRUSION);
+      excluded.add(ArcanaAchievements.CERTIFIED_REPAIR);
+      excluded.add(ArcanaAchievements.GLASSBLOWER);
+      excluded.add(ArcanaAchievements.ARCANA_BOULEVARD);
+      excluded.add(ArcanaAchievements.FIDGET_TOY);
+      excluded.add(ArcanaAchievements.ENDERON_PRIME);
+      excluded.add(ArcanaAchievements.UNMOBBED);
+      return excluded;
+   }
    
    private static ArcanaAchievement register(ArcanaAchievement achievement){
       String id = achievement.id;

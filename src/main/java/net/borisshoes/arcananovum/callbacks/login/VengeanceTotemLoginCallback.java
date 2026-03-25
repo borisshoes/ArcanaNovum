@@ -1,19 +1,17 @@
 package net.borisshoes.arcananovum.callbacks.login;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.borislib.callbacks.LoginCallback;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class VengeanceTotemLoginCallback extends LoginCallback {
    
    public VengeanceTotemLoginCallback(){
-      super(Identifier.fromNamespaceAndPath(MOD_ID,"totem_of_vengeance"));
+      super(ArcanaRegistry.arcanaId("totem_of_vengeance"));
    }
    
    public VengeanceTotemLoginCallback(ServerPlayer player){

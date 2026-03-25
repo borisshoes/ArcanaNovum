@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -18,7 +19,10 @@ import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -35,13 +39,13 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.TreeMap;
 
 import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING;
 
 public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    public static final int[] TIMES = {6000,9000,12000,14000,18000,20000,23000,2000};
-   public static final Tuple<Item,Integer> COST = new Tuple<>(Items.NETHER_STAR,1);
    
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
@@ -68,6 +72,17 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       this.mode = 0;
       this.phase = 0;
       resetCooldown();
+   }
+   
+   public static Tuple<Item,Integer> getCost(){
+      try{
+         String itemId = ArcanaNovum.CONFIG.getValue(ArcanaConfig.CELESTIAL_ALTAR_ITEM).toString();
+         Optional<Holder.Reference<Item>> opt = BuiltInRegistries.ITEM.get(Identifier.parse(itemId));
+         assert opt.isPresent();
+         return new Tuple<>(opt.get().value(),1);
+      }catch(Exception e){
+         return new Tuple<>(Items.NETHER_STAR,1);
+      }
    }
    
    public void openGui(ServerPlayer player){
@@ -121,7 +136,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       ArcanaEffectUtils.celestialAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0, serverWorld.getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING));
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(400, () -> {
          changeTime(finalPlayer);
-         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CELESTIAL_ALTAR_ACTIVATE));
+         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CELESTIAL_ALTAR_ACTIVATE));
       }));
       return true;
    }
@@ -203,7 +218,10 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public void resetCooldown(){
-      this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ORBITAL_PERIOD) * 6000;
+      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ORBITAL_PERIOD);
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CELESTIAL_ALTAR_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.CELESTIAL_ALTAR_COOLDOWN_PER_LVL).get(cooldownLevel);
+      this.cooldown = Math.max(1, baseCooldown - cooldownReduction);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

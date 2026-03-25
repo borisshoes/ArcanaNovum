@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -74,9 +75,9 @@ public class ProgressAchievement extends ArcanaAchievement{
       double percent = 100.0 * (achievement == null ? 0 : achievement.getProgress()) / (double) goal;
       text[0] = Component.literal("")
             .append(Component.literal("Progress: ").withStyle(ChatFormatting.DARK_AQUA))
-            .append(Component.literal("" + (achievement == null ? 0 : LevelUtils.readableInt(achievement.getProgress()))).withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("" + (achievement == null ? 0 : TextUtils.readableInt(achievement.getProgress()))).withStyle(ChatFormatting.AQUA))
             .append(Component.literal(" / ").withStyle(ChatFormatting.AQUA))
-            .append(Component.literal(LevelUtils.readableInt(goal)).withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(TextUtils.readableInt(goal)).withStyle(ChatFormatting.AQUA))
             .append(Component.literal(" | ").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal(df.format(percent)+"%").withStyle(ChatFormatting.BLUE));
       

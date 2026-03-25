@@ -67,8 +67,8 @@ public class BrainJarGui extends SimpleGui {
             .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))));
       setSlot(4,bottle);
       
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Component.literal(LevelUtils.readableInt(EnergyItem.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
-      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Component.literal(LevelUtils.readableInt(EnergyItem.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Component.literal(TextUtils.readableInt(EnergyItem.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
+      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Component.literal(TextUtils.readableInt(EnergyItem.getEnergy(stack))+" XP Stored").withStyle(ChatFormatting.GREEN)));
       
       if(!active){
          GuiElementBuilder notmending = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL));

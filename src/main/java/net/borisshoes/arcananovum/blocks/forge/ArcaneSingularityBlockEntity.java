@@ -4,6 +4,7 @@ import eu.pb4.polymer.core.api.utils.PolymerObject;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -315,7 +316,9 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    }
    
    public int getCapacity(){
-      return (7*4*4)*(1 + ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE)); // 4 pages per level
+      int basePages = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ARCANE_SINGULARITY_BOOKS);
+      int extraPages = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ARCANE_SINGULARITY_BOOKS_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE));
+      return 28*(basePages+extraPages);
    }
    
    public void openGui(ServerPlayer player){
@@ -456,7 +459,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    
    @Override
    public int getContainerSize(){
-      return 1024;
+      return getCapacity();
    }
    
    @Override

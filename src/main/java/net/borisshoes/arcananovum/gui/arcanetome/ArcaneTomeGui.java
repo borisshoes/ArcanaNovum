@@ -132,7 +132,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                GuiElementBuilder achievementItem = GuiElementBuilder.from(displayItem);
                achievementItem.hideDefaultTooltip().setName(Component.literal("").withStyle(ChatFormatting.LIGHT_PURPLE).append(achievement.getTranslatedName()).append(" - ").append(achievement.getArcanaItem().getTranslatedName()))
                      .addLoreLine(TextUtils.removeItalics(Component.literal("")
-                           .append(Component.literal(LevelUtils.readableInt(achievement.xpReward)).withStyle(ChatFormatting.AQUA))
+                           .append(Component.literal(TextUtils.readableInt(achievement.xpReward)).withStyle(ChatFormatting.AQUA))
                            .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
                            .append(Component.literal("  |  ").withStyle(ChatFormatting.DARK_AQUA))
                            .append(Component.literal("" + achievement.pointsReward).withStyle(ChatFormatting.AQUA))
@@ -192,20 +192,20 @@ public class ArcaneTomeGui extends PagedMultiGui {
                
                playerItem.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Arcana Level: ").withStyle(ChatFormatting.DARK_PURPLE)).append(Component.literal("" + playerLevel).withStyle(ChatFormatting.LIGHT_PURPLE)))));
                if(playerLevel == 100){
-                  playerItem.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Total Experience: ").withStyle(ChatFormatting.DARK_GREEN)).append(Component.literal(LevelUtils.readableInt(playerXp)).withStyle(ChatFormatting.GREEN)))));
+                  playerItem.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Total Experience: ").withStyle(ChatFormatting.DARK_GREEN)).append(Component.literal(TextUtils.readableInt(playerXp)).withStyle(ChatFormatting.GREEN)))));
                }else{
                   playerItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Experience: ").withStyle(ChatFormatting.DARK_GREEN))
-                        .append(Component.literal(LevelUtils.readableInt(LevelUtils.getCurLevelXp(playerXp))).withStyle(ChatFormatting.GREEN))
+                        .append(Component.literal(TextUtils.readableInt(LevelUtils.getCurLevelXp(playerXp))).withStyle(ChatFormatting.GREEN))
                         .append(Component.literal("/").withStyle(ChatFormatting.DARK_GREEN))
-                        .append(Component.literal(LevelUtils.readableInt(LevelUtils.nextLevelNewXp(playerLevel))).withStyle(ChatFormatting.GREEN)))));
+                        .append(Component.literal(TextUtils.readableInt(LevelUtils.nextLevelNewXp(playerLevel))).withStyle(ChatFormatting.GREEN)))));
                }
                int playerAchievements = data.totalAcquiredAchievements();
                playerItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                      .append(Component.literal("Achievements: ").withStyle(ChatFormatting.DARK_AQUA))
-                     .append(Component.literal(LevelUtils.readableInt(playerAchievements)).withStyle(ChatFormatting.AQUA))
+                     .append(Component.literal(TextUtils.readableInt(playerAchievements)).withStyle(ChatFormatting.AQUA))
                      .append(Component.literal("/").withStyle(ChatFormatting.DARK_AQUA))
-                     .append(Component.literal(LevelUtils.readableInt(numAchievements)).withStyle(ChatFormatting.AQUA)))));
+                     .append(Component.literal(TextUtils.readableInt(numAchievements)).withStyle(ChatFormatting.AQUA)))));
                return playerItem;
             }, leaderboardClickHandler,
             LeaderboardSort.XP_DESC, LeaderboardFilter.NONE
@@ -436,14 +436,14 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       
       int level = profile.getLevel();
-      String readableXP = LevelUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()));
+      String readableXP = TextUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()));
       GuiElementBuilder lectern = new GuiElementBuilder(Items.LECTERN);
       lectern.setName(Component.literal("Arcana Level").withStyle(ChatFormatting.DARK_GREEN));
       lectern.addLoreLine(TextUtils.removeItalics(Component.literal("Arcana Level: " + level).withStyle(ChatFormatting.GREEN)));
       if(level == 100){
-         lectern.addLoreLine(TextUtils.removeItalics(Component.literal("Total Experience: " + LevelUtils.readableInt(profile.getXP())).withStyle(ChatFormatting.GREEN)));
+         lectern.addLoreLine(TextUtils.removeItalics(Component.literal("Total Experience: " + TextUtils.readableInt(profile.getXP())).withStyle(ChatFormatting.GREEN)));
       }else{
-         lectern.addLoreLine(TextUtils.removeItalics(Component.literal("Experience: " + readableXP + "/" + LevelUtils.readableInt(LevelUtils.nextLevelNewXp(level))).withStyle(ChatFormatting.GREEN)));
+         lectern.addLoreLine(TextUtils.removeItalics(Component.literal("Experience: " + readableXP + "/" + TextUtils.readableInt(LevelUtils.nextLevelNewXp(level))).withStyle(ChatFormatting.GREEN)));
       }
       lectern.addLoreLine(TextUtils.removeItalics(Component.literal("")));
       lectern.addLoreLine(TextUtils.removeItalics(Component.literal("You can increase your arcana by crafting and using Arcana items!").withStyle(ChatFormatting.LIGHT_PURPLE)));
@@ -459,16 +459,16 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       if(level == 100){
          for(int i = 11; i <= 16; i++){
-            setSlot(i, new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Component.literal("XP: " + LevelUtils.readableInt(profile.getXP())).withStyle(ChatFormatting.GREEN)));
+            setSlot(i, new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Component.literal("XP: " + TextUtils.readableInt(profile.getXP())).withStyle(ChatFormatting.GREEN)));
          }
       }else{
          int filled = (int) Math.round((double) LevelUtils.getCurLevelXp(profile.getXP()) / LevelUtils.nextLevelNewXp(profile.getLevel()) * 6.0);
          for(int i = 11; i <= 16; i++){
             if(i >= filled + 11){
-               setSlot(i, new GuiElementBuilder(Items.GLASS_BOTTLE).setName(Component.literal("XP: " + readableXP + "/" + LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).withStyle(ChatFormatting.GREEN)));
+               setSlot(i, new GuiElementBuilder(Items.GLASS_BOTTLE).setName(Component.literal("XP: " + readableXP + "/" + TextUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).withStyle(ChatFormatting.GREEN)));
                
             }else{
-               setSlot(i, new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Component.literal("XP: " + readableXP + "/" + LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).withStyle(ChatFormatting.GREEN)));
+               setSlot(i, new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Component.literal("XP: " + readableXP + "/" + TextUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).withStyle(ChatFormatting.GREEN)));
             }
          }
       }
@@ -546,7 +546,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    
    private void buildCompendiumGui(){
       GuiMode<CompendiumEntry> config = getMode(0);
-      List<CompendiumEntry> list = new ArrayList<>(RECOMMENDED_LIST);
+      List<CompendiumEntry> list = ArcanaRegistry.getCompendiumEntriesForPlayer(ArcanaNovum.data(player));
       if(forForge){
          list.removeIf(entry -> {
             if(!(entry instanceof ArcanaItemCompendiumEntry arcanaEntry)) return true;
@@ -615,19 +615,19 @@ public class ArcaneTomeGui extends PagedMultiGui {
       head.setName((Component.literal("").append(Component.literal(player.getScoreboardName()).withStyle(ChatFormatting.AQUA))));
       head.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Arcana Level: ").withStyle(ChatFormatting.DARK_PURPLE)).append(Component.literal("" + profile.getLevel()).withStyle(ChatFormatting.LIGHT_PURPLE)))));
       if(profile.getLevel() == 100){
-         head.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Total Experience: ").withStyle(ChatFormatting.DARK_GREEN)).append(Component.literal(LevelUtils.readableInt(profile.getXP())).withStyle(ChatFormatting.GREEN)))));
+         head.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Total Experience: ").withStyle(ChatFormatting.DARK_GREEN)).append(Component.literal(TextUtils.readableInt(profile.getXP())).withStyle(ChatFormatting.GREEN)))));
       }else{
          head.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Experience: ").withStyle(ChatFormatting.DARK_GREEN))
-               .append(Component.literal(LevelUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()))).withStyle(ChatFormatting.GREEN))
+               .append(Component.literal(TextUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()))).withStyle(ChatFormatting.GREEN))
                .append(Component.literal("/").withStyle(ChatFormatting.DARK_GREEN))
-               .append(Component.literal(LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).withStyle(ChatFormatting.GREEN)))));
+               .append(Component.literal(TextUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).withStyle(ChatFormatting.GREEN)))));
       }
       head.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Achievements: ").withStyle(ChatFormatting.DARK_AQUA))
-            .append(Component.literal(LevelUtils.readableInt(profile.totalAcquiredAchievements())).withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(TextUtils.readableInt(profile.totalAcquiredAchievements())).withStyle(ChatFormatting.AQUA))
             .append(Component.literal("/").withStyle(ChatFormatting.DARK_AQUA))
-            .append(Component.literal(LevelUtils.readableInt(numAchievements)).withStyle(ChatFormatting.AQUA)))));
+            .append(Component.literal(TextUtils.readableInt(numAchievements)).withStyle(ChatFormatting.AQUA)))));
       head.addLoreLine(TextUtils.removeItalics(Component.literal("")));
       head.addLoreLine(TextUtils.removeItalics((Component.literal("").append(Component.literal("Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to return to the profile page").withStyle(ChatFormatting.LIGHT_PURPLE)))));
       head.setCallback((type) -> {
@@ -813,7 +813,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          GuiElementBuilder achievementItem = GuiElementBuilder.from(achievement.getDisplayItem());
          achievementItem.hideDefaultTooltip().setName(achievement.getTranslatedName().withStyle(ChatFormatting.LIGHT_PURPLE))
                .addLoreLine(TextUtils.removeItalics(Component.literal("")
-                    .append(Component.literal(LevelUtils.readableInt(achievement.xpReward)).withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal(TextUtils.readableInt(achievement.xpReward)).withStyle(ChatFormatting.AQUA))
                     .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))
                     .append(Component.literal("  |  ").withStyle(ChatFormatting.DARK_AQUA))
                     .append(Component.literal("" + achievement.pointsReward).withStyle(ChatFormatting.AQUA))
@@ -1466,12 +1466,14 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       public static final LeaderboardFilter NONE = new LeaderboardFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor(),
             (data) -> true);
-      public static final LeaderboardFilter ARCANIST = new LeaderboardFilter("gui.arcananovum.arcanist", ChatFormatting.LIGHT_PURPLE.getColor(),
+      public static final LeaderboardFilter ARCANIST = new LeaderboardFilter("gui.arcananovum.arcanist", ChatFormatting.AQUA.getColor(),
             (data) -> data.getXP() > 1);
       public static final LeaderboardFilter MAX_LVL = new LeaderboardFilter("gui.arcananovum.max_level_player", ChatFormatting.GREEN.getColor(),
             (data) -> LevelUtils.levelFromXp(data.getXP()) >= 100);
       public static final LeaderboardFilter ABYSS = new LeaderboardFilter("gui.arcananovum.abyssal_arcanist", ChatFormatting.DARK_PURPLE.getColor(),
             (data) -> data.hasAcheivement(ArcanaAchievements.ALL_ACHIEVEMENTS));
+      public static final LeaderboardFilter ACOLYTE = new LeaderboardFilter("gui.arcananovum.abyssal_acolyte", ChatFormatting.LIGHT_PURPLE.getColor(),
+            (data) -> data.hasAcheivement(ArcanaAchievements.MOST_ACHIEVEMENTS));
       
       private LeaderboardFilter(String key, int color, Predicate<ArcanaPlayerData> filter){
          super(key, color, filter);

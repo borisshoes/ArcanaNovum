@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -167,15 +168,13 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
    
    public List<ItemStack> salvageItem(ItemStack stack, MinecraftServer server){
       List<ItemStack> salvage = new ArrayList<>();
-      double salvageLvl = .25*(1+ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.DYSON_SPHERE));
-      Item item = stack.getItem();
+      double salvageLvl = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STELLAR_CORE_SALVAGE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.DYSON_SPHERE));
       if(ArcanaItemUtils.isArcane(stack)) return salvage;
       
       if(stack.has(DataComponents.REPAIRABLE)){
          Repairable repairComp = stack.get(DataComponents.REPAIRABLE);
          List<ItemStack> repairItems = repairComp.items().stream().map(entry -> entry.value().getDefaultInstance()).toList();
          
-         Collection<RecipeHolder<CraftingRecipe>> craftingRecipes = server.getRecipeManager().getAllOfType(RecipeType.CRAFTING);
          Collection<RecipeHolder<SmithingRecipe>> smithingRecipes = server.getRecipeManager().getAllOfType(RecipeType.SMITHING);
          
          Item precursor = Items.AIR;
@@ -222,7 +221,10 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          });
       }
       
-      int stardust = (int) (ArcanaUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.FUSION_INJECTORS)));
+      int rawStardust = ArcanaUtils.calcEssenceFromEnchants(stack);
+      double modifier = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.STELLAR_CORE_STARDUST_RATE) +
+            ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STELLAR_CORE_STARDUST_RATE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.FUSION_INJECTORS));
+      int stardust = (int) (rawStardust * modifier);
       if(stardust > 0){
          while(stardust > 64){
             salvage.add(ArcanaRegistry.STARDUST.getDefaultInstance().copyWithCount(64));
@@ -392,7 +394,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
                Containers.dropItemStack(getLevel(), itemSpawnPos.x(),itemSpawnPos.y(),itemSpawnPos.z(), itemStack);
             }
             
-            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STELLAR_CORE_SALVAGE)));
+            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STELLAR_CORE_SALVAGE)));
             
             SoundUtils.playSound(serverWorld, getBlockPos(), SoundEvents.BLAZE_DEATH, SoundSource.BLOCKS, 1, 0.8f);
             SoundUtils.playSound(serverWorld, getBlockPos(), SoundEvents.IRON_GOLEM_HURT, SoundSource.BLOCKS, 1, 1.2f);
@@ -402,7 +404,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
                int returnCount = stack.getCount() * moltenItem.getCount();
                inv.setItem(0, ItemStack.EMPTY);
                int finalReturnCount = returnCount;
-               final int xpPerSmelt = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STELLAR_CORE_SMELT) * ((stack.getItem().getDescriptionId().contains("raw") && stack.getItem().getDescriptionId().contains("block")) ? 9 : 1);
+               final int xpPerSmelt = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STELLAR_CORE_SMELT) * ((stack.getItem().getDescriptionId().contains("raw") && stack.getItem().getDescriptionId().contains("block")) ? 9 : 1);
                
                watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(xpPerSmelt * finalReturnCount));
                ArrayList<ItemStack> items = new ArrayList<>();

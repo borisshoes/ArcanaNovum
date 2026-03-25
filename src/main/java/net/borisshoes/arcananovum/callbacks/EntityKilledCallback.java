@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.ConditionalsAchievement;
@@ -81,15 +83,10 @@ public class EntityKilledCallback {
             ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
             if(ArcanaItemUtils.identifyItem(heldItem) instanceof ShadowStalkersGlaive glaive){ // Return 4 charges
                int oldEnergy = EnergyItem.getEnergy(heldItem);
-               glaive.addEnergy(heldItem, 80);
+               int toAdd = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHADOW_STALKERS_GLAIVE_KILL_ENERGY);
+               glaive.addEnergy(heldItem, toAdd);
                int newEnergy = EnergyItem.getEnergy(heldItem);
-               if(oldEnergy/20 != newEnergy/20){
-                  String message = "Glaive Charges: ";
-                  for(int i=1; i<=5; i++){
-                     message += newEnergy >= i*20 ? "✦ " : "✧ ";
-                  }
-                  player.displayClientMessage(Component.literal(message).withStyle(ChatFormatting.BLACK),true);
-               }
+               glaive.sendEnergyMessage(player,oldEnergy,newEnergy,false);
                
                if((killed instanceof ServerPlayer || killed instanceof Warden) && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA)){
                   ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA,1);

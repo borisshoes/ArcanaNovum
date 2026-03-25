@@ -22,13 +22,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -52,7 +50,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
 public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    public static final String ID = "midnight_enchanter";
@@ -185,8 +182,8 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack ENCHANTER_BASE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/midnight_enchanter"));
-      public static final ItemStack ENCHANTER_BOOK = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/midnight_enchanter_book"));
+      public static final ItemStack ENCHANTER_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/midnight_enchanter"));
+      public static final ItemStack ENCHANTER_BOOK = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/midnight_enchanter_book"));
       
       private static final float PASSIVE_ROTATION_SPEED = 1.0f; // Degrees per tick
       private static final float TRACKING_LERP_SPEED = 0.1f; // Interpolation factor for smooth tracking

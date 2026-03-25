@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
@@ -58,8 +58,6 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
 	public static final String ID = "wild_growth_charm";
    
    public static final String HARVEST_TAG = "harvest";
-   
-   private static final int[] RATES = new int[]{10, 7, 5, 3, 2};
    
    public WildGrowthCharm(){
       id = ID;
@@ -128,8 +126,8 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
       AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
       Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
-      int fertLvl = Math.max(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION),0);
-      int tickTime = RATES[fertLvl]*2;
+      int fertLvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION);
+      int tickTime = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.WILD_GROWTH_CHARM_FERTILIZER_INTERVALS).get(fertLvl);
       
       if(world.getServer().getTickCount() % tickTime == 0){
          passiveTick(stack,world,stele.getBlockPos(),box,null,stele);
@@ -145,12 +143,13 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
          boolean harvest = getBooleanProperty(stack,HARVEST_TAG);
          boolean bloom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CHARM_OF_BLOOMING) >= 1;
          int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING);
+         int limit = ArcanaNovum.CONFIG.getInt(ArcanaConfig.WILD_GROWTH_CHARM_BLOCKS_PER_TICK);
          
          int count = 0;
-         for(BlockPos blockPos : BlockPos.randomBetweenClosed(world.getRandom(),250, (int) range.minX, (int) range.minY, (int) range.minZ, (int) range.maxX, (int) range.maxY, (int) range.maxZ)){
+         for(BlockPos blockPos : BlockPos.randomBetweenClosed(world.getRandom(),450, (int) range.minX, (int) range.minY, (int) range.minZ, (int) range.maxX, (int) range.maxY, (int) range.maxZ)){
             BlockState state = world.getBlockState(blockPos);
             Block block = state.getBlock();
-            if(count >= 2) break;
+            if(count >= limit) break;
             count++;
             Vec3 blockCenter = blockPos.getCenter();
             
@@ -164,6 +163,14 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
                state.randomTick(world,blockPos,world.getRandom());
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
                world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+               boolean grown = state.getBlock() instanceof NetherWartBlock && state.getValue(NetherWartBlock.AGE) >= 3;
+               state = world.getBlockState(blockPos);
+               if(!grown && state.getBlock() instanceof NetherWartBlock && state.getValue(NetherWartBlock.AGE) >= 3){
+                  if(player != null) ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST,1);
+                  int xp = reaping >= 2 && harvest ? ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_MATURE_CROP);
+                  if(player != null) ArcanaNovum.data(player).addXP(xp); // Add xp
+                  if(stele != null) stele.giveXP(xp);
+               }
             }else if(block instanceof WeatheringCopper){
                state.randomTick(world,blockPos,world.getRandom());
                world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
@@ -179,9 +186,10 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
                   block instanceof SweetBerryBushBlock) && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
                world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
-               if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMaxAge(world.getBlockState(blockPos))){
+               state = world.getBlockState(blockPos);
+               if((state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state))){
                   if(player != null) ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST,1);
-                  int xp = reaping >= 2 && harvest ? ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WILD_GROWTH_CHARM_PER_MATURE_CROP);
+                  int xp = reaping >= 2 && harvest ? ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_MATURE_CROP);
                   if(player != null) ArcanaNovum.data(player).addXP(xp); // Add xp
                   if(stele != null) stele.giveXP(xp);
                }
@@ -239,7 +247,7 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
          }
          
          if(count >= 2){
-            int xp = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_WILD_GROWTH_CHARM_PASSIVE);
+            int xp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PASSIVE);
             if(player != null) ArcanaNovum.data(player).addXP(xp); // Add xp
             if(stele != null) stele.giveXP(xp);
          }
@@ -281,11 +289,12 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);
-         int fertLvl = Math.max(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION),0);
-         int tickTime = RATES[fertLvl];
+         int fertLvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION);
+         int tickTime = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.WILD_GROWTH_CHARM_FERTILIZER_INTERVALS).get(fertLvl);
+         double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.WILD_GROWTH_CHARM_RANGE);
          
          if(active && !world.isClientSide() && world.getServer().getTickCount() % tickTime == 0){
-            AABB range = player.getBoundingBox().inflate(4.5);
+            AABB range = player.getBoundingBox().inflate(baseRange);
             passiveTick(stack,world,player.blockPosition(),range,player,null);
          }
       }

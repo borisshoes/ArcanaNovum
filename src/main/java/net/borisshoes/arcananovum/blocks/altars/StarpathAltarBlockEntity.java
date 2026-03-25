@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.blocks.altars;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -21,6 +22,8 @@ import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -51,14 +54,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 
 public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
-   public static final Item COST = Items.ENDER_EYE;
-   
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -85,6 +83,17 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       this.activeTicks = 0;
       this.savedTargets = new ArrayList<>();
       resetCooldown();
+   }
+   
+   public static Item getCost(){
+      try{
+         String itemId = ArcanaNovum.CONFIG.getValue(ArcanaConfig.STARPATH_ALTAR_ITEM).toString();
+         Optional<Holder.Reference<Item>> opt = BuiltInRegistries.ITEM.get(Identifier.parse(itemId));
+         assert opt.isPresent();
+         return opt.get().value();
+      }catch(Exception e){
+         return Items.ENDER_EYE;
+      }
    }
    
    public List<TargetEntry> getSavedTargets(){
@@ -152,9 +161,9 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
          teleport(player);
          if(player == null && getCrafterId() != null && !getCrafterId().isEmpty()){
             UUID parsedId = AlgoUtils.getUUID(getCrafterId());
-            ArcanaNovum.data(parsedId).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STARPATH_ALTAR_ACTIVATE));
+            ArcanaNovum.data(parsedId).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STARPATH_ALTAR_ACTIVATE));
          }else if(player != null){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STARPATH_ALTAR_ACTIVATE));
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STARPATH_ALTAR_ACTIVATE));
          }
       }));
       return true;
@@ -170,7 +179,8 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       BlockPos origin = getBlockPos().mutable();
       BlockPos target = this.target.getBlockCoords();
       int multiplier = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ASTRAL_PATHFINDER);
-      int blocksPerUnit = 64 * (1 << multiplier);
+      int blocksPerItem = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STARPATH_ALTAR_BLOCKS_PER_EYE);
+      int blocksPerUnit = blocksPerItem * (1 << multiplier);
       int cost = Math.max(1,(int) (Math.sqrt(origin.distSqr(target)) / blocksPerUnit));
       if(!getTargetDimension().identifier().equals(getLevel().dimension().identifier())){
          cost += cost + 16;
@@ -243,7 +253,10 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    }
    
    public void resetCooldown(){
-      this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CONSTELLATION_DRIFT) * 6000;
+      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CONSTELLATION_DRIFT);
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STARPATH_ALTAR_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.STARPATH_ALTAR_COOLDOWN_PER_LVL).get(cooldownLevel);
+      this.cooldown = Math.max(1, baseCooldown - cooldownReduction);
    }
    
    public void setTarget(BlockPos pos){

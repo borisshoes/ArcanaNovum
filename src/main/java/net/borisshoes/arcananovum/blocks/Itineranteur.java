@@ -8,14 +8,11 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
-import net.borisshoes.arcananovum.blocks.forge.TwilightAnvil;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -27,13 +24,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Brightness;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Container;
@@ -41,13 +36,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -84,7 +74,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
 public class Itineranteur extends ArcanaBlock {
    public static final String COLOR_TAG = "color";
@@ -379,14 +368,14 @@ public class Itineranteur extends ArcanaBlock {
       COPPER("copper", Items.COPPER_LANTERN.waxed(), ((BlockItem) Items.COPPER_LANTERN.waxed()).getBlock()),
       GREEN("green", Items.COPPER_LANTERN.waxedOxidized(), ((BlockItem) Items.COPPER_LANTERN.waxedOxidized()).getBlock());
       
-      public static final ItemStack ITINERANTEUR_NORMAL = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_normal"));
-      public static final ItemStack ITINERANTEUR_NORMAL_HANGING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_normal_hanging"));
-      public static final ItemStack ITINERANTEUR_SOUL = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_soul"));
-      public static final ItemStack ITINERANTEUR_SOUL_HANGING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_soul_hanging"));
-      public static final ItemStack ITINERANTEUR_OXIDIZED = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_oxidized"));
-      public static final ItemStack ITINERANTEUR_OXIDIZED_HANGING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_oxidized_hanging"));
-      public static final ItemStack ITINERANTEUR_UNOXIDIZED = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_unoxidized"));
-      public static final ItemStack ITINERANTEUR_UNOXIDIZED_HANGING = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/itineranteur_unoxidized_hanging"));
+      public static final ItemStack ITINERANTEUR_NORMAL = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_normal"));
+      public static final ItemStack ITINERANTEUR_NORMAL_HANGING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_normal_hanging"));
+      public static final ItemStack ITINERANTEUR_SOUL = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_soul"));
+      public static final ItemStack ITINERANTEUR_SOUL_HANGING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_soul_hanging"));
+      public static final ItemStack ITINERANTEUR_OXIDIZED = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_oxidized"));
+      public static final ItemStack ITINERANTEUR_OXIDIZED_HANGING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_oxidized_hanging"));
+      public static final ItemStack ITINERANTEUR_UNOXIDIZED = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_unoxidized"));
+      public static final ItemStack ITINERANTEUR_UNOXIDIZED_HANGING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_unoxidized_hanging"));
       
       private final String id;
       private final Item item;

@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
-   public AequalisUnattuneTransmutationRecipe(String id){
-      super(id,new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,48),new ItemStack(Items.AMETHYST_SHARD,48));
+   public AequalisUnattuneTransmutationRecipe(){
+      super("aequalis_reconfiguration",new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,48),new ItemStack(Items.AMETHYST_SHARD,48));
    }
    
    @Override
@@ -57,6 +57,11 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
       }
       if(!canTransmute(inputStack, ItemStack.EMPTY,reagent1Stack,reagent2Stack, ItemStack.EMPTY,altar)) return new ArrayList<>();
       
+      boolean m11 = validReagent1(reagent1Stack,bargainLvl), m22 = validReagent2(reagent2Stack,bargainLvl), m12 = validReagent1(reagent2Stack,bargainLvl), m21 = validReagent2(reagent1Stack,bargainLvl);
+      boolean straight = m11 && m22;
+      boolean cross = !straight && m12 && m21;
+      if (!straight && !cross) return new ArrayList<>(); // should be impossible
+      
       List<Tuple<ItemStack,String>> outputs = new ArrayList<>();
       int consumedInput = 1;
       
@@ -73,11 +78,6 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
          inputStack.shrink(consumedInput);
          inputEntity.setItem(inputStack);
       }
-      
-      boolean m11 = validReagent1(reagent1Stack,bargainLvl), m22 = validReagent2(reagent2Stack,bargainLvl), m12 = validReagent1(reagent2Stack,bargainLvl), m21 = validReagent2(reagent1Stack,bargainLvl);
-      boolean straight = m11 && m22;
-      boolean cross = !straight && m12 && m21;
-      if (!straight && !cross) return new ArrayList<>(); // should be impossible
       
       ItemStack reagent1 = straight ? getComputedReagent1(reagent1Stack,bargainLvl) : getComputedReagent2(reagent1Stack,bargainLvl);
       ItemStack reagent2 = straight ? getComputedReagent2(reagent2Stack,bargainLvl) : getComputedReagent1(reagent2Stack,bargainLvl);

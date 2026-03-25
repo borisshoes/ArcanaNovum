@@ -216,8 +216,8 @@ public interface DispenseItemBehaviorMixin {
                   Direction direction = pointer.state().getValue(DispenserBlock.FACING);
                   
                   try {
-                     int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT));
-                     int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT));
+                     int splitLevel = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT);
+                     int efficiencyLevel = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT);
                      if(EssenceEgg.getUses(stack) > 0){
                         ServerLevel serverWorld = pointer.level();
                         Vec3 summonPos = Vec3.atBottomCenterOf(pointer.pos().relative(direction));

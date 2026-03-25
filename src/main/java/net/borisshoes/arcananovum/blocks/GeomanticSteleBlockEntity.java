@@ -7,24 +7,25 @@ import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.InteractionElement;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.*;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.geomanticstele.GeomanticSteleGui;
 import net.borisshoes.arcananovum.items.AquaticEversource;
-import net.borisshoes.arcananovum.items.ExoticMatter;
 import net.borisshoes.arcananovum.items.MagmaticEversource;
 import net.borisshoes.arcananovum.items.charms.CleansingCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.items.charms.WildGrowthCharm;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
-import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,11 +39,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
@@ -57,7 +56,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -66,7 +64,6 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    
    private static final Map<ResourceKey<Level>, Map<Long, Set<SteleZone>>> ACTIVE_STELES = new HashMap<>();
    private static final int KEEP_ALIVE = 21;
-   private static final double[] RANGE_MODS = new double[]{1.0,1.5,2.0,3.0};
    
    private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
@@ -94,7 +91,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       this.uuid = uuid;
       this.origin = origin;
       this.customName = customName == null ? "" : customName;
-      this.rangeMod = RANGE_MODS[ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.GEOLITHIC_AMPLIFICATION)];
+      this.rangeMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GEOMANTIC_STELE_RANGE_MULTIPLIER_PER_LVL).get(ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.GEOLITHIC_AMPLIFICATION));
    }
    
    public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
@@ -467,7 +464,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       if (!this.tryLoadLootTable(view)) {
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
-      this.rangeMod = RANGE_MODS[ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.GEOLITHIC_AMPLIFICATION)];
+      this.rangeMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GEOMANTIC_STELE_RANGE_MULTIPLIER_PER_LVL).get(ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.GEOLITHIC_AMPLIFICATION));
       Vec3 maxRange = getMaxRange();
       this.rangeX = view.getDoubleOr("rangeX", maxRange.x);
       this.rangeY = view.getDoubleOr("rangeY", maxRange.y);

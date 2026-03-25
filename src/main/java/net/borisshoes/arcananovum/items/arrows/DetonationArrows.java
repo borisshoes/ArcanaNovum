@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
@@ -7,6 +9,7 @@ import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -86,19 +89,19 @@ public class DetonationArrows extends RunicArrow {
    }
    
    private void explode(AbstractArrow arrow, Vec3 pos, int blastLvl, int personLvl){
-      double power = Mth.clamp(2*arrow.getDeltaMovement().length(),1.5,8);
+      float power = 2.5f*ArcanaUtils.getArrowPercentage(arrow);
       DamageSource source1 = ArcanaDamageTypes.of(arrow.level(),ArcanaDamageTypes.DETONATION_TERRAIN,arrow,arrow.getOwner());
       DamageSource source2 = ArcanaDamageTypes.of(arrow.level(),ArcanaDamageTypes.DETONATION_DAMAGE,arrow,arrow.getOwner());
+      float blastMineBoost = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.DETONATION_ARROW_BLAST_MINE_INCREASE_PER_LVL).get(blastLvl);
+      float terrainPower = power * (1 + blastMineBoost) * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.DETONATION_ARROW_BLOCK_DMG_MULTIPLIER);
+      float entityBoost = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.DETONATION_ARROW_ANTI_PERSONNEL_INCREASE_PER_LVL).get(personLvl);
+      float entityPower = 0.75f * power * (1 + entityBoost) * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.DETONATION_ARROW_ENTITY_DMG_MULTIPLIER);
       if(personLvl != 3){ // Terrain explosion except when personnel lvl 3
-         float terrainPower = (float) (blastLvl >= 1 ? power * 2.5f: power);
          arrow.level().explode(null, source1, null,pos.x,pos.y,pos.z,terrainPower,false, Level.ExplosionInteraction.TNT);
       }
       if(blastLvl == 0){ // Damage explosion except when blast is present
-         arrow.level().explode(null, source2, null,pos.x,pos.y,pos.z,(float)(power*0.75*(1+.25*personLvl)),false, Level.ExplosionInteraction.NONE);
+         arrow.level().explode(null, source2, null,pos.x,pos.y,pos.z,entityPower,false, Level.ExplosionInteraction.NONE);
       }
-      
-      
-      
       arrow.discard();
    }
    

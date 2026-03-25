@@ -1,14 +1,19 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.mixins.ThrownTridentAccessor;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -18,6 +23,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,6 +37,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
@@ -54,6 +61,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID;
 
 public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntity {
@@ -66,13 +74,13 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
    public SpearOfTenbrousEntity(EntityType<? extends SpearOfTenbrousEntity> entityType, Level world) {
       super(entityType, world);
       this.pickup = Pickup.CREATIVE_ONLY;
-      this.damage = 11.0f;
+      this.damage = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SPEAR_OF_TENBROUS_THROW_DMG);
    }
    
    public SpearOfTenbrousEntity(Level world, LivingEntity owner, ItemStack stack) {
       super(ArcanaRegistry.SPEAR_OF_TENBROUS_ENTITY, owner, world, stack, null);
       this.pickup = Pickup.CREATIVE_ONLY;
-      float dmg = 11.0f;
+      float dmg = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SPEAR_OF_TENBROUS_THROW_DMG);
       for(ItemAttributeModifiers.Entry modifier : stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY).modifiers()){
          if(modifier.attribute().equals(Attributes.ATTACK_DAMAGE) && modifier.modifier().is(BASE_ATTACK_DAMAGE_ID)){
             dmg = (float) modifier.modifier().amount() + 1.0f;
@@ -125,12 +133,19 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
       
       if (this.isAlive()) {
          if(level() instanceof ServerLevel serverWorld){
-            ArcanaEffectUtils.spawnLongParticle(serverWorld,new DustColorTransitionOptions(0x001c08,0x000000,1.25f),getX(),getY(),getZ(),0.125,0.125,0.125,0.02, 6);
+            ParticleOptions particles = ParticleTypes.COMPOSTER;
+            int particleFadeColor = 0x001c08;
+            if(ArcanaItem.getSkin(pickupItemStack) == ArcanaSkin.ZEPHOS_LANCE){
+               particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT,0x53D1FF,0.0f);
+               particleFadeColor = 0x001C32;
+            }
+            
+            ArcanaEffectUtils.spawnLongParticle(serverWorld,new DustColorTransitionOptions(particleFadeColor,0x000000,1.25f),getX(),getY(),getZ(),0.125,0.125,0.125,0.02, 6);
             
             int trailSize = 3;
             if(this.tickCount % 3 == 0 && !oldPos.isEmpty()){
                Vec3 endPos = MathUtils.randomSpherePoint(oldPos.getLast(),1.25, 0.4);
-               ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePosition, () -> endPos, (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+               ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePosition, () -> endPos, (int)(Math.random()*5+5), 0.5, particles,
                      12, 1, 0, 1, true, 5, 5);
             }
             oldPos.add(position());
@@ -159,44 +174,54 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
    }
    
    private void applyImpactEffects(Entity hitEntity, List<LivingEntity> affectedEntities){
-      MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS,25,9,false,false,true);
-      MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT,25,5,false,false,true);
+      ParticleOptions particles = ParticleTypes.COMPOSTER;
+      int particleFadeColor = 0x001c08;
+      if(ArcanaItem.getSkin(pickupItemStack) == ArcanaSkin.ZEPHOS_LANCE){
+         particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT,0x53D1FF,0.0f);
+         particleFadeColor = 0x001C32;
+      }
+      
+      int stunDuration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SPEAR_OF_TENBROUS_STUN_DURATION);
+      MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS,stunDuration,9,false,false,true);
+      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId(ArcanaRegistry.SPEAR_OF_TENBROUS.getId()),stunDuration,5.0f,false,true,false, AttributeModifier.Operation.ADD_VALUE,getOwner() != null ? getOwner().getUUID() : null);
+      
       boolean blindRage = ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.BLINDING_RAGE) > 0;
       boolean voidStorm = ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.VOID_STORM) > 0;
       
       if(hitEntity instanceof LivingEntity living){
          living.addEffect(slow);
          if(blindRage){
-            living.addEffect(blind);
+            Conditions.addCondition(living.level().getServer(),living,nearsight);
          }
          
          if(living.level() instanceof ServerLevel serverWorld){
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, hitEntity::position, () -> hitEntity.position().add(0,hitEntity.getEyeHeight(),0), (int)(5 + 2*hitEntity.getEyeHeight()), hitEntity.getBbWidth(), ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, hitEntity::position, () -> hitEntity.position().add(0,hitEntity.getEyeHeight(),0), (int)(5 + 2*hitEntity.getEyeHeight()), hitEntity.getBbWidth(), particles,
                   8, 1, 0, 1, false, 0, 5);
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> hitEntity.position().add(0,hitEntity.getEyeHeight(),0), hitEntity::position, (int)(5 + 2*hitEntity.getEyeHeight()), hitEntity.getBbWidth(), ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> hitEntity.position().add(0,hitEntity.getEyeHeight(),0), hitEntity::position, (int)(5 + 2*hitEntity.getEyeHeight()), hitEntity.getBbWidth(), particles,
                   8, 1, 0, 1, false, 0, 5);
          }
       }
       
       if(voidStorm && level() instanceof ServerLevel serverWorld){
+         float stormDmg = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SPEAR_OF_TENBROUS_STORM_DMG);
          SoundUtils.playSound(serverWorld, BlockPos.containing(position()), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS,.1f,2f);
-         ParticleOptions dust = new DustColorTransitionOptions(0x001c08,0x000000,2f);
+         ParticleOptions dust = new DustColorTransitionOptions(particleFadeColor,0x000000,2f);
          serverWorld.sendParticles(dust,getX(),getY(),getZ(),150,1,1,1,0.02);
          for(int i = 0; i < 18; i++){
-            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), MathUtils.randomSpherePoint(getEyePosition(),5,2), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), MathUtils.randomSpherePoint(getEyePosition(),5,2), (int)(Math.random()*5+5), 0.5, particles,
                   8, 1, 0, 1, false, 0, 5);
          }
          
          for(LivingEntity affectedEntity : affectedEntities){ // Void Storm
-            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), affectedEntity.getEyePosition(), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), affectedEntity.getEyePosition(), (int)(Math.random()*5+5), 0.5, particles,
                   8, 1, 0, 1, false, 4, 5);
             DamageSource source = ArcanaDamageTypes.of(serverWorld,ArcanaDamageTypes.ARCANE_LIGHTNING,this,getOwner() == null ? this : getOwner());
-            float damage = 6.0f;
+            float damage = stormDmg;
             if(affectedEntity.getType().is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) damage *= 1.25f;
             affectedEntity.hurtServer(serverWorld,source,damage);
             
             if(blindRage){
-               affectedEntity.addEffect(blind);
+               Conditions.addCondition(affectedEntity.level().getServer(),affectedEntity,nearsight);
             }
          }
       }
@@ -205,9 +230,10 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
    private List<LivingEntity> getSurroundingEntities(Level world, Vec3 pos){
       ArrayList<LivingEntity> entities = new ArrayList<>();
       boolean voidStorm = ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.VOID_STORM) > 0;
+      double stormRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SPEAR_OF_TENBROUS_STORM_RANGE);
       if(!voidStorm) return entities;
       
-      world.getEntities(this.getOwner(), new AABB(BlockPos.containing(pos)).inflate(6), entity -> entity.distanceToSqr(pos) < (4.5*4.5)).forEach(e -> {
+      world.getEntities(this.getOwner(), new AABB(BlockPos.containing(pos)).inflate(6), entity -> entity.distanceToSqr(pos) < (stormRange*stormRange)).forEach(e -> {
          if(e instanceof LivingEntity living) entities.add(living);
       });
       
@@ -241,7 +267,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
             this.doKnockback(livingEntity, damageSource);
             this.doPostHurtEffects(livingEntity);
             
-            if(owner instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_SPEAR_OF_TENBROUS_IMPALE));
+            if(owner instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SPEAR_OF_TENBROUS_IMPALE));
          }
       }
       
@@ -255,7 +281,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
    public void remove(RemovalReason reason){
       super.remove(reason);
       if(this.getOwner() != null && this.getOwner() instanceof ServerPlayer player && level() instanceof ServerLevel serverWorld){
-         int cooldownTime = 20 * (9 - 2*Math.max(0, ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.UNENDING_HATRED)));
+         int cooldownTime = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SPEAR_OF_TENBROUS_THROW_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(pickupItemStack,ArcanaAugments.UNENDING_HATRED));
          if(!player.hasInfiniteMaterials()) BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(pickupItemStack,player,0, slot));
          player.getCooldowns().addCooldown(pickupItemStack,cooldownTime);
          

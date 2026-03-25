@@ -1,24 +1,22 @@
 package net.borisshoes.arcananovum.callbacks.login;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.arrows.SiphoningArrows;
 import net.borisshoes.borislib.callbacks.LoginCallback;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class OverhealLoginCallback extends LoginCallback {
    
    private float hearts;
    
    public OverhealLoginCallback(){
-      super(Identifier.fromNamespaceAndPath(MOD_ID,"siphoning_overheal_augment"));
+      super(ArcanaRegistry.arcanaId("siphoning_overheal_augment"));
    }
    
    public OverhealLoginCallback(ServerPlayer player, float hearts){

@@ -1,19 +1,17 @@
 package net.borisshoes.arcananovum.callbacks.login;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.borislib.callbacks.LoginCallback;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class MaxHealthLoginCallback extends LoginCallback {
    private float hp;
    
    public MaxHealthLoginCallback(){
-      super(Identifier.fromNamespaceAndPath(MOD_ID,"max_health_login_callback"));
+      super(ArcanaRegistry.arcanaId("max_health_login_callback"));
    }
    
    public MaxHealthLoginCallback(MinecraftServer server, String player, float health){

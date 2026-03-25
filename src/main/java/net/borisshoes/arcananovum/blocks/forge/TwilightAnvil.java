@@ -23,14 +23,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Brightness;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -57,7 +54,6 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
-import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.LIT;
 
 public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "twilight_anvil";
@@ -225,7 +221,7 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack ANVIL = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/twilight_anvil"));
+      public static final ItemStack ANVIL = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/twilight_anvil"));
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

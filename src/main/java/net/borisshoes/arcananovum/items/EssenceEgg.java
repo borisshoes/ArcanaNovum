@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -51,7 +52,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class EssenceEgg extends ArcanaItem {
-	public static final String ID = "essence_egg";
+   public static final String ID = "essence_egg";
    
    public static final String USES_TAG = "uses";
    
@@ -62,14 +63,14 @@ public class EssenceEgg extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.GHAST_SPAWN_EGG;
       item = new EssenceEggItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.FIND_SPAWNER,ResearchTasks.OBTAIN_EGG};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.FIND_SPAWNER, ResearchTasks.OBTAIN_EGG};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,Soulstone.TYPE_TAG,"unattuned");
-      putProperty(stack,USES_TAG,0);
+      putProperty(stack, Soulstone.TYPE_TAG, "unattuned");
+      putProperty(stack, USES_TAG, 0);
       setPrefStack(stack);
    }
    
@@ -102,23 +103,23 @@ public class EssenceEgg extends ArcanaItem {
          Optional<EntityType<?>> opt = EntityType.byString(type);
          if(!type.equals("unattuned") && opt.isPresent()){
             String entityTypeName = opt.get().getDescription().getString();
-            attunedString = "Attuned - "+entityTypeName;
+            attunedString = "Attuned - " + entityTypeName;
          }
       }
       
       lore.add(Component.literal(attunedString).withStyle(ChatFormatting.LIGHT_PURPLE));
-      lore.add(Component.literal(LevelUtils.readableInt(uses)+" Uses Left").withStyle(ChatFormatting.GRAY));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      lore.add(Component.literal(TextUtils.readableInt(uses) + " Uses Left").withStyle(ChatFormatting.GRAY));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      int uses = getIntProperty(stack,USES_TAG);
-      String type = getStringProperty(stack,Soulstone.TYPE_TAG);
+      int uses = getIntProperty(stack, USES_TAG);
+      String type = getStringProperty(stack, Soulstone.TYPE_TAG);
       ItemStack newStack = super.updateItem(stack, server);
-      putProperty(newStack,USES_TAG,uses);
-      putProperty(newStack,Soulstone.TYPE_TAG,type);
-      return buildItemLore(newStack,server);
+      putProperty(newStack, USES_TAG, uses);
+      putProperty(newStack, Soulstone.TYPE_TAG, type);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -127,37 +128,37 @@ public class EssenceEgg extends ArcanaItem {
    }
    
    public static void setType(ItemStack stack, String entityId){
-      putProperty(stack,Soulstone.TYPE_TAG,entityId);
+      putProperty(stack, Soulstone.TYPE_TAG, entityId);
       ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack, BorisLib.SERVER);
    }
    
    public static String getType(ItemStack stack){
-      return getStringProperty(stack,Soulstone.TYPE_TAG);
+      return getStringProperty(stack, Soulstone.TYPE_TAG);
    }
    
    public static int getUses(ItemStack stack){
-      return getIntProperty(stack,USES_TAG);
+      return getIntProperty(stack, USES_TAG);
    }
    
    public static void setUses(ItemStack stack, int uses){
-      uses = Mth.clamp(uses,0,1000000);
+      uses = Mth.clamp(uses, 0, 1000000);
       
       if(uses <= 0){
          stack.shrink(stack.getCount());
       }else{
-         putProperty(stack,USES_TAG,uses);
-         ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,BorisLib.SERVER);
+         putProperty(stack, USES_TAG, uses);
+         ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack, BorisLib.SERVER);
       }
    }
    
    public static void addUses(ItemStack stack, int uses){
-      int curUses = getIntProperty(stack,USES_TAG);
-      int newUses = Mth.clamp(uses+curUses,0,1000000);
+      int curUses = getIntProperty(stack, USES_TAG);
+      int newUses = Mth.clamp(uses + curUses, 0, 1000000);
       if(newUses <= 0){
          stack.shrink(stack.getCount());
       }else{
-         putProperty(stack,USES_TAG,newUses);
-         ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,BorisLib.SERVER);
+         putProperty(stack, USES_TAG, newUses);
+         ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack, BorisLib.SERVER);
       }
    }
    
@@ -172,8 +173,8 @@ public class EssenceEgg extends ArcanaItem {
          String essenceType = Soulstone.getType(soulstoneStack);
          
          newArcanaItem = getNewItem();
-         setType(newArcanaItem,essenceType);
-         setUses(newArcanaItem,uses);
+         setType(newArcanaItem, essenceType);
+         setUses(newArcanaItem, uses);
       }
       return newArcanaItem;
    }
@@ -181,7 +182,7 @@ public class EssenceEgg extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Essence Egg").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nAs making Soulstones has taught me, keeping souls imprisoned is hard. Making them so they can be released controllably is even harder. Thankfully, I can build off of a Soulstone’s solid foundation.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Essence Egg").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nAs making Soulstones has taught me, keeping souls imprisoned is hard. Making them so they can be released controllably is even harder. Thankfully, I can build off of a Soulstone’s solid foundation.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Essence Egg").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nThis ‘Egg’ should take the souls from a Soulstone and keep them captive just long enough for me to release them into a new form. Although, it takes 25 souls to form an entirely new creature.\n\nThe Essence Egg can ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Essence Egg").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nbe used one at a time to spawn a mob, or 5 uses (125 souls) can be used on a spawner to change its attunement to the type of essence contained within the Egg.\n").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -210,32 +211,37 @@ public class EssenceEgg extends ArcanaItem {
                BlockEntity blockEntity;
                BlockState blockState = world.getBlockState(blockPos);
                if(blockState.is(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof Spawner spawner){
-                  int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WILLING_CAPTIVE));
-                  if(getUses(stack) >= 5-captiveLevel){
+                  int captiveLevel = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WILLING_CAPTIVE);
+                  int baseConvertCost = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ESSENCE_EGG_SPAWNER_USES);
+                  int decrease = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ESSENCE_EGG_WILLING_CAPTIVE_DECREASE).get(captiveLevel);
+                  int cost = Math.max(0, baseConvertCost - decrease);
+                  if(getUses(stack) >= cost){
                      EntityType<?> entityType = EntityType.byString(getType(stack)).get();
                      spawner.setEntityId(entityType, world.getRandom());
                      world.sendBlockUpdated(blockPos, blockState, blockState, Block.UPDATE_ALL);
                      blockEntity.setChanged();
                      
                      if(playerEntity instanceof ServerPlayer player){
-                        player.displayClientMessage(Component.literal("The Spawner Assumes the Essence of "+ EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                        player.displayClientMessage(Component.literal("The Spawner Assumes the Essence of " + EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                         SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
-                        int xp = ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ESSENCE_EGG_CONVERT);
-                        ArcanaNovum.data(playerEntity).addXP(Math.min(0,xp-(xp/5)*captiveLevel)); // Add xp
-                        ArcanaAchievements.grant(player,ArcanaAchievements.SOUL_CONVERSION);
+                        int xp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ESSENCE_EGG_CONVERT);
+                        ArcanaNovum.data(playerEntity).addXP(Math.min(0, xp * cost / Math.max(1,baseConvertCost))); // Add xp
+                        ArcanaAchievements.grant(player, ArcanaAchievements.SOUL_CONVERSION);
                      }
-                     addUses(stack, -5+captiveLevel);
+                     addUses(stack, -cost);
                   }
                }else{
-                  int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT));
-                  int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT));
+                  int splitLevel = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SOUL_SPLIT);
+                  double splitChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.ESSENCE_EGG_SOUL_SPLIT_CHANCE).get(splitLevel);
+                  int efficiencyLevel = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.DETERMINED_SPIRIT);
+                  double efficiencyChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.ESSENCE_EGG_EFFICIENCY_PER_LVL).get(efficiencyLevel);
                   if(getUses(stack) > 0){
                      ServerLevel serverWorld = world.getServer().getLevel(world.dimension());
-                     Vec3 summonPos = context.getClickLocation().add(0,0.5,0);
+                     Vec3 summonPos = context.getClickLocation().add(0, 0.5, 0);
                      
                      CompoundTag nbtCompound = new CompoundTag();
                      nbtCompound.putString("id", getType(stack));
-                     int spawns = Math.random() >= 0.1*splitLevel ? 1 : 2;
+                     int spawns = Math.random() >= splitChance ? 1 : 2;
                      
                      for(int i = 0; i < spawns; i++){
                         Entity newEntity = EntityType.loadEntityRecursive(nbtCompound, serverWorld, EntitySpawnReason.SPAWN_ITEM_USE, entity -> {
@@ -248,13 +254,13 @@ public class EssenceEgg extends ArcanaItem {
                         serverWorld.tryAddFreshEntityWithPassengers(newEntity);
                      }
                      
-                     if(Math.random() >= 0.1*efficiencyLevel){
-                        addUses(stack,-1);
+                     if(Math.random() >= efficiencyChance){
+                        addUses(stack, -1);
                      }
                      if(playerEntity instanceof ServerPlayer player){
                         SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
-                        ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_ESSENCE_EGG_SPAWN)); // Add xp
-                        ArcanaAchievements.progress(player,ArcanaAchievements.SOUL_FOR_SOUL,1);
+                        ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ESSENCE_EGG_SPAWN)); // Add xp
+                        ArcanaAchievements.progress(player, ArcanaAchievements.SOUL_FOR_SOUL, 1);
                      }
                   }
                }
@@ -272,7 +278,7 @@ public class EssenceEgg extends ArcanaItem {
          ItemStack item = playerEntity.getItemInHand(hand);
          if(playerEntity.isCreative()){
             if(!getType(item).equals("unattuned"))
-               addUses(item,1);
+               addUses(item, 1);
             return InteractionResult.SUCCESS_SERVER;
          }
          return InteractionResult.PASS;
@@ -287,14 +293,14 @@ public class EssenceEgg extends ArcanaItem {
             
             if(type.equals("unattuned") && entity instanceof Mob attackedEntity && playerEntity instanceof ServerPlayer player){
                if(entity.getType().is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)){
-                  player.displayClientMessage(Component.literal("The Essence Egg cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
+                  player.displayClientMessage(Component.literal("The Essence Egg cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
                }else{
                   String entityTypeId = EntityType.getKey(attackedEntity.getType()).toString();
                   String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
                   
-                  setType(stack,entityTypeId);
-                  player.displayClientMessage(Component.literal("The Essence Egg attunes to the essence of "+entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
+                  setType(stack, entityTypeId);
+                  player.displayClientMessage(Component.literal("The Essence Egg attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1, .5f);
                }
             }
          }

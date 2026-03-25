@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -8,6 +10,8 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -18,6 +22,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
@@ -30,6 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class TrackingArrows extends RunicArrow {
 	public static final String ID = "tracking_arrows";
@@ -69,8 +75,11 @@ public class TrackingArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       int broadheads = arrow.getAugment(ArcanaAugments.BROADHEADS);
+      int duration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.TRACKING_ARROW_BROADHEAD_DMG_AMP_DURATION_PER_LVL).get(broadheads);
+      float damageMod = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.TRACKING_ARROW_BROADHEAD_DMG_AMP_PER_LVL).get(broadheads);
       if(entityHitResult.getEntity() instanceof LivingEntity living && broadheads > 0){
-         living.addEffect(new MobEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT,broadheads*100,1),arrow.getOwner());
+         ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY,arcanaId(ID),duration,damageMod,true,true,false, AttributeModifier.Operation.ADD_VALUE, arrow.getOwner() != null ? arrow.getOwner().getUUID() : null);
+         Conditions.addCondition(living.level().getServer(),living,vulnerability);
       }
       CompoundTag arrowData = arrow.getData();
       if(arrow.getOwner() instanceof ServerPlayer player && arrowData.contains("initPos")){

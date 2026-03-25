@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
@@ -41,7 +41,6 @@ import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -146,13 +145,13 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
    
    @Override
    public int getMaxEnergy(ItemStack item){ // 30 second recharge time
-      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ERUPTION));
-      return 30 - 8*cdLvl;
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.MAGMATIC_EVERSOURCE_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.MAGMATIC_EVERSOURCE_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ERUPTION));
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    public int getMaxCharges(ItemStack item){
-      int[] chargeCount = new int[]{1, 3, 5, 10, 25};
-      return chargeCount[Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.VOLCANIC_CHAMBER))];
+      return ArcanaNovum.CONFIG.getIntList(ArcanaConfig.MAGMATIC_EVERSOURCE_CHARGES_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.VOLCANIC_CHAMBER));
    }
    
    @Override
@@ -190,15 +189,17 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
                putProperty(stack,USES_TAG,charges+1);
                buildItemLore(stack, world.getServer());
             }
+            stele.setChanged();
          }
       }
       
       BlockPos geyserPos = stele.getBlockPos().above(5);
       if(world.getFluidState(geyserPos).isSource() && world.getFluidState(geyserPos).is(Fluids.LAVA)) return;
       if(charges > 0 && placeFluid(Fluids.LAVA,null, world, geyserPos, null, true)){
-         stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MAGMATIC_EVERSOURCE_USE));
+         stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MAGMATIC_EVERSOURCE_USE));
          putProperty(stack,USES_TAG,charges-1);
          buildItemLore(stack, world.getServer());
+         stele.setChanged();
       }
    }
    
@@ -341,7 +342,7 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer ? blockPos : blockPos2;
             if(placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult, false)){
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_MAGMATIC_EVERSOURCE_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MAGMATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.HELLGATE,1);
                putProperty(stack,USES_TAG,charges-1);
                buildItemLore(stack, playerEntity.level().getServer());

@@ -11,7 +11,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -45,8 +44,6 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.Collections;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    
@@ -91,20 +88,24 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    protected void populateDefaultEquipmentSlots(RandomSource random, DifficultyInstance localDifficulty){
       if(mage){
          ItemStack bowStack = new ItemStack(Items.BOW);
-         bowStack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(MOD_ID,"nul_guardian_staff"));
+         bowStack.set(DataComponents.ITEM_MODEL, ArcanaRegistry.arcanaId("nul_guardian_staff"));
          this.setItemSlot(EquipmentSlot.MAINHAND, bowStack);
       }else{
          ItemStack meleeStack = new ItemStack(Items.NETHERITE_AXE);
          float rand = this.random.nextFloat();
          if(rand < 0.1){
-            meleeStack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(MOD_ID,"nul_guardian_glaive"));
+            meleeStack.set(DataComponents.ITEM_MODEL, ArcanaRegistry.arcanaId("nul_guardian_glaive"));
          }else if(rand < 0.5){
-            meleeStack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(MOD_ID,"nul_guardian_sword"));
+            meleeStack.set(DataComponents.ITEM_MODEL, ArcanaRegistry.arcanaId("nul_guardian_sword"));
          }else{
-            meleeStack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(MOD_ID,"nul_guardian_axe"));
+            meleeStack.set(DataComponents.ITEM_MODEL, ArcanaRegistry.arcanaId("nul_guardian_axe"));
          }
          this.setItemSlot(EquipmentSlot.MAINHAND, meleeStack);
       }
+   }
+   
+   public NulConstructEntity getConstruct(){
+      return construct;
    }
    
    @Override

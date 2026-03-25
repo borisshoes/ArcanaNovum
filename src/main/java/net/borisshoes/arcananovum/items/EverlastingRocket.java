@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
@@ -135,7 +135,9 @@ public class EverlastingRocket extends EnergyItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      return 16 + 3*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.POWDER_PACKING));
+      int baseCharges = ArcanaNovum.CONFIG.getInt(ArcanaConfig.EVERLASTING_ROCKET_CHARGES);
+      int extraCharges = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.EVERLASTING_ROCKET_CHARGES_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.POWDER_PACKING));
+      return baseCharges + extraCharges;
    }
    
    public ItemStack getFireworkStack(ItemStack stack){
@@ -162,7 +164,7 @@ public class EverlastingRocket extends EnergyItem {
             rocket.addEnergy(item,-1);
             rocket.buildItemLore(stack,player.level().getServer());
             ArcanaAchievements.progress(player,ArcanaAchievements.MISSILE_LAUNCHER, 1);
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_EVERLASTING_ROCKET_USE)); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_EVERLASTING_ROCKET_USE)); // Add xp
             return;
          }
       }
@@ -233,7 +235,9 @@ public class EverlastingRocket extends EnergyItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          
-         if(player.level().getServer().getTickCount() % (600-(100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SULFUR_REPLICATION)))) == 0){
+         int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.EVERLASTING_ROCKET_COOLDOWN);
+         int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.EVERLASTING_ROCKET_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SULFUR_REPLICATION));
+         if(player.level().getServer().getTickCount() % (baseCooldown-cooldownReduction) == 0){
             addEnergy(stack,1);
             buildItemLore(stack,player.level().getServer());
          }
@@ -251,7 +255,7 @@ public class EverlastingRocket extends EnergyItem {
                world.addFreshEntity(fireworkRocketEntity);
                ((EnergyItem)getThis()).addEnergy(context.getItemInHand(),-1);
                buildItemLore(itemStack,player.level().getServer());
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_EVERLASTING_ROCKET_USE)); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_EVERLASTING_ROCKET_USE)); // Add xp
             }else{
                player.displayClientMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
@@ -278,7 +282,7 @@ public class EverlastingRocket extends EnergyItem {
                   if(!user.isCreative()){
                      ((EnergyItem)getThis()).addEnergy(itemStack,-1);
                      buildItemLore(itemStack,player.level().getServer());
-                     ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_EVERLASTING_ROCKET_USE)); // Add xp
+                     ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_EVERLASTING_ROCKET_USE)); // Add xp
                   }
                   user.awardStat(Stats.ITEM_USED.get(this));
                   if(player.position().y() > 500){

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -60,14 +61,20 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
       this.uuid = uuid;
       this.origin = origin;
       this.customName = customName == null ? "" : customName;
-      int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION);
-      this.cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
+      this.cooldown = getBaseCooldown();
    }
    
    public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
       if(e instanceof IgneousColliderBlockEntity collider){
          collider.tick();
       }
+   }
+   
+   private int getBaseCooldown(){
+      int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION);
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.IGNEOUS_COLLIDER_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.IGNEOUS_COLLIDER_COOLDOWN_PER_LVL).get(injectionLvl);
+      return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    private void tick(){
@@ -164,7 +171,8 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
             
             // Remove Source Blocks
             int efficiencyLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.THERMAL_EXPANSION);
-            if(Math.random() >= .1*efficiencyLvl){
+            double efficiency = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.IGNEOUS_COLLIDER_EFFICIENCY_PER_LVL).get(efficiencyLvl);
+            if(Math.random() >= efficiency){
                if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
                   serverWorld.setBlock(hasLava, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                }else if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA_CAULDRON){
@@ -181,14 +189,13 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                UUID parsedId = AlgoUtils.getUUID(crafterId);
                ArcanaPlayerData profile = ArcanaNovum.data(parsedId);
                ArcanaAchievements.progress(parsedId,ArcanaAchievements.ENDLESS_EXTRUSION,1);
-               profile.addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_IGNEOUS_COLLIDER_PRODUCE));
+               profile.addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_IGNEOUS_COLLIDER_PRODUCE));
                if(obby.is(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(parsedId,ArcanaAchievements.EXPENSIVE_INFUSION);
             }
             
             SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.ZOMBIE_VILLAGER_CURE, SoundSource.BLOCKS, 1, .6f);
             level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
-            int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION);
-            cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
+            this.cooldown = getBaseCooldown();
          }
       }
    }

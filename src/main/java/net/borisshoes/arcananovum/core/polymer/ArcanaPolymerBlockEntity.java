@@ -2,15 +2,14 @@ package net.borisshoes.arcananovum.core.polymer;
 
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.InterdictorBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -33,12 +32,10 @@ import xyz.nucleoid.packettweaker.PacketContext;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implements PolymerBlock {
    protected final ArcanaItem arcanaItem;
    protected ArcanaPolymerBlockEntity(ArcanaItem arcanaItem, Properties settings){
-      super(settings.setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId()))));
+      super(settings.setId(ResourceKey.create(Registries.BLOCK, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    

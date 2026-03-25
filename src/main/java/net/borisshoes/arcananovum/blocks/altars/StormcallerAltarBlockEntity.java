@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -18,7 +19,10 @@ import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -36,11 +40,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.TreeMap;
 
 public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    public static final int[] DURATIONS = {-1,2,4,6,8,10,15,20,25,30,35,40,45,50,55,60};
-   public static final Tuple<Item,Integer> COST = new Tuple<>(Items.DIAMOND_BLOCK,1);
    
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
@@ -67,6 +71,17 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       this.mode = 0;
       this.duration = 0;
       resetCooldown();
+   }
+   
+   public static Tuple<Item,Integer> getCost(){
+      try{
+         String itemId = ArcanaNovum.CONFIG.getValue(ArcanaConfig.STORMCALLER_ALTAR_ITEM).toString();
+         Optional<Holder.Reference<Item>> opt = BuiltInRegistries.ITEM.get(Identifier.parse(itemId));
+         assert opt.isPresent();
+         return new Tuple<>(opt.get().value(),1);
+      }catch(Exception e){
+         return new Tuple<>(Items.DIAMOND_BLOCK,1);
+      }
    }
    
    private void changeWeather(@Nullable ServerPlayer player){
@@ -106,7 +121,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       ArcanaEffectUtils.stormcallerAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0);
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
          changeWeather(finalPlayer);
-         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_STORMCALLER_ALTAR_ACTIVATE));
+         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STORMCALLER_ALTAR_ACTIVATE));
       }));
       return true;
    }
@@ -181,7 +196,10 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    public void resetCooldown(){
-      this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CLOUD_SEEDING) * 6000;
+      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CLOUD_SEEDING);
+      int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STORMCALLER_ALTAR_COOLDOWN);
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.STORMCALLER_ALTAR_COOLDOWN_PER_LVL).get(cooldownLevel);
+      this.cooldown = Math.max(1, baseCooldown - cooldownReduction);
    }
    
    public int getMode(){

@@ -2,11 +2,13 @@ package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import io.github.ladysnake.pal.VanillaAbilities;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -74,14 +76,12 @@ public class LevitationHarness extends EnergyItem {
    public static final String WAS_FLYING_TAG = "wasFlying";
    public static final String STONE_DATA_TAG = "stoneData";
    
-   private static final double[] efficiencyChance = {0,.1,.25,.5};
-   
    public LevitationHarness(){
       id = ID;
       name = "Levitation Harness";
       rarity = ArcanaRarity.SOVEREIGN;
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
-      initEnergy = 3599; // 1 hour of charge (1 soul + 16 glowstone dust = 60 seconds of flight)
+      initEnergy = 3599; // 1 hour of default charge (1 soul + 16 glowstone dust = 60 seconds of flight)
       itemVersion = 1;
       vanillaItem = Items.LEATHER_CHESTPLATE;
       item = new LevitationHarnessItem();
@@ -91,8 +91,8 @@ public class LevitationHarness extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,SOULS_TAG,500);
-      putProperty(stack,GLOWSTONE_TAG,960);
+      putProperty(stack,SOULS_TAG,500.0);
+      putProperty(stack,GLOWSTONE_TAG,960.0);
       putProperty(stack,STALL_TAG,-1);
       putProperty(stack,WAS_FLYING_TAG,false);
       setPrefStack(stack);
@@ -158,9 +158,9 @@ public class LevitationHarness extends EnergyItem {
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       CompoundTag stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
-      int souls = getIntProperty(stack,SOULS_TAG);
+      double souls = getDoubleProperty(stack,SOULS_TAG);
       int stall = getIntProperty(stack,STALL_TAG);
-      int glowstone = getIntProperty(stack,GLOWSTONE_TAG);
+      double glowstone = getDoubleProperty(stack,GLOWSTONE_TAG);
       boolean wasFlying = getBooleanProperty(stack,WAS_FLYING_TAG);
       ItemStack newStack = super.updateItem(stack,server);
       putProperty(newStack,STONE_DATA_TAG,stoneData);
@@ -185,18 +185,22 @@ public class LevitationHarness extends EnergyItem {
    }
    
    public void recalculateEnergy(ItemStack stack){
-      int souls = getIntProperty(stack,SOULS_TAG);
-      int glowstone = getIntProperty(stack,GLOWSTONE_TAG) / 16;
-      setEnergy(stack,60*Math.min(souls,glowstone));
+      int soulsPerHour = ArcanaNovum.CONFIG.getInt(ArcanaConfig.LEVITATION_HARNESS_SOUL_PER_HOUR);
+      int glowstonePerHour = ArcanaNovum.CONFIG.getInt(ArcanaConfig.LEVITATION_HARNESS_GLOWSTONE_PER_HOUR);
+      double souls = getDoubleProperty(stack,SOULS_TAG);
+      double glowstone = getDoubleProperty(stack,GLOWSTONE_TAG);
+      double soulHours = souls / (double) soulsPerHour;
+      double glowHours = glowstone / (double) glowstonePerHour;
+      setEnergy(stack, (int) (3600*Math.min(soulHours,glowHours)));
       buildItemLore(stack, BorisLib.SERVER);
    }
    
-   public int getGlow(ItemStack stack){
-      return getIntProperty(stack,GLOWSTONE_TAG);
+   public double getGlow(ItemStack stack){
+      return getDoubleProperty(stack,GLOWSTONE_TAG);
    }
    
-   public int getSouls(ItemStack stack){
-      return getIntProperty(stack,SOULS_TAG);
+   public double getSouls(ItemStack stack){
+      return getDoubleProperty(stack,SOULS_TAG);
    }
    
    public void setStone(ItemStack stack, ItemStack stone){
@@ -209,8 +213,8 @@ public class LevitationHarness extends EnergyItem {
       }
    }
    
-   public void addGlow(ItemStack stack, int glow){
-      int newGlow = Math.max(0,getIntProperty(stack,GLOWSTONE_TAG)+glow);
+   public void addGlow(ItemStack stack, double glow){
+      double newGlow = Math.max(0,getDoubleProperty(stack,GLOWSTONE_TAG)+glow);
       putProperty(stack,GLOWSTONE_TAG,newGlow);
    }
    
@@ -223,12 +227,13 @@ public class LevitationHarness extends EnergyItem {
    }
    
    public void buildGui(ItemStack stack, LevitationHarnessGui gui){
-      int souls = getSouls(stack);
-      int glow = getGlow(stack);
+      int souls = (int) getSouls(stack);
+      int glow = (int) getGlow(stack);
       int energy = getEnergy(stack);
-      String soulText = souls > -1 ? LevelUtils.readableInt(souls) + " Shulker Souls" : "No Soulstone Inserted";
+      
+      String soulText = souls > -1 ? TextUtils.readableInt(souls) + " Shulker Souls" : "No Soulstone Inserted";
       String durationText = energy > 0 ? "Flight Time Remaining: "+getDuration(stack) : "No Fuel!";
-      String glowText = glow > 0 ? LevelUtils.readableInt(glow) + " Glowstone Left" : "No Glowstone Remaining";
+      String glowText = glow > 0 ? TextUtils.readableInt(glow) + " Glowstone Left" : "No Glowstone Remaining";
       GuiElementBuilder soulPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,souls > -1 ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
       GuiElementBuilder durationPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,energy > 0 ? ArcanaColors.LIGHT_COLOR : 0x880000));
       GuiElementBuilder glowPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,glow > 0 ? 0xffdd00 : ArcanaColors.DARK_COLOR));
@@ -246,7 +251,7 @@ public class LevitationHarness extends EnergyItem {
          return;
       LevitationHarnessGui gui = new LevitationHarnessGui(MenuType.HOPPER,player,this, stack);
       
-      int souls = getSouls(stack);
+      double souls = getSouls(stack);
       
       for(int i = 0; i < gui.getSize(); i++){
          gui.clearSlot(i);
@@ -269,7 +274,7 @@ public class LevitationHarness extends EnergyItem {
          }else{
             stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE,player.registryAccess()),stoneData).result().orElse(ItemStack.EMPTY);
          }
-         stone = Soulstone.setSouls(stone,souls);
+         stone = Soulstone.setSouls(stone,(int)souls);
          inv.setItem(0,stone);
          gui.validStone(stone);
       }else{
@@ -319,7 +324,8 @@ public class LevitationHarness extends EnergyItem {
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
-         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.fromNamespaceAndPath(MOD_ID,ID))).build();
+         Identifier modelId = ArcanaItem.getSkin(itemStack) != null ? ArcanaItem.getSkin(itemStack).getModelId() : ArcanaRegistry.arcanaId(ID);
+         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, modelId)).build();
          baseStack.set(DataComponents.EQUIPPABLE,newComp);
          return baseStack;
       }
@@ -341,16 +347,19 @@ public class LevitationHarness extends EnergyItem {
                VanillaAbilities.FLYING.isEnabledFor(player) && !riding;
          boolean wasFlying = getBooleanProperty(stack,WAS_FLYING_TAG);
          
-         int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HARNESS_RECYCLER));
+         int efficiency = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HARNESS_RECYCLER);
+         double efficiencyChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.HARNESS_CORE_RECYCLER_EFFICIENCY).get(efficiency);
+         int soulsPerHour = ArcanaNovum.CONFIG.getInt(ArcanaConfig.LEVITATION_HARNESS_SOUL_PER_HOUR);
+         int glowstonePerHour = ArcanaNovum.CONFIG.getInt(ArcanaConfig.LEVITATION_HARNESS_GLOWSTONE_PER_HOUR);
+         double soulsPerSecond = soulsPerHour / 3600.0;
+         double glowstonePerSecond = glowstonePerHour / 3600.0;
          
          if(world.getServer().getTickCount() % 20 == 0){
             if(chestItem && flying && survival){
-               if(Math.random() >= efficiencyChance[efficiency]){
+               if(entity.random.nextFloat() >= efficiencyChance){
                   addEnergy(stack,-1);
-                  if(getEnergy(stack) % 60 == 0){
-                     putProperty(stack,SOULS_TAG,getSouls(stack)-1);
-                     putProperty(stack,GLOWSTONE_TAG,getGlow(stack)-16);
-                  }
+                  putProperty(stack,SOULS_TAG,getSouls(stack)-soulsPerSecond);
+                  putProperty(stack,GLOWSTONE_TAG,getGlow(stack)-glowstonePerSecond);
                   buildItemLore(stack,player.level().getServer());
                }
                
@@ -392,7 +401,7 @@ public class LevitationHarness extends EnergyItem {
                }
                
                ArcanaEffectUtils.harnessFly(serverWorld,player,10);
-               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_LEVITATION_HARNESS_PER_SECOND));
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_LEVITATION_HARNESS_PER_SECOND));
                
                if(world.getServer().getTickCount() % 120 == 0){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_AMBIENT,1f,0.8f);

@@ -1,13 +1,10 @@
 package net.borisshoes.arcananovum.ai.goals;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
-import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -78,7 +75,7 @@ public class FleeSteleGoal extends Goal {
    public void start() {
       this.pathNav.moveTo(this.path, this.walkSpeedModifier);
       this.mob.playSound(SoundEvents.CREEPER_HURT, 1, 1);
-      this.zone.getBlockEntity().giveXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FELIDAE_CHARM_SCARE_CREEPER));
+      this.zone.getBlockEntity().giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_CREEPER));
    }
    
    @Override

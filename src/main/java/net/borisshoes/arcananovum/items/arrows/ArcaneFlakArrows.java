@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -8,6 +10,7 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -81,26 +84,33 @@ public class ArcaneFlakArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      double radius = 4 + 1.25*arrow.getAugment(ArcanaAugments.AIRBURST);
+      double baseR = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.FLAK_ARROW_RANGE);
+      double extraR = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.FLAK_ARROW_AIRBURST_RANGE_BUFF_PER_LVL).get(arrow.getAugment(ArcanaAugments.AIRBURST));
+      double radius = baseR + extraR;
       detonate(arrow,radius);
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      double radius = 4 + 1.25*arrow.getAugment(ArcanaAugments.AIRBURST);
+      double baseR = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.FLAK_ARROW_RANGE);
+      double extraR = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.FLAK_ARROW_AIRBURST_RANGE_BUFF_PER_LVL).get(arrow.getAugment(ArcanaAugments.AIRBURST));
+      double radius = baseR + extraR;
       detonate(arrow,radius);
    }
    
    public static void detonate(AbstractArrow arrow, double damageRange){
       if(!(arrow.level() instanceof ServerLevel serverWorld)) return;
       int deadPhantomCount = 0;
+      float percentage = ArcanaUtils.getArrowPercentage(arrow);
+      float damageMax = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FLAK_ARROW_DAMAGE);
+      float damage = percentage * damageMax;
+      float multiplier = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FLAK_ARROW_DAMAGE_MULTIPLIER);
       List<Entity> triggerTargets = arrow.level().getEntities(arrow,arrow.getBoundingBox().inflate(damageRange*2),
             e -> !e.isSpectator() && e.distanceTo(arrow) <= damageRange && e instanceof LivingEntity);
       for(Entity entity : triggerTargets){
          if(entity instanceof LivingEntity e){
-            float damage = (float) Mth.clamp(arrow.getDeltaMovement().length()*4,1,10);
-            damage *= (e.onGround() ? 0.5f : 3.5f);
-            damage *= e.distanceTo(arrow) > damageRange*.75 ? 0.5f : 1;
+            damage *= e.onGround() ? 1f : multiplier;
+            damage *= e.distanceTo(arrow) > damageRange*.66 ? 0.5f : 1;
             DamageSource source = arrow.damageSources().explosion(arrow,arrow.getOwner());
             e.hurtServer(serverWorld,source,damage);
             if(e instanceof Phantom && e.isDeadOrDying()) deadPhantomCount++;

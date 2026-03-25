@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -10,9 +11,11 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarRecipeGui;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
+import net.borisshoes.arcananovum.items.catalysts.TransmogrificationCatalyst;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.Dialog;
@@ -76,7 +79,7 @@ public class AequalisScientia extends ArcanaItem {
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,USES_TAG,5);
+      putProperty(stack,USES_TAG, ArcanaNovum.CONFIG.getInt(ArcanaConfig.AEQUALIS_SCIENTIA_BASE_USES));
       putProperty(stack,TRANSMUTATION_TAG,"");
       setPrefStack(stack);
    }
@@ -219,17 +222,6 @@ public class AequalisScientia extends ArcanaItem {
    }
    
    public void inventoryDialog(ServerPlayer player){
-      ArcanaPlayerData data = ArcanaNovum.data(player);
-      if(!data.completedCeptyus() && data.canAttemptCeptyus() && data.getLastCeptyusAttempt() <= 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaRegistry.CEPTYUS_EVENT_ENABLED)){
-         Structure structure = player.level().structureManager().registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.ANCIENT_CITY);
-         StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(),structure);
-         if(start.isValid() && start.canBeReferenced()){
-            data.startCeptyus(player);
-            data.setLastCeptyusAttempt(36000);
-            return;
-         }
-      }
-      
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
       // Conditions: 0 - Crafted Wings, 1 - Crafted Memento, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Egg, 5 - Has Greaves, 6 - Has Spear
       boolean[] conditions = new boolean[]{
@@ -583,8 +575,22 @@ public class AequalisScientia extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
          
-         if(Math.random() < 0.0000075){ // 0.0000075
+         double dialogChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.AEQUALIS_DIALOG_CHANCE);
+         if(Math.random() < dialogChance){
             inventoryDialog(player);
+         }
+         
+         double eventChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CEPTYUS_EVENT_CHANCE);
+         if(Math.random() < eventChance){
+            ArcanaPlayerData data = ArcanaNovum.data(player);
+            if(!data.completedCeptyus() && data.canAttemptCeptyus() && data.getLastCeptyusAttempt() <= 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.CEPTYUS_EVENT_ENABLED)){
+               Structure structure = player.level().structureManager().registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.ANCIENT_CITY);
+               StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(),structure);
+               if(start.isValid() && start.canBeReferenced()){
+                  data.startCeptyus(player);
+                  data.setLastCeptyusAttempt(36000);
+               }
+            }
          }
       }
       
@@ -702,6 +708,38 @@ public class AequalisScientia extends ArcanaItem {
                   
                   items = List.of(input, ItemStack.EMPTY,reagent1,reagent2,stack);
                   results = unattuneRecipe.doTransmutation(input,null,reagent1,reagent2,stack,player);
+               }else if(recipe instanceof TransmogrificationTransmutationRecipe transmogRecipe){
+                  ItemStack arcanaStack = playerEntity.getItemInHand(InteractionHand.OFF_HAND);
+                  ArcanaItem heldItem = ArcanaItemUtils.identifyItem(arcanaStack);
+                  
+                  if(heldItem != null){
+                     ItemStack cata = getAndSplitValidTransmogStack(stack,arcanaStack,player);
+                     if(cata == null){
+                        player.displayClientMessage(Component.literal("You do not have a valid Transmogrification Catalyst.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+                        return InteractionResult.SUCCESS_SERVER;
+                     }
+                     ItemStack reagent1 = getAndSplitValidReagent1(stack,recipe,player);
+                     if(reagent1 == null){
+                        MinecraftUtils.returnItems(new SimpleContainer(cata),player);
+                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()),false);
+                        return InteractionResult.SUCCESS_SERVER;
+                     }
+                     ItemStack reagent2 = getAndSplitValidReagent2(stack,recipe,player);
+                     if(reagent2 == null){
+                        MinecraftUtils.returnItems(new SimpleContainer(cata),player);
+                        MinecraftUtils.returnItems(new SimpleContainer(reagent1),player);
+                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()),false);
+                        return InteractionResult.SUCCESS_SERVER;
+                     }
+                     ItemStack input = playerEntity.getItemInHand(InteractionHand.OFF_HAND).split(1);
+                     
+                     items = List.of(input,cata,reagent1,reagent2,stack);
+                     results = transmogRecipe.doTransmutation(input,cata,reagent1,reagent2,stack,player);
+                  }else{
+                     results = null;
+                     player.displayClientMessage(Component.literal("Your offhand must be a valid Arcana Item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+                     return InteractionResult.SUCCESS_SERVER;
+                  }
                }else{
                   results = null;
                }
@@ -719,7 +757,7 @@ public class AequalisScientia extends ArcanaItem {
                         }
                         Containers.dropItemStack(world, center.x,center.y,center.z,result);
                      }
-                     ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE));
+                     ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE));
                   }));
                }
             }else{
@@ -779,6 +817,27 @@ public class AequalisScientia extends ArcanaItem {
             if(invStack.getCount() >= 1){
                int splitAmount = invStack.getCount();
                return invStack.split(splitAmount);
+            }
+         }
+         return null;
+      }
+      
+      private ItemStack getAndSplitValidTransmogStack(ItemStack aequalis, ItemStack arcanaStack, ServerPlayer player){
+         Inventory inventory = player.getInventory();
+         
+         for(int i = 0; i < inventory.getContainerSize(); i++){
+            if(i == Inventory.SLOT_OFFHAND) continue;
+            ItemStack invStack = inventory.getItem(i);
+            if(invStack.equals(aequalis)) continue;
+            if(!invStack.is(ArcanaRegistry.TRANSMOGRIFICATION_CATALYST.getItem())) continue;
+            ArcanaSkin skin = ArcanaSkin.getSkinFromString(ArcanaItem.getStringProperty(invStack, TransmogrificationCatalyst.SELECTED_SKIN_TAG));
+            ArcanaSkin curSkin = ArcanaItem.getSkin(arcanaStack);
+            if(skin == null && curSkin == null) continue;
+            if(skin != null && !skin.getArcanaItem().getId().equals(ArcanaItemUtils.identifyItem(arcanaStack).getId())) continue;
+            if(skin != null && curSkin != null && skin.getId().equals(curSkin.getId())) continue;
+            
+            if(invStack.getCount() >= 1){
+               return invStack.split(1);
             }
          }
          return null;

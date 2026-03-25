@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -21,7 +21,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -223,12 +222,12 @@ public class GreavesOfGaialtus extends ArcanaItem {
             
             // Don't duplicate attributes
             for(ItemAttributeModifiers.Entry entry : modifiers.modifiers()){
-               if(!entry.matches(Attributes.BLOCK_INTERACTION_RANGE, Identifier.fromNamespaceAndPath(MOD_ID,this.id))){
+               if(!entry.matches(Attributes.BLOCK_INTERACTION_RANGE, ArcanaRegistry.arcanaId(this.id))){
                   attributeList.add(entry);
                }
             }
             
-            attributeList.add(new ItemAttributeModifiers.Entry(Attributes.BLOCK_INTERACTION_RANGE,new AttributeModifier(Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,this.id),1.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.LEGS));
+            attributeList.add(new ItemAttributeModifiers.Entry(Attributes.BLOCK_INTERACTION_RANGE,new AttributeModifier(ArcanaRegistry.arcanaId(this.id),1.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.LEGS));
             ItemAttributeModifiers newComponent = new ItemAttributeModifiers(attributeList);
             stack.set(DataComponents.ATTRIBUTE_MODIFIERS,newComponent);
          }
@@ -287,7 +286,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
-         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.fromNamespaceAndPath(MOD_ID,ID))).build();
+         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, ArcanaRegistry.arcanaId(ID))).build();
          baseStack.set(DataComponents.EQUIPPABLE,newComp);
          return baseStack;
       }
@@ -311,7 +310,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
          if(playerEntity instanceof ServerPlayer player && player.isShiftKeyDown()){
             ItemStack stack = playerEntity.getItemInHand(hand);
             if(hand == InteractionHand.MAIN_HAND){
-               GreavesOfGaialtusGui gui = new GreavesOfGaialtusGui(player, GreavesOfGaialtus.this, stack, GREAVES_SLOT_COUNT[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PLANETARY_POCKETS))]);
+               GreavesOfGaialtusGui gui = new GreavesOfGaialtusGui(player, GreavesOfGaialtus.this, stack, GREAVES_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PLANETARY_POCKETS)]);
                gui.build();
                gui.open();
             }else if(hand == InteractionHand.OFF_HAND){
@@ -346,7 +345,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                if(!GreavesSlot.isValidItem(otherStack)){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
                }else{
-                  int size = GREAVES_SLOT_COUNT[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PLANETARY_POCKETS))];
+                  int size = GREAVES_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PLANETARY_POCKETS)];
                   int count = otherStack.getCount();
                   Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
                   if(count == addPair.getB().getCount()){

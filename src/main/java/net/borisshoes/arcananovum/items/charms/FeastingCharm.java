@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import com.mojang.datafixers.util.Pair;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -40,10 +40,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class FeastingCharm extends ArcanaItem {
-	public static final String ID = "feasting_charm";
-   
-   private static final int[] gluttonyFoodBoost = {0,2,4,6};
-   private static final float[] gluttonySatBoost = {0,0.25f,0.5f,1f};
+   public static final String ID = "feasting_charm";
    
    public FeastingCharm(){
       id = ID;
@@ -52,13 +49,13 @@ public class FeastingCharm extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CHARMS, ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.RABBIT_STEW;
       item = new FeastingCharmItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{ResearchTasks.USE_ENCHANTED_GOLDEN_APPLE,ResearchTasks.HUNGER_DAMAGE,ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.USE_ENCHANTED_GOLDEN_APPLE, ResearchTasks.HUNGER_DAMAGE, ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,MODE_TAG,0);
+      putProperty(stack, MODE_TAG, 0);
       setPrefStack(stack);
    }
    
@@ -79,7 +76,7 @@ public class FeastingCharm extends ArcanaItem {
             .append(Component.literal(" to").withStyle(ChatFormatting.DARK_GREEN))
             .append(Component.literal(" toggle ").withStyle(ChatFormatting.GOLD))
             .append(Component.literal("the charm between feeding modes.").withStyle(ChatFormatting.DARK_GREEN)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    // Mode 0 is optimal eating - Optimal Eating
@@ -87,20 +84,24 @@ public class FeastingCharm extends ArcanaItem {
    // Mode 2 is eat if possible when below half HP, otherwise optimal - Optimal + Emergency Eating
    // Mode 3 is eat if possible when below half HP, otherwise when below 2 regen range - Regen + Emergency Eating
    public void toggleMode(ServerPlayer player, ItemStack stack){
-      int mode = (getIntProperty(stack,MODE_TAG)+1) % 4;
-      putProperty(stack,MODE_TAG,mode);
+      int mode = (getIntProperty(stack, MODE_TAG) + 1) % 4;
+      putProperty(stack, MODE_TAG, mode);
       switch(mode){
-         case 0 -> player.displayClientMessage(Component.literal("Feasting Mode: Optimal").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
-         case 1 -> player.displayClientMessage(Component.literal("Feasting Mode: Regen").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
-         case 2 -> player.displayClientMessage(Component.literal("Feasting Mode: Optimal + Emergency").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
-         case 3 -> player.displayClientMessage(Component.literal("Feasting Mode: Regen + Emergency").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+         case 0 ->
+               player.displayClientMessage(Component.literal("Feasting Mode: Optimal").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+         case 1 ->
+               player.displayClientMessage(Component.literal("Feasting Mode: Regen").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+         case 2 ->
+               player.displayClientMessage(Component.literal("Feasting Mode: Optimal + Emergency").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+         case 3 ->
+               player.displayClientMessage(Component.literal("Feasting Mode: Regen + Emergency").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
       }
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Charm of Feasting").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nA simple infusion of Arcana can go a long way. Returning to the Enchanted Golden Apple, a bit of extra Arcana supplemented it to become a pseudo-infinite food source.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Charm of Feasting").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nA simple infusion of Arcana can go a long way. Returning to the Enchanted Golden Apple, a bit of extra Arcana supplemented it to become a pseudo-infinite food source.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Charm of Feasting").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nAny food in my inventory will get ingested by the Charm when I am hungry, as long as it is not an Enchanted Golden Apple.\n\nSimply wearing the Charm also causes my hunger to be satiated periodically.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Charm of Feasting").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nUsing the Charm switches the feeding mode.\n \nOptimal mode waits for me to be as hungry as the food will restore.\n\nRegen mode keeps me within the threshold for health regeneration. ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Charm of Feasting").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nEmergency mode feeds me whenever possible when I am below half health.").withStyle(ChatFormatting.BLACK)));
@@ -122,17 +123,22 @@ public class FeastingCharm extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
          
-         int mode = getIntProperty(stack,MODE_TAG);
-         int time = 400 - 100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENZYMES));
-         int gluttony = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.GLUTTONY));
+         int passiveCD = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FEASTING_CHARM_PASSIVE_COOLDOWN);
+         int activeCD = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FEASTING_CHARM_ACTIVE_COOLDOWN);
+         int enzymesCDReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FEASTING_CHARM_ENZYMES_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.ENZYMES));
          
-         if(world.getServer().getTickCount() % time == 0){ // Consume food
+         int mode = getIntProperty(stack, MODE_TAG);
+         int activeTime = Math.max(0, activeCD - enzymesCDReduction);
+         int passiveTime = Math.max(0, passiveCD - enzymesCDReduction);
+         int gluttony = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.GLUTTONY);
+         
+         if(world.getServer().getTickCount() % activeTime == 0){ // Consume food
             //Scan for available food items
             Inventory inv = player.getInventory();
             FoodData hunger = player.getFoodData();
             ArrayList<Pair<Integer, FoodProperties>> availableFoods = new ArrayList<>();
             int bestFoodInd = -1;
-            for(int i = 0; i<inv.getContainerSize(); i++){
+            for(int i = 0; i < inv.getContainerSize(); i++){
                ItemStack invItem = inv.getItem(i);
                if(invItem.isEmpty() || !invItem.has(DataComponents.FOOD) || !invItem.has(DataComponents.CONSUMABLE))
                   continue;
@@ -140,14 +146,14 @@ public class FeastingCharm extends ArcanaItem {
                if(!ArcanaItemUtils.isArcane(invItem) && invItem.getItem() != Items.ENCHANTED_GOLDEN_APPLE){
                   FoodProperties foodComponent = invItem.get(DataComponents.FOOD);
                   if(foodComponent.nutrition() < 1) continue;
-                  availableFoods.add(new Pair<>(i,foodComponent));
+                  availableFoods.add(new Pair<>(i, foodComponent));
                   if(bestFoodInd == -1 || inv.getItem(bestFoodInd).get(DataComponents.FOOD).nutrition() < foodComponent.nutrition()){
                      bestFoodInd = i;
                   }
                }
             }
             if(bestFoodInd != -1){
-               ItemStack selectedFood = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PICKY_EATER) >= 1 ? inv.getItem(bestFoodInd) : inv.getItem(availableFoods.getFirst().getFirst());
+               ItemStack selectedFood = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PICKY_EATER) >= 1 ? inv.getItem(bestFoodInd) : inv.getItem(availableFoods.getFirst().getFirst());
                FoodProperties foodComponent = selectedFood.get(DataComponents.FOOD);
                int foodValue = foodComponent.nutrition();
                
@@ -164,38 +170,44 @@ public class FeastingCharm extends ArcanaItem {
                };
                
                if(consume){
-                  player.displayClientMessage(Component.literal("Your Feasting Charm consumes a "+selectedFood.getHoverName().getString()).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC),true);
-                  hunger.eat(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
+                  player.displayClientMessage(Component.literal("Your Feasting Charm consumes a " + selectedFood.getHoverName().getString()).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), true);
+                  float extraSat = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_SATURATION_PER_LVL).get(gluttony);
+                  int extraHunger = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_FOOD_PER_LVL).get(gluttony);
+                  hunger.eat(extraHunger, extraSat);
                   
                   if(selectedFood.is(Items.POISONOUS_POTATO)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Poisonous Potato",true);
+                     ArcanaAchievements.setCondition(player, ArcanaAchievements.TARRARE, "Poisonous Potato", true);
                   }else if(selectedFood.is(Items.SPIDER_EYE)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Spider Eye",true);
+                     ArcanaAchievements.setCondition(player, ArcanaAchievements.TARRARE, "Spider Eye", true);
                   }else if(selectedFood.is(Items.ROTTEN_FLESH)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Rotten Flesh",true);
+                     ArcanaAchievements.setCondition(player, ArcanaAchievements.TARRARE, "Rotten Flesh", true);
                   }else if(selectedFood.is(Items.SUSPICIOUS_STEW)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Suspicious Stew",true);
+                     ArcanaAchievements.setCondition(player, ArcanaAchievements.TARRARE, "Suspicious Stew", true);
                   }else if(selectedFood.is(Items.CHICKEN)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Raw Chicken",true);
+                     ArcanaAchievements.setCondition(player, ArcanaAchievements.TARRARE, "Raw Chicken", true);
                   }else if(selectedFood.is(Items.PUFFERFISH)){
-                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE,"Pufferfish",true);
+                     ArcanaAchievements.setCondition(player, ArcanaAchievements.TARRARE, "Pufferfish", true);
                   }
                   
                   Consumable consumableComponent = selectedFood.get(DataComponents.CONSUMABLE);
                   consumableComponent.onConsume(world, player, selectedFood); // Handles effects, nutrition, and stack decrease
                   
-                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_FEASTING_CHARM_PER_FOOD_VALUE)*foodValue); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FEASTING_CHARM_PER_FOOD_VALUE) * foodValue); // Add xp
                }
             }
          }
-         if(world.getServer().getTickCount() % (time*6) == 0){ // Give player a small hunger boost
-            player.getFoodData().eat(1+gluttony,(1+gluttony)*0.25f);
+         if(world.getServer().getTickCount() % passiveTime == 0){ // Give player a small hunger boost
+            float baseSat = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FEASTING_CHARM_PASSIVE_SATURATION);
+            float extraSat = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_SATURATION_PER_LVL).get(gluttony);
+            int baseHunger = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FEASTING_CHARM_PASSIVE_HUNGER);
+            int extraHunger = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_FOOD_PER_LVL).get(gluttony);
+            player.getFoodData().eat(baseHunger+extraHunger,baseSat+extraSat);
          }
       }
       
       @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
-         toggleMode((ServerPlayer) playerEntity,playerEntity.getItemInHand(hand));
+         toggleMode((ServerPlayer) playerEntity, playerEntity.getItemInHand(hand));
          return InteractionResult.SUCCESS_SERVER;
       }
    }

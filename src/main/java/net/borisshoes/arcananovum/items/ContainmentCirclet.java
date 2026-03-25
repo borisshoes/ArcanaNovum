@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.mojang.logging.LogUtils;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -188,7 +189,7 @@ public class ContainmentCirclet extends ArcanaItem {
             entity.discard();
             user.displayClientMessage(Component.literal("The Circlet contains the creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
             SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
-            ArcanaNovum.data(user).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_CONTAINMENT_CIRCLET_USE)); // Add xp
+            ArcanaNovum.data(user).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CONTAINMENT_CIRCLET_USE)); // Add xp
             buildItemLore(stack,user.level().getServer());
          }
       }
@@ -284,9 +285,10 @@ public class ContainmentCirclet extends ArcanaItem {
          float hp = getFloatProperty(stack,HP_TAG);
          float maxHp = getFloatProperty(stack,MAX_HP_TAG);
          boolean heals = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HEALING_CIRCLET) > 0;
+         double hpPerSecond = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CONTAINMENT_CIRCLET_HEALING_RATE);
          
-         if(heals && player.level().getServer().getTickCount() % 1200 == 0){
-            putProperty(stack,HP_TAG,Math.min(maxHp,hp+1));
+         if(heals && player.level().getServer().getTickCount() % 20 == 0){
+            putProperty(stack,HP_TAG,Math.min(maxHp,hp+hpPerSecond));
             buildItemLore(stack,serverWorld.getServer());
          }
       }

@@ -1,10 +1,10 @@
 {
   "values": [
-    "arcananovum:nul_construct",
     "arcananovum:dragon_wizard",
     "arcananovum:dragon_phantom",
+    "arcananovum:nul_guardian",
+    "arcananovum:nul_construct",
     "minecraft:ender_dragon",
-    "minecraft:wither",
-    "minecraft:warden"
+    "minecraft:wither"
   ]
 }

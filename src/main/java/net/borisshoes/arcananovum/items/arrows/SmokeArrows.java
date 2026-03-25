@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.areaeffects.SmokeArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -8,6 +10,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -70,7 +73,10 @@ public class SmokeArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
-         float range = (float) Mth.clamp(arrow.getDeltaMovement().length()*.8,.3,2.5);
+         float percentage = ArcanaUtils.getArrowPercentage(arrow);
+         double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MIN);
+         double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MAX);
+         float range = (float) Mth.clamp(percentage*maxRange,minRange,maxRange);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS);
          ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),entityHitResult.getEntity(),null,null,range,gasLvl));
       }
@@ -79,7 +85,10 @@ public class SmokeArrows extends RunicArrow {
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
-         float range = (float) Mth.clamp(arrow.getDeltaMovement().length()*.8,.3,2.5);
+         float percentage = ArcanaUtils.getArrowPercentage(arrow);
+         double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MIN);
+         double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MAX);
+         float range = (float) Mth.clamp(percentage*maxRange,minRange,maxRange);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS);
          ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),null,blockHitResult.getBlockPos(),serverWorld,range,gasLvl));
       }

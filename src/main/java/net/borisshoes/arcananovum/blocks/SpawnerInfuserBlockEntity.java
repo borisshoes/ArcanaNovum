@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -28,6 +29,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
@@ -254,13 +256,14 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
       int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS));
       int points = this.getPoints();
       if(points > 0){
+         Item pointsItem = SpawnerInfuser.getPointsItem();
          while(points/ratio > 64){
-            ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
+            ItemStack dropItem = new ItemStack(pointsItem);
             dropItem.setCount(64);
             drops.add(dropItem.copy());
             points -= 64*ratio;
          }
-         ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
+         ItemStack dropItem = new ItemStack(pointsItem);
          dropItem.setCount(points/ratio);
          drops.add(dropItem.copy());
       }
@@ -414,7 +417,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
          ItemStack soulstoneSlot = inv.getItem(0);
          ItemStack extraPoints = ItemStack.EMPTY;
          int points = getPoints();
-         int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.SOUL_RESERVOIR)];
+         int bonusCap = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SPAWNER_INFUSER_EXTRA_CAPACITY_PER_LVL).get(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.SOUL_RESERVOIR));
          int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.AUGMENTED_APPARATUS));
          
          if(!soulstoneSlot.isEmpty()){
@@ -455,13 +458,14 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
             
             NonNullList<ItemStack> drops = NonNullList.create();
             if(points > 0){
+               Item pointsItem = SpawnerInfuser.getPointsItem();
                while(points/ratio > 64){
-                  ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
+                  ItemStack dropItem = new ItemStack(pointsItem);
                   dropItem.setCount(64);
                   drops.add(dropItem.copy());
                   points -= 64*ratio;
                }
-               ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
+               ItemStack dropItem = new ItemStack(pointsItem);
                dropItem.setCount(points/ratio);
                drops.add(dropItem.copy());
             }

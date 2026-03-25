@@ -12,11 +12,14 @@ import net.borisshoes.arcananovum.mixins.LivingEntityAccessor;
 import net.borisshoes.arcananovum.mixins.WitherBossAccessor;
 import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
@@ -32,7 +35,6 @@ import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -73,6 +75,7 @@ import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
 import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.WindCharge;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipBlockStateContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -94,7 +97,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class NulConstructEntity extends Monster implements PolymerEntity, RangedAttackMob {
    
@@ -125,6 +128,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    private int numPlayers;
    private int spellCooldown;
    private float adaptiveResistance;
+   private long chunkTicketExpiryTicks = 0L;
    private HashMap<ConstructSpellType,ConstructSpell> spells;
    private HashMap<ConstructAdaptations,Boolean> adaptations;
    private HashMap<BlockPos,Integer> blockDamage;
@@ -316,7 +320,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    
    @Override
    public boolean canBeAffected(MobEffectInstance effect){
-      return effect.is(ArcanaRegistry.DAMAGE_AMP_EFFECT);
+      return false;
    }
    
    @Override
@@ -457,8 +461,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          ArcanaEffectUtils.exaltedConstructSummon(serverWorld, position().add(0,0,0),0);
          
          AttributeInstance entityAttributeInstance = getAttribute(Attributes.ATTACK_DAMAGE);
-         AttributeModifier entityAttributeModifier = new AttributeModifier(Identifier.fromNamespaceAndPath(MOD_ID,"exalted"), 15.0f, AttributeModifier.Operation.ADD_VALUE);
-         if(entityAttributeInstance != null && !entityAttributeInstance.hasModifier(Identifier.fromNamespaceAndPath(MOD_ID,"exalted"))) entityAttributeInstance.addPermanentModifier(entityAttributeModifier);
+         AttributeModifier entityAttributeModifier = new AttributeModifier(arcanaId("exalted"), 15.0f, AttributeModifier.Operation.ADD_VALUE);
+         if(entityAttributeInstance != null && !entityAttributeInstance.hasModifier(arcanaId("exalted"))) entityAttributeInstance.addPermanentModifier(entityAttributeModifier);
       }else{
          witherName = Component.literal("")
                .append(Component.literal("-").withStyle(ChatFormatting.DARK_GRAY))
@@ -681,6 +685,16 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    @Override
    protected void customServerAiStep(ServerLevel world){
       try{
+         BlockPos blockPos = BlockPos.containing(this.position());
+         ChunkPos chunkPos = this.chunkPosition();
+         int chunkX = SectionPos.blockToSectionCoord(this.position().x());
+         int chunkZ = SectionPos.blockToSectionCoord(this.position().z());
+         if ((--this.chunkTicketExpiryTicks <= 0L || chunkX != SectionPos.blockToSectionCoord(blockPos.getX()) || chunkZ != SectionPos.blockToSectionCoord(blockPos.getZ())) && level() instanceof ServerLevel serverWorld) {
+            serverWorld.resetEmptyTime();
+            serverWorld.getChunkSource().addTicketWithRadius(ArcanaRegistry.CONSTRUCT_TICKET_TYPE, chunkPos, 4);
+            this.chunkTicketExpiryTicks = ArcanaRegistry.CONSTRUCT_TICKET_TYPE.timeout() - 1L;
+         }
+         
          if(spells == null || spells.isEmpty()) createSpells();
          if(!initializedAttributes) initializeAttributes();
          
@@ -762,8 +776,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             }
             if(summoner.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
                triggerAdaptation(ConstructAdaptations.TRUE_INVISIBILITY);
-               MobEffectInstance blindness = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT,110,3,false,false,false);
-               summoner.addEffect(blindness);
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId("nul_construct_invis_rebuke"),110,4.0f,false,true,false, AttributeModifier.Operation.ADD_VALUE,getUUID());
+               Conditions.addCondition(world.getServer(),summoner,nearsight);
                summoner.removeEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT);
             }
          }else if(this.getTarget() != null && this.getTarget() instanceof ServerPlayer player){
@@ -793,8 +807,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                List<Player> players = level().getEntities(EntityType.PLAYER,getBoundingBox().inflate(FIGHT_RANGE),(e) -> true);
                
                for(Player player : players){
-                  MobEffectInstance amp = new MobEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 100, 1, false, true, true);
-                  player.addEffect(amp);
+                  ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY,arcanaId("nul_construct"),100,0.50f,true,true,true, AttributeModifier.Operation.ADD_VALUE, getUUID());
+                  Conditions.addCondition(level().getServer(),player,vulnerability);
                }
             }
          }
@@ -924,8 +938,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          
          if(this.isExalted){
             List<Player> players = level().getEntities(EntityType.PLAYER,getBoundingBox().inflate(FIGHT_RANGE),(e) -> true);
-            MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 30, 20, false, true, true);
-            players.forEach(p -> p.addEffect(blind));
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId("nul_construct_exalted"),30,32.0f,false,true,true, AttributeModifier.Operation.ADD_VALUE,getUUID());
+            players.forEach(p -> Conditions.addCondition(level().getServer(),p,nearsight));
          }
          
          this.attackCooldown = Math.max(this.attackCooldown - 1, 0);
@@ -1007,12 +1021,12 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                         }
                         
                         hit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(),ArcanaDamageTypes.NUL,this), damage);
+                        ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId("nul_construct_laser"),40,24.0f,false,true,true, AttributeModifier.Operation.ADD_VALUE,getUUID());
                         MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
-                        MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 40, 25, false, true, true);
                         MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, isExalted ? 100 : 40, 1, false, true, true);
                         MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, isExalted ? 100 : 40, 2, false, true, true);
                         MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, isExalted ? 100 : 40, 1, false, true, true);
-                        if(isExalted) livingHit.addEffect(blind);
+                        if(isExalted) Conditions.addCondition(level().getServer(),livingEntity,nearsight);
                         livingHit.addEffect(slow);
                         livingHit.addEffect(fatigue);
                         livingHit.addEffect(weakness);
@@ -1272,8 +1286,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          
          if(this.isExalted){
             List<Player> players = level().getEntities(EntityType.PLAYER,getBoundingBox().inflate(FIGHT_RANGE),(e) -> true);
-            MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 60, 15, false, true, true);
-            players.forEach(p -> p.addEffect(blind));
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId("nul_construct_blast"),60,16.0f,false,true,false, AttributeModifier.Operation.ADD_VALUE,getUUID());
+            players.forEach(p -> Conditions.addCondition(level().getServer(),p,nearsight));
          }
       }else if(spell.spellType == ConstructSpellType.REFLEXIVE_BLAST){ // Blast
          List<Entity> entities = world.getEntities(this,getBoundingBox().inflate(2*BLAST_RANGE), e -> !e.isSpectator() && e.distanceTo(this) <= BLAST_RANGE && (e instanceof LivingEntity));

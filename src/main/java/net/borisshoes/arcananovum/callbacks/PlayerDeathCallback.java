@@ -21,8 +21,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
-
 public class PlayerDeathCallback {
    
    public static void afterRespawn(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive){

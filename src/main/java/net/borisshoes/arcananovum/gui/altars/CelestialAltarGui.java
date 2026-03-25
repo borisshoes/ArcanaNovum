@@ -17,14 +17,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-
-import static net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity.COST;
 
 public class CelestialAltarGui extends SimpleGui {
    private final CelestialAltarBlockEntity blockEntity;
@@ -37,8 +37,6 @@ public class CelestialAltarGui extends SimpleGui {
       setTitle(Component.literal("Celestial Altar"));
       control = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STELLAR_CONTROL) >= 1;
    }
-   
-   
    
    @Override
    public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
@@ -55,12 +53,13 @@ public class CelestialAltarGui extends SimpleGui {
             blockEntity.setMode((mode+1) % 2);
          }else{
             if(blockEntity.getCooldown() <= 0 && blockEntity.getLevel() instanceof ServerLevel serverWorld){
-               if(MinecraftUtils.removeItems(player, COST.getA(),COST.getB())){
+               Tuple<Item,Integer> cost = CelestialAltarBlockEntity.getCost();
+               if(MinecraftUtils.removeItems(player, cost.getA(),cost.getB())){
                   blockEntity.startStarChange(player);
                   close();
                }else{
-                  player.displayClientMessage(Component.literal("You do not have "+ StormcallerAltarBlockEntity.COST.getB()+" ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                        .append(Component.translatable(COST.getA().getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
+                  player.displayClientMessage(Component.literal("You do not have "+ cost.getB()+" ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
                         .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)),false);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
                   close();
@@ -153,6 +152,7 @@ public class CelestialAltarGui extends SimpleGui {
       
       
       GuiElementBuilder activateItem = new GuiElementBuilder(mode == 0 ? Items.GLOWSTONE : Items.SEA_LANTERN);
+      Tuple<Item,Integer> cost = CelestialAltarBlockEntity.getCost();
       activateItem.setName((Component.literal("")
             .append(Component.literal("Activate Altar").withStyle(mode == 0 ? ChatFormatting.GOLD : ChatFormatting.BLUE))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -164,8 +164,8 @@ public class CelestialAltarGui extends SimpleGui {
             .append(Component.literal("Right Click to switch modes").withStyle(ChatFormatting.DARK_GRAY)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("The Altar Requires "+COST.getB()+" ").withStyle(ChatFormatting.AQUA))
-            .append(Component.translatable(COST.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+            .append(Component.literal("The Altar Requires "+cost.getB()+" ").withStyle(ChatFormatting.AQUA))
+            .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
       setSlot(4,activateItem);
    }
    

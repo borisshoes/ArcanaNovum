@@ -5,9 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
-import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -152,7 +152,8 @@ public class ArcanaIngredient {
       int saved = 0;
       if(!ignoresResourceful){
          for(int i = 0; i < count; i++){
-            if(Math.random() < 0.05 * resourceLvl) saved++;
+            double resourcefulChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STARLIGHT_FORGE_RESOURCEFUL_PER_LVL).get(resourceLvl);
+            if(Math.random() < resourcefulChance) saved++;
          }
       }
       int newCount = ArcanaItemUtils.isArcane(stack) ? count : count - saved;

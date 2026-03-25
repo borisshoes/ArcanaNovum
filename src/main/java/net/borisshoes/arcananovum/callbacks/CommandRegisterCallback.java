@@ -6,10 +6,17 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.borisshoes.arcananovum.ArcanaCommands;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.MessageArgument;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.HashSet;
 import java.util.Locale;
@@ -27,6 +34,8 @@ import static net.borisshoes.arcananovum.ArcanaNovum.DEV_MODE;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.commands.arguments.EntityArgument.*;
+import static net.minecraft.commands.arguments.IdentifierArgument.getId;
+import static net.minecraft.commands.arguments.IdentifierArgument.id;
 
 public class CommandRegisterCallback {
    public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandRegistryAccess, Commands.CommandSelection registrationEnvironment){
@@ -38,6 +47,8 @@ public class CommandRegisterCallback {
                               .executes(ctx -> ArcanaCommands.createItems(ctx.getSource(), getString(ctx, "id"), getPlayers(ctx,"targets"))))))
             .then(literal("cache").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::cacheCommand))
             .then(literal("reload").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).executes(ArcanaCommands::reloadCommand))
+            .then(literal("version").executes(ArcanaCommands::versionCommand))
+            .then(literal("items").executes(ArcanaCommands::itemsCommand))
             .then(literal("help").executes(ArcanaCommands::openGuideBook))
             .then(literal("guide").executes(ArcanaCommands::openGuideBook))
             .then(literal("show").executes(ArcanaCommands::showItem))
@@ -46,7 +57,7 @@ public class CommandRegisterCallback {
                         .executes(context -> ArcanaCommands.placedBlocks(context,getPlayer(context,"player")))))
             .then(literal("uuids").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then(argument("player",player()).executes(context -> ArcanaCommands.uuidCommand(context,getPlayer(context,"player")))))
-            .then(literal("enhance").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+            .then(literal("infuse").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                   .then((argument("percentage", doubleArg())
                         .executes(context -> ArcanaCommands.enhanceCommand(context,getDouble(context,"percentage"),null)))
                         .then(argument("target",player())
@@ -121,11 +132,14 @@ public class CommandRegisterCallback {
                                     .then(argument("target",player())
                                           .executes(context -> ArcanaCommands.setAugment(context,getString(context, "id"),getInteger(context,"level"),getPlayer(context,"target"))))))))
             .then(literal("changeCrafter").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                  .then(argument("username",word()).suggests(CommandRegisterCallback::getPlayerSuggestions)
+                  .then(argument("username",word()).suggests(MinecraftUtils::getPlayerSuggestions)
                         .then(literal("crafted").executes(context -> ArcanaCommands.changeCrafter(context, getString(context, "username"), 0)))
                         .then(literal("synthesized").executes(context -> ArcanaCommands.changeCrafter(context, getString(context, "username"), 1)))
                         .then(literal("earned").executes(context -> ArcanaCommands.changeCrafter(context, getString(context, "username"), 3)))
                         .then(literal("found").executes(context -> ArcanaCommands.changeCrafter(context, getString(context, "username"), 2)))))
+            .then(literal("changeSkin").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                  .then(argument("skin", id()).suggests(CommandRegisterCallback::getSkinSuggestions)
+                        .executes(context -> ArcanaCommands.changeSkin(context, String.valueOf(IdentifierArgument.getId(context,"skin"))))))
             .then(literal("boss")
                   .then(literal("start").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(literal("dragon").executes(ArcanaCommands::startDragonBoss)))
@@ -196,11 +210,28 @@ public class CommandRegisterCallback {
       }
    }
    
-   public static CompletableFuture<Suggestions> getPlayerSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-      String start = builder.getRemaining().toLowerCase(Locale.ROOT);
-      Set<String> items = new HashSet<>();
-      context.getSource().getOnlinePlayerNames().forEach(name -> items.add(name.toLowerCase(Locale.ROOT)));
-      items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
+   private static CompletableFuture<Suggestions> getSkinSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
+      ServerPlayer player = context.getSource().getPlayer();
+      if(player == null) return builder.buildFuture();
+      
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(player.getMainHandItem());
+      Set<String> suggestions = new HashSet<>();
+      suggestions.add("none");
+      if(arcanaItem != null){
+         ArcanaPlayerData data = ArcanaNovum.data(player);
+         for(ArcanaSkin skin : ArcanaSkin.getAllSkinsForItem(arcanaItem)){
+            if(data.hasSkin(skin)){
+               suggestions.add(skin.getSerializedName());
+            }
+         }
+      }
+      
+      String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+      for(String suggestion : suggestions){
+         if(suggestion.toLowerCase(Locale.ROOT).contains(remaining)){
+            builder.suggest(suggestion);
+         }
+      }
       return builder.buildFuture();
    }
 }

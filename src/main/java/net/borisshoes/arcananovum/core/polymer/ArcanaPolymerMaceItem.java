@@ -2,7 +2,9 @@ package net.borisshoes.arcananovum.core.polymer;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -25,12 +27,10 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-
 public class ArcanaPolymerMaceItem extends MaceItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
    public ArcanaPolymerMaceItem(ArcanaItem arcanaItem, net.minecraft.world.item.Item.Properties settings){
-      super(settings.setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId()))));
+      super(settings.setId(ResourceKey.create(Registries.ITEM, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    
@@ -47,7 +47,12 @@ public class ArcanaPolymerMaceItem extends MaceItem implements PolymerItem {
    @Override
    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
       if(PolymerResourcePackUtils.hasMainPack(context)){
-         return Identifier.fromNamespaceAndPath(MOD_ID,arcanaItem.getId());
+         ArcanaSkin skin = ArcanaItem.getSkin(stack);
+         if(skin != null){
+            return skin.getModelId();
+         }else{
+            return ArcanaRegistry.arcanaId(arcanaItem.getId());
+         }
       }else{
          return BuiltInRegistries.ITEM.getResourceKey(arcanaItem.getVanillaItem().asItem()).get().identifier();
       }

@@ -47,8 +47,8 @@ public class ProjectileWeaponItemMixin {
    @ModifyExpressionValue(method = "createProjectile", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ArrowItem;createArrow(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;"))
    private AbstractArrow arcananovum$createAlchemicalArrow(AbstractArrow regularArrow, Level world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical){
       if(weaponStack.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && (projectileStack.is(Items.TIPPED_ARROW) || projectileStack.is(Items.SPECTRAL_ARROW))){
-         int spectralLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(weaponStack,ArcanaAugments.SPECTRAL_AMPLIFICATION));
-         int prolificLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(weaponStack,ArcanaAugments.PROLIFIC_POTIONS));
+         int spectralLvl = ArcanaAugments.getAugmentOnItem(weaponStack,ArcanaAugments.SPECTRAL_AMPLIFICATION);
+         int prolificLvl = ArcanaAugments.getAugmentOnItem(weaponStack,ArcanaAugments.PROLIFIC_POTIONS);
          return new ArbalestArrowEntity(world, shooter, spectralLvl,prolificLvl, projectileStack, weaponStack);
       }
       return regularArrow;

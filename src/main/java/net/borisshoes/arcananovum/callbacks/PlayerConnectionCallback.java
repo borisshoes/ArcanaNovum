@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.DataFixer;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.items.QuiverItem;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
@@ -95,6 +96,11 @@ public class PlayerConnectionCallback {
       }
       if(profile.getMiscData(ArcanaPlayerData.ADMIN_SKILL_POINTS_TAG) == null){
          profile.addMiscData(ArcanaPlayerData.ADMIN_SKILL_POINTS_TAG, IntTag.valueOf(0));
+      }
+      
+      if(profile.hasAnySkin()){
+         profile.setResearchTask(ResearchTasks.CONTRIBUTE,true);
+         profile.setResearchTask(ResearchTasks.HAVE_A_SKIN,true);
       }
    }
    

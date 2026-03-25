@@ -6,8 +6,6 @@ import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
-import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
-import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
@@ -26,12 +24,10 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionResult;
@@ -51,7 +47,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import xyz.nucleoid.packettweaker.PacketContext;
@@ -62,7 +57,6 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
-import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.LIT;
 
 public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "arcane_singularity";
@@ -277,10 +271,10 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack SINGULARITY_BASE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/arcane_singularity_bottom"));
-      public static final ItemStack SINGULARITY_STEM = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/arcane_singularity_middle"));
-      public static final ItemStack SINGULARITY_TOP_ON = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/arcane_singularity_top"));
-      public static final ItemStack SINGULARITY_TOP_OFF = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID,"block/arcane_singularity_top_off"));
+      public static final ItemStack SINGULARITY_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_bottom"));
+      public static final ItemStack SINGULARITY_STEM = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_middle"));
+      public static final ItemStack SINGULARITY_TOP_ON = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top"));
+      public static final ItemStack SINGULARITY_TOP_OFF = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top_off"));
       
       private final ServerLevel world;
       private final ItemDisplayElement base;

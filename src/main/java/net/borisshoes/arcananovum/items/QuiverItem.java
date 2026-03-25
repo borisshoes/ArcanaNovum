@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -88,7 +89,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
       eligible.get((int)(Math.random()*eligible.size())).grow(1);
       
       if(playerId != null){
-         ArcanaNovum.data(playerId).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_QUIVER_REFILL)); // Add xp
+         ArcanaNovum.data(playerId).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_QUIVER_REFILL)); // Add xp
          if(this instanceof OverflowingQuiver){
             ArcanaAchievements.progress(playerId,ArcanaAchievements.SPARE_STOCK,1);
          }else if(this instanceof RunicQuiver){
@@ -368,8 +369,10 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
          String crafterId = stele.getCrafterId();
          if(crafterId != null && !crafterId.isEmpty()){
             refillArrow(world.getServer(), AlgoUtils.getUUID(crafterId), stack);
+            stele.setChanged();
          }else{
             refillArrow(world.getServer(), null, stack);
+            stele.setChanged();
          }
       }
    }

@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.BeaconMiningLaserCallback;
@@ -271,7 +271,7 @@ public class TelescopingBeacon extends ArcanaItem {
          
          
          player.teleportTo(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaRegistry.XP_TELESCOPING_BEACON_PER_BLOCK)*index); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TELESCOPING_BEACON_PER_BLOCK)*index); // Add xp
          
          
          for(int i = 0; i <= tier; i++){
@@ -390,7 +390,7 @@ public class TelescopingBeacon extends ArcanaItem {
             // Scan for support blocks
             List<Tuple<BlockPos, BlockState>> baseBlocks = getBaseBlocks(world,placePos);
             int tier = blocksToTier(baseBlocks.size());
-            boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION)) >= 1;
+            boolean careful = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION) >= 1;
             // Remove support blocks and add them to NBT
             blocks = new ListTag();
             if(tier != 0){

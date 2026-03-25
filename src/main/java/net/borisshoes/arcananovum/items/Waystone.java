@@ -279,22 +279,23 @@ public class Waystone extends ArcanaItem {
          }
       }
       
+      // TODO skin compat
       @Override
       public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
          if(PolymerResourcePackUtils.hasMainPack(context)){
             if(isUnattuned(stack)){
-               return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_unattuned");
+               return ArcanaRegistry.arcanaId("waystone_unattuned");
             }else{
                WaystoneTarget target = getTarget(stack);
                ResourceKey<Level> dim = target.world();
                if(dim.toString().equals(ServerLevel.OVERWORLD.toString())){
-                  return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_overworld");
+                  return ArcanaRegistry.arcanaId("waystone_overworld");
                }else if(dim.toString().equals(ServerLevel.NETHER.toString())){
-                  return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_nether");
+                  return ArcanaRegistry.arcanaId("waystone_nether");
                }else if(dim.toString().equals(ServerLevel.END.toString())){
-                  return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_end");
+                  return ArcanaRegistry.arcanaId("waystone_end");
                }else{
-                  return Identifier.fromNamespaceAndPath(MOD_ID,"waystone_unknown");
+                  return ArcanaRegistry.arcanaId("waystone_unknown");
                }
             }
          }else{

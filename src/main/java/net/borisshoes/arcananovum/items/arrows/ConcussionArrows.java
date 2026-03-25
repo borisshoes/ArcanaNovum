@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -10,7 +12,10 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -29,6 +34,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
@@ -46,6 +52,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class ConcussionArrows extends RunicArrow {
 	public static final String ID = "concussion_arrows";
@@ -96,21 +103,27 @@ public class ConcussionArrows extends RunicArrow {
    
    private void concuss(AbstractArrow arrow, Level world, Vec3 pos, int levelBoost){
       AABB rangeBox = new AABB(pos.x+10,pos.y+10,pos.z+10,pos.x-10,pos.y-10,pos.z-10);
-      float range = (float) Mth.clamp(arrow.getDeltaMovement().length()*2.5,1,6);
+      float percentage = ArcanaUtils.getArrowPercentage(arrow);
+      double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CONCUSSION_ARROW_RANGE_MAX);
+      double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CONCUSSION_ARROW_RANGE_MIN);
+      double range = Mth.clamp(percentage*maxRange,minRange,maxRange);
+      float durMod = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_DURATION_MOD);
+      float extraDuration = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.CONCUSSION_ARROW_SHELLSHOCK_BOOST_PER_LVL).get(levelBoost);
+      
       List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range*range && e instanceof LivingEntity);
-      float percent = (1+levelBoost*.75f)*range/6;
+      float percent = durMod * (1 + extraDuration);
       int mobsHit = 0;
       for(Entity entity : entities){
          if(entity instanceof LivingEntity e && !(entity instanceof EnderDragon || entity instanceof WitherBoss || entity instanceof NulConstructEntity)){
             if(e instanceof Mob) mobsHit++;
             
-            MobEffectInstance blind = new MobEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, (int)(25*percent), 2, false, false, true);
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId(ID),(int)(25*percent),3.5f,false,true,false, AttributeModifier.Operation.ADD_VALUE,arrow.getOwner() != null ? arrow.getOwner().getUUID() : null);
             MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA, (int)(120*percent), 0, false, false, true);
             MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, (int)(40*percent), 4, false, false, true);
             MobEffectInstance slow2 = new MobEffectInstance(MobEffects.SLOWNESS, (int)(120*percent), 2, false, false, true);
-            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, (int)(80*percent), 2+levelBoost, false, false, true);
-            MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, (int)(120*percent), 1+levelBoost, false, false, true);
-            e.addEffect(blind);
+            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, (int)(80*percent), 2, false, false, true);
+            MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, (int)(120*percent), 2, false, false, true);
+            Conditions.addCondition(world.getServer(),e,nearsight);
             e.addEffect(nausea);
             e.addEffect(slow);
             e.addEffect(slow2);

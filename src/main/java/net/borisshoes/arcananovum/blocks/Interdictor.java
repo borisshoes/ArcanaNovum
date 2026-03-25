@@ -10,53 +10,34 @@ import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
-import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanter;
-import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
-import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
-import net.borisshoes.arcananovum.core.*;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.gui.endercrate.EnderCrateChannelGui;
-import net.borisshoes.arcananovum.gui.endercrate.EnderCrateGui;
 import net.borisshoes.arcananovum.gui.interdictor.InterdictorGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -80,6 +61,8 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -297,10 +280,10 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends BlockModel {
-      public static final ItemStack INTERDICTOR_BASE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/interdictor"));
-      public static final ItemStack INTERDICTOR_TOP = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/interdictor_top_shell"));
-      public static final ItemStack INTERDICTOR_BOT = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/interdictor_bottom_shell"));
-      public static final ItemStack INTERDICTOR_CORE = ItemDisplayElementUtil.getTransparentModel(Identifier.fromNamespaceAndPath(MOD_ID, "block/interdictor_core"));
+      public static final ItemStack INTERDICTOR_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor"));
+      public static final ItemStack INTERDICTOR_TOP = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor_top_shell"));
+      public static final ItemStack INTERDICTOR_BOT = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor_bottom_shell"));
+      public static final ItemStack INTERDICTOR_CORE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor_core"));
       
       // Base rotation speeds (radians per tick)
       private static final float SHELL_BASE_SPEED = 0.5f * Mth.DEG_TO_RAD;

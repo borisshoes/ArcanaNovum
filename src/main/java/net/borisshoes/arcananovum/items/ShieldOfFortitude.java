@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
@@ -45,7 +47,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ShieldOfFortitude extends ArcanaItem {
    public static final String ID = "shield_of_fortitude";
-   public static final Identifier EFFECT_ID = Identifier.fromNamespaceAndPath(ArcanaNovum.MOD_ID,ID);
+   public static final Identifier EFFECT_ID = ArcanaRegistry.arcanaId(ID);
    
    public ShieldOfFortitude(){
       id = ID;
@@ -121,11 +123,16 @@ public class ShieldOfFortitude extends ArcanaItem {
       return newArcanaItem;
    }
    
-   public void shieldBlock(LivingEntity entity, ItemStack item, double amount){
-      float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_FAITH));
+   public void shieldBlock(LivingEntity entity, ItemStack item, float amount){
+      float baseMax = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SHIELD_OF_FORTITUDE_HIT_MAX);
+      float extraMax = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.SHIELD_OF_FORTITUDE_HIT_MAX_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_FAITH));
+      float maxAbs = baseMax + extraMax;
       float curAbs = entity.getAbsorptionAmount();
-      float addedAbs = (float) Math.min(maxAbs,amount*.5);
-      int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE));
+      float conversionRate = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SHIELD_OF_FORTITUDE_BLOCKED_ENERGY_CONVERSION_PERCENT);
+      float addedAbs = Math.min(maxAbs,amount*conversionRate);
+      int baseDuration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHIELD_OF_FORTITUDE_DURATION);
+      int extraDuration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SHIELD_OF_FORTITUDE_DURATION_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE));
+      int duration = baseDuration + extraDuration;
       if(entity instanceof ServerPlayer player){
          BorisLib.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
          SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 1.8f);

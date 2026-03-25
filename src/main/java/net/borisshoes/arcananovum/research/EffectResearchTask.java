@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.research;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.core.Holder;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;

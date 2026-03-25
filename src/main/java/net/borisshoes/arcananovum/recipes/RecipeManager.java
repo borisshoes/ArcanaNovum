@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.recipes;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.Itineranteur;
@@ -16,7 +17,6 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.loader.api.FabricLoader;
@@ -96,7 +96,7 @@ public class RecipeManager {
       ArcanaNovum.log(0, "Initializing Arcana Recipes...");
       ARCANA_RECIPES.clear();
       TRANSMUTATION_RECIPES.clear();
-      String activeRecipePath = ArcanaNovum.CONFIG.getValue(ArcanaRegistry.RECIPE_FOLDER).toString();
+      String activeRecipePath = ArcanaNovum.CONFIG.getValue(ArcanaConfig.RECIPE_FOLDER).toString();
       Path dirPath = FabricLoader.getInstance().getConfigDir().resolve("arcananovum").resolve("recipes").resolve(activeRecipePath);
       
       // Check if the directory exists
@@ -557,11 +557,14 @@ public class RecipeManager {
       }, Component.literal("An Unoxidized ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
       
       // Aequalis Scientia Recipes
-      TRANSMUTATION_RECIPES.add(new AequalisUnattuneTransmutationRecipe("aequalis_reconfiguration"));
+      TRANSMUTATION_RECIPES.add(new AequalisUnattuneTransmutationRecipe());
       
-      TRANSMUTATION_RECIPES.add(new AequalisSkillTransmutationRecipe("transfer_skill_points"));
+      TRANSMUTATION_RECIPES.add(new AequalisSkillTransmutationRecipe());
       
-      TRANSMUTATION_RECIPES.add(new AequalisCatalystTransmutationRecipe("reclaim_catalysts"));
+      TRANSMUTATION_RECIPES.add(new AequalisCatalystTransmutationRecipe());
+      
+      // Transmog Recipe
+      TRANSMUTATION_RECIPES.add(new TransmogrificationTransmutationRecipe());
    }
    
    private static void addTransmutationExplainRecipes(){

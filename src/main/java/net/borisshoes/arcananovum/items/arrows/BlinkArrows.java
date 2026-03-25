@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -8,6 +11,9 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -20,6 +26,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.portal.TeleportTransition;
@@ -33,11 +40,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class BlinkArrows extends RunicArrow {
 	public static final String ID = "blink_arrows";
-   
-   private static final int[] phaseDur = {0,20,60,100};
    
    public BlinkArrows(){
       id = ID;
@@ -83,14 +89,7 @@ public class BlinkArrows extends RunicArrow {
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayer player){
          Vec3 tpPos = entityHitResult.getLocation();
-         if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME);
-         player.teleport(new TeleportTransition((ServerLevel) arrow.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
-         ArcanaEffectUtils.blinkArrowTp(player.level(),player.position());
-         SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS,.8f,.9f);
-         
-         int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN);
-         MobEffectInstance invuln = new MobEffectInstance(MobEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
-         player.addEffect(invuln);
+         teleport(player,arrow,tpPos);
       }
    }
    
@@ -99,15 +98,22 @@ public class BlinkArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayer player){
          Vec3 offset = new Vec3(blockHitResult.getDirection().step());
          Vec3 tpPos = blockHitResult.getLocation().add(offset);
-         if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME);
-         player.teleport(new TeleportTransition((ServerLevel) arrow.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
-         ArcanaEffectUtils.blinkArrowTp(player.level(),player.position());
-         SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS,.8f,.9f);
-         
-         int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN);
-         MobEffectInstance invuln = new MobEffectInstance(MobEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
-         player.addEffect(invuln);
+         teleport(player,arrow,tpPos);
       }
+   }
+   
+   private void teleport(ServerPlayer player, RunicArrowEntity arrow, Vec3 tpPos){
+      if(tpPos.distanceTo(player.position()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME);
+      player.teleport(new TeleportTransition((ServerLevel) arrow.level(), tpPos.add(0,0.25,0), Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.DO_NOTHING));
+      ArcanaEffectUtils.blinkArrowTp(player.level(),player.position());
+      SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS,.8f,.9f);
+      
+      float percentage = ArcanaUtils.getArrowPercentage(arrow);
+      int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN);
+      int phaseInDuration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.BLINK_ARROW_PHASE_IN_DURATION_PER_LVL).get(phaseLvl);
+      float phaseInDamageMod = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BLINK_ARROW_PHASE_IN_DMG_MULTIPLIER);
+      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE,arcanaId(getId()),Math.min((int)(percentage*phaseInDuration),phaseInDuration),phaseInDamageMod,true,true,false, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, player.getUUID());
+      Conditions.addCondition(player.level().getServer(),player,fortitude);
    }
    
    @Override

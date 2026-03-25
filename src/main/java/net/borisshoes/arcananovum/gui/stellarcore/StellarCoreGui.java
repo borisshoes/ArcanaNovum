@@ -1,9 +1,7 @@
 package net.borisshoes.arcananovum.gui.stellarcore;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.forge.StellarCoreBlockEntity;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -11,7 +9,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public class StellarCoreGui extends SimpleGui {
