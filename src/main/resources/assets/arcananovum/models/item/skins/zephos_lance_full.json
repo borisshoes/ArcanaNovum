@@ -1,0 +1,6 @@
+{
+  "parent": "arcananovum:item/rotated_spear_in_hand",
+  "textures": {
+    "layer0": "arcananovum:item/skins/zephos_lance_full"
+  }
+}

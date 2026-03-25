@@ -1,0 +1,6 @@
+{
+    "parent": "arcananovum:item/runic_bow",
+    "textures": {
+        "layer0": "arcananovum:item/skins/lunar_bow_3"
+    }
+}

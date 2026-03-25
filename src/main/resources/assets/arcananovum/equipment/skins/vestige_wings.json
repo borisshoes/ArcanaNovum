@@ -1,0 +1,15 @@
+{
+  "layers": {
+    "wings": [
+      {
+        "texture": "arcananovum:skins/vestige_wings",
+        "use_player_texture": false
+      }
+    ],
+    "humanoid": [
+      {
+        "texture": "arcananovum:skins/vestige_wings"
+      }
+    ]
+  }
+}

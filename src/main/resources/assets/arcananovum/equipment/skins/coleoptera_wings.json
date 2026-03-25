@@ -1,0 +1,15 @@
+{
+  "layers": {
+    "wings": [
+      {
+        "texture": "arcananovum:skins/coleoptera_wings",
+        "use_player_texture": false
+      }
+    ],
+    "humanoid": [
+      {
+        "texture": "arcananovum:skins/coleoptera_wings"
+      }
+    ]
+  }
+}
