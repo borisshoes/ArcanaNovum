@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -14,6 +13,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
@@ -232,7 +232,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack FORGE_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge"));
       public static final ItemStack FORGE_APPLE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_apple"));
       public static final ItemStack STAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_star"));

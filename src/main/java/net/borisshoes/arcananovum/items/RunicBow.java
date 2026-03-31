@@ -55,8 +55,8 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class RunicBow extends ArcanaItem {
-	public static final String ID = "runic_bow";
-
+   public static final String ID = "runic_bow";
+   
    public RunicBow(){
       id = ID;
       name = "Runic Bow";
@@ -64,8 +64,8 @@ public class RunicBow extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.BOW;
       item = new RunicBowItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
-      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.ADVANCEMENT_SNIPER_DUEL,ResearchTasks.ADVANCEMENT_BULLSEYE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.ADVANCEMENT_SNIPER_DUEL, ResearchTasks.ADVANCEMENT_BULLSEYE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -78,7 +78,7 @@ public class RunicBow extends ArcanaItem {
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
       curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.POWER),7)
+            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.POWER), 7)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
@@ -112,13 +112,13 @@ public class RunicBow extends ArcanaItem {
             .append(Component.literal(" and is ").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal("unbreakable").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      ItemStack newStack = super.updateItem(stack,server);
-      return buildItemLore(newStack,server);
+      ItemStack newStack = super.updateItem(stack, server);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -128,12 +128,12 @@ public class RunicBow extends ArcanaItem {
       ItemStack bowStack = inv.getItem(centerpieces.getFirst()); // Should be the Bow
       
       if(bowStack.isEnchanted()){
-         EnchantmentHelper.setEnchantments(newArcanaItem,bowStack.getEnchantments());
+         EnchantmentHelper.setEnchantments(newArcanaItem, bowStack.getEnchantments());
       }
-      newArcanaItem.enchant(MinecraftUtils.getEnchantment(Enchantments.POWER),7);
+      newArcanaItem.enchant(MinecraftUtils.getEnchantment(Enchantments.POWER), 7);
       
       if(hasProperty(bowStack, EnhancedStatUtils.ENHANCED_STAT_TAG)){
-         EnhancedStatUtils.enhanceItem(newArcanaItem,getDoubleProperty(bowStack,EnhancedStatUtils.ENHANCED_STAT_TAG));
+         EnhancedStatUtils.enhanceItem(newArcanaItem, getDoubleProperty(bowStack, EnhancedStatUtils.ENHANCED_STAT_TAG));
       }
       
       return newArcanaItem;
@@ -142,7 +142,7 @@ public class RunicBow extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("      Runic Bow").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe Runic Bow is truly a masterpiece of adaptive Arcana. The integrated Runic Matrices reconfigure the Bow’s ethereal structure based on the projectile being fired to unlock its Arcane effects.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Runic Bow").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThe Runic Bow is truly a masterpiece of adaptive Arcana. The integrated Runic Matrices reconfigure the Bow’s ethereal structure based on the projectile being fired to unlock its Arcane effects.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Runic Bow").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nThe Runic Bow is capable of utilizing Runic Arrows and activating their special abilities. \n\nThe Bow also enhances normal arrows to do more damage than a traditional enchanted bow.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
@@ -151,7 +151,7 @@ public class RunicBow extends ArcanaItem {
       public static final Predicate<ItemStack> RUNIC_BOW_PROJECTILES = stack -> (stack.is(ItemTags.ARROWS) || ArcanaItemUtils.identifyItem(stack) instanceof RunicArrow);
       
       public RunicBowItem(){
-         super(getThis(),getEquipmentArcanaItemComponents());
+         super(getThis(), getEquipmentArcanaItemComponents());
       }
       
       @Override
@@ -160,9 +160,9 @@ public class RunicBow extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         int tier = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.BOW_ACCELERATION);
-         if(tier > 0) stringList.add("accel_"+tier);
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         int tier = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.BOW_ACCELERATION);
+         if(tier > 0) stringList.add("accel_" + tier);
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -190,7 +190,7 @@ public class RunicBow extends ArcanaItem {
             }
             List<ItemStack> list = draw(bow, arrowStack, playerEntity);
             if(world instanceof ServerLevel serverWorld && !list.isEmpty()){
-               float divergence = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.RUNIC_BOW_ACCURACY_PER_LVL).get(ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_STABILIZATION));
+               float divergence = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.RUNIC_BOW_ACCURACY_PER_LVL).get(ArcanaAugments.getAugmentOnItem(bow, ArcanaAugments.BOW_STABILIZATION));
                this.shoot(serverWorld, playerEntity, playerEntity.getUsedItemHand(), bow, list, pullPercent * 3.0F, divergence, pullPercent == 1.0F, null);
             }
             
@@ -208,10 +208,11 @@ public class RunicBow extends ArcanaItem {
                }
                
                ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_RUNIC_ARROW_SHOOT) * list.size());
-               if(playerEntity instanceof ServerPlayer player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER, list.size());
+               if(playerEntity instanceof ServerPlayer player)
+                  ArcanaAchievements.progress(player, ArcanaAchievements.JUST_LIKE_ARCHER, list.size());
             }
             
-            world.playSound(null, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), sound, SoundSource.PLAYERS,volume,1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + pullPercent * 0.5F);
+            world.playSound(null, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), sound, SoundSource.PLAYERS, volume, 1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + pullPercent * 0.5F);
             playerEntity.awardStat(Stats.ITEM_USED.get(this));
             return true;
          }
@@ -220,14 +221,14 @@ public class RunicBow extends ArcanaItem {
       
       protected void shoot(ServerLevel world, LivingEntity shooter, InteractionHand hand, ItemStack bow, List<ItemStack> projectiles, float speed, float divergence, boolean critical, @Nullable LivingEntity target){
          float f = EnchantmentHelper.processProjectileSpread(world, bow, shooter, 0.0F);
-         float g = projectiles.size() == 1 ? 0.0F : 2.0F * f / (float)(projectiles.size() - 1);
-         float h = (float)((projectiles.size() - 1) % 2) * g / 2.0F;
+         float g = projectiles.size() == 1 ? 0.0F : 2.0F * f / (float) (projectiles.size() - 1);
+         float h = (float) ((projectiles.size() - 1) % 2) * g / 2.0F;
          float i = 1.0F;
          
-         for (int j = 0; j < projectiles.size(); j++){
-            ItemStack arrowStack = (ItemStack)projectiles.get(j);
+         for(int j = 0; j < projectiles.size(); j++){
+            ItemStack arrowStack = (ItemStack) projectiles.get(j);
             if(!arrowStack.isEmpty()){
-               float k = h + i * (float)((j + 1) / 2) * g;
+               float k = h + i * (float) ((j + 1) / 2) * g;
                i = -i;
                Projectile projectileEntity = this.createProjectile(world, shooter, bow, arrowStack, critical);
                this.shootProjectile(shooter, projectileEntity, j, speed, divergence, k, target);
@@ -248,15 +249,15 @@ public class RunicBow extends ArcanaItem {
       
       @Override
       public void onUseTick(Level world, LivingEntity user, ItemStack bow, int remainingUseTicks){
-         int accelLvl = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION);
-         float prog = getPullProgress(getUseDuration(bow,user)-remainingUseTicks,bow);
+         int accelLvl = ArcanaAugments.getAugmentOnItem(bow, ArcanaAugments.BOW_ACCELERATION);
+         float prog = getPullProgress(getUseDuration(bow, user) - remainingUseTicks, bow);
          if(accelLvl > 0 && user instanceof ServerPlayer player && prog >= 0.1){
-            String t =  "▁▂▃▅▆▇۞";
-            char c = t.charAt((int) (Math.max(0,prog*t.length()-1)));
+            String t = "▁▂▃▅▆▇۞";
+            char c = t.charAt((int) (Math.max(0, prog * t.length() - 1)));
             player.displayClientMessage(Component.literal("")
                   .append(Component.literal("\uD83C\uDFF9 (").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(Component.literal(String.valueOf(c)).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
-                  .append(Component.literal(") \uD83C\uDFF9").withStyle(ChatFormatting.LIGHT_PURPLE)),true);
+                  .append(Component.literal(") \uD83C\uDFF9").withStyle(ChatFormatting.LIGHT_PURPLE)), true);
          }
          
          super.onUseTick(world, user, bow, remainingUseTicks);
@@ -266,12 +267,12 @@ public class RunicBow extends ArcanaItem {
          float maxPullTicks = 20f;
          ArcanaItem arcanaBow = ArcanaItemUtils.identifyItem(bow);
          if(arcanaBow instanceof RunicBow){
-            int accelLvl = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION);
-            final float[] accel = {20,18,17,16,15,10};
+            int accelLvl = ArcanaAugments.getAugmentOnItem(bow, ArcanaAugments.BOW_ACCELERATION);
+            final float[] accel = {20, 18, 17, 16, 15, 10};
             maxPullTicks = accel[accelLvl];
          }
          
-         float f = (float)useTicks / maxPullTicks;
+         float f = (float) useTicks / maxPullTicks;
          f = (f * f + f * 2.0F) / 3.0F;
          if(f > 1.0F){
             f = 1.0F;
@@ -282,7 +283,7 @@ public class RunicBow extends ArcanaItem {
       
       @Override
       public int getUseDuration(ItemStack stack, LivingEntity user){
-         return super.getUseDuration(stack,user);
+         return super.getUseDuration(stack, user);
       }
       
       @Override

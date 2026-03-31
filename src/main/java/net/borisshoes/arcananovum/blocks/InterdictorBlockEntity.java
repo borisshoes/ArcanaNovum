@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.datastorage.InterdictionZones;
 import net.borisshoes.arcananovum.entities.NulGuardianEntity;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.utils.AlgoUtils;
@@ -20,7 +21,6 @@ import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.ParticleEffectUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -38,7 +38,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
@@ -50,6 +49,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private final Multiblock multiblock;
    private int xRange = getMaxRange(0);
@@ -63,11 +63,12 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       this.multiblock = ((MultiblockCore) ArcanaRegistry.INTERDICTOR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
       
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
@@ -77,7 +78,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       this.decoalescence = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.DECOALESCENCE) > 0;
       this.redirect = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.COALESCENCE_REDIRECTION) > 0;
       BlockPos here = this.getBlockPos();
-      this.interdictionZone = new AABB(here.getX()-xRange,here.getY()-yRange,here.getZ()-zRange,here.getX()+xRange,here.getY()+yRange,here.getZ()+zRange);
+      this.interdictionZone = new AABB(here.getX() - xRange, here.getY() - yRange, here.getZ() - zRange, here.getX() + xRange, here.getY() + yRange, here.getZ() + zRange);
    }
    
    public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
@@ -118,9 +119,10 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
                if(entity instanceof Enemy && entity.isAlive() && !entity.hasCustomName()){
                   if(!entity.getType().is(ArcanaRegistry.INTERDICTOR_IMMUNE)){
                      entity.discard();
-                     if(this.getCrafterId() != null && !this.getCrafterId().isEmpty()) ArcanaAchievements.progress(crafterId, ArcanaAchievements.UNMOBBED, 1);
+                     if(this.getCrafterId() != null && !this.getCrafterId().isEmpty())
+                        ArcanaAchievements.progress(crafterId, ArcanaAchievements.UNMOBBED, 1);
                   }else if(serverWorld.getServer().getTickCount() % 40 == 0 && entity.getType() == ArcanaRegistry.NUL_GUARDIAN_ENTITY && entity instanceof NulGuardianEntity guardian){
-                     guardian.hurtServer(serverWorld,serverWorld.damageSources().magic(),12.0f);
+                     guardian.hurtServer(serverWorld, serverWorld.damageSources().magic(), 12.0f);
                   }
                   
                }
@@ -128,40 +130,41 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
          }
          if(active && assembled){
             ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
-            DataAccess.getWorld(this.level.dimension(), InterdictionZones.KEY).addOrRefreshZone(getInterdictionZone(),blockPos,25, this.redirect);
+            DataAccess.getWorld(this.level.dimension(), InterdictionZones.KEY).addOrRefreshZone(getInterdictionZone(), blockPos, 25, this.redirect);
          }
       }
       if(active && serverWorld.getServer().getTickCount() % 70 == 50){
-         SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS,2,0.7f);
+         SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 2, 0.7f);
       }
       if(active && serverWorld.getServer().getTickCount() % 200 == 0){
-         ArcanaEffectUtils.interdictionRing(serverWorld,blockPos,0);
-         SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS,1,1.5f);
+         ArcanaEffectUtils.interdictionRing(serverWorld, blockPos, 0);
+         SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 1, 1.5f);
       }
       
       if(active && !wasActive){
-         SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS,1,1.5f);
-         ArcanaEffectUtils.interdictionRing(serverWorld,blockPos,0);
+         SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 1, 1.5f);
+         ArcanaEffectUtils.interdictionRing(serverWorld, blockPos, 0);
          wasActive = true;
       }else if(!active && wasActive){
-         SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS,1,1.5f);
+         SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1, 1.5f);
          wasActive = false;
       }
    }
    
    public void onSpawn(){
       if(this.crafterId != null && !this.crafterId.isEmpty()){
-         ArcanaAchievements.progress(AlgoUtils.getUUID(this.crafterId),ArcanaAchievements.UNMOBBED,1);
-         if(this.level instanceof ServerLevel && this.level.random.nextFloat() < 0.01) ArcanaNovum.data(AlgoUtils.getUUID(this.crafterId)).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_INTERDICTOR_MOB_BLOCKED_PER_100));
+         ArcanaAchievements.progress(AlgoUtils.getUUID(this.crafterId), ArcanaAchievements.UNMOBBED, 1);
+         if(this.level instanceof ServerLevel && this.level.random.nextFloat() < 0.01)
+            ArcanaNovum.data(AlgoUtils.getUUID(this.crafterId)).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_INTERDICTOR_MOB_BLOCKED_PER_100));
       }
       if(this.level instanceof ServerLevel serverLevel && this.level.random.nextFloat() < 0.005){
          Vec3 p1 = this.getBlockPos().getBottomCenter().add(this.level.random.nextBoolean() ? -1 : 1, 1.85, this.level.random.nextBoolean() ? -1 : 1);
-         Vec3 p2 = MathUtils.randomSpherePoint(p1, 5,3);
-         ParticleEffectUtils.animatedLightningBolt(serverLevel,p1,p2,
-               this.level.random.nextInt(4,8), 1.0, ParticleTypes.WITCH,
-               8,1,0,0,false,0,20);
-         SoundUtils.playSound(this.level, worldPosition, SoundEvents.TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundSource.BLOCKS,0.3f,0.5f+this.level.random.nextFloat()*0.3f);
-         SoundUtils.playSound(this.level, worldPosition, SoundEvents.AMETHYST_BLOCK_STEP, SoundSource.BLOCKS,0.3f,1.5f+this.level.random.nextFloat()*0.3f);
+         Vec3 p2 = MathUtils.randomSpherePoint(p1, 5, 3);
+         ParticleEffectUtils.animatedLightningBolt(serverLevel, p1, p2,
+               this.level.random.nextInt(4, 8), 1.0, ParticleTypes.WITCH,
+               8, 1, 0, 0, false, 0, 20);
+         SoundUtils.playSound(this.level, worldPosition, SoundEvents.TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundSource.BLOCKS, 0.3f, 0.5f + this.level.random.nextFloat() * 0.3f);
+         SoundUtils.playSound(this.level, worldPosition, SoundEvents.AMETHYST_BLOCK_STEP, SoundSource.BLOCKS, 0.3f, 1.5f + this.level.random.nextFloat() * 0.3f);
       }
    }
    
@@ -171,7 +174,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    
    public void recalculateZone(){
       BlockPos here = this.getBlockPos();
-      this.interdictionZone = new AABB(here.getX()-xRange,here.getY()-yRange,here.getZ()-zRange,here.getX()+xRange,here.getY()+yRange,here.getZ()+zRange);
+      this.interdictionZone = new AABB(here.getX() - xRange, here.getY() - yRange, here.getZ() - zRange, here.getX() + xRange, here.getY() + yRange, here.getZ() + zRange);
    }
    
    @Override
@@ -202,6 +205,10 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -224,17 +231,17 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    
    public void setxRange(int xRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
-      this.xRange = Mth.clamp(xRange,1,getMaxRange(riftLvl));
+      this.xRange = Mth.clamp(xRange, 1, getMaxRange(riftLvl));
    }
    
    public void setyRange(int yRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
-      this.yRange = Mth.clamp(yRange,1,getMaxRange(riftLvl));
+      this.yRange = Mth.clamp(yRange, 1, getMaxRange(riftLvl));
    }
    
    public void setzRange(int zRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
-      this.zRange = Mth.clamp(zRange,1,getMaxRange(riftLvl));
+      this.zRange = Mth.clamp(zRange, 1, getMaxRange(riftLvl));
    }
    
    @Override
@@ -243,6 +250,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.xRange = view.getIntOr("xRange", getMaxRange(0));
       this.yRange = view.getIntOr("yRange", getMaxRange(0));
@@ -255,7 +263,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       this.redirect = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.COALESCENCE_REDIRECTION) > 0;
       
       BlockPos here = this.getBlockPos();
-      this.interdictionZone = new AABB(here.getX()-xRange,here.getY()-yRange,here.getZ()-zRange,here.getX()+xRange,here.getY()+yRange,here.getZ()+zRange);
+      this.interdictionZone = new AABB(here.getX() - xRange, here.getY() - yRange, here.getZ() - zRange, here.getX() + xRange, here.getY() + yRange, here.getZ() + zRange);
    }
    
    @Override
@@ -265,6 +273,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.putInt("xRange", this.xRange);
       view.putInt("yRange", this.yRange);

@@ -1,14 +1,11 @@
 package net.borisshoes.arcananovum;
 
 import com.mojang.serialization.Lifecycle;
+import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.borisshoes.arcananovum.utils.ConfigUnits;
 import net.borisshoes.borislib.config.ConfigSetting;
 import net.borisshoes.borislib.config.IConfigSetting;
-import net.borisshoes.borislib.config.values.BooleanConfigValue;
-import net.borisshoes.borislib.config.values.DoubleConfigValue;
-import net.borisshoes.borislib.config.values.IntConfigValue;
-import net.borisshoes.borislib.config.values.ListConfigValue;
-import net.borisshoes.borislib.config.values.StringConfigValue;
+import net.borisshoes.borislib.config.values.*;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
@@ -35,12 +32,17 @@ public class ArcanaConfig {
          new BooleanConfigValue("announceAchievements", true)));
    public static final IConfigSetting<?> RESEARCH_ENABLED = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("researchEnabled", true)));
-   public static final IConfigSetting<?> STARDUST_PARTICLES = registerConfigSetting(new ConfigSetting<>(
-         new BooleanConfigValue("stardustParticles", true)));
+   public static final IConfigSetting<?> STARDUST_PARTICLE_RATE = registerConfigSetting(new ConfigSetting<>(
+         new DoubleConfigValue("stardustParticleRate", 0.225, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> DISABLE_ARCANA_CRAFTING = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("disableArcanaCrafting", false)));
    public static final IConfigSetting<?> DISABLE_STARDUST_INFUSION = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("disableStardustInfusion", false)));
+   public static final IConfigSetting<?> ALLOW_SIMILAR_BLOCK_CHECKS = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("allowSimilarBlockChecks", true)));
+   public static final IConfigSetting<?> LOG_COMMAND_USAGE = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("logCommandUsage", false)));
+   
    public static final IConfigSetting<?> CEPTYUS_EVENT_ENABLED = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("ceptyusEventEnabled", true)));
    public static final IConfigSetting<?> GAIALTUS_EVENT_ENABLED = registerConfigSetting(new ConfigSetting<>(
@@ -49,17 +51,17 @@ public class ArcanaConfig {
          new BooleanConfigValue("zeraiyaEventEnabled", true)));
    // https://www.desmos.com/calculator/7xkrnk00zl
    public static final IConfigSetting<?> DRAGON_EGG_DIALOG_CHANCE = registerConfigSetting(new ConfigSetting<>(
-         new DoubleConfigValue("dragonEggDialogChance", 0.0000075, new DoubleConfigValue.DoubleLimits(0.0,1.0))));
+         new DoubleConfigValue("dragonEggDialogChance", 0.0000075, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> MEMENTO_DIALOG_CHANCE = registerConfigSetting(new ConfigSetting<>(
-         new DoubleConfigValue("mementoDialogChance", 0.0000075, new DoubleConfigValue.DoubleLimits(0.0,1.0))));
+         new DoubleConfigValue("mementoDialogChance", 0.0000075, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> AEQUALIS_DIALOG_CHANCE = registerConfigSetting(new ConfigSetting<>(
-         new DoubleConfigValue("aequalisDialogChance", 0.0000075, new DoubleConfigValue.DoubleLimits(0.0,1.0))));
+         new DoubleConfigValue("aequalisDialogChance", 0.0000075, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> ZERAIYA_EVENT_CHANCE = registerConfigSetting(new ConfigSetting<>(
-         new DoubleConfigValue("zeraiyaEventChance", 0.000001, new DoubleConfigValue.DoubleLimits(0.0,1.0))));
+         new DoubleConfigValue("zeraiyaEventChance", 0.000001, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> GAIALTUS_EVENT_CHANCE = registerConfigSetting(new ConfigSetting<>(
-         new DoubleConfigValue("gaialtusEventChance", 0.000014, new DoubleConfigValue.DoubleLimits(0.0,1.0))));
+         new DoubleConfigValue("gaialtusEventChance", 0.000014, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> CEPTYUS_EVENT_CHANCE = registerConfigSetting(new ConfigSetting<>(
-         new DoubleConfigValue("ceptyusEventChance", 0.0004, new DoubleConfigValue.DoubleLimits(0.0,1.0))));
+         new DoubleConfigValue("ceptyusEventChance", 0.0004, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    
    public static final IConfigSetting<?> INFUSION_MAX_DURABILITY = registerConfigSetting(new ConfigSetting<>(
          new DoubleConfigValue("infusionMaxDurability", 0.5, new DoubleConfigValue.DoubleLimits(0.0))));
@@ -257,7 +259,7 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> FEASTING_CHARM_ACTIVE_COOLDOWN = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new IntConfigValue("feastingCharmActiveCooldown", 400, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> FEASTING_CHARM_PASSIVE_COOLDOWN = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
-         new IntConfigValue("feastingCharmPassiveCooldown", 200, new IntConfigValue.IntLimits(0))));
+         new IntConfigValue("feastingCharmPassiveCooldown", 1200, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> FEASTING_CHARM_PASSIVE_HUNGER = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
          new IntConfigValue("feastingCharmPassiveHunger", 2, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> FEASTING_CHARM_PASSIVE_SATURATION = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
@@ -540,6 +542,8 @@ public class ArcanaConfig {
          new DoubleConfigValue("shadowStalkersGlaiveBloodletterDamage", 2.0, new DoubleConfigValue.DoubleLimits(0.0))));
    
    // Shield of Fortitude
+   public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_DISPLAY_MODE = registerConfigSetting(new ConfigSetting<>(
+         new EnumConfigValue<>("shieldOfFortitudeDisplayMode", ShieldOfFortitude.ShieldDisplayMode.HYBRID, ShieldOfFortitude.ShieldDisplayMode.class)));
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_BLOCKED_ENERGY_CONVERSION_PERCENT = registerConfigSetting(ConfigUnits.PERCENT, new ConfigSetting<>(
          new DoubleConfigValue("shieldOfFortitudeBlockedEnergyConversionPercent", 0.5, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_HIT_MAX = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
@@ -555,7 +559,7 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new IntConfigValue("shieldOfFortitudeShieldBashSlownessDuration", 60, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_PER_ABSORPTION = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
-         new DoubleConfigValue("shieldOfFortitudeShieldBashVulnerabilityPerAbsorption", 0.2, new DoubleConfigValue.DoubleLimits(0.0))));
+         new DoubleConfigValue("shieldOfFortitudeShieldBashVulnerabilityPerAbsorption", 0.02, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_DURATION_PER_ABSORPTION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new DoubleConfigValue("shieldOfFortitudeShieldBashVulnerabilityDurationPerAbsorption", 5.0, new DoubleConfigValue.DoubleLimits(0.0))));
    

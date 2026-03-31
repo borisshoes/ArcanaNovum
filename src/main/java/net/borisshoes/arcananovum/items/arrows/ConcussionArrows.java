@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -55,7 +54,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class ConcussionArrows extends RunicArrow {
-	public static final String ID = "concussion_arrows";
+   public static final String ID = "concussion_arrows";
    
    public ConcussionArrows(){
       id = ID;
@@ -64,8 +63,8 @@ public class ConcussionArrows extends RunicArrow {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new ConcussionArrowsItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.KILL_SQUID,ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_BLINDNESS,ResearchTasks.EFFECT_WEAKNESS,ResearchTasks.USE_FIREWORK};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SQUID, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.EFFECT_WEAKNESS, ResearchTasks.USE_FIREWORK};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -86,44 +85,44 @@ public class ConcussionArrows extends RunicArrow {
             .append(Component.literal("near where the arrow ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("impacts").withStyle(ChatFormatting.GOLD))
             .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK);
-      concuss(arrow, arrow.level(),entityHitResult.getLocation(), lvl);
+      concuss(arrow, arrow.level(), entityHitResult.getLocation(), lvl);
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK);
-      concuss(arrow, arrow.level(),blockHitResult.getLocation(), lvl);
+      concuss(arrow, arrow.level(), blockHitResult.getLocation(), lvl);
    }
    
    private void concuss(AbstractArrow arrow, Level world, Vec3 pos, int levelBoost){
-      AABB rangeBox = new AABB(pos.x+10,pos.y+10,pos.z+10,pos.x-10,pos.y-10,pos.z-10);
+      AABB rangeBox = new AABB(pos.x + 10, pos.y + 10, pos.z + 10, pos.x - 10, pos.y - 10, pos.z - 10);
       float percentage = ArcanaUtils.getArrowPercentage(arrow);
       double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CONCUSSION_ARROW_RANGE_MAX);
       double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CONCUSSION_ARROW_RANGE_MIN);
-      double range = Mth.clamp(percentage*maxRange,minRange,maxRange);
+      double range = Mth.clamp(percentage * maxRange, minRange, maxRange);
       float durMod = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_DURATION_MOD);
       float extraDuration = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.CONCUSSION_ARROW_SHELLSHOCK_BOOST_PER_LVL).get(levelBoost);
       
-      List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range*range && e instanceof LivingEntity);
+      List<Entity> entities = world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range * range && e instanceof LivingEntity);
       float percent = durMod * (1 + extraDuration);
       int mobsHit = 0;
       for(Entity entity : entities){
          if(entity instanceof LivingEntity e && !(entity instanceof EnderDragon || entity instanceof WitherBoss || entity instanceof NulConstructEntity)){
             if(e instanceof Mob) mobsHit++;
             
-            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId(ID),(int)(25*percent),3.5f,false,true,false, AttributeModifier.Operation.ADD_VALUE,arrow.getOwner() != null ? arrow.getOwner().getUUID() : null);
-            MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA, (int)(120*percent), 0, false, false, true);
-            MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, (int)(40*percent), 4, false, false, true);
-            MobEffectInstance slow2 = new MobEffectInstance(MobEffects.SLOWNESS, (int)(120*percent), 2, false, false, true);
-            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, (int)(80*percent), 2, false, false, true);
-            MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, (int)(120*percent), 2, false, false, true);
-            Conditions.addCondition(world.getServer(),e,nearsight);
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), (int) (25 * percent), 3.5f, false, true, false, AttributeModifier.Operation.ADD_VALUE, arrow.getOwner() != null ? arrow.getOwner().getUUID() : null);
+            MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA, (int) (120 * percent), 0, false, false, true);
+            MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, (int) (40 * percent), 4, false, false, true);
+            MobEffectInstance slow2 = new MobEffectInstance(MobEffects.SLOWNESS, (int) (120 * percent), 2, false, false, true);
+            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, (int) (80 * percent), 2, false, false, true);
+            MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, (int) (120 * percent), 2, false, false, true);
+            Conditions.addCondition(world.getServer(), e, nearsight);
             e.addEffect(nausea);
             e.addEffect(slow);
             e.addEffect(slow2);
@@ -142,7 +141,8 @@ public class ConcussionArrows extends RunicArrow {
             }
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_AWE);
+      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10)
+         ArcanaAchievements.grant(player, ArcanaAchievements.SHOCK_AWE);
       if(world instanceof ServerLevel serverWorld){
          SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.PLAYERS, 1, .8f);
          ArcanaEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);
@@ -152,13 +152,13 @@ public class ConcussionArrows extends RunicArrow {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("Concussion Arrows").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis Runic Matrix has been configured to unleash a plethora of unpleasant effects at the area of impact. Anyone caught in its range will have a hard time doing anything for a few seconds after being hit.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Concussion Arrows").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThis Runic Matrix has been configured to unleash a plethora of unpleasant effects at the area of impact. Anyone caught in its range will have a hard time doing anything for a few seconds after being hit.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class ConcussionArrowsItem extends ArcanaPolymerArrowItem {
       public ConcussionArrowsItem(){
-         super(getThis(),getArcanaArrowItemComponents(14391821));
+         super(getThis(), getArcanaArrowItemComponents(14391821));
       }
       
       @Override

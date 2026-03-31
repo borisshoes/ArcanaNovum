@@ -1,21 +1,125 @@
 {
-    "model": {
-        "type": "minecraft:condition",
-        "on_false": {
-            "type": "minecraft:special",
-            "base": "minecraft:item/shield",
-            "model": {
-                "type": "minecraft:shield"
-            }
-        },
-        "on_true": {
-            "type": "minecraft:special",
-            "base": "minecraft:item/shield_blocking",
-            "model": {
-                "type": "minecraft:shield"
-            }
-        },
-        "property": "minecraft:using_item"
-    },
+	"model": {
+		"type": "minecraft:condition",
+		"on_false": {
+			"type": "minecraft:select",
+			"property": "minecraft:custom_model_data",
+			"cases": [
+				{
+					"when": "stage_6",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_normal_6"
+					}
+				},
+				{
+					"when": "stage_5",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_normal_5"
+					}
+				},
+				{
+					"when": "stage_4",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_normal_4"
+					}
+				},
+				{
+					"when": "stage_3",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_normal_3"
+					}
+				},
+				{
+					"when": "stage_2",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_normal_2"
+					}
+				},
+				{
+					"when": "stage_1",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_normal_1"
+					}
+				},
+				{
+					"when": "stage_0",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_normal_0"
+					}
+				}
+			],
+			"fallback": {
+				"type": "minecraft:model",
+				"model": "arcananovum:item/shield_of_fortitude_normal_0"
+			}
+		},
+		"on_true": {
+			"type": "minecraft:select",
+			"property": "minecraft:custom_model_data",
+			"cases": [
+				{
+					"when": "stage_6",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_blocking_6"
+					}
+				},
+				{
+					"when": "stage_5",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_blocking_5"
+					}
+				},
+				{
+					"when": "stage_4",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_blocking_4"
+					}
+				},
+				{
+					"when": "stage_3",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_blocking_3"
+					}
+				},
+				{
+					"when": "stage_2",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_blocking_2"
+					}
+				},
+				{
+					"when": "stage_1",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_blocking_1"
+					}
+				},
+				{
+					"when": "stage_0",
+					"model": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/shield_of_fortitude_blocking_0"
+					}
+				}
+			],
+			"fallback": {
+				"type": "minecraft:model",
+				"model": "arcananovum:item/shield_of_fortitude_blocking_0"
+			}
+		},
+		"property": "minecraft:using_item"
+	},
     "hand_animation_on_swap": false
 }

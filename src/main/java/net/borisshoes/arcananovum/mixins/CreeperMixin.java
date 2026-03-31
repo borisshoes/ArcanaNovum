@@ -27,6 +27,6 @@ public abstract class CreeperMixin extends Monster {
       Creeper creeper = (Creeper) (Object) this;
       float baseRange = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FELIDAE_CHARM_CREEPER_RANGE);
       this.goalSelector.addGoal(1, new FleeFelidaeCharmGoal<>(creeper, Player.class, baseRange, 1.0, 1.2));
-      this.goalSelector.addGoal(1, new FleeSteleGoal(creeper,1.0,1.25, baseRange*1.5f, (stack) -> stack.is(ArcanaRegistry.FELIDAE_CHARM.getItem())));
+      this.goalSelector.addGoal(1, new FleeSteleGoal(creeper, 1.0, 1.25, baseRange * 1.5f, (stack) -> stack.is(ArcanaRegistry.FELIDAE_CHARM.getItem())));
    }
 }

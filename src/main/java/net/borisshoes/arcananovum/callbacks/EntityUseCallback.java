@@ -21,9 +21,9 @@ public class EntityUseCallback {
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(playerEntity.getItemInHand(hand));
          if(entity instanceof LivingEntity living){
             if(arcanaItem instanceof ContainmentCirclet circlet){
-               return circlet.useOnEntity(playerEntity,living,hand);
+               return circlet.useOnEntity(playerEntity, living, hand);
             }else if(arcanaItem instanceof NegotiationCharm charm){
-               return charm.useOnEntity(playerEntity,living,hand);
+               return charm.useOnEntity(playerEntity, living, hand);
             }
          }
          

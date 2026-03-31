@@ -10,7 +10,8 @@ import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 
-public record Dialog(ArrayList<MutableComponent> message, ArrayList<DialogSound> sounds, int[] delay, int weightNoCond, int weightWithCond, int condMask){
+public record Dialog(ArrayList<MutableComponent> message, ArrayList<DialogSound> sounds, int[] delay, int weightNoCond,
+                     int weightWithCond, int condMask) {
    
    public int getWeight(boolean[] args){
       int bitflag = condMask;
@@ -24,17 +25,17 @@ public record Dialog(ArrayList<MutableComponent> message, ArrayList<DialogSound>
       return weightWithCond;
    }
    
-   public record DialogSound(SoundEvent soundEvent, float volume, float pitch){
+   public record DialogSound(SoundEvent soundEvent, float volume, float pitch) {
       public void playSound(ServerPlayer player){
-         SoundUtils.playSongToPlayer(player,soundEvent,volume,pitch);
+         SoundUtils.playSongToPlayer(player, soundEvent, volume, pitch);
       }
       
       public void playSound(Level world, BlockPos pos){
-         SoundUtils.playSound(world,pos,soundEvent, SoundSource.MASTER,volume,pitch);
+         SoundUtils.playSound(world, pos, soundEvent, SoundSource.MASTER, volume, pitch);
       }
       
       public void playSound(Level world, BlockPos pos, SoundSource category){
-         SoundUtils.playSound(world,pos,soundEvent,category,volume,pitch);
+         SoundUtils.playSound(world, pos, soundEvent, category, volume, pitch);
       }
    }
 }

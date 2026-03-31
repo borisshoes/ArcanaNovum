@@ -41,7 +41,7 @@ public class ArcaneNotesLootFunction extends LootItemConditionalFunction {
    );
    
    private final HolderSet<Item> itemTag;
-   private final int mundaneWeight,empoweredWeight,exoticWeight,sovereignWeight,divineWeight;
+   private final int mundaneWeight, empoweredWeight, exoticWeight, sovereignWeight, divineWeight;
    
    protected ArcaneNotesLootFunction(List<LootItemCondition> conditions, HolderSet<Item> itemTag, int mundaneWeight, int empoweredWeight, int exoticWeight, int sovereignWeight, int divineWeight){
       super(conditions);
@@ -65,8 +65,8 @@ public class ArcaneNotesLootFunction extends LootItemConditionalFunction {
       RandomSource random = context.getRandom();
       if(!stack.is(ArcanaRegistry.ARCANE_NOTES)) return stack;
       
-      List<Tuple<ArcanaRarity,Integer>> weights = List.of(new Tuple<>(ArcanaRarity.MUNDANE,mundaneWeight),new Tuple<>(ArcanaRarity.EMPOWERED,empoweredWeight),new Tuple<>(ArcanaRarity.EXOTIC,exoticWeight),new Tuple<>(ArcanaRarity.SOVEREIGN,sovereignWeight),new Tuple<>(ArcanaRarity.DIVINE,divineWeight));
-      ArcanaRarity rarity = AlgoUtils.getWeightedOption(weights,random.nextLong());
+      List<Tuple<ArcanaRarity, Integer>> weights = List.of(new Tuple<>(ArcanaRarity.MUNDANE, mundaneWeight), new Tuple<>(ArcanaRarity.EMPOWERED, empoweredWeight), new Tuple<>(ArcanaRarity.EXOTIC, exoticWeight), new Tuple<>(ArcanaRarity.SOVEREIGN, sovereignWeight), new Tuple<>(ArcanaRarity.DIVINE, divineWeight));
+      ArcanaRarity rarity = AlgoUtils.getWeightedOption(weights, random.nextLong());
       List<Holder<Item>> items = this.itemTag.stream().filter(entry -> {
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(entry.getRegisteredName());
          return arcanaItem != null && arcanaItem.getRarity() == rarity;
@@ -75,7 +75,7 @@ public class ArcaneNotesLootFunction extends LootItemConditionalFunction {
       if(items.isEmpty()) return stack;
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(items.get(random.nextInt(items.size())).getRegisteredName());
       String arcanaId = arcanaItem.getId();
-      ArcanaItem.putProperty(stack, ArcaneNotesItem.UNLOCK_ID_TAG,arcanaId);
+      ArcanaItem.putProperty(stack, ArcaneNotesItem.UNLOCK_ID_TAG, arcanaId);
       ArcaneNotesItem.buildLore(stack);
       
       return stack;

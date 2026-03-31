@@ -17,7 +17,7 @@ public class QuiverSlot extends Slot {
    
    @Override
    public boolean mayPlace(ItemStack stack){
-      return isValidItem(stack,runic);
+      return isValidItem(stack, runic);
    }
    
    public static boolean isValidItem(ItemStack stack, boolean isRunic){

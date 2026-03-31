@@ -19,7 +19,7 @@ public class EnderCrateGui extends SimpleGui {
    private EnderCrateBlockEntity block;
    
    public EnderCrateGui(ServerPlayer player, EnderCrateBlockEntity block){
-      this(player,block.getChannel(),block.getBandwidth());
+      this(player, block.getChannel(), block.getBandwidth());
       this.block = block;
    }
    
@@ -33,9 +33,9 @@ public class EnderCrateGui extends SimpleGui {
    public void build(){
       for(int i = 0; i < size; i++){
          if(channel.isLocked()){
-            setSlotRedirect(i,new Slot(channel.getInventory(),i,i%9,i/9));
+            setSlotRedirect(i, new Slot(channel.getInventory(), i, i % 9, i / 9));
          }else{
-            setSlotRedirect(i,new NoArcanaSlot(channel.getInventory(),i,i%9,i/9));
+            setSlotRedirect(i, new NoArcanaSlot(channel.getInventory(), i, i % 9, i / 9));
          }
       }
    }
@@ -63,7 +63,7 @@ public class EnderCrateGui extends SimpleGui {
    public void onClose(){
       super.onClose();
       if(block != null){
-         SoundUtils.playSound(block.getLevel(),block.getBlockPos(), SoundEvents.ENDER_CHEST_CLOSE, SoundSource.BLOCKS,1,1.2f);
+         SoundUtils.playSound(block.getLevel(), block.getBlockPos(), SoundEvents.ENDER_CHEST_CLOSE, SoundSource.BLOCKS, 1, 1.2f);
       }
    }
 }

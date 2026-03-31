@@ -29,8 +29,8 @@ public class StarpathAltarGui extends SimpleGui {
    public StarpathAltarGui(ServerPlayer player, StarpathAltarBlockEntity blockEntity){
       super(MenuType.HOPPER, player, false);
       this.blockEntity = blockEntity;
-      starcharts = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STAR_CHARTS) > 0;
-      stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE) > 0;
+      starcharts = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.STAR_CHARTS) > 0;
+      stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.STARGATE) > 0;
       
       setTitle(Component.literal("Starpath Altar"));
    }
@@ -40,29 +40,29 @@ public class StarpathAltarGui extends SimpleGui {
       if(index == 2){
          
          if(starcharts){
-            StarpathAltarChartsGui gui = new StarpathAltarChartsGui(player,this,blockEntity);
+            StarpathAltarChartsGui gui = new StarpathAltarChartsGui(player, this, blockEntity);
             gui.buildPage();
             gui.open();
          }else{
-            StarpathTargetGui gui = new StarpathTargetGui(player,blockEntity,true,this,(obj) -> blockEntity.setTarget((BlockPos) obj));
+            StarpathTargetGui gui = new StarpathTargetGui(player, blockEntity, true, this, (obj) -> blockEntity.setTarget((BlockPos) obj));
             gui.open();
          }
       }else if(index == 4){
          if(blockEntity.getCooldown() <= 0){
             Item cost = StarpathAltarBlockEntity.getCost();
-            if(MinecraftUtils.removeItems(player,cost,blockEntity.calculateCost())){
+            if(MinecraftUtils.removeItems(player, cost, blockEntity.calculateCost())){
                blockEntity.startTeleport(player);
                close();
             }else{
                player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
                      .append(Component.translatable(cost.getDescriptionId()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))
-                     .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)),false);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
+                     .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                close();
             }
          }else{
-            player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
-            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
+            player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             close();
          }
       }
@@ -83,7 +83,7 @@ public class StarpathAltarGui extends SimpleGui {
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          
-         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.STARPATH_COLOR)).setName(Component.literal("Starpath Altar").withStyle(ChatFormatting.DARK_PURPLE)));
+         setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.STARPATH_COLOR)).setName(Component.literal("Starpath Altar").withStyle(ChatFormatting.DARK_PURPLE)));
       }
       
       GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideDefaultTooltip();
@@ -94,20 +94,20 @@ public class StarpathAltarGui extends SimpleGui {
          cooldownItem.setName((Component.literal("")
                .append(Component.literal("Altar Recharging").withStyle(ChatFormatting.DARK_AQUA))));
          cooldownItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal((blockEntity.getCooldown()/20)+" Seconds").withStyle(ChatFormatting.GRAY)))));
+               .append(Component.literal((blockEntity.getCooldown() / 20) + " Seconds").withStyle(ChatFormatting.GRAY)))));
       }
-      setSlot(0,cooldownItem);
+      setSlot(0, cooldownItem);
       
       BlockPos target = blockEntity.getTarget();
       GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
       locationItem.setName((Component.literal("")
             .append(Component.literal("Target Location").withStyle(ChatFormatting.GOLD))));
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("X: "+target.getX()).withStyle(ChatFormatting.YELLOW)))));
+            .append(Component.literal("X: " + target.getX()).withStyle(ChatFormatting.YELLOW)))));
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("Y: "+target.getY()).withStyle(ChatFormatting.YELLOW)))));
+            .append(Component.literal("Y: " + target.getY()).withStyle(ChatFormatting.YELLOW)))));
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("Z: "+target.getZ()).withStyle(ChatFormatting.YELLOW)))));
+            .append(Component.literal("Z: " + target.getZ()).withStyle(ChatFormatting.YELLOW)))));
       if(stargate){
          locationItem.addLoreLine(Component.literal("Dimension: ").withStyle(ChatFormatting.YELLOW).append(MinecraftUtils.getFormattedDimName(blockEntity.getTargetDimension())));
       }
@@ -115,7 +115,7 @@ public class StarpathAltarGui extends SimpleGui {
             .append(Component.literal("").withStyle(ChatFormatting.YELLOW)))));
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Click to Change Target").withStyle(ChatFormatting.YELLOW)))));
-      setSlot(2,locationItem);
+      setSlot(2, locationItem);
       
       int cost = blockEntity.calculateCost();
       int stacks = cost / 64;
@@ -132,19 +132,19 @@ public class StarpathAltarGui extends SimpleGui {
             .append(Component.literal("This Journey Costs: ").withStyle(ChatFormatting.AQUA)))));
       
       MutableComponent text = Component.literal("")
-            .append(Component.literal(cost+"").withStyle(ChatFormatting.DARK_GREEN))
+            .append(Component.literal(cost + "").withStyle(ChatFormatting.DARK_GREEN))
             .append(Component.literal(" - ").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.translatable(costItem.getDescriptionId()).withStyle(ChatFormatting.DARK_AQUA));
       if(cost > costItem.getDefaultMaxStackSize()){
          text.append(Component.literal(" - ").withStyle(ChatFormatting.DARK_PURPLE));
          if(cost > 0){
-            text.append("("+stacks+" Stacks + "+leftover+")").withStyle(ChatFormatting.YELLOW);
+            text.append("(" + stacks + " Stacks + " + leftover + ")").withStyle(ChatFormatting.YELLOW);
          }else{
-            text.append("("+stacks+" Stacks)").withStyle(ChatFormatting.YELLOW);
+            text.append("(" + stacks + " Stacks)").withStyle(ChatFormatting.YELLOW);
          }
       }
       activateItem.addLoreLine(TextUtils.removeItalics(text));
-      setSlot(4,activateItem);
+      setSlot(4, activateItem);
    }
    
    

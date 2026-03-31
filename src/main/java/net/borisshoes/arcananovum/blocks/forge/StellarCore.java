@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -16,6 +15,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -62,20 +62,20 @@ import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlo
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.LIT;
 
 public class StellarCore extends ArcanaBlock implements MultiblockCore {
-	public static final String ID = "stellar_core";
+   public static final String ID = "stellar_core";
    
    private Multiblock multiblock;
    public static Map<Item, ItemStack> MOLTEN_CORE_ITEMS = Map.ofEntries(
-         entry(Items.RAW_IRON,new ItemStack(Items.IRON_INGOT,2)),
-         entry(Items.RAW_COPPER,new ItemStack(Items.COPPER_INGOT,2)),
-         entry(Items.RAW_GOLD,new ItemStack(Items.GOLD_INGOT,2)),
-         entry(Items.RAW_IRON_BLOCK,new ItemStack(Items.IRON_BLOCK,2)),
-         entry(Items.RAW_COPPER_BLOCK,new ItemStack(Items.COPPER_BLOCK,2)),
-         entry(Items.RAW_GOLD_BLOCK,new ItemStack(Items.GOLD_BLOCK,2)),
-         entry(Items.NETHER_GOLD_ORE,new ItemStack(Items.GOLD_INGOT,2)),
-         entry(Items.SAND,new ItemStack(Items.GLASS,2)),
-         entry(Items.RED_SAND,new ItemStack(Items.GLASS,2)),
-         entry(Items.ANCIENT_DEBRIS,new ItemStack(Items.NETHERITE_SCRAP,1))
+         entry(Items.RAW_IRON, new ItemStack(Items.IRON_INGOT, 2)),
+         entry(Items.RAW_COPPER, new ItemStack(Items.COPPER_INGOT, 2)),
+         entry(Items.RAW_GOLD, new ItemStack(Items.GOLD_INGOT, 2)),
+         entry(Items.RAW_IRON_BLOCK, new ItemStack(Items.IRON_BLOCK, 2)),
+         entry(Items.RAW_COPPER_BLOCK, new ItemStack(Items.COPPER_BLOCK, 2)),
+         entry(Items.RAW_GOLD_BLOCK, new ItemStack(Items.GOLD_BLOCK, 2)),
+         entry(Items.NETHER_GOLD_ORE, new ItemStack(Items.GOLD_INGOT, 2)),
+         entry(Items.SAND, new ItemStack(Items.GLASS, 2)),
+         entry(Items.RED_SAND, new ItemStack(Items.GLASS, 2)),
+         entry(Items.ANCIENT_DEBRIS, new ItemStack(Items.NETHERITE_SCRAP, 1))
    );
    
    public StellarCore(){
@@ -85,10 +85,10 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.BLAST_FURNACE;
-      block = new StellarCoreBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(3.5f,1200.0f).lightLevel(StellarCoreBlock::getLightLevel).sound(SoundType.METAL));
+      block = new StellarCoreBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(3.5f, 1200.0f).lightLevel(StellarCoreBlock::getLightLevel).sound(SoundType.METAL));
       item = new StellarCoreItem(block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.OBTAIN_BLAST_FURNACE,ResearchTasks.OBTAIN_NETHERITE_INGOT};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.OBTAIN_BLAST_FURNACE, ResearchTasks.OBTAIN_NETHERITE_INGOT};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("ii_iridescent")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))};
       
       ItemStack stack = new ItemStack(item);
@@ -130,7 +130,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
             .append(Component.literal("Stardust").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(".").withStyle(ChatFormatting.YELLOW)));
       addForgeLore(lore);
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -145,13 +145,13 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public Vec3i getCheckOffset(){
-      return new Vec3i(-2,-1,-4);
+      return new Vec3i(-2, -1, -4);
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Stellar Core").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nSo often I find my storage plagued with decrepit armor. A furnace is far too crude to extract any worthwhile material, and it can’t even get close to hot enough to melt Diamond or Netherite.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Stellar Core").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nSo often I find my storage plagued with decrepit armor. A furnace is far too crude to extract any worthwhile material, and it can’t even get close to hot enough to melt Diamond or Netherite.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Stellar Core").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nWhat I need is the power of the sun! A cleverly enchanted alloy of Obsidian, Blackstone and Netherite should be able to withstand the temperatures to melt even Netherite coated Diamond, allowing me to extract a large \n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Stellar Core").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nportion of the material.\n\nInterestingly enough, the Arcane Sun I have created interacts with the enchantments bound to equipment and produces a glittery dust that is nearly indestructible \n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Stellar Core").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nand contains trace amounts of Arcana. This might be the key to making better equipment.").withStyle(ChatFormatting.BLACK)));
@@ -160,7 +160,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
    
    public class StellarCoreItem extends ArcanaPolymerBlockItem {
       public StellarCoreItem(Block block){
-         super(getThis(),block, getArcanaItemComponents());
+         super(getThis(), block, getArcanaItemComponents());
       }
       
       @Override
@@ -182,19 +182,19 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
          if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
             return Blocks.BARRIER.defaultBlockState();
          }else{
-            return Blocks.BLAST_FURNACE.defaultBlockState().setValue(LIT,state.getValue(LIT)).setValue(HORIZONTAL_FACING,state.getValue(HORIZONTAL_FACING));
+            return Blocks.BLAST_FURNACE.defaultBlockState().setValue(LIT, state.getValue(LIT)).setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
          }
       }
       
       @Nullable
       @Override
       public BlockState getStateForPlacement(BlockPlaceContext ctx){
-         return this.defaultBlockState().setValue(LIT,false).setValue(HORIZONTAL_FACING,ctx.getHorizontalDirection().getOpposite());
+         return this.defaultBlockState().setValue(LIT, false).setValue(HORIZONTAL_FACING, ctx.getHorizontalDirection().getOpposite());
       }
       
       @Override
       protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager){
-         stateManager.add(LIT,HORIZONTAL_FACING);
+         stateManager.add(LIT, HORIZONTAL_FACING);
       }
       
       @Override
@@ -224,14 +224,14 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
          if(core != null){
             if(playerEntity instanceof ServerPlayer player){
                if(core.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.level(),pos) == null){
+                  if(StarlightForge.findActiveForge(player.level(), pos) == null){
                      player.sendSystemMessage(Component.literal("The Core must be within the range of an active Starlight Forge"));
                   }else{
                      core.openGui(player);
                   }
                }else{
                   player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(core.getMultiblockCheck(),player);
+                  multiblock.displayStructure(core.getMultiblockCheck(), player);
                }
             }
          }
@@ -243,17 +243,17 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
       
       @Override
-      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return true;
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack CORE_LIT = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/stellar_core_lit"));
       public static final ItemStack CORE_UNLIT = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/stellar_core_unlit"));
       
@@ -261,7 +261,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       private final ItemDisplayElement main;
       private boolean lit;
       
-      public Model(ServerLevel world, BlockState state) {
+      public Model(ServerLevel world, BlockState state){
          this.lit = state.getValue(LIT);
          this.world = world;
          float direction = state.getValue(HORIZONTAL_FACING).toYRot();
@@ -273,8 +273,8 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void notifyUpdate(HolderAttachment.UpdateType updateType) {
-         if (updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE) {
+      public void notifyUpdate(HolderAttachment.UpdateType updateType){
+         if(updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE){
             BlockState state = this.blockState();
             if(this.lit ^ state.getValue(LIT)){
                this.lit = state.getValue(LIT);

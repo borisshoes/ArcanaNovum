@@ -24,7 +24,10 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
@@ -100,8 +103,10 @@ public abstract class LivingEntityMixin {
    private void arcananovum$onTick(CallbackInfo ci){
       LivingEntity thisEntity = (LivingEntity) (Object) this;
       if(thisEntity.isDeadOrDying()) return;
-      if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.STARDUST_PARTICLES)) return;
-      EnhancedStatUtils.glowInfusedGear(thisEntity);
+      if(thisEntity.tickCount % 3 != 0) return;
+      double stardustParticleRate = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.STARDUST_PARTICLE_RATE);
+      if(stardustParticleRate <= 0) return;
+      EnhancedStatUtils.glowInfusedGear(thisEntity, stardustParticleRate);
    }
    
    @Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;gameEvent(Lnet/minecraft/core/Holder;)V"))
@@ -314,6 +319,7 @@ public abstract class LivingEntityMixin {
                   toRemove.add(st);
                }
             }
+            ArcanaItem.putProperty(shieldStack, ShieldOfFortitude.ABSORPTION_TAG, Math.min(absAmt, shieldTotal));
             shieldTotal = Math.min(Math.min(absAmt, shieldTotal), 50);
             if(shieldTotal >= 20){
                int slowDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS_DURATION);
@@ -334,6 +340,7 @@ public abstract class LivingEntityMixin {
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
                player.getCooldowns().addCooldown(shieldStack, 100);
                SoundUtils.playSound(player.level(), entity.blockPosition(), SoundEvents.IRON_GOLEM_HURT, SoundSource.PLAYERS, .5f, .8f);
+               ArcanaItem.putProperty(shieldStack, ShieldOfFortitude.ABSORPTION_TAG, 20);
             }
          }
       }
@@ -490,7 +497,7 @@ public abstract class LivingEntityMixin {
             double buffetPower = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.WINGS_OF_ENDERIA_BUFFET_POWER);
             ServerLevel world = player.level();
             Vec3 pos = player.position().add(0, player.getBbHeight() / 2, 0);
-            AABB rangeBox = new AABB(pos.x + buffetRange*1.5, pos.y + buffetRange*1.5, pos.z + buffetRange*1.5, pos.x - buffetRange*1.5, pos.y - buffetRange*1.5, pos.z - buffetRange*1.5);
+            AABB rangeBox = new AABB(pos.x + buffetRange * 1.5, pos.y + buffetRange * 1.5, pos.z + buffetRange * 1.5, pos.x - buffetRange * 1.5, pos.y - buffetRange * 1.5, pos.z - buffetRange * 1.5);
             List<Entity> entities = world.getEntities(entity, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 1.25 * buffetRange * buffetRange && (e instanceof Mob));
             boolean triggered = false;
             for(Entity entity1 : entities){

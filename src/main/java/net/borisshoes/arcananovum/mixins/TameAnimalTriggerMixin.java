@@ -17,7 +17,7 @@ public class TameAnimalTriggerMixin {
    @Inject(method = "trigger", at = @At("HEAD"))
    private void arcananovum$tameAnimal(ServerPlayer serverPlayer, Animal animal, CallbackInfo ci){
       if(animal.getType() == EntityType.CAT){
-         ArcanaNovum.data(serverPlayer).setResearchTask(ResearchTasks.TAME_CAT,true);
+         ArcanaNovum.data(serverPlayer).setResearchTask(ResearchTasks.TAME_CAT, true);
       }
    }
 }

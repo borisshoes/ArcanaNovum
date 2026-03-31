@@ -38,7 +38,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    private boolean arcananovum$shouldContinue(boolean original){
       if(field_7333 instanceof DragonPhantomEntity) return true; // Guardian Phantoms immune to Felidae Charm
       if(original && field_7333.getTarget() instanceof ServerPlayer player){
-         GeomanticSteleBlockEntity.SteleZone felidaeStele = GeomanticSteleBlockEntity.getZoneAtEntity(player,(item) -> item.is(ArcanaRegistry.FELIDAE_CHARM.getItem()));
+         GeomanticSteleBlockEntity.SteleZone felidaeStele = GeomanticSteleBlockEntity.getZoneAtEntity(player, (item) -> item.is(ArcanaRegistry.FELIDAE_CHARM.getItem()));
          if(felidaeStele != null){
             SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
@@ -47,16 +47,16 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
          }
          
          Inventory inv = player.getInventory();
-         for(int i = 0; i<inv.getContainerSize(); i++){
+         for(int i = 0; i < inv.getContainerSize(); i++){
             ItemStack item = inv.getItem(i);
             if(item.isEmpty()){
                continue;
             }
-         
+            
             boolean isArcane = ArcanaItemUtils.isArcane(item);
             if(!isArcane)
                continue; // Item not arcane, skip
-         
+            
             if(ArcanaItemUtils.identifyItem(item) instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item, ArcanaRegistry.FELIDAE_CHARM.getItem())){
                SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp

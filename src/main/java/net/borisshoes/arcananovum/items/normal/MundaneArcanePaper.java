@@ -22,7 +22,7 @@ public class MundaneArcanePaper extends NormalPolymerItem {
    
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.MUNDANE_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.MUNDANE_ARCANE_PAPER,4), ArcanaRegistry.MUNDANE_ARCANE_PAPER);
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.MUNDANE_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.MUNDANE_ARCANE_PAPER, 4), ArcanaRegistry.MUNDANE_ARCANE_PAPER);
    }
 }
 

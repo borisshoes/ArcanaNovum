@@ -75,27 +75,27 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       itemVersion = 0;
       vanillaItem = Items.PRISMARINE_CRYSTALS;
       item = new CleansingCharmItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.MILK_CLEANSE, ResearchTasks.HONEY_CLEANSE, ResearchTasks.EFFECT_POISON, ResearchTasks.EFFECT_NAUSEA, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.ADVANCEMENT_FURIOUS_COCKTAIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,ACTIVE_TAG, true);
+      putProperty(stack, ACTIVE_TAG, true);
       setPrefStack(stack);
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,ACTIVE_TAG,active);
-      return buildItemLore(newStack,server);
+      boolean active = getBooleanProperty(stack, ACTIVE_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, ACTIVE_TAG, active);
+      return buildItemLore(newStack, server);
    }
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      int cdLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.INFUSED_CHARCOAL);
+      int cdLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.INFUSED_CHARCOAL);
       int baseCD = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CLEANSING_CHARM_COOLDOWN);
       int cdReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.CLEANSING_CHARM_CHARCOAL_COOLDOWN_PER_LVL).get(cdLvl);
       return baseCD - cdReduction;
@@ -117,17 +117,17 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       Collections.shuffle(canCleanse);
       
       if(canCleanse.size() >= 10 && living instanceof ServerPlayer player){
-         ArcanaAchievements.grant(player,ArcanaAchievements.SEPTIC_SHOCK);
+         ArcanaAchievements.grant(player, ArcanaAchievements.SEPTIC_SHOCK);
       }
       
-      int toRemove = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ANTIDOTE) > 0 ? 2 : 1;
+      int toRemove = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.ANTIDOTE) > 0 ? 2 : 1;
       for(int i = 0; i < toRemove; i++){
          if(canCleanse.isEmpty()) break;
          Either<Map.Entry<Holder<MobEffect>, MobEffectInstance>, ConditionInstance> next = canCleanse.removeFirst();
          
          if(next.right().isPresent()){
             ConditionInstance condition = next.right().get();
-            Conditions.removeCondition(living.level().getServer(),living,condition.getCondition(),condition.getId());
+            Conditions.removeCondition(living.level().getServer(), living, condition.getCondition(), condition.getId());
             if(living instanceof ServerPlayer player){
                Event.addEvent(new CleansingCharmEvent(player, Either.right(condition)));
             }
@@ -137,23 +137,24 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
             if(living instanceof ServerPlayer player){
                Event.addEvent(new CleansingCharmEvent(player, Either.left(effect)));
                if(effect.equals(MobEffects.HUNGER)){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.FOOD_POISONT);
+                  ArcanaAchievements.grant(player, ArcanaAchievements.FOOD_POISONT);
                }
             }
          }else{
             return false;
          }
          
-         if(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REJUVENATION) > 0){
+         if(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.REJUVENATION) > 0){
             int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CLEANSING_CHARM_REJUVENATION_DURATION);
             float hpPerTick = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CLEANSING_CHARM_REJUVENATION_HEALTH_PER_TICK);
-            ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION,arcanaId(ArcanaRegistry.CLEANSING_CHARM.getId()),duration,hpPerTick,true,true,false, AttributeModifier.Operation.ADD_VALUE, living.getUUID());
-            Conditions.addCondition(living.level().getServer(),living,rejuv);
+            ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.CLEANSING_CHARM.getId()), duration, hpPerTick, true, true, false, AttributeModifier.Operation.ADD_VALUE, living.getUUID());
+            Conditions.addCondition(living.level().getServer(), living, rejuv);
          }
          
          removed = true;
-         setEnergy(stack,getMaxEnergy(stack));
-         if(living instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CLEANSING_CHARM_CLEANSE));
+         setEnergy(stack, getMaxEnergy(stack));
+         if(living instanceof ServerPlayer player)
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CLEANSING_CHARM_CLEANSE));
       }
       return removed;
    }
@@ -190,14 +191,14 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("Charm of Cleansing").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nBy coalescing the cleansing effects of milk and honey into a pure carbon and silica matrix, I have made their effects renewable. \n\nWhile active, the Charm will cleanse a negative  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Charm of Cleansing").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nBy coalescing the cleansing effects of milk and honey into a pure carbon and silica matrix, I have made their effects renewable. \n\nWhile active, the Charm will cleanse a negative  ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Charm of Cleansing").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\neffect when it is applied, or a currently active effect. \n\nThis ability takes about a minute to recharge.\n\nSneak Use the Charm to toggle its effect.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    @Override
    public Vec3 getBaseRange(){
-      return new Vec3(15,15,15);
+      return new Vec3(15, 15, 15);
    }
    
    @Override
@@ -205,9 +206,9 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
       Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
       
-      List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class,box);
+      List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class, box);
       for(LivingEntity living : inRangeEntities){
-         if(cleanseEffect(living,stack) && living instanceof ServerPlayer player){
+         if(cleanseEffect(living, stack) && living instanceof ServerPlayer player){
             stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CLEANSING_CHARM_CLEANSE));
             stele.setChanged();
          }
@@ -224,7 +225,7 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
          float g = ((rgb >> 8) & 0xFF) / 255.0f;
          float b = (rgb & 0xFF) / 255.0f;
          ColorParticleOption particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, r, g, b);
-         world.sendParticles(particle,stackPos.x(),stackPos.y(),stackPos.z(),2,0.25,0.25,0.25,.0);
+         world.sendParticles(particle, stackPos.x(), stackPos.y(), stackPos.z(), 2, 0.25, 0.25, 0.25, .0);
       }
    }
    
@@ -237,7 +238,7 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
-         boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
+         boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          
          List<String> stringList = new ArrayList<>();
          if(active){
@@ -245,7 +246,7 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
          }else{
             stringList.add("off");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -259,7 +260,7 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
          
-         if(getBooleanProperty(stack,ACTIVE_TAG)) cleanseEffect(player,stack);
+         if(getBooleanProperty(stack, ACTIVE_TAG)) cleanseEffect(player, stack);
          
          if(world.getServer().getTickCount() % 20 == 0){
             addEnergy(stack, -1); // Recharge
@@ -272,15 +273,15 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          
          if(player.isShiftKeyDown()){
-            boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
-            putProperty(stack,ACTIVE_TAG,active);
+            boolean active = !getBooleanProperty(stack, ACTIVE_TAG);
+            putProperty(stack, ACTIVE_TAG, active);
             
             if(active){
-               player.displayClientMessage(Component.literal("The Charm glows with iridescence").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_POWER_SELECT, 0.5f,2f);
+               player.displayClientMessage(Component.literal("The Charm glows with iridescence").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_POWER_SELECT, 0.5f, 2f);
             }else{
-               player.displayClientMessage(Component.literal("The Charm's glow fades").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_DEACTIVATE, 0.5f,.8f);
+               player.displayClientMessage(Component.literal("The Charm's glow fades").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_DEACTIVATE, 0.5f, .8f);
             }
             
             return InteractionResult.SUCCESS_SERVER;

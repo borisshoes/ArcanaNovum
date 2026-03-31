@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
@@ -20,21 +21,23 @@ import org.jetbrains.annotations.Nullable;
 import java.util.TreeMap;
 
 public class FractalSpongeBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    
    public FractalSpongeBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.FRACTAL_SPONGE_BLOCK_ENTITY, pos, state);
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
    }
    
@@ -50,7 +53,7 @@ public class FractalSpongeBlockEntity extends BlockEntity implements PolymerObje
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
    }
    
@@ -70,6 +73,10 @@ public class FractalSpongeBlockEntity extends BlockEntity implements PolymerObje
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -84,9 +91,10 @@ public class FractalSpongeBlockEntity extends BlockEntity implements PolymerObje
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -94,10 +102,11 @@ public class FractalSpongeBlockEntity extends BlockEntity implements PolymerObje
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
    }
 }

@@ -53,12 +53,14 @@ public class ServerPlayerMixin {
       Tag fedTag = data.getMiscData(ItineranteurBlockEntity.FED_TAG);
       Tag uuidTag = data.getMiscData(ItineranteurBlockEntity.CRAFTER_TAG);
       if(uuidTag instanceof StringTag stringTag && !stringTag.asString().orElse("").isEmpty()){
-         ArcanaAchievements.progress(AlgoUtils.getUUID(stringTag.asString().get()),ArcanaAchievements.ARCANA_BOULEVARD,cm);
-         if(player.random.nextFloat() < 0.1) player.level().sendParticles(ParticleTypes.END_ROD,player.getX(),player.getY()+0.1,player.getZ(),1,player.getBbWidth()/2.0,0.05,player.getBbWidth()/2.0,0.025);
-         if(player.random.nextFloat() < 0.001) ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ITINERANTEUR_BLOCK_TRAVELLED_PER_10));
+         ArcanaAchievements.progress(AlgoUtils.getUUID(stringTag.asString().get()), ArcanaAchievements.ARCANA_BOULEVARD, cm);
+         if(player.random.nextFloat() < 0.1)
+            player.level().sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 0.1, player.getZ(), 1, player.getBbWidth() / 2.0, 0.05, player.getBbWidth() / 2.0, 0.025);
+         if(player.random.nextFloat() < 0.001)
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ITINERANTEUR_BLOCK_TRAVELLED_PER_10));
       }
       if(fedTag instanceof ByteTag byteTag && byteTag.byteValue() != 0){
-         return in*0.0f;
+         return in * 0.0f;
       }else{
          return in;
       }
@@ -70,7 +72,7 @@ public class ServerPlayerMixin {
       ArcanaPlayerData data = ArcanaNovum.data(player);
       Tag fedTag = data.getMiscData(ItineranteurBlockEntity.FED_TAG);
       if(fedTag instanceof ByteTag byteTag && byteTag.byteValue() != 0){
-         return in*0.0f;
+         return in * 0.0f;
       }else{
          return in;
       }
@@ -86,22 +88,22 @@ public class ServerPlayerMixin {
    @Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;createWitherRose(Lnet/minecraft/world/entity/LivingEntity;)V"))
    private void arcananovum$onEntityKilledOther(DamageSource damageSource, CallbackInfo ci){
       ServerPlayer player = (ServerPlayer) (Object) this;
-      EntityKilledCallback.killedEntity(player.level(),damageSource, damageSource.getEntity(),player);
+      EntityKilledCallback.killedEntity(player.level(), damageSource, damageSource.getEntity(), player);
    }
    
-   @Inject(method= "die",at=@At("HEAD"))
+   @Inject(method = "die", at = @At("HEAD"))
    private void arcananovum$restoreOffhandOnDeath(CallbackInfo ci){
       ServerPlayer player = (ServerPlayer) (Object) this;
       ArcanaNovum.data(player).restoreOffhand(player);
    }
    
-   @Inject(method= "checkMovementStatistics", at = @At(value="INVOKE",target = "Lnet/minecraft/server/level/ServerPlayer;awardStat(Lnet/minecraft/resources/Identifier;I)V", ordinal = 0))
+   @Inject(method = "checkMovementStatistics", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;awardStat(Lnet/minecraft/resources/Identifier;I)V", ordinal = 0))
    private void arcananovum$swimStats(double deltaX, double deltaY, double deltaZ, CallbackInfo ci){
       ServerPlayer player = (ServerPlayer) (Object) this;
-      boolean hasCetacea = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, null, 0).stream().anyMatch(stack -> ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG));
-      boolean cetaceaStele = GeomanticSteleBlockEntity.isEntityInZone(player,(item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()));
+      boolean hasCetacea = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, null, 0).stream().anyMatch(stack -> ArcanaItem.getBooleanProperty(stack, ArcanaItem.ACTIVE_TAG));
+      boolean cetaceaStele = GeomanticSteleBlockEntity.isEntityInZone(player, (item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()));
       if(hasCetacea || cetaceaStele){
-         int i = Math.round((float)Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) * 100.0F);
+         int i = Math.round((float) Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) * 100.0F);
          if(i > 0){
             ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_MIGRATION, i);
             LivingEntity entity = player.level().getNearestEntity(Dolphin.class, TargetingConditions.forNonCombat().range(10.0).ignoreLineOfSight(), player, player.getX(), player.getY(), player.getZ(), player.getBoundingBox().inflate(20.0));
@@ -110,23 +112,23 @@ public class ServerPlayerMixin {
       }
    }
    
-   @Inject(method= "checkMovementStatistics", at = @At(value="INVOKE",target = "Lnet/minecraft/server/level/ServerPlayer;isSprinting()Z",shift = At.Shift.BEFORE))
+   @Inject(method = "checkMovementStatistics", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;isSprinting()Z", shift = At.Shift.BEFORE))
    private void arcananovum$onGroundMove(double dx, double dy, double dz, CallbackInfo ci){
       ServerPlayer player = (ServerPlayer) (Object) this;
       ItemStack bootsItem = player.getItemBySlot(EquipmentSlot.FEET);
       if(ArcanaItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
          if(player.isSprinting()){
-            int i = Math.round((float)Math.sqrt(dx * dx + dz * dz) * 100.0f);
+            int i = Math.round((float) Math.sqrt(dx * dx + dz * dz) * 100.0f);
             ArcanaAchievements.progress(player, ArcanaAchievements.PHEIDIPPIDES, i);
          }
       }
    }
    
-   @Inject(method = "tick", at = @At(value="INVOKE",target= "Lnet/minecraft/server/level/ServerPlayer;trackStartFallingPosition()V", shift = At.Shift.BEFORE))
+   @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;trackStartFallingPosition()V", shift = At.Shift.BEFORE))
    private void arcananovum$ensnarementMovement(CallbackInfo ci){
       ServerPlayer player = (ServerPlayer) (Object) this;
       if(player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
-         player.move(MoverType.PLAYER,player.getDeltaMovement());
+         player.move(MoverType.PLAYER, player.getDeltaMovement());
          player.connection.teleport(new PositionMoveRotation(player.position(), player.getDeltaMovement(), 0, 0), Relative.unpack(0b11000));
       }
    }

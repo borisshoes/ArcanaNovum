@@ -28,8 +28,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageSources;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -52,7 +50,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class StormArrows extends RunicArrow {
-	public static final String ID = "storm_arrows";
+   public static final String ID = "storm_arrows";
    
    public StormArrows(){
       id = ID;
@@ -61,8 +59,8 @@ public class StormArrows extends RunicArrow {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new StormArrowsItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE,ResearchTasks.OBTAIN_LIGHTNING_ROD};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE, ResearchTasks.OBTAIN_LIGHTNING_ROD};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -89,7 +87,7 @@ public class StormArrows extends RunicArrow {
             .append(Component.literal(" to work when not ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("raining").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -97,8 +95,8 @@ public class StormArrows extends RunicArrow {
       int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION);
       int chainLvl = arrow.getAugment(ArcanaAugments.CHAIN_LIGHTNING);
       int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK);
-      strike(arrow,entityHitResult.getLocation(),stableLvl,shockLvl);
-      if(chainLvl > 0) chainLightning(arrow,entityHitResult.getEntity(),chainLvl);
+      strike(arrow, entityHitResult.getLocation(), stableLvl, shockLvl);
+      if(chainLvl > 0) chainLightning(arrow, entityHitResult.getEntity(), chainLvl);
       entityHitResult.getEntity().invulnerableTime = 1;
    }
    
@@ -106,7 +104,7 @@ public class StormArrows extends RunicArrow {
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION);
       int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK);
-      strike(arrow,blockHitResult.getLocation(),stableLvl,shockLvl);
+      strike(arrow, blockHitResult.getLocation(), stableLvl, shockLvl);
    }
    
    private void strike(AbstractArrow arrow, Vec3 pos, int stableLevel, int shockLvl){
@@ -120,18 +118,19 @@ public class StormArrows extends RunicArrow {
          
          lightning.getHitEntities().forEach(entity -> {
             if(!(entity instanceof LivingEntity living)) return;
-            living.hurtServer((ServerLevel)arrow.level(),ArcanaDamageTypes.of(arrow.level(),ArcanaDamageTypes.ARCANE_LIGHTNING,arrow,arrow.getOwner()),damage);
+            living.hurtServer((ServerLevel) arrow.level(), ArcanaDamageTypes.of(arrow.level(), ArcanaDamageTypes.ARCANE_LIGHTNING, arrow, arrow.getOwner()), damage);
          });
          
          if(arrow.getOwner() instanceof ServerPlayer player){
             BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2, () -> {
-               if(lightning.getHitEntities().anyMatch(e -> e instanceof MushroomCow)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY);
+               if(lightning.getHitEntities().anyMatch(e -> e instanceof MushroomCow))
+                  ArcanaAchievements.grant(player, ArcanaAchievements.SHOCK_THERAPY);
             }));
          }
          
          if(shockLvl > 0 && world instanceof ServerLevel serverWorld){
-            ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.AFTERSHOCK_AREA_EFFECT_TRACKER.getId()).addSource(AftershockAreaEffectTracker.source(arrow.getOwner(), BlockPos.containing(pos),serverWorld,shockLvl));
-            SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS,.2f,1f);
+            ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.AFTERSHOCK_AREA_EFFECT_TRACKER.getId()).addSource(AftershockAreaEffectTracker.source(arrow.getOwner(), BlockPos.containing(pos), serverWorld, shockLvl));
+            SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS, .2f, 1f);
          }
       }
    }
@@ -142,42 +141,42 @@ public class StormArrows extends RunicArrow {
       double range = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.STORM_ARROW_CHAIN_RANGE);
       float damage = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.STORM_ARROW_CHAIN_DMG);
       
-      AABB rangeBox = new AABB(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
-      List<Entity> entities = world.getEntities(arrow.getOwner(),rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range*range && !(e instanceof AbstractArrow));
+      AABB rangeBox = new AABB(pos.x + 8, pos.y + 8, pos.z + 8, pos.x - 8, pos.y - 8, pos.z - 8);
+      List<Entity> entities = world.getEntities(arrow.getOwner(), rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range * range && !(e instanceof AbstractArrow));
       
       List<LivingEntity> hits = new ArrayList<>();
       if(hitEntity instanceof LivingEntity le) hits.add(le);
       for(Entity entity : entities){
          if(entity instanceof LivingEntity e){
-            if(hits.size() < lvl+1){
+            if(hits.size() < lvl + 1){
                if(!hits.isEmpty()){
                   LivingEntity lastHit = hits.getLast();
                   double dist = lastHit.position().distanceTo(e.position());
                   
                   if(world instanceof ServerLevel serverWorld)
-                     ArcanaEffectUtils.line(serverWorld,null,lastHit.position().add(0,lastHit.getBbHeight()/2,0),e.position().add(0,e.getBbHeight()/2,0), ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
+                     ArcanaEffectUtils.line(serverWorld, null, lastHit.position().add(0, lastHit.getBbHeight() / 2, 0), e.position().add(0, e.getBbHeight() / 2, 0), ParticleTypes.WAX_OFF, (int) (dist * 8), 2, 0.05, 0.05);
                }
                
-               DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow,arrow.getOwner());
+               DamageSource source = ArcanaDamageTypes.of(world, ArcanaDamageTypes.ARCANE_LIGHTNING, arrow, arrow.getOwner());
                e.invulnerableTime = 1;
-               e.hurtServer(world,source,damage);
+               e.hurtServer(world, source, damage);
                hits.add(e);
             }
          }
       }
-      SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS,.1f,2f);
+      SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS, .1f, 2f);
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("   Storm Arrows").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe Channeling enchantment requires a storm to use. Throwing a bit of Arcana into it seems to charge the air enough to mimic a storm, although it isn’t always successful in doing so.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Storm Arrows").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThe Channeling enchantment requires a storm to use. Throwing a bit of Arcana into it seems to charge the air enough to mimic a storm, although it isn’t always successful in doing so.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class StormArrowsItem extends ArcanaPolymerArrowItem {
       public StormArrowsItem(){
-         super(getThis(),getArcanaArrowItemComponents(12040354));
+         super(getThis(), getArcanaArrowItemComponents(12040354));
       }
       
       @Override

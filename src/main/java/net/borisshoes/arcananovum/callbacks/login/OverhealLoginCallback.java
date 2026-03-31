@@ -31,12 +31,12 @@ public class OverhealLoginCallback extends LoginCallback {
       ServerPlayer player = netHandler.player;
       if(player.getStringUUID().equals(playerUUID)){
          
-         float removed = Math.max(0,player.getAbsorptionAmount()-hearts);
+         float removed = Math.max(0, player.getAbsorptionAmount() - hearts);
          
          if(player.getAbsorptionAmount() != 0){
             SoundUtils.playSongToPlayer(player, SoundEvents.AMETHYST_CLUSTER_FALL, .3f, .3f);
          }
-         MinecraftUtils.removeMaxAbsorption(player, SiphoningArrows.EFFECT_ID,hearts);
+         MinecraftUtils.removeMaxAbsorption(player, SiphoningArrows.EFFECT_ID, hearts);
          player.setAbsorptionAmount(removed);
       }
    }
@@ -51,7 +51,7 @@ public class OverhealLoginCallback extends LoginCallback {
    @Override
    public CompoundTag getData(){
       CompoundTag data = new CompoundTag();
-      data.putFloat("hearts",hearts);
+      data.putFloat("hearts", hearts);
       this.data = data;
       return this.data;
    }

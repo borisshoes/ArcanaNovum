@@ -52,11 +52,11 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.ArcanaItemContainerHaver {
-	public static final String ID = "runic_quiver";
+   public static final String ID = "runic_quiver";
    
    public static final int size = 9;
-   private static final int[] refillReduction = {0,100,200,400,600,900};
-   private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
+   private static final int[] refillReduction = {0, 100, 200, 400, 600, 900};
+   private static final double[] efficiencyChance = {0, .05, .1, .15, .2, .3};
    private static final Item textureItem = Items.ARROW;
    
    public RunicQuiver(){
@@ -68,8 +68,8 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       vanillaItem = Items.LEATHER;
       itemVersion = 1;
       item = new RunicQuiverItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_OVERFLOWING_QUIVER,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.CONCENTRATION_DAMAGE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_OVERFLOWING_QUIVER, ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.CONCENTRATION_DAMAGE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -124,7 +124,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
          SimpleContainer inv = new SimpleContainer(9);
          List<ItemStack> streamList = arrowItems.nonEmptyStream().toList();
          for(int i = 0; i < streamList.size(); i++){
-            inv.setItem(i,streamList.get(i));
+            inv.setItem(i, streamList.get(i));
          }
          
          if(inv.isEmpty()){
@@ -150,7 +150,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
                }else{
                   lore.add(Component.literal("")
                         .append(Component.literal(" - ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(stack.getCount()+"x ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(stack.getCount() + "x ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(name));
                }
             }
@@ -161,7 +161,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    
    @Override
    protected int getRefillMod(ItemStack item){ // Ticks between arrow refill, once per minute
-      int refillLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.QUIVER_DUPLICATION);
+      int refillLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.QUIVER_DUPLICATION);
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.RUNIC_QUIVER_RESTOCK_TIME);
       int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.RUNIC_QUIVER_RESTOCK_TIME_PER_LVL).get(refillLvl);
       return Math.max(1, baseCooldown - cooldownReduction);
@@ -169,7 +169,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    
    @Override
    protected double getEfficiencyMod(ItemStack item){
-      int effLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RUNIC_BOTTOMLESS);
+      int effLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.RUNIC_BOTTOMLESS);
       return ArcanaNovum.CONFIG.getIntList(ArcanaConfig.QUIVER_EFFICIENCY_PER_LVL).get(effLvl);
    }
    
@@ -178,10 +178,10 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       ItemStack newArcanaItem = getNewItem();
       if(centerpieces.isEmpty()) return newArcanaItem;
       ItemStack quiverStack = inv.getItem(centerpieces.getFirst()); // Should be the old quiver
-
-      newArcanaItem.set(DataComponents.CONTAINER,quiverStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
-      ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS,ArcanaAugments.RUNIC_BOTTOMLESS);
-      ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.ABUNDANT_AMMO,ArcanaAugments.QUIVER_DUPLICATION);
+      
+      newArcanaItem.set(DataComponents.CONTAINER, quiverStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
+      ArcanaAugments.copyAugment(quiverStack, newArcanaItem, ArcanaAugments.OVERFLOWING_BOTTOMLESS, ArcanaAugments.RUNIC_BOTTOMLESS);
+      ArcanaAugments.copyAugment(quiverStack, newArcanaItem, ArcanaAugments.ABUNDANT_AMMO, ArcanaAugments.QUIVER_DUPLICATION);
       return newArcanaItem;
    }
    
@@ -192,7 +192,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Runic Quiver").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nMy improvements upon the Overflowing Quiver have been completed and now the quiver is capable of sending some of my Arcana to Runic Arrows within.\nI even managed to make the quiver take a reduced amount of").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Runic Quiver").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nMy improvements upon the Overflowing Quiver have been completed and now the quiver is capable of sending some of my Arcana to Runic Arrows within.\nI even managed to make the quiver take a reduced amount of").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Runic Quiver").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nconcentration, allowing for more Runic Arrows to be stored without overburdening my mind.\n\nThe quiver acts the same as its base counterpart, just with its ability to store Runic Arrows and a quicker restock time.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
@@ -204,13 +204,13 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       SimpleContainer inv = new SimpleContainer(size);
       List<ItemStack> streamList = arrows.nonEmptyStream().toList();
       for(int i = 0; i < streamList.size(); i++){
-         inv.setItem(i,streamList.get(i));
+         inv.setItem(i, streamList.get(i));
       }
-      double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES) > 0 ? 0.25 : 0.5;
+      double concMod = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.SHUNT_RUNES) > 0 ? 0.25 : 0.5;
       
       return new ArcanaItemContainer(
             ArcanaRegistry.arcanaId(this.id),
-            inv, size,20,
+            inv, size, 20,
             Component.literal("RQ"),
             getTranslatedName(),
             concMod);
@@ -238,7 +238,8 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
-         if(world.getServer().getTickCount() % getRefillMod(stack) == 0) refillArrow(world.getServer(), player.getUUID(), stack);
+         if(world.getServer().getTickCount() % getRefillMod(stack) == 0)
+            refillArrow(world.getServer(), player.getUUID(), stack);
       }
       
       @Override
@@ -246,7 +247,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
          // Open GUI
          if(playerEntity instanceof ServerPlayer player){
             ItemStack stack = playerEntity.getItemInHand(hand);
-            QuiverGui gui = new QuiverGui(player, getOuter(), stack,true);
+            QuiverGui gui = new QuiverGui(player, getOuter(), stack, true);
             gui.build();
             gui.open();
          }
@@ -254,36 +255,36 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       }
       
       @Override
-      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference) {
+      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference){
          if(playerEntity.level().isClientSide() || !(playerEntity instanceof ServerPlayer player)) return false;
-         if (clickType == ClickAction.PRIMARY && otherStack.isEmpty()) {
+         if(clickType == ClickAction.PRIMARY && otherStack.isEmpty()){
             return false;
-         } else {
+         }else{
             ItemContainerContents beltItems = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
             List<ItemStack> beltList = beltItems.stream().toList();
             
             if(clickType == ClickAction.PRIMARY && !otherStack.isEmpty()){ // Try insert
-               if(!QuiverSlot.isValidItem(otherStack,true)){
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
+               if(!QuiverSlot.isValidItem(otherStack, true)){
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL, 1f, 1f);
                }else{
                   int size = 9;
                   int count = otherStack.getCount();
-                  Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
+                  Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems, size, otherStack);
                   if(count == addPair.getB().getCount()){
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL, 1f, 1f);
                   }else{
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT,0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
-                     stack.set(DataComponents.CONTAINER,addPair.getA());
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+                     stack.set(DataComponents.CONTAINER, addPair.getA());
                   }
                }
-               buildItemLore(stack,player.level().getServer());
+               buildItemLore(stack, player.level().getServer());
                return true;
             }else if(clickType == ClickAction.SECONDARY && otherStack.isEmpty()){ // Try remove
                boolean found = false;
                for(ItemStack itemStack : beltList.reversed()){
                   if(!itemStack.isEmpty()){
                      cursorStackReference.set(itemStack.copyAndClear());
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE,0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
                      found = true;
                      break;
                   }
@@ -291,7 +292,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
                
                if(found){
                   stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(beltList));
-                  buildItemLore(stack,player.level().getServer());
+                  buildItemLore(stack, player.level().getServer());
                   return true;
                }else{
                   return false;

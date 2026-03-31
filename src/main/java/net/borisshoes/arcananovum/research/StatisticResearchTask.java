@@ -9,19 +9,19 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
 
-public class StatisticResearchTask<T> extends ResearchTask{
+public class StatisticResearchTask<T> extends ResearchTask {
    
    private final int threshold;
-   private final Either<Identifier, Tuple<StatType<T>,T>> data;
+   private final Either<Identifier, Tuple<StatType<T>, T>> data;
    
-   public StatisticResearchTask(String id, Either<Identifier, Tuple<StatType<T>,T>> data, int threshold, ItemStack displayItem){
+   public StatisticResearchTask(String id, Either<Identifier, Tuple<StatType<T>, T>> data, int threshold, ItemStack displayItem){
       super(id, Type.STATISTIC, displayItem);
       this.data = data;
       this.threshold = threshold;
       
    }
    
-   public StatisticResearchTask(String id, Either<Identifier, Tuple<StatType<T>,T>> data, int threshold, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
+   public StatisticResearchTask(String id, Either<Identifier, Tuple<StatType<T>, T>> data, int threshold, ItemStack displayItem, ResourceKey<ResearchTask>... prerequisites){
       super(id, Type.STATISTIC, displayItem, prerequisites);
       this.data = data;
       this.threshold = threshold;

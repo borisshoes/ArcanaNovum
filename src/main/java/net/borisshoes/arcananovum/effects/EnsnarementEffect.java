@@ -8,13 +8,13 @@ import net.minecraft.world.entity.LivingEntity;
 
 public class EnsnarementEffect extends MobEffect implements PolymerStatusEffect {
    public EnsnarementEffect(){
-      super(MobEffectCategory.HARMFUL,0x320b75);
+      super(MobEffectCategory.HARMFUL, 0x320b75);
    }
    
    @Override
    public void onEffectStarted(LivingEntity entity, int amplifier){
       super.onEffectStarted(entity, amplifier);
-      ArcanaEffectUtils.ensnaredEffect(entity,amplifier,0);
+      ArcanaEffectUtils.ensnaredEffect(entity, amplifier, 0);
    }
    
    @Override

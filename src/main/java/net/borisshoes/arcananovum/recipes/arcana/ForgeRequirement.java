@@ -13,18 +13,21 @@ import java.util.List;
 
 public class ForgeRequirement {
    
-   private boolean fletchery,anvil,enchanter,core,singularity;
+   private boolean fletchery, anvil, enchanter, core, singularity;
    
-   public ForgeRequirement(){}
+   public ForgeRequirement(){
+   }
    
    public boolean forgeMeetsRequirement(StarlightForgeBlockEntity forge, boolean message, ServerPlayer player){
       if(!(forge.getLevel() instanceof ServerLevel world)) return false;
       boolean ret = true;
       if(fletchery && forge.getForgeAddition(world, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY) == null) ret = false;
       if(anvil && forge.getForgeAddition(world, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY) == null) ret = false;
-      if(enchanter && forge.getForgeAddition(world, ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY) == null) ret = false;
+      if(enchanter && forge.getForgeAddition(world, ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY) == null)
+         ret = false;
       if(core && forge.getForgeAddition(world, ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY) == null) ret = false;
-      if(singularity && forge.getForgeAddition(world, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null) ret = false;
+      if(singularity && forge.getForgeAddition(world, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null)
+         ret = false;
       if(!ret && message){
          player.sendSystemMessage(Component.literal("This Forge does not have the necessary additions nearby").withStyle(ChatFormatting.RED));
       }
@@ -34,11 +37,16 @@ public class ForgeRequirement {
    public List<ArcanaItem> forgeMissingRequirements(StarlightForgeBlockEntity forge){
       ArrayList<ArcanaItem> list = new ArrayList<>();
       if(!(forge.getLevel() instanceof ServerLevel world)) return list;
-      if(fletchery && forge.getForgeAddition(world, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.RADIANT_FLETCHERY);
-      if(anvil && forge.getForgeAddition(world, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.TWILIGHT_ANVIL);
-      if(enchanter && forge.getForgeAddition(world, ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.MIDNIGHT_ENCHANTER);
-      if(core && forge.getForgeAddition(world, ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.STELLAR_CORE);
-      if(singularity && forge.getForgeAddition(world, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null) list.add(ArcanaRegistry.ARCANE_SINGULARITY);
+      if(fletchery && forge.getForgeAddition(world, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY) == null)
+         list.add(ArcanaRegistry.RADIANT_FLETCHERY);
+      if(anvil && forge.getForgeAddition(world, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY) == null)
+         list.add(ArcanaRegistry.TWILIGHT_ANVIL);
+      if(enchanter && forge.getForgeAddition(world, ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY) == null)
+         list.add(ArcanaRegistry.MIDNIGHT_ENCHANTER);
+      if(core && forge.getForgeAddition(world, ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY) == null)
+         list.add(ArcanaRegistry.STELLAR_CORE);
+      if(singularity && forge.getForgeAddition(world, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null)
+         list.add(ArcanaRegistry.ARCANE_SINGULARITY);
       return list;
    }
    

@@ -4,7 +4,6 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.items.arrows.SmokeArrows;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
@@ -52,7 +51,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          }
          
          for(BlockPos block : affectedBlocks){
-            ArcanaEffectUtils.smokeArrowEmit(world,block.getCenter());
+            ArcanaEffectUtils.smokeArrowEmit(world, block.getCenter());
          }
       }
       
@@ -65,10 +64,10 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
    }
    
    public static SmokeArrowSource source(@Nullable Entity contributor, @Nullable Entity sourceEntity, @Nullable BlockPos sourceBlock, @Nullable ServerLevel blockWorld, double range, int gasLvl){
-      return new SmokeArrowSource(sourceEntity,sourceBlock,blockWorld,range,gasLvl,contributor);
+      return new SmokeArrowSource(sourceEntity, sourceBlock, blockWorld, range, gasLvl, contributor);
    }
    
-   public static class SmokeArrowSource extends AreaEffectSource{
+   public static class SmokeArrowSource extends AreaEffectSource {
       private final Entity sourceEntity;
       private final BlockPos sourceBlock;
       private final ServerLevel blockWorld;
@@ -129,10 +128,10 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          for(Entity affectedEntity : getAffectedEntities(world)){
             if(affectedEntity instanceof LivingEntity e){
                int amp = e instanceof Mob ? 5 : 0;
-               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()+"_"+gasLvl),effectDur,7.5f,false,true,true, AttributeModifier.Operation.ADD_VALUE,contributor != null ? contributor.getUUID() : null);
-               MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, effectDur, amp+gasLvl, false, false, true);
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId() + "_" + gasLvl), effectDur, 7.5f, false, true, true, AttributeModifier.Operation.ADD_VALUE, contributor != null ? contributor.getUUID() : null);
+               MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, effectDur, amp + gasLvl, false, false, true);
                MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, effectDur, 0, false, false, true);
-               Conditions.addCondition(world.getServer(),e,nearsight);
+               Conditions.addCondition(world.getServer(), e, nearsight);
                e.addEffect(weakness);
                if(e instanceof ServerPlayer){
                   e.addEffect(invis);
@@ -146,17 +145,18 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
                if(contributor instanceof ServerPlayer player && player.getUUID().equals(e.getUUID())) withOwner = true;
             }
          }
-         if(contributor instanceof ServerPlayer player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,ArcanaAchievements.SMOKE_SCREEN);
+         if(contributor instanceof ServerPlayer player && withOwner && mobCount >= 3)
+            ArcanaAchievements.grant(player, ArcanaAchievements.SMOKE_SCREEN);
          
-         SoundUtils.playSound(world,getBlockPos(), SoundEvents.CAMPFIRE_CRACKLE, SoundSource.PLAYERS,.5f,1);
+         SoundUtils.playSound(world, getBlockPos(), SoundEvents.CAMPFIRE_CRACKLE, SoundSource.PLAYERS, .5f, 1);
       }
       
       @Override
       public List<BlockPos> getAffectedBlocks(ServerLevel world){
          if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             ArrayList<BlockPos> blocks = new ArrayList<>();
-            for(BlockPos block : BlockPos.withinManhattan(getBlockPos(), (int) range+4, (int) range+4, (int) range+4)){
-               if(block.getCenter().distanceTo(getBlockPos().getCenter()) <= range+2){
+            for(BlockPos block : BlockPos.withinManhattan(getBlockPos(), (int) range + 4, (int) range + 4, (int) range + 4)){
+               if(block.getCenter().distanceTo(getBlockPos().getCenter()) <= range + 2){
                   blocks.add(block.mutable());
                }
             }
@@ -170,8 +170,8 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
       public List<Entity> getAffectedEntities(ServerLevel world){
          if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             BlockPos blockPos = getBlockPos();
-            AABB rangeBox = AABB.unitCubeFromLowerCorner(blockPos.getCenter()).inflate(range+4);
-            return world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(blockPos.getCenter()) < 4*range*range && e instanceof LivingEntity);
+            AABB rangeBox = AABB.unitCubeFromLowerCorner(blockPos.getCenter()).inflate(range + 4);
+            return world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(blockPos.getCenter()) < 4 * range * range && e instanceof LivingEntity);
          }else{
             return new ArrayList<>();
          }

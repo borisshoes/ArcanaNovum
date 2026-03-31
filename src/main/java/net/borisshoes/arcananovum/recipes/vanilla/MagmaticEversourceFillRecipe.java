@@ -35,7 +35,7 @@ public class MagmaticEversourceFillRecipe extends CustomRecipe {
       boolean hasFillable = false;
       int eversourceSlot = -1;
       
-      for (int i = 0; i < input.size(); ++i){
+      for(int i = 0; i < input.size(); ++i){
          ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
@@ -52,13 +52,13 @@ public class MagmaticEversourceFillRecipe extends CustomRecipe {
       if(!hasEversource || !hasFillable) return false;
       
       ItemStack eversource = input.getItem(eversourceSlot);
-      int charges = ArcanaItem.getIntProperty(eversource,MagmaticEversource.USES_TAG);
+      int charges = ArcanaItem.getIntProperty(eversource, MagmaticEversource.USES_TAG);
       return charges >= 1;
    }
    
    @Override
    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries){
-      for (int i = 0; i < input.size(); ++i){
+      for(int i = 0; i < input.size(); ++i){
          ItemStack rStack = input.getItem(i);
          if(FILLABLE.containsKey(rStack.getItem())){
             return FILLABLE.get(rStack.getItem()).copyWithCount(1);
@@ -71,13 +71,13 @@ public class MagmaticEversourceFillRecipe extends CustomRecipe {
    @Override
    public NonNullList<ItemStack> getRemainingItems(CraftingInput input){
       NonNullList<ItemStack> stacks = NonNullList.withSize(input.size(), ItemStack.EMPTY);
-      for (int i = 0; i < input.size(); ++i){
+      for(int i = 0; i < input.size(); ++i){
          ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
          if(rStack.getItem() instanceof MagmaticEversource.MagmaticEversourceItem){
             ItemStack source = rStack.copy();
-            ArcanaItem.putProperty(source,MagmaticEversource.USES_TAG,ArcanaItem.getIntProperty(source,MagmaticEversource.USES_TAG)-1);
+            ArcanaItem.putProperty(source, MagmaticEversource.USES_TAG, ArcanaItem.getIntProperty(source, MagmaticEversource.USES_TAG) - 1);
             stacks.set(i, source);
          }
       }

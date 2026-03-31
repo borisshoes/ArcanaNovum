@@ -21,7 +21,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -51,8 +50,8 @@ public class ArcaneFlakArrows extends RunicArrow {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new ArcaneFlakArrowsItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.USE_FIREWORK, ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.USE_FIREWORK, ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -78,7 +77,7 @@ public class ArcaneFlakArrows extends RunicArrow {
             .append(Component.literal(" to ").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal("airborne entities").withStyle(ChatFormatting.LIGHT_PURPLE))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    
@@ -87,7 +86,7 @@ public class ArcaneFlakArrows extends RunicArrow {
       double baseR = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.FLAK_ARROW_RANGE);
       double extraR = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.FLAK_ARROW_AIRBURST_RANGE_BUFF_PER_LVL).get(arrow.getAugment(ArcanaAugments.AIRBURST));
       double radius = baseR + extraR;
-      detonate(arrow,radius);
+      detonate(arrow, radius);
    }
    
    @Override
@@ -95,46 +94,47 @@ public class ArcaneFlakArrows extends RunicArrow {
       double baseR = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.FLAK_ARROW_RANGE);
       double extraR = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.FLAK_ARROW_AIRBURST_RANGE_BUFF_PER_LVL).get(arrow.getAugment(ArcanaAugments.AIRBURST));
       double radius = baseR + extraR;
-      detonate(arrow,radius);
+      detonate(arrow, radius);
    }
    
    public static void detonate(AbstractArrow arrow, double damageRange){
       if(!(arrow.level() instanceof ServerLevel serverWorld)) return;
       int deadPhantomCount = 0;
-      float percentage = ArcanaUtils.getArrowPercentage(arrow);
+      float percentage = ArcanaUtils.getArrowPercentage(arrow, 0.1f);
       float damageMax = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FLAK_ARROW_DAMAGE);
       float damage = percentage * damageMax;
       float multiplier = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FLAK_ARROW_DAMAGE_MULTIPLIER);
-      List<Entity> triggerTargets = arrow.level().getEntities(arrow,arrow.getBoundingBox().inflate(damageRange*2),
+      List<Entity> triggerTargets = arrow.level().getEntities(arrow, arrow.getBoundingBox().inflate(damageRange * 2),
             e -> !e.isSpectator() && e.distanceTo(arrow) <= damageRange && e instanceof LivingEntity);
       for(Entity entity : triggerTargets){
          if(entity instanceof LivingEntity e){
             damage *= e.onGround() ? 1f : multiplier;
-            damage *= e.distanceTo(arrow) > damageRange*.66 ? 0.5f : 1;
-            DamageSource source = arrow.damageSources().explosion(arrow,arrow.getOwner());
-            e.hurtServer(serverWorld,source,damage);
+            damage *= e.distanceTo(arrow) > damageRange * .66 ? 0.5f : 1;
+            DamageSource source = arrow.damageSources().explosion(arrow, arrow.getOwner());
+            e.hurtServer(serverWorld, source, damage);
             if(e instanceof Phantom && e.isDeadOrDying()) deadPhantomCount++;
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayer player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,ArcanaAchievements.AA_ARTILLERY);
+      if(arrow.getOwner() instanceof ServerPlayer player && deadPhantomCount >= 5)
+         ArcanaAchievements.grant(player, ArcanaAchievements.AA_ARTILLERY);
       
-      ArcanaEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.position(),damageRange,0);
-      SoundUtils.playSound(serverWorld,arrow.blockPosition(), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.PLAYERS,1f,1f);
-      SoundUtils.playSound(serverWorld,arrow.blockPosition(), SoundEvents.FIREWORK_ROCKET_TWINKLE, SoundSource.PLAYERS,1f,1f);
+      ArcanaEffectUtils.arcaneFlakArrowDetonate(serverWorld, arrow.position(), damageRange, 0);
+      SoundUtils.playSound(serverWorld, arrow.blockPosition(), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.PLAYERS, 1f, 1f);
+      SoundUtils.playSound(serverWorld, arrow.blockPosition(), SoundEvents.FIREWORK_ROCKET_TWINKLE, SoundSource.PLAYERS, 1f, 1f);
       arrow.discard();
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Arcane Flak\n       Arrows").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nPhantoms… Scourges of the night sky. I shall create a weapon that strikes fear into their undead hearts. These arrows detonate when near flying creatures, doing massive bonus ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Arcane Flak\n       Arrows").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nPhantoms… Scourges of the night sky. I shall create a weapon that strikes fear into their undead hearts. These arrows detonate when near flying creatures, doing massive bonus ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Arcane Flak\n       Arrows").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\ndamage in a brilliant display.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class ArcaneFlakArrowsItem extends ArcanaPolymerArrowItem {
       public ArcaneFlakArrowsItem(){
-         super(getThis(),getArcanaArrowItemComponents(7802273));
+         super(getThis(), getArcanaArrowItemComponents(7802273));
       }
       
       @Override

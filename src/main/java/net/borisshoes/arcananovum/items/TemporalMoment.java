@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class TemporalMoment extends ArcanaItem {
-	public static final String ID = "temporal_moment";
+   public static final String ID = "temporal_moment";
    
    public TemporalMoment(){
       id = ID;
@@ -31,8 +31,8 @@ public class TemporalMoment extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.CLOCK;
       item = new TemporalMomentItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CLOCK,ResearchTasks.ADVANCEMENT_SLEEP_IN_BED,ResearchTasks.USE_ENDER_PEARL};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CLOCK, ResearchTasks.ADVANCEMENT_SLEEP_IN_BED, ResearchTasks.USE_ENDER_PEARL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -68,13 +68,13 @@ public class TemporalMoment extends ArcanaItem {
             .append(Component.literal(" of ").withStyle(ChatFormatting.BLUE))
             .append(Component.literal("possibilities").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal(".").withStyle(ChatFormatting.BLUE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Temporal Moment").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nTime always moves forwards, but its rate can be changed from fluctuation in spacetime. With enough energy, perhaps it can be slowed to a halt, freezing a moment in time to use later.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Temporal Moment").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nTime always moves forwards, but its rate can be changed from fluctuation in spacetime. With enough energy, perhaps it can be slowed to a halt, freezing a moment in time to use later.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    

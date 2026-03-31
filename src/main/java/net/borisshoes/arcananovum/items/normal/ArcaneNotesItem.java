@@ -44,7 +44,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
       if(!stack.is(ArcanaRegistry.ARCANE_NOTES)) return stack;
       
       List<Component> loreText = new ArrayList<>();
-      String id = ArcanaItem.getStringProperty(stack,UNLOCK_ID_TAG);
+      String id = ArcanaItem.getStringProperty(stack, UNLOCK_ID_TAG);
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
       
       if(arcanaItem != null){
@@ -54,8 +54,8 @@ public class ArcaneNotesItem extends NormalPolymerItem {
          loreText.add(TextUtils.removeItalics(Component.literal("")
                .append(Component.literal("Hold Right Click ").withStyle(ArcanaRarity.getColor(arcanaItem.getRarity())))
                .append(Component.literal("to read the notes and unlock the item").withStyle(ChatFormatting.DARK_PURPLE))));
-      
-         String author = ArcanaItem.getStringProperty(stack,AUTHOR_TAG);
+         
+         String author = ArcanaItem.getStringProperty(stack, AUTHOR_TAG);
          if(!author.isEmpty()){
             loreText.add(Component.literal(""));
             loreText.add(Component.literal("")
@@ -64,18 +64,18 @@ public class ArcaneNotesItem extends NormalPolymerItem {
          }
       }
       
-      stack.set(DataComponents.LORE,new ItemLore(loreText,loreText));
+      stack.set(DataComponents.LORE, new ItemLore(loreText, loreText));
       
       return stack;
    }
    
    @Override
    public void onUseTick(Level world, LivingEntity user, ItemStack stack, int remainingUseTicks){
-      String id = ArcanaItem.getStringProperty(stack,UNLOCK_ID_TAG);
+      String id = ArcanaItem.getStringProperty(stack, UNLOCK_ID_TAG);
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
       if(arcanaItem != null && user instanceof ServerPlayer player){
-         ArcanaEffectUtils.arcaneNotesAnim(player,arcanaItem,remainingUseTicks);
-         int maxUseTime = getUseDuration(stack,user);
+         ArcanaEffectUtils.arcaneNotesAnim(player, arcanaItem, remainingUseTicks);
+         int maxUseTime = getUseDuration(stack, user);
          boolean alreadyUnlocked = ArcanaNovum.data(player).hasResearched(arcanaItem);
          
          if(alreadyUnlocked){
@@ -87,7 +87,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
             }
          }else{
             if(remainingUseTicks % 7 == 0){
-               float pitch = 0.7f + 1.3f*((float) (maxUseTime - remainingUseTicks) / maxUseTime);
+               float pitch = 0.7f + 1.3f * ((float) (maxUseTime - remainingUseTicks) / maxUseTime);
                SoundUtils.playSongToPlayer(player, SoundEvents.BOOK_PAGE_TURN, 1, pitch);
             }
          }
@@ -100,7 +100,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
    @Override
    public InteractionResult use(Level world, Player user, InteractionHand hand){
       ItemStack itemStack = user.getItemInHand(hand);
-      if(ArcanaItem.hasProperty(itemStack,UNLOCK_ID_TAG)){
+      if(ArcanaItem.hasProperty(itemStack, UNLOCK_ID_TAG)){
          user.startUsingItem(hand);
          return InteractionResult.CONSUME;
       }else{
@@ -110,12 +110,12 @@ public class ArcaneNotesItem extends NormalPolymerItem {
    
    @Override
    public int getUseDuration(ItemStack stack, LivingEntity user){
-      return ArcanaItem.hasProperty(stack,UNLOCK_ID_TAG) ? 120 : 0;
+      return ArcanaItem.hasProperty(stack, UNLOCK_ID_TAG) ? 120 : 0;
    }
    
    @Override
    public ItemStack finishUsingItem(ItemStack stack, Level world, LivingEntity user){
-      String id = ArcanaItem.getStringProperty(stack,UNLOCK_ID_TAG);
+      String id = ArcanaItem.getStringProperty(stack, UNLOCK_ID_TAG);
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
       if(arcanaItem != null && user instanceof ServerPlayer player){
          boolean alreadyUnlocked = ArcanaNovum.data(player).hasResearched(arcanaItem);
@@ -124,19 +124,19 @@ public class ArcaneNotesItem extends NormalPolymerItem {
             SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 0.5f);
             
             ItemStack paper = new ItemStack(ArcanaRarity.getArcanePaper(arcanaItem.getRarity()));
-            int cost = ArcanaItem.getIntProperty(stack,COST_TAG);
+            int cost = ArcanaItem.getIntProperty(stack, COST_TAG);
             if(cost != 0){
                paper.setCount(cost);
             }else{
-               paper.setCount(player.getRandom().nextIntBetweenInclusive(5,24));
+               paper.setCount(player.getRandom().nextIntBetweenInclusive(5, 24));
                ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
             }
-            MinecraftUtils.returnItems(new SimpleContainer(paper),player);
+            MinecraftUtils.returnItems(new SimpleContainer(paper), player);
          }else{
             SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 2, 0.8f);
             ArcanaNovum.data(player).addResearchedItem(arcanaItem.getId());
          }
-         ArcanaEffectUtils.arcaneNotesFinish(player,arcanaItem);
+         ArcanaEffectUtils.arcaneNotesFinish(player, arcanaItem);
       }
       if(!user.hasInfiniteMaterials()) stack.shrink(1);
       return stack;

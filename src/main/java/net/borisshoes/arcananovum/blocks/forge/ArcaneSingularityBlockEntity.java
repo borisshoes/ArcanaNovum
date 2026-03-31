@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.arcanesingularity.ArcaneSingularityGui;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.utils.CodecUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -57,17 +58,18 @@ import java.util.*;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
 public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerListener, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
    private SimpleContainer inventory = new SimpleContainer(getContainerSize());
    private boolean seenForge;
    private boolean updating;
-   private final HashMap<ServerPlayer,ArcaneSingularityGui> watchingPlayers = new HashMap<>();
+   private final HashMap<ServerPlayer, ArcaneSingularityGui> watchingPlayers = new HashMap<>();
    
    public ArcaneSingularityBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY, pos, state);
@@ -75,11 +77,12 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       this.inventory.addListener(this);
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
    }
    
@@ -102,20 +105,20 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       
       if(assembled && seenForge){
          Direction dir = serverWorld.getBlockState(worldPosition).getValue(ArcaneSingularity.ArcaneSingularityBlock.HORIZONTAL_FACING);
-         Vec3 center = worldPosition.offset(dir.getUnitVec3i().multiply(-1)).getCenter().add(0,2.5,0);
-         double fillPercent = (0.75+0.05*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE)) * ((double) getNumBooks() / getCapacity());
-         ArcanaEffectUtils.arcaneSingularityAnim(serverWorld,center,ticks % 300,dir,fillPercent);
+         Vec3 center = worldPosition.offset(dir.getUnitVec3i().multiply(-1)).getCenter().add(0, 2.5, 0);
+         double fillPercent = (0.75 + 0.05 * ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.SUPERMASSIVE)) * ((double) getNumBooks() / getCapacity());
+         ArcanaEffectUtils.arcaneSingularityAnim(serverWorld, center, ticks % 300, dir, fillPercent);
          
          if(Math.random() < 0.001){
-            SoundUtils.playSound(serverWorld, BlockPos.containing(center), SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS,0.3f,1+(float)Math.random());
+            SoundUtils.playSound(serverWorld, BlockPos.containing(center), SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.3f, 1 + (float) Math.random());
          }
          if(Math.random() < 0.0005){
-            SoundUtils.playSound(serverWorld, BlockPos.containing(center), SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS,1f,0.5f);
+            SoundUtils.playSound(serverWorld, BlockPos.containing(center), SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 1f, 0.5f);
          }
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
       
       watchingPlayers.entrySet().removeIf(entry -> entry.getKey().containerMenu == entry.getKey().inventoryMenu);
@@ -163,10 +166,11 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
          boolean canCombine = true;
          for(Object2IntMap.Entry<Holder<Enchantment>> entry2 : comp2.entrySet()){
             if(entry1.getKey().value() == entry2.getKey().value()){
-               combinedLvl = entry1.getIntValue() == entry2.getIntValue() ? combinedLvl+1 : Math.max(entry1.getIntValue(), entry2.getIntValue());
+               combinedLvl = entry1.getIntValue() == entry2.getIntValue() ? combinedLvl + 1 : Math.max(entry1.getIntValue(), entry2.getIntValue());
             }
             
-            if(entry1.getKey().value() == entry2.getKey().value() || Enchantment.areCompatible(entry1.getKey(),entry2.getKey())) continue;
+            if(entry1.getKey().value() == entry2.getKey().value() || Enchantment.areCompatible(entry1.getKey(), entry2.getKey()))
+               continue;
             canCombine = false;
          }
          if(!canCombine){
@@ -195,7 +199,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
          }
       }
       ItemStack newBook = new ItemStack(Items.ENCHANTED_BOOK);
-      EnchantmentHelper.setEnchantments(newBook,enchantBuilder.toImmutable());
+      EnchantmentHelper.setEnchantments(newBook, enchantBuilder.toImmutable());
       ArcanaItem.putProperty(newBook, ArcaneSingularity.SINGULARITY_TAG, StringTag.valueOf(UUID.randomUUID().toString()));
       inventory.addItem(newBook);
       setChanged();
@@ -231,7 +235,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       
       ItemEnchantments comp = EnchantmentHelper.getEnchantmentsForCrafting(book);
       Object2IntOpenHashMap<Holder<Enchantment>> enchants = new Object2IntOpenHashMap<>();
-      comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
+      comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(), entry.getIntValue()));
       
       if(enchants.size() == 1){ // Split enchantment level
          ObjectIterator<Object2IntMap.Entry<Holder<Enchantment>>> iter = enchants.object2IntEntrySet().fastIterator();
@@ -245,7 +249,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
             }
          }
          
-         ItemStack newBook = EnchantmentHelper.createBook(new EnchantmentInstance(entry.getKey(), entry.getIntValue()-1));
+         ItemStack newBook = EnchantmentHelper.createBook(new EnchantmentInstance(entry.getKey(), entry.getIntValue() - 1));
          ArcanaItem.putProperty(newBook, ArcaneSingularity.SINGULARITY_TAG, StringTag.valueOf(UUID.randomUUID().toString()));
          inventory.addItem(newBook.copy());
          ArcanaItem.putProperty(newBook, ArcaneSingularity.SINGULARITY_TAG, StringTag.valueOf(UUID.randomUUID().toString()));
@@ -299,7 +303,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
          ItemStack newBook2 = new ItemStack(Items.ENCHANTED_BOOK);
          ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
          enchants.forEach(enchantBuilder::upgrade);
-         EnchantmentHelper.setEnchantments(newBook2,enchantBuilder.toImmutable());
+         EnchantmentHelper.setEnchantments(newBook2, enchantBuilder.toImmutable());
          ArcanaItem.putProperty(newBook2, ArcaneSingularity.SINGULARITY_TAG, StringTag.valueOf(UUID.randomUUID().toString()));
          inventory.addItem(newBook2.copy());
       }
@@ -317,15 +321,15 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    
    public int getCapacity(){
       int basePages = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ARCANE_SINGULARITY_BOOKS);
-      int extraPages = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ARCANE_SINGULARITY_BOOKS_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE));
-      return 28*(basePages+extraPages);
+      int extraPages = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ARCANE_SINGULARITY_BOOKS_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.SUPERMASSIVE));
+      return 28 * (basePages + extraPages);
    }
    
    public void openGui(ServerPlayer player){
-      ArcaneSingularityGui gui = new ArcaneSingularityGui(player,this,getCapacity());
+      ArcaneSingularityGui gui = new ArcaneSingularityGui(player, this, getCapacity());
       gui.buildPage();
       gui.open();
-      watchingPlayers.put(player,gui);
+      watchingPlayers.put(player, gui);
    }
    
    private void sendRefresh(){
@@ -340,7 +344,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.ARCANE_SINGULARITY).getCheckOffset()),serverWorld.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.ARCANE_SINGULARITY).getCheckOffset()), serverWorld.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -359,6 +363,10 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -371,7 +379,8 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       if(this.inventory != null){
          ListTag bookList = new ListTag();
          for(ItemStack book : inventory.getItems()){
-            if(!book.isEmpty()) bookList.add(ItemStack.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE,registryLookup),book).getOrThrow());
+            if(!book.isEmpty())
+               bookList.add(ItemStack.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, registryLookup), book).getOrThrow());
          }
          return bookList;
       }else{
@@ -383,12 +392,13 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       inventory = new SimpleContainer(getContainerSize());
       inventory.addListener(this);
       for(Tag e : bookList){
-         inventory.addItem(ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE,registryLookup),e).result().orElse(ItemStack.EMPTY));
+         inventory.addItem(ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, registryLookup), e).result().orElse(ItemStack.EMPTY));
       }
    }
    
    @Override
-   public void preRemoveSideEffects(BlockPos pos, BlockState oldState){}
+   public void preRemoveSideEffects(BlockPos pos, BlockState oldState){
+   }
    
    @Override
    public void loadAdditional(ValueInput view){
@@ -396,13 +406,14 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
       this.inventory = new SimpleContainer(getContainerSize());
-      if (!this.tryLoadLootTable(view)) {
+      if(!this.tryLoadLootTable(view)){
          CodecUtils.readBigInventory(view, this.inventory.getItems());
       }
    }
@@ -410,12 +421,13 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      if (!this.trySaveLootTable(view)) {
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      if(!this.trySaveLootTable(view)){
          CodecUtils.writeBigInventory(view, this.inventory.getItems(), true);
       }
    }
@@ -433,7 +445,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    @Override
    protected void setItems(NonNullList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
-         this.inventory.setItem(i,list.get(i));
+         this.inventory.setItem(i, list.get(i));
       }
    }
    

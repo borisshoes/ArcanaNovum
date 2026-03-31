@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class EverlastingRocket extends EnergyItem {
-	public static final String ID = "everlasting_rocket";
+   public static final String ID = "everlasting_rocket";
    
    public static final String FIREWORK_ID_TAG = "fireworkId";
    
@@ -64,9 +64,9 @@ public class EverlastingRocket extends EnergyItem {
       itemVersion = 0;
       vanillaItem = Items.FIREWORK_ROCKET;
       item = new EverlastingRocketItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       initEnergy = 16;
-      researchTasks = new ResourceKey[]{ResearchTasks.USE_FIREWORK,ResearchTasks.ACTIVATE_MENDING,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      researchTasks = new ResourceKey[]{ResearchTasks.USE_FIREWORK, ResearchTasks.ACTIVATE_MENDING, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -105,8 +105,8 @@ public class EverlastingRocket extends EnergyItem {
       lore.add(Component.literal("")
             .append(Component.literal("Charges ").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal("- ").withStyle(ChatFormatting.DARK_PURPLE))
-            .append(Component.literal(charges+" / "+maxCharges).withStyle(ChatFormatting.LIGHT_PURPLE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+            .append(Component.literal(charges + " / " + maxCharges).withStyle(ChatFormatting.LIGHT_PURPLE)));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    public ItemStack forgeItem(Container inv, List<Integer> centerpieces, StarlightForgeBlockEntity starlightForge){
@@ -114,18 +114,18 @@ public class EverlastingRocket extends EnergyItem {
       if(centerpieces.isEmpty()) return newArcanaItem;
       ItemStack rocketStack = inv.getItem(centerpieces.getFirst()); // Should be the rocket
       
-      Fireworks fireworks = rocketStack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1,List.of()));
-      newArcanaItem.set(DataComponents.FIREWORKS,fireworks);
+      Fireworks fireworks = rocketStack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1, List.of()));
+      newArcanaItem.set(DataComponents.FIREWORKS, fireworks);
       
       return newArcanaItem;
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      Fireworks fireworks = stack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1,List.of()));
-      ItemStack newStack = super.updateItem(stack,server);
-      newStack.set(DataComponents.FIREWORKS,fireworks);
-      return buildItemLore(newStack,server);
+      Fireworks fireworks = stack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1, List.of()));
+      ItemStack newStack = super.updateItem(stack, server);
+      newStack.set(DataComponents.FIREWORKS, fireworks);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -136,24 +136,24 @@ public class EverlastingRocket extends EnergyItem {
    @Override
    public int getMaxEnergy(ItemStack item){
       int baseCharges = ArcanaNovum.CONFIG.getInt(ArcanaConfig.EVERLASTING_ROCKET_CHARGES);
-      int extraCharges = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.EVERLASTING_ROCKET_CHARGES_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.POWDER_PACKING));
+      int extraCharges = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.EVERLASTING_ROCKET_CHARGES_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.POWDER_PACKING));
       return baseCharges + extraCharges;
    }
    
    public ItemStack getFireworkStack(ItemStack stack){
       ItemStack itemStack = new ItemStack(Items.FIREWORK_ROCKET, 64);
-      Fireworks fireworks = stack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1,List.of()));
-      itemStack.set(DataComponents.FIREWORKS,fireworks);
-      putProperty(itemStack,FIREWORK_ID_TAG,getUUID(stack));
+      Fireworks fireworks = stack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1, List.of()));
+      itemStack.set(DataComponents.FIREWORKS, fireworks);
+      putProperty(itemStack, FIREWORK_ID_TAG, getUUID(stack));
       return itemStack;
    }
    
    public static void decreaseRocket(ItemStack stack, ServerPlayer player){
-      if(!hasProperty(stack,FIREWORK_ID_TAG)) return;
-      String rocketId = getStringProperty(stack,FIREWORK_ID_TAG);
+      if(!hasProperty(stack, FIREWORK_ID_TAG)) return;
+      String rocketId = getStringProperty(stack, FIREWORK_ID_TAG);
       
       Inventory inv = player.getInventory();
-      for(int invSlot = 0; invSlot<inv.getContainerSize(); invSlot++){
+      for(int invSlot = 0; invSlot < inv.getContainerSize(); invSlot++){
          ItemStack item = inv.getItem(invSlot);
          if(item.isEmpty()){
             continue;
@@ -161,9 +161,9 @@ public class EverlastingRocket extends EnergyItem {
          
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          if(arcanaItem instanceof EverlastingRocket rocket && getUUID(item).equals(rocketId)){
-            rocket.addEnergy(item,-1);
-            rocket.buildItemLore(stack,player.level().getServer());
-            ArcanaAchievements.progress(player,ArcanaAchievements.MISSILE_LAUNCHER, 1);
+            rocket.addEnergy(item, -1);
+            rocket.buildItemLore(stack, player.level().getServer());
+            ArcanaAchievements.progress(player, ArcanaAchievements.MISSILE_LAUNCHER, 1);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_EVERLASTING_ROCKET_USE)); // Add xp
             return;
          }
@@ -173,7 +173,7 @@ public class EverlastingRocket extends EnergyItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("Everlasting Rocket").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nI have blown through so much gunpowder on rockets. Using a combination of Mending and Unbreaking enchantments, I think I can extend one rocket into thousands.\nThe Everlasting Rocket is used the ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Everlasting Rocket").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nI have blown through so much gunpowder on rockets. Using a combination of Mending and Unbreaking enchantments, I think I can extend one rocket into thousands.\nThe Everlasting Rocket is used the ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Everlasting Rocket").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nsame way as a normal rocket. However it uses charges instead of being expended.\n\nCharges regenerate over time. The properties of the rocket come from the center item from crafting.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
@@ -181,7 +181,7 @@ public class EverlastingRocket extends EnergyItem {
    
    public class EverlastingRocketItem extends ArcanaPolymerItem implements PolymerItem {
       public EverlastingRocketItem(){
-         super(getThis(),getArcanaItemComponents()
+         super(getThis(), getArcanaItemComponents()
                .component(DataComponents.FIREWORKS, new Fireworks(1, List.of()))
          );
       }
@@ -193,13 +193,13 @@ public class EverlastingRocket extends EnergyItem {
          
          List<String> stringList = new ArrayList<>();
          int percentage = (int) Math.ceil(3.0 * getEnergy(itemStack) / getMaxEnergy(itemStack));
-         boolean adjustable = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.ADJUSTABLE_FUSE) >= 1;
+         boolean adjustable = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.ADJUSTABLE_FUSE) >= 1;
          
          if(adjustable){
             if(percentage == 0){
                stringList.add("0");
             }else{
-               Fireworks fireworks = itemStack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1,List.of()));
+               Fireworks fireworks = itemStack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1, List.of()));
                int flight = fireworks.flightDuration();
                if(flight == 3){
                   stringList.add("3");
@@ -220,8 +220,8 @@ public class EverlastingRocket extends EnergyItem {
                stringList.add("0");
             }
          }
-
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -236,10 +236,10 @@ public class EverlastingRocket extends EnergyItem {
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          
          int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.EVERLASTING_ROCKET_COOLDOWN);
-         int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.EVERLASTING_ROCKET_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SULFUR_REPLICATION));
-         if(player.level().getServer().getTickCount() % (baseCooldown-cooldownReduction) == 0){
-            addEnergy(stack,1);
-            buildItemLore(stack,player.level().getServer());
+         int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.EVERLASTING_ROCKET_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SULFUR_REPLICATION));
+         if(player.level().getServer().getTickCount() % (baseCooldown - cooldownReduction) == 0){
+            addEnergy(stack, 1);
+            buildItemLore(stack, player.level().getServer());
          }
       }
       
@@ -251,14 +251,14 @@ public class EverlastingRocket extends EnergyItem {
                ItemStack itemStack = context.getItemInHand();
                Vec3 vec3d = context.getClickLocation();
                Direction direction = context.getClickedFace();
-               FireworkRocketEntity fireworkRocketEntity = new FireworkRocketEntity(world, context.getPlayer(), vec3d.x + (double)direction.getStepX() * 0.15, vec3d.y + (double)direction.getStepY() * 0.15, vec3d.z + (double)direction.getStepZ() * 0.15, getFireworkStack(itemStack));
+               FireworkRocketEntity fireworkRocketEntity = new FireworkRocketEntity(world, context.getPlayer(), vec3d.x + (double) direction.getStepX() * 0.15, vec3d.y + (double) direction.getStepY() * 0.15, vec3d.z + (double) direction.getStepZ() * 0.15, getFireworkStack(itemStack));
                world.addFreshEntity(fireworkRocketEntity);
-               ((EnergyItem)getThis()).addEnergy(context.getItemInHand(),-1);
-               buildItemLore(itemStack,player.level().getServer());
+               ((EnergyItem) getThis()).addEnergy(context.getItemInHand(), -1);
+               buildItemLore(itemStack, player.level().getServer());
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_EVERLASTING_ROCKET_USE)); // Add xp
             }else{
-               player.displayClientMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
+               player.displayClientMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
             }
          }
          return InteractionResult.SUCCESS_SERVER;
@@ -268,29 +268,29 @@ public class EverlastingRocket extends EnergyItem {
       public InteractionResult use(Level world, Player user, InteractionHand hand){
          ItemStack itemStack = user.getItemInHand(hand);
          if(user.isShiftKeyDown() && ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.ADJUSTABLE_FUSE) > 0 && user instanceof ServerPlayer player){
-            Fireworks fireworks = itemStack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1,List.of()));
+            Fireworks fireworks = itemStack.getOrDefault(DataComponents.FIREWORKS, new Fireworks(1, List.of()));
             int flight = fireworks.flightDuration();
             flight = ((flight % 3) + 1);
-            itemStack.set(DataComponents.FIREWORKS, new Fireworks(flight,fireworks.explosions()));
-            player.displayClientMessage(Component.literal("Fuse Adjusted to "+flight).withStyle(ChatFormatting.YELLOW),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_SNARE, 1,0.8f);
+            itemStack.set(DataComponents.FIREWORKS, new Fireworks(flight, fireworks.explosions()));
+            player.displayClientMessage(Component.literal("Fuse Adjusted to " + flight).withStyle(ChatFormatting.YELLOW), true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_SNARE, 1, 0.8f);
          }else if(user.isFallFlying()){
             if(!world.isClientSide() && user instanceof ServerPlayer player){
                if(EnergyItem.getEnergy(itemStack) > 0){
                   FireworkRocketEntity fireworkRocketEntity = new FireworkRocketEntity(world, getFireworkStack(itemStack), user);
                   world.addFreshEntity(fireworkRocketEntity);
                   if(!user.isCreative()){
-                     ((EnergyItem)getThis()).addEnergy(itemStack,-1);
-                     buildItemLore(itemStack,player.level().getServer());
+                     ((EnergyItem) getThis()).addEnergy(itemStack, -1);
+                     buildItemLore(itemStack, player.level().getServer());
                      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_EVERLASTING_ROCKET_USE)); // Add xp
                   }
                   user.awardStat(Stats.ITEM_USED.get(this));
                   if(player.position().y() > 500){
-                     ArcanaAchievements.grant(player,ArcanaAchievements.ROCKETMAN);
+                     ArcanaAchievements.grant(player, ArcanaAchievements.ROCKETMAN);
                   }
                }else{
-                  player.displayClientMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
+                  player.displayClientMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
                }
             }
             return InteractionResult.SUCCESS_SERVER;

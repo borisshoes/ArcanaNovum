@@ -33,8 +33,8 @@ public class TickCallback {
          
          ArrayList<Tuple<BlockEntity, ArcanaBlockEntity>> toRemoveBlocks = new ArrayList<>();
          for(Map.Entry<Tuple<BlockEntity, ArcanaBlockEntity>, Integer> pair : ACTIVE_ARCANA_BLOCKS.entrySet()){
-            if(pair.getValue()-1 > 0){
-               ACTIVE_ARCANA_BLOCKS.put(pair.getKey(),pair.getValue()-1);
+            if(pair.getValue() - 1 > 0){
+               ACTIVE_ARCANA_BLOCKS.put(pair.getKey(), pair.getValue() - 1);
             }else{
                toRemoveBlocks.add(pair.getKey());
             }
@@ -44,14 +44,15 @@ public class TickCallback {
          List<ServerPlayer> players = server.getPlayerList().getPlayers();
          players.forEach(p -> ArcanaNovum.data(p).tick(p));
          
-         HashMap<ServerPlayer,Float> shieldTotals = new HashMap<>();
+         HashMap<ServerPlayer, Float> shieldTotals = new HashMap<>();
          for(TickTimerCallback callback : BorisLib.SERVER_TIMER_CALLBACKS){
             if(callback instanceof ShieldTimerCallback st){
                if(shieldTotals.containsKey(st.getPlayer())){
-                  shieldTotals.put(st.getPlayer(),shieldTotals.get(st.getPlayer())+st.getHearts());
-                  if(shieldTotals.get(st.getPlayer()) >= 200 && st.getPlayer().getAbsorptionAmount() >= 200) ArcanaAchievements.grant(st.getPlayer(),ArcanaAchievements.BUILT_LIKE_TANK);
+                  shieldTotals.put(st.getPlayer(), shieldTotals.get(st.getPlayer()) + st.getHearts());
+                  if(shieldTotals.get(st.getPlayer()) >= 200 && st.getPlayer().getAbsorptionAmount() >= 200)
+                     ArcanaAchievements.grant(st.getPlayer(), ArcanaAchievements.BUILT_LIKE_TANK);
                }else{
-                  shieldTotals.put(st.getPlayer(),st.getHearts());
+                  shieldTotals.put(st.getPlayer(), st.getHearts());
                }
             }
          }
@@ -69,7 +70,7 @@ public class TickCallback {
          Tuple<BossFights, CompoundTag> fight = DataAccess.getWorld(world.dimension(), BossFightData.KEY).getBossFight();
          if(fight != null){
             if(fight.getA() == BossFights.DRAGON){
-               DragonBossFight.tick(server,fight.getB());
+               DragonBossFight.tick(server, fight.getB());
             }
          }
       }

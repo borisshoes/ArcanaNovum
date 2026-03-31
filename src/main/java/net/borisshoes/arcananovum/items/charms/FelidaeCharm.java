@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
@@ -44,8 +45,8 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interaction{
-	public static final String ID = "felidae_charm";
+public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interaction {
+   public static final String ID = "felidae_charm";
    
    public FelidaeCharm(){
       id = ID;
@@ -55,8 +56,8 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
       itemVersion = 1;
       vanillaItem = Items.STRING;
       item = new FelidaeCharmItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CREEPER_HEAD,ResearchTasks.TAME_CAT,ResearchTasks.CAT_SCARE,ResearchTasks.FEATHER_FALL,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CREEPER_HEAD, ResearchTasks.TAME_CAT, ResearchTasks.CAT_SCARE, ResearchTasks.FEATHER_FALL, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -92,26 +93,26 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
             .append(Component.literal("give you a ").withStyle(ChatFormatting.GOLD))
             .append(Component.literal("wide berth").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal(".").withStyle(ChatFormatting.GOLD)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Charm of Felidae").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nCats are quite powerful creatures, managing to frighten phantoms and creepers. They can even fall from any height without care.\n\nThis Charm seeks to mimic a fraction of  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Charm of Felidae").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nCats are quite powerful creatures, managing to frighten phantoms and creepers. They can even fall from any height without care.\n\nThis Charm seeks to mimic a fraction of  ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Charm of Felidae").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\ntheir majestic power.\n\nThe Charm halves all fall damage, stops phantoms from swooping the holder, and gives creepers a good scare if they get too close.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    @Override
    public Vec3 getBaseRange(){
-      return new Vec3(15,15,15);
+      return new Vec3(15, 15, 15);
    }
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
       if(world.random.nextFloat() < 0.01){
-         SoundUtils.playSound(world, stele.getBlockPos(), SoundEvents.CAT_AMBIENT, SoundSource.BLOCKS,1f, (float) (0.5*(Math.random()-0.5)+1));
+         SoundUtils.playSound(world, stele.getBlockPos(), SoundEvents.CAT_AMBIENT, SoundSource.BLOCKS, 1f, (float) (0.5 * (Math.random() - 0.5) + 1));
       }
    }
    
@@ -126,10 +127,10 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.PANTHERA) >= 1){
+         if(ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.PANTHERA) >= 1){
             stringList.add("panthera");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -142,7 +143,8 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
-         SoundUtils.playSongToPlayer(player, SoundEvents.CAT_AMBIENT, 1f, (float) (0.5*(Math.random()-0.5)+1));
+         SoundUtils.playSongToPlayer(player, SoundEvents.CAT_AMBIENT, 1f, (float) (0.5 * (Math.random() - 0.5) + 1));
+         ArcanaAchievements.grant(player, ArcanaAchievements.MEOW);
          return InteractionResult.SUCCESS_SERVER;
       }
       
@@ -152,9 +154,9 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
          if(!(entity instanceof ServerPlayer player)) return;
          if(world.getServer().getTickCount() % 20 == 0 && !player.isSpectator()){
             Vec3 pos = player.position();
-            AABB rangeBox = new AABB(pos.x+5,pos.y+3,pos.z+5,pos.x-5,pos.y-3,pos.z-5);
-            List<Entity> entities = world.getEntities((Entity) null,rangeBox, e -> !e.isSpectator() && e instanceof Creeper);
-            if(entities.size() >= 4) ArcanaAchievements.grant(player,ArcanaAchievements.INFILTRATION);
+            AABB rangeBox = new AABB(pos.x + 5, pos.y + 3, pos.z + 5, pos.x - 5, pos.y - 3, pos.z - 5);
+            List<Entity> entities = world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e instanceof Creeper);
+            if(entities.size() >= 4) ArcanaAchievements.grant(player, ArcanaAchievements.INFILTRATION);
          }
       }
    }

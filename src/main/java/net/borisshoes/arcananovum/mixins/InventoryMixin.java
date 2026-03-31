@@ -43,10 +43,10 @@ public abstract class InventoryMixin {
    @Inject(method = "dropAll", at = @At("HEAD"))
    private void arcananovum$fateAnchorSave(CallbackInfo ci){
       Inventory inv = (Inventory) (Object) this;
-      for (int i = 0; i < inv.getContainerSize(); i++) {
-         ItemStack itemStack = (ItemStack)inv.getItem(i);
-         if (!itemStack.isEmpty() && (player.isAlive() || EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), itemStack) > 0)) {
-            anchoredItems.put(i,itemStack);
+      for(int i = 0; i < inv.getContainerSize(); i++){
+         ItemStack itemStack = (ItemStack) inv.getItem(i);
+         if(!itemStack.isEmpty() && (player.isAlive() || EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), itemStack) > 0)){
+            anchoredItems.put(i, itemStack);
             inv.setItem(i, ItemStack.EMPTY);
          }
       }
@@ -56,7 +56,7 @@ public abstract class InventoryMixin {
    private void arcananovum$fateAnchorRestore(CallbackInfo ci){
       Inventory inv = (Inventory) (Object) this;
       for(Map.Entry<Integer, ItemStack> entry : anchoredItems.entrySet()){
-         inv.setItem(entry.getKey(),entry.getValue());
+         inv.setItem(entry.getKey(), entry.getValue());
       }
       anchoredItems.clear();
    }
@@ -79,7 +79,7 @@ public abstract class InventoryMixin {
                
                boolean isArcane = ArcanaItemUtils.isArcane(item);
                if(!isArcane){
-                  sinv.setItem(j,item);
+                  sinv.setItem(j, item);
                   continue; // Item not arcane, skip
                }
                
@@ -87,12 +87,12 @@ public abstract class InventoryMixin {
                if(ArcanaItemUtils.identifyItem(item) instanceof CindersCharm charm){
                   ItemStack output = charm.smelt(item, playerInv.player, stack);
                   if(output != null){
-                     cir.setReturnValue(customPickUp(stack,slot,playerInv,output));
+                     cir.setReturnValue(customPickUp(stack, slot, playerInv, output));
                      cir.cancel();
                   }
                }
                
-               sinv.setItem(j,item);
+               sinv.setItem(j, item);
             }
             
             if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
@@ -114,18 +114,18 @@ public abstract class InventoryMixin {
    private boolean customPickUp(ItemStack oldStack, int slot, Inventory inv, ItemStack stack){
       oldStack.setCount(0);
       
-      try {
+      try{
          if(stack.isDamaged()){
             if(slot == -1){
                slot = inv.getFreeSlot();
             }
-         
+            
             if(slot >= 0){
                inv.setItem(slot, stack.copy());
-               ((ItemStack)inv.getItem(slot)).setPopTime(5);
+               ((ItemStack) inv.getItem(slot)).setPopTime(5);
                stack.setCount(0);
                return true;
-            } else if(inv.player.getAbilities().instabuild){
+            }else if(inv.player.getAbilities().instabuild){
                stack.setCount(0);
                return true;
             }else{
@@ -141,7 +141,7 @@ public abstract class InventoryMixin {
                   stack.setCount(this.addResource(slot, stack));
                }
             }while(!stack.isEmpty() && stack.getCount() < i);
-         
+            
             if(stack.getCount() == i && inv.player.getAbilities().instabuild){
                stack.setCount(0);
                return true;
@@ -149,7 +149,7 @@ public abstract class InventoryMixin {
                return stack.getCount() < i;
             }
          }
-      } catch (Throwable var6){
+      }catch(Throwable var6){
          CrashReport crashReport = CrashReport.forThrowable(var6, "Adding item to inventory");
          CrashReportCategory crashReportSection = crashReport.addCategory("Item being added");
          crashReportSection.setDetail("Item ID", Item.getId(stack.getItem()));

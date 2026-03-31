@@ -28,11 +28,11 @@ public class GeomanticSteleGui extends SimpleGui {
       int yRange = (int) stele.getRange().y();
       int zRange = (int) stele.getRange().z();
       
-      MutableComponent curRange = Component.literal("Range: "+xRange+", "+yRange+", "+zRange);
+      MutableComponent curRange = Component.literal("Range: " + xRange + ", " + yRange + ", " + zRange);
       
       GuiElementBuilder geoStele = GuiElementBuilder.from(ArcanaRegistry.GEOMANTIC_STELE.getPrefItemNoLore()).hideDefaultTooltip();
       geoStele.addLoreLine(curRange.withStyle(ChatFormatting.GRAY));
-      this.setSlot(4,geoStele);
+      this.setSlot(4, geoStele);
       this.setSlot(3, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR_LIGHT, ArcanaColors.EQUAYUS_COLOR)).setName(Component.literal("")).hideTooltip().addLoreLine(curRange.withStyle(ChatFormatting.GRAY)));
       this.setSlot(5, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR_LIGHT, ArcanaColors.EQUAYUS_COLOR)).setName(Component.literal("")).hideTooltip().addLoreLine(curRange.withStyle(ChatFormatting.GRAY)));
       
@@ -44,49 +44,49 @@ public class GeomanticSteleGui extends SimpleGui {
       zUp.setName(Component.literal("Increase Z Range").withStyle(ChatFormatting.GRAY));
       Component upLine1 = Component.literal("").append(Component.literal("Click").withStyle(ChatFormatting.GRAY))
             .append(Component.literal(" to increase the range by ").withStyle(ChatFormatting.DARK_GRAY))
-            .append(Component.literal(1+"").withStyle(ChatFormatting.GRAY));
+            .append(Component.literal(1 + "").withStyle(ChatFormatting.GRAY));
       Component upLine2 = Component.literal("").append(Component.literal("Right Click").withStyle(ChatFormatting.GRAY))
             .append(Component.literal(" to increase the range by ").withStyle(ChatFormatting.DARK_GRAY))
-            .append(Component.literal(8+"").withStyle(ChatFormatting.GRAY));
+            .append(Component.literal(8 + "").withStyle(ChatFormatting.GRAY));
       Component upLine3 = Component.literal("").append(Component.literal("Shift Click").withStyle(ChatFormatting.GRAY))
             .append(Component.literal(" to increase the range by ").withStyle(ChatFormatting.DARK_GRAY))
-            .append(Component.literal(16+"").withStyle(ChatFormatting.GRAY));
+            .append(Component.literal(16 + "").withStyle(ChatFormatting.GRAY));
       xUp.addLoreLine(curRange.withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(Component.literal("")).addLoreLine(upLine1).addLoreLine(upLine2).addLoreLine(upLine3);
       yUp.addLoreLine(curRange.withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(Component.literal("")).addLoreLine(upLine1).addLoreLine(upLine2).addLoreLine(upLine3);
       zUp.addLoreLine(curRange.withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(Component.literal("")).addLoreLine(upLine1).addLoreLine(upLine2).addLoreLine(upLine3);
       xUp.setCallback((click) -> {
          if(click.shift){
-            stele.setRange(new Vec3(xRange+16,yRange,zRange));
+            stele.setRange(new Vec3(xRange + 16, yRange, zRange));
          }else if(click.isRight){
-            stele.setRange(new Vec3(xRange+8,yRange,zRange));
+            stele.setRange(new Vec3(xRange + 8, yRange, zRange));
          }else{
-            stele.setRange(new Vec3(xRange+1,yRange,zRange));
+            stele.setRange(new Vec3(xRange + 1, yRange, zRange));
          }
          build();
       });
       yUp.setCallback((click) -> {
          if(click.shift){
-            stele.setRange(new Vec3(xRange,yRange+16,zRange));
+            stele.setRange(new Vec3(xRange, yRange + 16, zRange));
          }else if(click.isRight){
-            stele.setRange(new Vec3(xRange,yRange+8,zRange));
+            stele.setRange(new Vec3(xRange, yRange + 8, zRange));
          }else{
-            stele.setRange(new Vec3(xRange,yRange+1,zRange));
+            stele.setRange(new Vec3(xRange, yRange + 1, zRange));
          }
          build();
       });
       zUp.setCallback((click) -> {
          if(click.shift){
-            stele.setRange(new Vec3(xRange,yRange,zRange+16));
+            stele.setRange(new Vec3(xRange, yRange, zRange + 16));
          }else if(click.isRight){
-            stele.setRange(new Vec3(xRange,yRange,zRange+8));
+            stele.setRange(new Vec3(xRange, yRange, zRange + 8));
          }else{
-            stele.setRange(new Vec3(xRange,yRange,zRange+1));
+            stele.setRange(new Vec3(xRange, yRange, zRange + 1));
          }
          build();
       });
-      setSlot(0,xUp);
-      setSlot(1,yUp);
-      setSlot(2,zUp);
+      setSlot(0, xUp);
+      setSlot(1, yUp);
+      setSlot(2, zUp);
       
       GuiElementBuilder xDown = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_DOWN, ChatFormatting.DARK_GRAY.getColor())).hideDefaultTooltip();
       GuiElementBuilder yDown = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_DOWN, ChatFormatting.DARK_GRAY.getColor())).hideDefaultTooltip();
@@ -96,48 +96,48 @@ public class GeomanticSteleGui extends SimpleGui {
       zDown.setName(Component.literal("Decrease Z Range").withStyle(ChatFormatting.DARK_GRAY));
       Component downLine1 = Component.literal("").append(Component.literal("Click").withStyle(ChatFormatting.GRAY))
             .append(Component.literal(" to decrease the range by ").withStyle(ChatFormatting.DARK_GRAY))
-            .append(Component.literal(1+"").withStyle(ChatFormatting.GRAY));
+            .append(Component.literal(1 + "").withStyle(ChatFormatting.GRAY));
       Component downLine2 = Component.literal("").append(Component.literal("Right Click").withStyle(ChatFormatting.GRAY))
             .append(Component.literal(" to decrease the range by ").withStyle(ChatFormatting.DARK_GRAY))
-            .append(Component.literal(8+"").withStyle(ChatFormatting.GRAY));
+            .append(Component.literal(8 + "").withStyle(ChatFormatting.GRAY));
       Component downLine3 = Component.literal("").append(Component.literal("Shift Click").withStyle(ChatFormatting.GRAY))
             .append(Component.literal(" to decrease the range by ").withStyle(ChatFormatting.DARK_GRAY))
-            .append(Component.literal(16+"").withStyle(ChatFormatting.GRAY));
+            .append(Component.literal(16 + "").withStyle(ChatFormatting.GRAY));
       xDown.addLoreLine(curRange.withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(Component.literal("")).addLoreLine(downLine1).addLoreLine(downLine2).addLoreLine(downLine3);
       yDown.addLoreLine(curRange.withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(Component.literal("")).addLoreLine(downLine1).addLoreLine(downLine2).addLoreLine(downLine3);
       zDown.addLoreLine(curRange.withStyle(ChatFormatting.DARK_PURPLE)).addLoreLine(Component.literal("")).addLoreLine(downLine1).addLoreLine(downLine2).addLoreLine(downLine3);
       xDown.setCallback((click) -> {
          if(click.shift){
-            stele.setRange(new Vec3(xRange-16,yRange,zRange));
+            stele.setRange(new Vec3(xRange - 16, yRange, zRange));
          }else if(click.isRight){
-            stele.setRange(new Vec3(xRange-8,yRange,zRange));
+            stele.setRange(new Vec3(xRange - 8, yRange, zRange));
          }else{
-            stele.setRange(new Vec3(xRange-1,yRange,zRange));
+            stele.setRange(new Vec3(xRange - 1, yRange, zRange));
          }
          build();
       });
       yDown.setCallback((click) -> {
          if(click.shift){
-            stele.setRange(new Vec3(xRange,yRange-16,zRange));
+            stele.setRange(new Vec3(xRange, yRange - 16, zRange));
          }else if(click.isRight){
-            stele.setRange(new Vec3(xRange,yRange-8,zRange));
+            stele.setRange(new Vec3(xRange, yRange - 8, zRange));
          }else{
-            stele.setRange(new Vec3(xRange,yRange-1,zRange));
+            stele.setRange(new Vec3(xRange, yRange - 1, zRange));
          }
          build();
       });
       zDown.setCallback((click) -> {
          if(click.shift){
-            stele.setRange(new Vec3(xRange,yRange,zRange-16));
+            stele.setRange(new Vec3(xRange, yRange, zRange - 16));
          }else if(click.isRight){
-            stele.setRange(new Vec3(xRange,yRange,zRange-8));
+            stele.setRange(new Vec3(xRange, yRange, zRange - 8));
          }else{
-            stele.setRange(new Vec3(xRange,yRange,zRange-1));
+            stele.setRange(new Vec3(xRange, yRange, zRange - 1));
          }
          build();
       });
-      setSlot(6,xDown);
-      setSlot(7,yDown);
-      setSlot(8,zDown);
+      setSlot(6, xDown);
+      setSlot(7, yDown);
+      setSlot(8, zDown);
    }
 }

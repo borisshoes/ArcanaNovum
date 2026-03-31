@@ -23,7 +23,7 @@ import java.util.Optional;
 @Mixin(NaturalSpawner.class)
 public class NaturalSpawnerMixin {
    
-   @ModifyExpressionValue(method = "createState", at = @At(value = "INVOKE",target = "Lnet/minecraft/world/entity/Mob;requiresCustomPersistence()Z"))
+   @ModifyExpressionValue(method = "createState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;requiresCustomPersistence()Z"))
    private static boolean arcananovum$infuserMobCapGet(boolean original, @Local Mob entity){
       if(original) return true;
       if(entity.getTags().contains("$arcananovum.infused_spawn")){
@@ -57,7 +57,7 @@ public class NaturalSpawnerMixin {
          InterdictionZones.InterdictionZone zone = worldZones.getRedirectZonesContaining(mob.position()).getFirst();
          if(serverLevel.getBlockEntity(zone.getSourcePos()) instanceof InterdictorBlockEntity interdictor){
             interdictor.onSpawn();
-            mob.snapTo(zone.getSourcePos().getX()+0.5, zone.getSourcePos().getY() + 3, zone.getSourcePos().getZ()+0.5, serverLevel.random.nextFloat() * 360.0F, 0.0F);
+            mob.snapTo(zone.getSourcePos().getX() + 0.5, zone.getSourcePos().getY() + 3, zone.getSourcePos().getZ() + 0.5, serverLevel.random.nextFloat() * 360.0F, 0.0F);
          }
       }
    }

@@ -23,7 +23,7 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
       ItemStack itemStack = ItemStack.EMPTY;
       ItemStack itemStack2 = ItemStack.EMPTY;
       
-      for (int i = 0; i < craftingRecipeInput.size(); ++i){
+      for(int i = 0; i < craftingRecipeInput.size(); ++i){
          ItemStack itemStack3 = craftingRecipeInput.getItem(i);
          if(!itemStack3.isEmpty()){
             if(itemStack3.getItem() instanceof BannerItem){
@@ -42,7 +42,7 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
                   return false;
                }
                
-               BannerPatternLayers bannerPatternsComponent = (BannerPatternLayers)itemStack3.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+               BannerPatternLayers bannerPatternsComponent = (BannerPatternLayers) itemStack3.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
                if(!bannerPatternsComponent.layers().isEmpty()){
                   return false;
                }
@@ -66,7 +66,7 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
          if(!itemStack3.isEmpty()){
             if(itemStack3.getItem() instanceof BannerItem){
                itemStack = itemStack3;
-            } else if(itemStack3.getItem() instanceof ShieldOfFortitude.ShieldOfFortitudeItem theShieldItem){
+            }else if(itemStack3.getItem() instanceof ShieldOfFortitude.ShieldOfFortitudeItem theShieldItem){
                itemStack2 = itemStack3.copy();
             }
          }
@@ -75,8 +75,8 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
       if(itemStack2.isEmpty()){
          return itemStack2;
       }else{
-         itemStack2.set(DataComponents.BANNER_PATTERNS, (BannerPatternLayers)itemStack.get(DataComponents.BANNER_PATTERNS));
-         itemStack2.set(DataComponents.BASE_COLOR, ((BannerItem)itemStack.getItem()).getColor());
+         itemStack2.set(DataComponents.BANNER_PATTERNS, (BannerPatternLayers) itemStack.get(DataComponents.BANNER_PATTERNS));
+         itemStack2.set(DataComponents.BASE_COLOR, ((BannerItem) itemStack.getItem()).getColor());
          return itemStack2;
       }
    }

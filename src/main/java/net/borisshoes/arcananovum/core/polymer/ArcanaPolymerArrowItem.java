@@ -41,13 +41,14 @@ import java.util.Optional;
 
 public abstract class ArcanaPolymerArrowItem extends ArrowItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
+   
    public ArcanaPolymerArrowItem(ArcanaItem arcanaItem, Item.Properties settings){
       super(settings.setId(ResourceKey.create(Registries.ITEM, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    
    @Override
-   public Component getName(ItemStack stack) {
+   public Component getName(ItemStack stack){
       return arcanaItem.getDisplayName() != null ? arcanaItem.getDisplayName() : super.getName(stack);
    }
    
@@ -67,7 +68,7 @@ public abstract class ArcanaPolymerArrowItem extends ArrowItem implements Polyme
       PotionContents stackComp = itemStack.get(DataComponents.POTION_CONTENTS);
       if(stackComp != null){
          PotionContents cur = superStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-         superStack.set(DataComponents.POTION_CONTENTS, new PotionContents(cur.potion(), Optional.of(stackComp.getColor()),cur.customEffects(), cur.customName()));
+         superStack.set(DataComponents.POTION_CONTENTS, new PotionContents(cur.potion(), Optional.of(stackComp.getColor()), cur.customEffects(), cur.customName()));
       }
       if(superStack.has(DataComponents.POTION_CONTENTS) && !superStack.has(DataComponents.CUSTOM_NAME)){
          superStack.set(DataComponents.CUSTOM_NAME, TextUtils.removeItalics(this.getName(superStack)));

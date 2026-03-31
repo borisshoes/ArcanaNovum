@@ -79,14 +79,14 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       itemVersion = 0;
       vanillaItem = Items.SPRUCE_BOAT;
       item = new ChestTranslocatorItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.EFFECT_STRENGTH};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.EFFECT_STRENGTH};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,CONTENTS_TAG,new CompoundTag());
-      putProperty(stack,STATE_TAG,new CompoundTag());
+      putProperty(stack, CONTENTS_TAG, new CompoundTag());
+      putProperty(stack, STATE_TAG, new CompoundTag());
       setPrefStack(stack);
    }
    
@@ -128,13 +128,13 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
             .append(Component.literal("stored ").withStyle(ChatFormatting.RED))
             .append(Component.literal("chest").withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" down.").withStyle(ChatFormatting.GRAY)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public int getMaxEnergy(ItemStack item){
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN);
-      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RAPID_TRANSLOCATION));
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.RAPID_TRANSLOCATION));
       return Math.max(1, baseCooldown - cooldownReduction);
    }
    
@@ -145,7 +145,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    
    @Override
    public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
-      CompoundTag contents = getCompoundProperty(item,CONTENTS_TAG);
+      CompoundTag contents = getCompoundProperty(item, CONTENTS_TAG);
       SimpleContainer inv = new SimpleContainer(27);
       for(int i = 0; i < inv.getContainerSize(); i++){
          inv.setItem(i, ItemStack.EMPTY.copy());
@@ -156,32 +156,32 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          
          for(int i = 0; i < items.size(); i++){
             CompoundTag stack = items.getCompoundOrEmpty(i);
-            ItemStack itemStack = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()),stack).result().orElse(ItemStack.EMPTY);
+            ItemStack itemStack = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), stack).result().orElse(ItemStack.EMPTY);
             inv.setItem(stack.getByteOr("Slot", (byte) 0), itemStack);
          }
       }
       return new ArcanaItemContainer(
             ArcanaRegistry.arcanaId(this.id),
-            inv, 27,25,
+            inv, 27, 25,
             Component.literal("CT"),
             getTranslatedName(),
-             0.5);
+            0.5);
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
-      CompoundTag state = getCompoundProperty(stack,STATE_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,CONTENTS_TAG,contents);
-      putProperty(newStack,STATE_TAG,state);
-      return buildItemLore(newStack,server);
+      CompoundTag contents = getCompoundProperty(stack, CONTENTS_TAG);
+      CompoundTag state = getCompoundProperty(stack, STATE_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, CONTENTS_TAG, contents);
+      putProperty(newStack, STATE_TAG, state);
+      return buildItemLore(newStack, server);
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("       Chest\n   Translocator").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nChests are great for storage and organization. However, whenever I try to move them, their contents spill all over the place.\nMaybe I can do something about that").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Chest\n   Translocator").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nChests are great for storage and organization. However, whenever I try to move them, their contents spill all over the place.\nMaybe I can do something about that").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("       Chest\n   Translocator").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nusing an augmented Ender Chest and some additional strength.\n\nUsing the Translocator on a Chest, Trapped Chest, or Barrel will pick it up at the cost of a significant loss in dexterity.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("       Chest\n   Translocator").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nUsing the Translocator again places the container down, contents intact.").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -198,10 +198,10 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         CompoundTag contents = getCompoundProperty(itemStack,CONTENTS_TAG);
-         CompoundTag state = getCompoundProperty(itemStack,STATE_TAG);
+         CompoundTag contents = getCompoundProperty(itemStack, CONTENTS_TAG);
+         CompoundTag state = getCompoundProperty(itemStack, STATE_TAG);
          if(!contents.isEmpty()){
-            BlockState blockState = NbtUtils.readBlockState(BuiltInRegistries.BLOCK,state);
+            BlockState blockState = NbtUtils.readBlockState(BuiltInRegistries.BLOCK, state);
             if(blockState.is(Blocks.CHEST) || blockState.is(Blocks.TRAPPED_CHEST)){
                stringList.add("chest");
             }else if(blockState.is(Blocks.BARREL)){
@@ -209,7 +209,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
             }
          }
          
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -217,12 +217,13 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       public InteractionResult useOn(UseOnContext context){
          ItemStack stack = context.getItemInHand();
          Player playerEntity = context.getPlayer();
-         if(!ArcanaItemUtils.isArcane(stack) || !(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
+         if(!ArcanaItemUtils.isArcane(stack) || !(playerEntity instanceof ServerPlayer player))
+            return InteractionResult.PASS;
          
          Level world = context.getLevel();
          BlockPos blockPos = context.getClickedPos();
-         CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
-         CompoundTag stateTag = getCompoundProperty(stack,STATE_TAG);
+         CompoundTag contents = getCompoundProperty(stack, CONTENTS_TAG);
+         CompoundTag stateTag = getCompoundProperty(stack, STATE_TAG);
          int cooldown = getEnergy(stack);
          BlockState state = world.getBlockState(blockPos);
          
@@ -232,14 +233,14 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                   BlockEntity be = world.getBlockEntity(blockPos);
                   if(be == null) return InteractionResult.PASS;
                   CompoundTag contentData = be.saveWithFullMetadata(BorisLib.SERVER.registryAccess());
-                  putProperty(stack,CONTENTS_TAG,contentData);
-                  putProperty(stack,STATE_TAG, NbtUtils.writeBlockState(state));
+                  putProperty(stack, CONTENTS_TAG, contentData);
+                  putProperty(stack, STATE_TAG, NbtUtils.writeBlockState(state));
                   if(be instanceof Clearable clearable) clearable.clearContent();
                   world.setBlock(blockPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                  SoundUtils.playSound(world,blockPos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1,1);
-                  setEnergy(stack,getMaxEnergy(stack));
+                  SoundUtils.playSound(world, blockPos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1, 1);
+                  setEnergy(stack, getMaxEnergy(stack));
                }else{
-                  player.displayClientMessage(Component.literal("Translocator Cooldown: "+cooldown+(cooldown != 1 ? " seconds" : " second")).withStyle(ChatFormatting.GOLD), true);
+                  player.displayClientMessage(Component.literal("Translocator Cooldown: " + cooldown + (cooldown != 1 ? " seconds" : " second")).withStyle(ChatFormatting.GOLD), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                }
             }else{
@@ -249,8 +250,8 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
             Direction side = context.getClickedFace();
             BlockPos placePos = blockPos.offset(side.getUnitVec3i());
             if(world.getBlockState(placePos).isAir()){
-               BlockState blockState = NbtUtils.readBlockState(world.holderLookup(Registries.BLOCK),stateTag);
-               BlockPlaceContext ipc = new BlockPlaceContext(player,context.getHand(),context.getItemInHand(),new BlockHitResult(context.getClickLocation(),context.getClickedFace(),context.getClickedPos(),context.isInside()));
+               BlockState blockState = NbtUtils.readBlockState(world.holderLookup(Registries.BLOCK), stateTag);
+               BlockPlaceContext ipc = new BlockPlaceContext(player, context.getHand(), context.getItemInHand(), new BlockHitResult(context.getClickLocation(), context.getClickedFace(), context.getClickedPos(), context.isInside()));
                if(blockState.is(Blocks.CHEST)){
                   blockState = Blocks.CHEST.getStateForPlacement(ipc);
                }else if(blockState.is(Blocks.TRAPPED_CHEST)){
@@ -258,8 +259,8 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                }else if(blockState.is(Blocks.BARREL)){
                   blockState = Blocks.BARREL.getStateForPlacement(ipc);
                }
-               world.setBlock(placePos,blockState, Block.UPDATE_ALL);
-               BlockEntity blockEntity = BlockEntity.loadStatic(placePos,blockState,contents,world.registryAccess());
+               world.setBlock(placePos, blockState, Block.UPDATE_ALL);
+               BlockEntity blockEntity = BlockEntity.loadStatic(placePos, blockState, contents, world.registryAccess());
                if(blockEntity != null){
                   world.setBlockEntity(blockEntity);
                   if(blockEntity instanceof RandomizableContainerBlockEntity container){
@@ -269,20 +270,20 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                         filled += container.getItem(i).isEmpty() ? 0 : 1;
                      }
                      if(filled == size){
-                        ArcanaAchievements.progress(player,ArcanaAchievements.STORAGE_RELOCATION, 1);
+                        ArcanaAchievements.progress(player, ArcanaAchievements.STORAGE_RELOCATION, 1);
                      }else if(filled == 0){
-                        ArcanaAchievements.grant(player,ArcanaAchievements.PEAK_LAZINESS);
+                        ArcanaAchievements.grant(player, ArcanaAchievements.PEAK_LAZINESS);
                      }
                   }
                }
                
-               putProperty(stack,CONTENTS_TAG,new CompoundTag());
-               putProperty(stack,STATE_TAG,new CompoundTag());
+               putProperty(stack, CONTENTS_TAG, new CompoundTag());
+               putProperty(stack, STATE_TAG, new CompoundTag());
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CHEST_TRANSLOCATOR_USE)); // Add xp
-               SoundUtils.playSound(world,placePos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1,1);
+               SoundUtils.playSound(world, placePos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1, 1);
             }else{
-               player.displayClientMessage(Component.literal("The chest cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               player.displayClientMessage(Component.literal("The chest cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }
          }
          return InteractionResult.SUCCESS_SERVER;
@@ -292,7 +293,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
-         CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
+         CompoundTag contents = getCompoundProperty(stack, CONTENTS_TAG);
          
          if(!contents.isEmpty()){
             MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, 20, 2, false, false, true);
@@ -314,7 +315,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       @Override
       public Item getPolymerItem(ItemStack itemStack, PacketContext context){
          if(!ArcanaItemUtils.isArcane(itemStack)) return vanillaItem;
-         CompoundTag contents = getCompoundProperty(itemStack,CONTENTS_TAG);
+         CompoundTag contents = getCompoundProperty(itemStack, CONTENTS_TAG);
          
          return !contents.isEmpty() ? Items.SPRUCE_CHEST_BOAT : vanillaItem;
       }

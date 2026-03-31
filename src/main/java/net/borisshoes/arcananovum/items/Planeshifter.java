@@ -58,7 +58,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class Planeshifter extends EnergyItem {
-	public static final String ID = "planeshifter";
+   public static final String ID = "planeshifter";
    
    public static final String NETHER_UNLOCK_TAG = "netherUnlocked";
    public static final String END_UNLOCK_TAG = "endUnlocked";
@@ -75,15 +75,15 @@ public class Planeshifter extends EnergyItem {
       initEnergy = 600;
       vanillaItem = Items.RECOVERY_COMPASS;
       item = new PlaneshifterItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.DIMENSION_TRAVEL, ResearchTasks.OBTAIN_EYE_OF_ENDER};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.DIMENSION_TRAVEL, ResearchTasks.OBTAIN_EYE_OF_ENDER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,DIMENSIONS_TAG, new ListTag());
-      putProperty(stack,SELECTED_TAG,"");
-      putProperty(stack,HEAT_TAG,0);
+      putProperty(stack, DIMENSIONS_TAG, new ListTag());
+      putProperty(stack, SELECTED_TAG, "");
+      putProperty(stack, HEAT_TAG, 0);
       setPrefStack(stack);
    }
    
@@ -144,34 +144,34 @@ public class Planeshifter extends EnergyItem {
                .append(Component.literal("Charged - ").withStyle(ChatFormatting.DARK_PURPLE))
                .append(Component.literal("100%").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE)));
       }else{
-         int charge = (getEnergy(itemStack)*100/getMaxEnergy(itemStack));
+         int charge = (getEnergy(itemStack) * 100 / getMaxEnergy(itemStack));
          String charging = charge == 100 ? "Charged" : "Charging";
          lore.add(Component.literal("")
-               .append(Component.literal(charging+" - ").withStyle(ChatFormatting.DARK_PURPLE))
-               .append(Component.literal(charge+"%").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE)));
+               .append(Component.literal(charging + " - ").withStyle(ChatFormatting.DARK_PURPLE))
+               .append(Component.literal(charge + "%").withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE)));
       }
-
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      boolean hasNether = getBooleanProperty(stack,NETHER_UNLOCK_TAG);
-      boolean hasEnd = getBooleanProperty(stack,END_UNLOCK_TAG);
-      int heat = getIntProperty(stack,HEAT_TAG);
-      ListTag dimensions = getListProperty(stack,DIMENSIONS_TAG);
-      String selected = getStringProperty(stack,SELECTED_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
+      boolean hasNether = getBooleanProperty(stack, NETHER_UNLOCK_TAG);
+      boolean hasEnd = getBooleanProperty(stack, END_UNLOCK_TAG);
+      int heat = getIntProperty(stack, HEAT_TAG);
+      ListTag dimensions = getListProperty(stack, DIMENSIONS_TAG);
+      String selected = getStringProperty(stack, SELECTED_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
       if(hasNether && !dimensions.contains(StringTag.valueOf(ServerLevel.NETHER.identifier().toString()))){
          dimensions.add(StringTag.valueOf(ServerLevel.NETHER.identifier().toString()));
       }
       if(hasEnd && !dimensions.contains(StringTag.valueOf(ServerLevel.END.identifier().toString()))){
          dimensions.add(StringTag.valueOf(ServerLevel.END.identifier().toString()));
       }
-      putProperty(newStack,DIMENSIONS_TAG,dimensions);
-      putProperty(newStack,SELECTED_TAG,selected);
-      putProperty(newStack,HEAT_TAG,heat);
-      return buildItemLore(newStack,server);
+      putProperty(newStack, DIMENSIONS_TAG, dimensions);
+      putProperty(newStack, SELECTED_TAG, selected);
+      putProperty(newStack, HEAT_TAG, heat);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -182,7 +182,7 @@ public class Planeshifter extends EnergyItem {
    @Override
    public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PLANESHIFTER_COOLDOWN);
-      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PLANESHIFTER_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PLANAR_FLOW));
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PLANESHIFTER_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.PLANAR_FLOW));
       return Math.max(1, baseCooldown - cooldownReduction);
    }
    
@@ -192,27 +192,27 @@ public class Planeshifter extends EnergyItem {
       Vec3 destPos = worldBorder.clampVec3ToBound(player.getX() * scale, player.getY(), player.getZ() * scale);
       Optional<BlockPos> portalRect = destWorld.getPortalForcer().findClosestPortalPosition(BlockPos.containing(destPos), destIsNether, worldBorder);
       if(portalRect.isPresent()){
-         player.teleport(new TeleportTransition(destWorld,portalRect.get().getCenter(),player.getDeltaMovement(),player.getYRot(),player.getXRot(), TeleportTransition.PLAY_PORTAL_SOUND.then(entityx -> entityx.placePortalTicket(portalRect.get()))));
+         player.teleport(new TeleportTransition(destWorld, portalRect.get().getCenter(), player.getDeltaMovement(), player.getYRot(), player.getXRot(), TeleportTransition.PLAY_PORTAL_SOUND.then(entityx -> entityx.placePortalTicket(portalRect.get()))));
          player.setPortalCooldown();
-         player.displayClientMessage(Component.literal("The Planeshifter syncs up with a Nether Portal").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+         player.displayClientMessage(Component.literal("The Planeshifter syncs up with a Nether Portal").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
       }else{
-         player.displayClientMessage(Component.literal("The Planeshifter could not find a Nether Portal").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
-         directTeleport(player,destWorld);
+         player.displayClientMessage(Component.literal("The Planeshifter could not find a Nether Portal").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+         directTeleport(player, destWorld);
       }
    }
    
    private void directTeleport(ServerPlayer player, ServerLevel destWorld){
       double scale = DimensionType.getTeleportationScale(player.level().dimensionType(), destWorld.dimensionType());
       WorldBorder worldBorder = destWorld.getWorldBorder();
-      Vec3 destPos = worldBorder.clampVec3ToBound(player.getX() * scale, Mth.clamp(player.getY(),destWorld.getMinY()+5,destWorld.getMaxY()-5), player.getZ() * scale);
-      player.teleport(new TeleportTransition(destWorld, destPos, Vec3.ZERO, player.getYRot(),player.getXRot(), TeleportTransition.PLACE_PORTAL_TICKET));
-      for(int y = player.getBlockY(); y >= player.getBlockY()-destWorld.getHeight(); y--){
-         BlockPos blockPos = new BlockPos(player.getBlockX(),y,player.getBlockZ());
+      Vec3 destPos = worldBorder.clampVec3ToBound(player.getX() * scale, Mth.clamp(player.getY(), destWorld.getMinY() + 5, destWorld.getMaxY() - 5), player.getZ() * scale);
+      player.teleport(new TeleportTransition(destWorld, destPos, Vec3.ZERO, player.getYRot(), player.getXRot(), TeleportTransition.PLACE_PORTAL_TICKET));
+      for(int y = player.getBlockY(); y >= player.getBlockY() - destWorld.getHeight(); y--){
+         BlockPos blockPos = new BlockPos(player.getBlockX(), y, player.getBlockZ());
          BlockState state = destWorld.getBlockState(blockPos);
          if(state.is(Blocks.LAVA)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.UNFORTUNATE_MATERIALIZATION);
+            ArcanaAchievements.grant(player, ArcanaAchievements.UNFORTUNATE_MATERIALIZATION);
             break;
-         }else if(!(state.isAir() || state.getCollisionShape(destWorld,blockPos).isEmpty())){
+         }else if(!(state.isAir() || state.getCollisionShape(destWorld, blockPos).isEmpty())){
             break;
          }
       }
@@ -220,41 +220,43 @@ public class Planeshifter extends EnergyItem {
    
    private void teleport(ItemStack stack, ServerPlayer player){
       ServerLevel world = player.level();
-      ServerLevel target = getTargetDim(stack,world.getServer());
+      ServerLevel target = getTargetDim(stack, world.getServer());
       if(target == null) return;
       
       boolean inOverworld = world.dimension().identifier().equals(ServerLevel.OVERWORLD.identifier());
       boolean inEnd = world.dimension().identifier().equals(ServerLevel.END.identifier());
       boolean inNether = world.dimension().identifier().equals(ServerLevel.NETHER.identifier());
-      if(inNether) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER, "From The Nether",true);
-      if(inEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER,"From The End",true);
-      if(inOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER,"From The Overworld",true);
+      if(inNether) ArcanaAchievements.setCondition(player, ArcanaAchievements.PLANE_RIDER, "From The Nether", true);
+      if(inEnd) ArcanaAchievements.setCondition(player, ArcanaAchievements.PLANE_RIDER, "From The End", true);
+      if(inOverworld)
+         ArcanaAchievements.setCondition(player, ArcanaAchievements.PLANE_RIDER, "From The Overworld", true);
       boolean destOverworld = target.dimension().identifier().equals(ServerLevel.OVERWORLD.identifier());
       boolean destEnd = target.dimension().identifier().equals(ServerLevel.END.identifier());
       boolean destNether = target.dimension().identifier().equals(ServerLevel.NETHER.identifier());
-      if(destNether) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER, "To The Nether",true);
-      if(destEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER,"To The End",true);
-      if(destOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER,"To The Overworld",true);
+      if(destNether) ArcanaAchievements.setCondition(player, ArcanaAchievements.PLANE_RIDER, "To The Nether", true);
+      if(destEnd) ArcanaAchievements.setCondition(player, ArcanaAchievements.PLANE_RIDER, "To The End", true);
+      if(destOverworld)
+         ArcanaAchievements.setCondition(player, ArcanaAchievements.PLANE_RIDER, "To The Overworld", true);
       
       if(inNether && destOverworld){
-         findPortalAndTeleport(player,target,false);
+         findPortalAndTeleport(player, target, false);
       }else if(destNether){
-         findPortalAndTeleport(player,target,true);
+         findPortalAndTeleport(player, target, true);
       }else if(destEnd || (inEnd && destOverworld)){
          EndPortalBlock endPortalBlock = (EndPortalBlock) Blocks.END_PORTAL;
-         player.teleport(endPortalBlock.getPortalDestination(player.level(),player,player.blockPosition()));
+         player.teleport(endPortalBlock.getPortalDestination(player.level(), player, player.blockPosition()));
       }else{
-         directTeleport(player,target);
+         directTeleport(player, target);
       }
       
       ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_PLANESHIFTER_USE)); // Add xp
-      setEnergy(stack,0);
-      SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL,1,2f);
-      ArcanaEffectUtils.recallTeleport(world,player.position());
+      setEnergy(stack, 0);
+      SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL, 1, 2f);
+      ArcanaEffectUtils.recallTeleport(world, player.position());
    }
    
    private ServerLevel getTargetDim(ItemStack stack, MinecraftServer server){
-      String selected = getStringProperty(stack,SELECTED_TAG);
+      String selected = getStringProperty(stack, SELECTED_TAG);
       for(ServerLevel serverWorld : server.getAllLevels()){
          if(serverWorld.dimension().identifier().toString().equals(selected)){
             return serverWorld;
@@ -264,13 +266,13 @@ public class Planeshifter extends EnergyItem {
    }
    
    public boolean hasDimension(ItemStack stack, ResourceKey<Level> world){
-      return getListProperty(stack,DIMENSIONS_TAG).contains(StringTag.valueOf(world.identifier().toString()));
+      return getListProperty(stack, DIMENSIONS_TAG).contains(StringTag.valueOf(world.identifier().toString()));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Planeshifter").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nPortals are nice, they create a safe, stable connection between worlds, but they take setup. Safety is not a concern for an Arcanist of my caliber. I can just make an unstable rift long enough to slip ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Planeshifter").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nPortals are nice, they create a safe, stable connection between worlds, but they take setup. Safety is not a concern for an Arcanist of my caliber. I can just make an unstable rift long enough to slip ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Planeshifter").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nthrough.\n\nHowever, the Shifter needs some dimensional energy from the destination before it can rip open a rift to the destination.\n\nFor some fraction of safety, if the Shifter \n\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Planeshifter").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nfinds a portal near the destination, it should sync my rift to its location.\n\nSneak Use to switch the Shifter’s target dimension.\n\nUsing the Shifter activates its warmup.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Planeshifter").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nTaking damage prematurely disrupts the rift, causing the Shifter to require time to recalibrate.").withStyle(ChatFormatting.BLACK)));
@@ -287,7 +289,7 @@ public class Planeshifter extends EnergyItem {
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          List<String> stringList = new ArrayList<>();
          
-         String selected = getStringProperty(itemStack,SELECTED_TAG);
+         String selected = getStringProperty(itemStack, SELECTED_TAG);
          if(context.getPlayer() != null){
             if(getEnergy(itemStack) < getMaxEnergy(itemStack) || selected.isBlank()){
                stringList.add("none");
@@ -303,20 +305,21 @@ public class Planeshifter extends EnergyItem {
          }else{
             stringList.add("none");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
       @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
-         if(!ArcanaItemUtils.isArcane(stack) || !(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
+         if(!ArcanaItemUtils.isArcane(stack) || !(playerEntity instanceof ServerPlayer player))
+            return InteractionResult.PASS;
          
          if(playerEntity.isShiftKeyDown()){
-            rotateDimension(stack,player,true);
+            rotateDimension(stack, player, true);
          }else{
             int curEnergy = getEnergy(stack);
-            String selected = getStringProperty(stack,SELECTED_TAG);
+            String selected = getStringProperty(stack, SELECTED_TAG);
             
             if(curEnergy < getMaxEnergy(stack)){
                playerEntity.displayClientMessage(Component.literal("Planeshifter Recharging: " + (curEnergy * 100 / getMaxEnergy(stack)) + "%").withStyle(ChatFormatting.DARK_AQUA), true);
@@ -324,25 +327,25 @@ public class Planeshifter extends EnergyItem {
                return InteractionResult.SUCCESS_SERVER;
             }
             if(selected.isBlank()){
-               playerEntity.displayClientMessage(Component.literal("The Planeshifter has not unlocked any other dimensions").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+               playerEntity.displayClientMessage(Component.literal("The Planeshifter has not unlocked any other dimensions").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                return InteractionResult.SUCCESS_SERVER;
             }
             if(selected.equals(world.dimension().identifier().toString())){
-               playerEntity.displayClientMessage(Component.literal("The Planeshifter cannot teleport within the same dimension").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+               playerEntity.displayClientMessage(Component.literal("The Planeshifter cannot teleport within the same dimension").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                return InteractionResult.SUCCESS_SERVER;
             }
             
-            ServerLevel targetWorld = getTargetDim(stack,player.level().getServer());
+            ServerLevel targetWorld = getTargetDim(stack, player.level().getServer());
             if(targetWorld == null){
-               playerEntity.displayClientMessage(Component.literal("The Planeshifter cannot find its target").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+               playerEntity.displayClientMessage(Component.literal("The Planeshifter cannot find its target").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             }else if(!((ServerLevel) playerEntity.level()).isAllowedToEnterPortal(playerEntity.level().getServer().getLevel(targetWorld.dimension()))){
-                playerEntity.displayClientMessage(Component.literal("The targeted world is not enabled on this Server").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+               playerEntity.displayClientMessage(Component.literal("The targeted world is not enabled on this Server").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             }else if(curEnergy >= getMaxEnergy(stack)){
-               putProperty(stack,HEAT_TAG,1); // Starts the heat up process
+               putProperty(stack, HEAT_TAG, 1); // Starts the heat up process
                SoundUtils.playSound(playerEntity.level(), playerEntity.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 1, 1);
             }
          }
@@ -353,42 +356,42 @@ public class Planeshifter extends EnergyItem {
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
-         int heat = getIntProperty(stack,HEAT_TAG);
+         int heat = getIntProperty(stack, HEAT_TAG);
          
-         String selected = getStringProperty(stack,SELECTED_TAG);
+         String selected = getStringProperty(stack, SELECTED_TAG);
          if(selected.equals(world.dimension().identifier().toString())){
-            rotateDimension(stack,player,false);
+            rotateDimension(stack, player, false);
          }
          
          if(heat == 100){
-            teleport(stack,player);
-            putProperty(stack,HEAT_TAG,0);
+            teleport(stack, player);
+            putProperty(stack, HEAT_TAG, 0);
          }else if(heat > 0){
-            putProperty(stack,HEAT_TAG,heat+1);
-            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.position());
+            putProperty(stack, HEAT_TAG, heat + 1);
+            ArcanaEffectUtils.recallTeleportCharge(serverWorld, player.position());
          }else if(heat == -1){
             // Teleport was cancelled by damage
-            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.position());
-            SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.ENDERMAN_HURT, SoundSource.PLAYERS, 8,0.8f);
-            putProperty(stack,HEAT_TAG,0);
-            setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));
+            ArcanaEffectUtils.recallTeleportCancel(serverWorld, player.position());
+            SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.ENDERMAN_HURT, SoundSource.PLAYERS, 8, 0.8f);
+            putProperty(stack, HEAT_TAG, 0);
+            setEnergy(stack, (int) (getMaxEnergy(stack) * 0.75));
          }
          
          if(world.getServer().getTickCount() % 20 == 0){
-            unlockDimension(stack,world.dimension(),player);
-            List<ItemStack> waystones = ArcanaUtils.getArcanaItems(player,ArcanaRegistry.WAYSTONE);
+            unlockDimension(stack, world.dimension(), player);
+            List<ItemStack> waystones = ArcanaUtils.getArcanaItems(player, ArcanaRegistry.WAYSTONE);
             for(ItemStack waystone : waystones){
                Waystone.WaystoneTarget target = Waystone.getTarget(waystone);
                if(target != null) unlockDimension(stack, target.world(), player);
             }
             
             addEnergy(stack, 1); // Recharge
-            buildItemLore(stack,world.getServer());
+            buildItemLore(stack, world.getServer());
          }
       }
       
       private void rotateDimension(ItemStack stack, ServerPlayer player, boolean announce){
-         ListTag dimensions = getListProperty(stack,DIMENSIONS_TAG);
+         ListTag dimensions = getListProperty(stack, DIMENSIONS_TAG);
          ArrayList<ResourceKey<Level>> dims = new ArrayList<>();
          for(ServerLevel world : player.level().getServer().getAllLevels()){
             if(dimensions.contains(StringTag.valueOf(world.dimension().identifier().toString())) && !player.level().dimension().identifier().equals(world.dimension().identifier())){
@@ -396,11 +399,11 @@ public class Planeshifter extends EnergyItem {
             }
          }
          dims.sort(Comparator.comparing(s -> s.identifier().getPath()));
-         String selected = getStringProperty(stack,SELECTED_TAG);
+         String selected = getStringProperty(stack, SELECTED_TAG);
          ResourceKey<Level> world = null;
          if(dims.isEmpty()){
-            putProperty(stack,SELECTED_TAG,"");
-            buildItemLore(stack,player.level().getServer());
+            putProperty(stack, SELECTED_TAG, "");
+            buildItemLore(stack, player.level().getServer());
             return;
          }else if(selected.isEmpty()){
             world = dims.getFirst();
@@ -412,43 +415,43 @@ public class Planeshifter extends EnergyItem {
                   break;
                }
             }
-            ind = (ind+1) % dims.size();
+            ind = (ind + 1) % dims.size();
             world = dims.get(ind);
          }
          
          if(announce){
             if(world.equals(Level.OVERWORLD)){
-               player.displayClientMessage(Component.literal("Planeshifter set to The Overworld").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+               player.displayClientMessage(Component.literal("Planeshifter set to The Overworld").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
             }else if(world.equals(Level.NETHER)){
-               player.displayClientMessage(Component.literal("Planeshifter set to The Nether").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+               player.displayClientMessage(Component.literal("Planeshifter set to The Nether").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
             }else if(world.equals(Level.END)){
-               player.displayClientMessage(Component.literal("Planeshifter set to The End").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+               player.displayClientMessage(Component.literal("Planeshifter set to The End").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
             }else{
-               player.displayClientMessage(Component.literal("Planeshifter set to "+world.identifier().toString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+               player.displayClientMessage(Component.literal("Planeshifter set to " + world.identifier().toString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
             }
             SoundUtils.playSongToPlayer(player, SoundEvents.LODESTONE_COMPASS_LOCK, 1, 0.7f);
          }
-         putProperty(stack,SELECTED_TAG,world.identifier().toString());
+         putProperty(stack, SELECTED_TAG, world.identifier().toString());
       }
       
       private void unlockDimension(ItemStack stack, ResourceKey<Level> world, ServerPlayer player){
-         if(hasDimension(stack,world)) return;
-         ListTag dimensions = getListProperty(stack,DIMENSIONS_TAG);
+         if(hasDimension(stack, world)) return;
+         ListTag dimensions = getListProperty(stack, DIMENSIONS_TAG);
          
          if(world.equals(Level.OVERWORLD)){
-            player.displayClientMessage(Component.literal("The Planeshifter has Unlocked The Overworld").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+            player.displayClientMessage(Component.literal("The Planeshifter has Unlocked The Overworld").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
          }else if(world.equals(Level.NETHER)){
-            player.displayClientMessage(Component.literal("The Planeshifter has Unlocked The Nether").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+            player.displayClientMessage(Component.literal("The Planeshifter has Unlocked The Nether").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
          }else if(world.equals(Level.END)){
-            player.displayClientMessage(Component.literal("The Planeshifter has Unlocked The End").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+            player.displayClientMessage(Component.literal("The Planeshifter has Unlocked The End").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
          }else{
-            player.displayClientMessage(Component.literal("The Planeshifter has Unlocked "+world.identifier().toString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
+            player.displayClientMessage(Component.literal("The Planeshifter has Unlocked " + world.identifier().toString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
          }
          dimensions.add(StringTag.valueOf(world.identifier().toString()));
          
-         SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f,2f);
-         putProperty(stack,DIMENSIONS_TAG,dimensions);
-         buildItemLore(stack,player.level().getServer());
+         SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f, 2f);
+         putProperty(stack, DIMENSIONS_TAG, dimensions);
+         buildItemLore(stack, player.level().getServer());
       }
       
       @Override

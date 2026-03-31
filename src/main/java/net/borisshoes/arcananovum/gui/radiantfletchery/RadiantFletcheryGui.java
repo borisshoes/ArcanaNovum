@@ -34,31 +34,31 @@ public class RadiantFletcheryGui extends SimpleGui {
    }
    
    public void buildGui(){
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(8,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(1, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(6, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(8, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GuiElementBuilder arrowsItem = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
       arrowsItem.setName((Component.literal("")
             .append(Component.literal("Place Arrows Above").withStyle(ChatFormatting.YELLOW))));
-      setSlot(3,arrowsItem);
+      setSlot(3, arrowsItem);
       
       GuiElementBuilder brewItem = new GuiElementBuilder(Items.BREWING_STAND).hideDefaultTooltip();
       brewItem.setName((Component.literal("")
             .append(Component.literal("Create Tipped Arrows").withStyle(ChatFormatting.LIGHT_PURPLE))));
       brewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("1 Potion Makes "+blockEntity.getPotionRatio()+" Arrows").withStyle(ChatFormatting.DARK_PURPLE)))));
-      setSlot(4,brewItem);
+            .append(Component.literal("1 Potion Makes " + blockEntity.getPotionRatio() + " Arrows").withStyle(ChatFormatting.DARK_PURPLE)))));
+      setSlot(4, brewItem);
       
       GuiElementBuilder potionItem = new GuiElementBuilder(Items.POTION).hideDefaultTooltip();
       potionItem.setName((Component.literal("")
             .append(Component.literal("Place Potions Above").withStyle(ChatFormatting.DARK_AQUA))));
-      setSlot(5,potionItem);
+      setSlot(5, potionItem);
       
       Container inv = blockEntity.getInventory();
-      setSlotRedirect(0,new RadiantFletcherySlot(inv,0,0,0,0));
-      setSlotRedirect(2,new RadiantFletcherySlot(inv,1,1,0,1));
-      setSlotRedirect(7,new RadiantFletcherySlot(inv,2,2,0,2));
+      setSlotRedirect(0, new RadiantFletcherySlot(inv, 0, 0, 0, 0));
+      setSlotRedirect(2, new RadiantFletcherySlot(inv, 1, 1, 0, 1));
+      setSlotRedirect(7, new RadiantFletcherySlot(inv, 2, 2, 0, 2));
    }
    
    @Override

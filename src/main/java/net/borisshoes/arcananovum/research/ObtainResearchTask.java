@@ -8,7 +8,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-public class ObtainResearchTask extends ResearchTask{
+public class ObtainResearchTask extends ResearchTask {
    
    private final Either<Item, TagKey<Item>> item;
    

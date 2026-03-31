@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.midnightenchanter.MidnightEnchanterGui;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -26,10 +27,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.TreeMap;
 
 public class MidnightEnchanterBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
@@ -41,11 +43,12 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       this.multiblock = ((MultiblockCore) ArcanaRegistry.MIDNIGHT_ENCHANTER).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
    }
    
@@ -75,16 +78,16 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       }
       
       if(assembled && seenForge && hasBooks){
-         ArcanaEffectUtils.midnightEnchanterAnim(serverWorld, worldPosition.getCenter(),ticks % 300);
+         ArcanaEffectUtils.midnightEnchanterAnim(serverWorld, worldPosition.getCenter(), ticks % 300);
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
    }
    
    public void openGui(ServerPlayer player){
-      MidnightEnchanterGui gui = new MidnightEnchanterGui(player,this);
+      MidnightEnchanterGui gui = new MidnightEnchanterGui(player, this);
       gui.buildPage();
       gui.open();
    }
@@ -101,7 +104,7 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.MIDNIGHT_ENCHANTER).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.MIDNIGHT_ENCHANTER).getCheckOffset()), null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -120,6 +123,10 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -134,9 +141,10 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -144,10 +152,11 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
    }
 }

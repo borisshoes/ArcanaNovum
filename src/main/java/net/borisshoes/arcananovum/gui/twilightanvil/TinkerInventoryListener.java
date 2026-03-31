@@ -10,7 +10,7 @@ public class TinkerInventoryListener implements ContainerListener {
    private final SimpleGui gui;
    private final TwilightAnvilBlockEntity blockEntity;
    private boolean updating = false;
-   private final int[][] dynamicSlots = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
+   private final int[][] dynamicSlots = {{}, {3}, {1, 5}, {1, 3, 5}, {0, 2, 4, 6}, {1, 2, 3, 4, 5}, {0, 1, 2, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6}};
    private final int mode; // 0 = tinkering, 1 = renaming, 2 = anvil
    
    public TinkerInventoryListener(SimpleGui gui, int mode, TwilightAnvilBlockEntity blockEntity){
@@ -51,6 +51,7 @@ public class TinkerInventoryListener implements ContainerListener {
    public void finishUpdate(){
       updating = false;
    }
+   
    public void setUpdating(){
       updating = true;
    }

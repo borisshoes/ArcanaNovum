@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -16,6 +15,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.interdictor.InterdictorGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
@@ -82,8 +82,8 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       vanillaItem = Items.BEACON;
       block = new InterdictorBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(6.0f, 1200.0f).lightLevel(InterdictorBlock::getLightLevel).sound(SoundType.VAULT));
       item = new InterdictorItem(block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_MATTER,ResearchTasks.OBTAIN_BEACON,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.OBTAIN_END_CRYSTAL,ResearchTasks.USE_ENDER_EYE,ResearchTasks.ADVANCEMENT_KILL_A_MOB};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_MATTER, ResearchTasks.OBTAIN_BEACON, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.OBTAIN_END_CRYSTAL, ResearchTasks.USE_ENDER_EYE, ResearchTasks.ADVANCEMENT_KILL_A_MOB};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -136,10 +136,10 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("     Interdictor").withStyle(ChatFormatting.AQUA,ChatFormatting.BOLD),Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal("\nCreepers have blown up my house for the last time! Sometimes, no amount of torches is enough! Taking the area effects of a Beacon, and adding in a bit of dimensional energy using some techniques I picked").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("     Interdictor").withStyle(ChatFormatting.AQUA,ChatFormatting.BOLD),Component.literal("\nup from the End-dwellers, I have created a contraption that broadcasts a jamming signal that prevents new mob essence from coalescing.\n\nLike a normal Beacon, the Interdictor requires some").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("     Interdictor").withStyle(ChatFormatting.AQUA,ChatFormatting.BOLD),Component.literal("\nstructural support, though a bit more involved than a Beacon, just something to broadcast the specialized field.\n\nWhen assembled and given a redstone signal through a lever or torch on the").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("     Interdictor").withStyle(ChatFormatting.AQUA,ChatFormatting.BOLD),Component.literal("\nstructure's diamond block, the Interdictor will stop hostile mobs from spawning in a 32 block radial cube.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Interdictor").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nCreepers have blown up my house for the last time! Sometimes, no amount of torches is enough! Taking the area effects of a Beacon, and adding in a bit of dimensional energy using some techniques I picked").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Interdictor").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nup from the End-dwellers, I have created a contraption that broadcasts a jamming signal that prevents new mob essence from coalescing.\n\nLike a normal Beacon, the Interdictor requires some").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Interdictor").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nstructural support, though a bit more involved than a Beacon, just something to broadcast the specialized field.\n\nWhen assembled and given a redstone signal through a lever or torch on the").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Interdictor").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nstructure's diamond block, the Interdictor will stop hostile mobs from spawning in a 32 block radial cube.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -155,7 +155,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public Vec3i getCheckOffset(){
-      return new Vec3i(-1,-1,-1);
+      return new Vec3i(-1, -1, -1);
    }
    
    public class InterdictorItem extends ArcanaPolymerBlockItem {
@@ -208,7 +208,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       
       @org.jspecify.annotations.Nullable
       @Override
-      public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
+      public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext){
          return this.defaultBlockState().setValue(ACTIVE, false);
       }
       
@@ -224,23 +224,23 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      protected void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, @org.jspecify.annotations.Nullable Orientation orientation, boolean bl) {
-         if (!level.isClientSide()) {
+      protected void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, @org.jspecify.annotations.Nullable Orientation orientation, boolean bl){
+         if(!level.isClientSide()){
             boolean currentlyActive = blockState.getValue(ACTIVE);
-            if (currentlyActive != level.hasNeighborSignal(blockPos)) {
-               if (currentlyActive) {
+            if(currentlyActive != level.hasNeighborSignal(blockPos)){
+               if(currentlyActive){
                   level.scheduleTick(blockPos, this, 4);
-               } else if (level.getBlockEntity(blockPos) instanceof InterdictorBlockEntity interdictor && interdictor.isAssembled()) {
+               }else if(level.getBlockEntity(blockPos) instanceof InterdictorBlockEntity interdictor && interdictor.isAssembled()){
                   level.gameEvent(GameEvent.BLOCK_ACTIVATE, blockPos, GameEvent.Context.of(blockState));
-                  level.setBlock(blockPos,blockState.setValue(ACTIVE,true),Block.UPDATE_ALL);
+                  level.setBlock(blockPos, blockState.setValue(ACTIVE, true), Block.UPDATE_ALL);
                }
             }
          }
       }
       
       @Override
-      protected void tick(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, RandomSource randomSource) {
-         if (blockState.getValue(ACTIVE) && !serverLevel.hasNeighborSignal(blockPos)) {
+      protected void tick(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, RandomSource randomSource){
+         if(blockState.getValue(ACTIVE) && !serverLevel.hasNeighborSignal(blockPos)){
             serverLevel.setBlock(blockPos, blockState.cycle(ACTIVE), 2);
             serverLevel.gameEvent(GameEvent.BLOCK_DEACTIVATE, blockPos, GameEvent.Context.of(blockState));
          }
@@ -251,11 +251,11 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
          if(level.getBlockEntity(blockPos) instanceof InterdictorBlockEntity interdictor){
             if(player instanceof ServerPlayer serverPlayer && !player.isShiftKeyDown()){
                if(interdictor.isAssembled()){
-                  InterdictorGui gui = new InterdictorGui(serverPlayer,interdictor);
+                  InterdictorGui gui = new InterdictorGui(serverPlayer, interdictor);
                   gui.open();
                }else{
                   serverPlayer.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(interdictor.getMultiblockCheck(),serverPlayer);
+                  multiblock.displayStructure(interdictor.getMultiblockCheck(), serverPlayer);
                }
             }
             return InteractionResult.PASS;
@@ -279,7 +279,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack INTERDICTOR_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor"));
       public static final ItemStack INTERDICTOR_TOP = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor_top_shell"));
       public static final ItemStack INTERDICTOR_BOT = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor_bottom_shell"));
@@ -485,8 +485,8 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void notifyUpdate(HolderAttachment.UpdateType updateType) {
-         if (updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE) {
+      public void notifyUpdate(HolderAttachment.UpdateType updateType){
+         if(updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE){
             BlockState state = this.blockState();
             if(this.active != state.getValue(ACTIVE)){
                this.active = state.getValue(ACTIVE);

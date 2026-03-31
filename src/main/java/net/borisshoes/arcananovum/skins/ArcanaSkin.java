@@ -14,16 +14,15 @@ import java.util.List;
 
 public enum ArcanaSkin implements StringRepresentable {
    
-   VESTIGE_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x7a04c9,0x512E93, ArcanaRegistry.arcanaId("vestige_wings")),
-   COLEOPTERA_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x402cbf,0x3E3779, ArcanaRegistry.arcanaId("coleoptera_wings")),
-   FEATHER_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x4FD6FF,0x33988f, ArcanaRegistry.arcanaId("feather_wings")),
+   VESTIGE_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x7a04c9, 0x512E93, ArcanaRegistry.arcanaId("vestige_wings")),
+   COLEOPTERA_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x402cbf, 0x3E3779, ArcanaRegistry.arcanaId("coleoptera_wings")),
+   FEATHER_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x4FD6FF, 0x33988f, ArcanaRegistry.arcanaId("feather_wings")),
    LUNAR_BOW(ArcanaRegistry.RUNIC_BOW, 0x074bde, 0x152cd6, ArcanaRegistry.arcanaId("lunar_bow")),
    LUNAR_QUIVER(ArcanaRegistry.RUNIC_QUIVER, 0x074bde, 0x152cd6, ArcanaRegistry.arcanaId("lunar_quiver")),
-   RESPLENDENT_HARNESS(ArcanaRegistry.LEVITATION_HARNESS, 0x7f31ff,0x4747FF, ArcanaRegistry.arcanaId("resplendent_harness"), new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))}),
-   CATGIRL_MEMENTO(ArcanaRegistry.NUL_MEMENTO, 0xFF55FF,0x8B2E8B, ArcanaRegistry.arcanaId("catgirl_memento")),
+   RESPLENDENT_HARNESS(ArcanaRegistry.LEVITATION_HARNESS, 0x7f31ff, 0x4747FF, ArcanaRegistry.arcanaId("resplendent_harness"), new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))}),
+   CATGIRL_MEMENTO(ArcanaRegistry.NUL_MEMENTO, 0xFF55FF, 0x8B2E8B, ArcanaRegistry.arcanaId("catgirl_memento")),
    ZEPHOS_LANCE(ArcanaRegistry.SPEAR_OF_TENBROUS, 0x18ceff, 0x0015e3, ArcanaRegistry.arcanaId("zephos_lance")),
-   AEQUALIS_RIGHTS(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF87C7, 0xBFEEFF, ArcanaRegistry.arcanaId("aequalis_rights"))
-   ;
+   AEQUALIS_RIGHTS(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF87C7, 0xBFEEFF, ArcanaRegistry.arcanaId("aequalis_rights"));
    
    private final ArcanaItem arcanaItem;
    private final Identifier id;
@@ -56,7 +55,7 @@ public enum ArcanaSkin implements StringRepresentable {
    }
    
    public Identifier getModelId(){
-      return ArcanaRegistry.arcanaId("skins/"+id.getPath());
+      return ArcanaRegistry.arcanaId("skins/" + id.getPath());
    }
    
    public int getPrimaryColor(){
@@ -68,11 +67,11 @@ public enum ArcanaSkin implements StringRepresentable {
    }
    
    public String getNameTranslationKey(){
-      return "skin."+id.getNamespace()+"."+id.getPath()+".name";
+      return "skin." + id.getNamespace() + "." + id.getPath() + ".name";
    }
    
    public String getDescriptionTranslationKey(){
-      return "skin."+id.getNamespace()+"."+id.getPath()+".description";
+      return "skin." + id.getNamespace() + "." + id.getPath() + ".description";
    }
    
    public MutableComponent getName(){

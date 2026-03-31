@@ -24,8 +24,7 @@ public class LocalMobCapCalculatorMixin {
    @Shadow
    private final ChunkMap chunkMap;
    
-   public LocalMobCapCalculatorMixin()
-   {
+   public LocalMobCapCalculatorMixin(){
       chunkMap = null;
    }
    
@@ -39,7 +38,7 @@ public class LocalMobCapCalculatorMixin {
    
    @Inject(method = "addMob", at = @At(value = "HEAD"), cancellable = true)
    private void increaseDensity(ChunkPos chunkPos, MobCategory spawnGroup, CallbackInfo cir){
-      if(ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor)(chunkMap)).getHookedWorld(), chunkPos)){
+      if(ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor) (chunkMap)).getHookedWorld(), chunkPos)){
          this.chunkPosDensityCapMap.computeIfAbsent(chunkPos, pos -> new DensityCap()).increaseDensity(spawnGroup);
          cir.cancel();
       }
@@ -47,7 +46,7 @@ public class LocalMobCapCalculatorMixin {
    
    @ModifyReturnValue(method = "canSpawn", at = @At(value = "RETURN"))
    private boolean canSpawn(boolean original, MobCategory spawnGroup, ChunkPos chunkPos){
-      if(!original && ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor)(chunkMap)).getHookedWorld(), chunkPos)){
+      if(!original && ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor) (chunkMap)).getHookedWorld(), chunkPos)){
          DensityCap densityCap = this.chunkPosDensityCapMap.get(chunkPos);
          return densityCap != null && densityCap.canSpawn(spawnGroup);
       }

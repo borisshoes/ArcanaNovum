@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BlockItem.class)
 public class BlockItemMixin {
-
+   
    @Inject(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;consume(ILnet/minecraft/world/entity/LivingEntity;)V", shift = At.Shift.AFTER))
    private void arcananovum$greavesHandRefill(BlockPlaceContext context, CallbackInfoReturnable<InteractionResult> cir, @Local ItemStack stack){
       int count = stack.getCount();
@@ -32,7 +32,8 @@ public class BlockItemMixin {
       if(stack.getCount() > lowerThresh) return;
       if(!(context.getPlayer() instanceof ServerPlayer player)) return;
       ItemStack pants = player.getItemBySlot(EquipmentSlot.LEGS);
-      if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || !ArcanaItem.getBooleanProperty(pants,ArcanaItem.ACTIVE_TAG)) return;
+      if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || !ArcanaItem.getBooleanProperty(pants, ArcanaItem.ACTIVE_TAG))
+         return;
       ItemStack refillStack = greaves.getStackOf(pants, stack);
       if(!refillStack.isEmpty()){
          int amtToRefill = Math.min(upperThresh - count, refillStack.getCount());
@@ -40,9 +41,9 @@ public class BlockItemMixin {
          greaves.buildItemLore(pants, BorisLib.SERVER);
          
          if(stack.is(Items.DIAMOND_BLOCK)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.MINERS_WALLET);
+            ArcanaAchievements.grant(player, ArcanaAchievements.MINERS_WALLET);
          }else if(stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() != null && (blockItem.getBlock().builtInRegistryHolder().is(BlockTags.BASE_STONE_OVERWORLD) || blockItem.getBlock().builtInRegistryHolder().is(BlockTags.DIRT))){
-            ArcanaAchievements.progress(player,ArcanaAchievements.TERRAFORMER,amtToRefill);
+            ArcanaAchievements.progress(player, ArcanaAchievements.TERRAFORMER, amtToRefill);
          }
          
          ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_GREAVES_OF_GAIALTUS_REFILL_BLOCK_PER_10) * amtToRefill / 10);

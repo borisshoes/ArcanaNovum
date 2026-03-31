@@ -20,9 +20,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
       Rabbit.RabbitMoveControl.class, Ghast.GhastMoveControl.class, Guardian.GuardianMoveControl.class, Phantom.PhantomMoveControl.class, Vex.VexMoveControl.class})
 public class MoveControlMixin {
    
-   @Inject(method = "tick", at=@At("HEAD"))
+   @Inject(method = "tick", at = @At("HEAD"))
    private void arcananovum$ensnarementMob(CallbackInfo ci){
-      MoveControl moveControl = (MoveControl)(Object)this;
+      MoveControl moveControl = (MoveControl) (Object) this;
       Mob entity = moveControl.mob;
       
       MobEffectInstance effect = entity.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);

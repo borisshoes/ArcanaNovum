@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -14,6 +13,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
-	public static final String ID = "celestial_altar";
+   public static final String ID = "celestial_altar";
    
    private Multiblock multiblock;
    
@@ -73,10 +73,10 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.PEARLESCENT_FROGLIGHT;
-      block = new CelestialAltarBlock(BlockBehaviour.Properties.of().noOcclusion().mapColor(MapColor.COLOR_PINK).lightLevel(CelestialAltarBlock::getLightLevel).strength(.3f,1200.0f).lightLevel(state -> 15).sound(SoundType.FROGLIGHT));
+      block = new CelestialAltarBlock(BlockBehaviour.Properties.of().noOcclusion().mapColor(MapColor.COLOR_PINK).lightLevel(CelestialAltarBlock::getLightLevel).strength(.3f, 1200.0f).lightLevel(state -> 15).sound(SoundType.FROGLIGHT));
       item = new CelestialAltarItem(this.block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Lunaralpacas")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("Lunaralpacas"))};
       
       ItemStack stack = new ItemStack(item);
@@ -119,7 +119,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
             .append(Component.literal(" to ").withStyle(ChatFormatting.DARK_GRAY))
             .append(Component.literal("activate").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -129,7 +129,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public Vec3i getCheckOffset(){
-      return new Vec3i(-5,0,-5);
+      return new Vec3i(-5, 0, -5);
    }
    
    @Override
@@ -140,14 +140,14 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("   Celestial Altar").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nLeylines across the world have their influence extend into the space beyond the world. If I can provide a sufficient energy source to the structure, I should be able to accelerate the sun or moon!").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Celestial Altar").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nLeylines across the world have their influence extend into the space beyond the world. If I can provide a sufficient energy source to the structure, I should be able to accelerate the sun or moon!").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Celestial Altar").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nA Nether Star should be sufficient to let this altar change the time of day and the phase of the moon by accelerating the motion of the celestial bodies for a moment before the Star is depleted.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class CelestialAltarItem extends ArcanaPolymerBlockItem {
       public CelestialAltarItem(Block block){
-         super(getThis(),block, getArcanaItemComponents());
+         super(getThis(), block, getArcanaItemComponents());
       }
       
       @Override
@@ -176,12 +176,12 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       @Nullable
       @Override
       public BlockState getStateForPlacement(BlockPlaceContext ctx){
-         return this.defaultBlockState().setValue(HORIZONTAL_FACING,ctx.getHorizontalDirection().getOpposite()).setValue(ACTIVATABLE,false);
+         return this.defaultBlockState().setValue(HORIZONTAL_FACING, ctx.getHorizontalDirection().getOpposite()).setValue(ACTIVATABLE, false);
       }
       
       @Override
       protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager){
-         stateManager.add(HORIZONTAL_FACING,ACTIVATABLE);
+         stateManager.add(HORIZONTAL_FACING, ACTIVATABLE);
       }
       
       @Override
@@ -212,11 +212,11 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
             if(playerEntity instanceof ServerPlayer player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getCooldowns().addCooldown(playerEntity.getMainHandItem(),1);
-                  player.getCooldowns().addCooldown(playerEntity.getOffhandItem(),1);
+                  player.getCooldowns().addCooldown(playerEntity.getMainHandItem(), 1);
+                  player.getCooldowns().addCooldown(playerEntity.getOffhandItem(), 1);
                }else{
                   player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(altar.getMultiblockCheck(),player);
+                  multiblock.displayStructure(altar.getMultiblockCheck(), player);
                }
             }
          }
@@ -226,17 +226,17 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       private void tryActivate(BlockState state, Level world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof CelestialAltarBlockEntity altar && world instanceof ServerLevel serverWorld){
-            Tuple<Item,Integer> cost = CelestialAltarBlockEntity.getCost();
-            boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new AABB(pos.above()),(itemStack) -> itemStack.is(cost.getA()),cost.getB());
+            Tuple<Item, Integer> cost = CelestialAltarBlockEntity.getCost();
+            boolean paid = MinecraftUtils.removeItemEntities(serverWorld, new AABB(pos.above()), (itemStack) -> itemStack.is(cost.getA()), cost.getB());
             if(paid) altar.startStarChange(null);
          }
       }
       
       @Override
-      protected void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify) {
+      protected void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify){
          boolean bl = world.hasNeighborSignal(pos);
          boolean bl2 = state.getOptionalValue(ACTIVATABLE).orElse(false);
-         if (bl && bl2) {
+         if(bl && bl2){
             this.tryActivate(state, world, pos);
             world.setBlock(pos, state.setValue(ACTIVATABLE, false), Block.UPDATE_CLIENTS);
          }
@@ -247,7 +247,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
       
@@ -257,7 +257,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack CELESTIAL_ALTAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/celestial_altar"));
       public static final ItemStack MOON = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/celestial_altar_moon"));
       public static final ItemStack SUN = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/celestial_altar_sun"));

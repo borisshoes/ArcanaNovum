@@ -26,8 +26,8 @@ public class QuiverGui extends SimpleGui {
    /**
     * Constructs a new simple container gui for the supplied player.
     *
-    * @param player                the player to server this gui to
-    *                              will be treated as slots of this gui
+    * @param player the player to server this gui to
+    *               will be treated as slots of this gui
     */
    public QuiverGui(ServerPlayer player, QuiverItem quiver, ItemStack item, boolean runic){
       super(MenuType.GENERIC_3x3, player, false);
@@ -38,18 +38,18 @@ public class QuiverGui extends SimpleGui {
    
    public void build(){
       inv = new SimpleContainer(QuiverItem.size);
-      QuiverInventoryListener listener = new QuiverInventoryListener(quiver,this,item);
+      QuiverInventoryListener listener = new QuiverInventoryListener(quiver, this, item);
       inv.addListener(listener);
       listener.setUpdating();
       
       for(int i = 0; i < inv.getContainerSize(); i++){
-         setSlotRedirect(i, new QuiverSlot(inv,runic,i,i%3,i/3));
+         setSlotRedirect(i, new QuiverSlot(inv, runic, i, i % 3, i / 3));
       }
       
       ItemContainerContents arrows = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
       arrows.stream().forEachOrdered(stack -> {
-         inv.setItem(i.get(),stack);
+         inv.setItem(i.get(), stack);
          i.getAndIncrement();
       });
       
@@ -64,7 +64,7 @@ public class QuiverGui extends SimpleGui {
       }else if(index > 9){
          int invSlot = index >= 36 ? index - 36 : index;
          ItemStack stack = player.getInventory().getItem(invSlot);
-         if(ItemStack.isSameItemSameComponents(item,stack)){
+         if(ItemStack.isSameItemSameComponents(item, stack)){
             close();
             return false;
          }
@@ -76,7 +76,7 @@ public class QuiverGui extends SimpleGui {
    @Override
    public void onClose(){
       item.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(inv.items));
-   
+      
       List<Integer> tippedTypes = new ArrayList<>();
       if(!runic){
          for(int i = 0; i < inv.getContainerSize(); i++){
@@ -86,9 +86,9 @@ public class QuiverGui extends SimpleGui {
                if(!tippedTypes.contains(color)) tippedTypes.add(color);
             }
          }
-         if(tippedTypes.size() == 9) ArcanaAchievements.grant(player,ArcanaAchievements.DIVERSE_ARSENAL);
+         if(tippedTypes.size() == 9) ArcanaAchievements.grant(player, ArcanaAchievements.DIVERSE_ARSENAL);
       }
-      quiver.buildItemLore(item,player.level().getServer());
+      quiver.buildItemLore(item, player.level().getServer());
    }
    
    

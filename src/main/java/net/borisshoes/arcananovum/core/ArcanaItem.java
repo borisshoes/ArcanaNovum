@@ -12,7 +12,6 @@ import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
-import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -58,7 +57,7 @@ import java.util.UUID;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.ITEM_DATA;
 
-public abstract class ArcanaItem implements Comparable<ArcanaItem>{
+public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    public static final String ORIGIN_TAG = "synthetic";
    public static final String CRAFTER_TAG = "crafter";
    public static final String UUID_TAG = "uuid";
@@ -95,14 +94,16 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return false;
    }
    
-   public int getItemVersion(){ return itemVersion; }
+   public int getItemVersion(){
+      return itemVersion;
+   }
    
    public String getNameString(){
       return name;
    }
    
    public MutableComponent getTranslatedName(){
-      return Component.translatableWithFallback(this.item.getDescriptionId(),getNameString());
+      return Component.translatableWithFallback(this.item.getDescriptionId(), getNameString());
    }
    
    public String getId(){
@@ -115,7 +116,9 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    
    public abstract List<List<Component>> getBookLore();
    
-   public ArcaneTomeGui.TomeFilter[] getCategories(){ return categories; }
+   public ArcaneTomeGui.TomeFilter[] getCategories(){
+      return categories;
+   }
    
    public abstract List<Component> getItemLore(@Nullable ItemStack itemStack);
    
@@ -162,35 +165,35 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    }
    
    public static int getIntProperty(ItemStack stack, String key){
-      return ITEM_DATA.getIntProperty(stack,key);
+      return ITEM_DATA.getIntProperty(stack, key);
    }
    
    public static String getStringProperty(ItemStack stack, String key){
-      return ITEM_DATA.getStringProperty(stack,key);
+      return ITEM_DATA.getStringProperty(stack, key);
    }
    
    public static boolean getBooleanProperty(ItemStack stack, String key){
-      return ITEM_DATA.getBooleanProperty(stack,key);
+      return ITEM_DATA.getBooleanProperty(stack, key);
    }
    
    public static double getDoubleProperty(ItemStack stack, String key){
-      return ITEM_DATA.getDoubleProperty(stack,key);
+      return ITEM_DATA.getDoubleProperty(stack, key);
    }
    
    public static float getFloatProperty(ItemStack stack, String key){
-      return ITEM_DATA.getFloatProperty(stack,key);
+      return ITEM_DATA.getFloatProperty(stack, key);
    }
    
    public static long getLongProperty(ItemStack stack, String key){
-      return ITEM_DATA.getLongProperty(stack,key);
+      return ITEM_DATA.getLongProperty(stack, key);
    }
    
    public static ListTag getListProperty(ItemStack stack, String key){
-      return ITEM_DATA.getListProperty(stack,key);
+      return ITEM_DATA.getListProperty(stack, key);
    }
    
    public static CompoundTag getCompoundProperty(ItemStack stack, String key){
-      return ITEM_DATA.getCompoundProperty(stack,key);
+      return ITEM_DATA.getCompoundProperty(stack, key);
    }
    
    public static void putProperty(ItemStack stack, String key, int property){
@@ -202,41 +205,41 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    }
    
    public static void putProperty(ItemStack stack, String key, double property){
-      ITEM_DATA.putProperty(stack,key, DoubleTag.valueOf(property));
+      ITEM_DATA.putProperty(stack, key, DoubleTag.valueOf(property));
    }
    
    public static void putProperty(ItemStack stack, String key, float property){
-      ITEM_DATA.putProperty(stack,key, FloatTag.valueOf(property));
+      ITEM_DATA.putProperty(stack, key, FloatTag.valueOf(property));
    }
    
    public static void putProperty(ItemStack stack, String key, String property){
-      ITEM_DATA.putProperty(stack,key, StringTag.valueOf(property));
+      ITEM_DATA.putProperty(stack, key, StringTag.valueOf(property));
    }
    
    public static void putProperty(ItemStack stack, String key, Tag property){
-      ITEM_DATA.putProperty(stack,key,property);
+      ITEM_DATA.putProperty(stack, key, property);
    }
    
    public static boolean hasProperty(ItemStack stack, String key){
-      return ITEM_DATA.hasProperty(stack,key);
+      return ITEM_DATA.hasProperty(stack, key);
    }
    
    public static boolean removeProperty(ItemStack stack, String key){
-      return ITEM_DATA.removeProperty(stack,key);
+      return ITEM_DATA.removeProperty(stack, key);
    }
    
    // Returns item stack with preferred attributes and a unique UUID
    public ItemStack getNewItem(){
       ItemStack stack = getPrefItem();
-      putProperty(stack,UUID_TAG,UUID.randomUUID().toString());
-      removeProperty(stack,UNINITIALIZED_TAG);
+      putProperty(stack, UUID_TAG, UUID.randomUUID().toString());
+      removeProperty(stack, UNINITIALIZED_TAG);
       return stack;
    }
    
    // Origin: 0 - Crafted, 1 - Synthesized, 2 - Found, 3 - Earned
    public ItemStack addCrafter(ItemStack stack, String player, int origin, MinecraftServer server){
       player = player == null ? "" : player;
-      putProperty(stack,CRAFTER_TAG,player);
+      putProperty(stack, CRAFTER_TAG, player);
       putProperty(stack, ORIGIN_TAG, origin);
       return buildItemLore(stack, server);
    }
@@ -244,7 +247,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public String getCrafter(ItemStack item){
       if(!ArcanaItemUtils.isArcane(item))
          return null;
-      return getStringProperty(item,CRAFTER_TAG);
+      return getStringProperty(item, CRAFTER_TAG);
    }
    
    public int getOrigin(ItemStack item){
@@ -275,21 +278,21 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       ItemStack newStack = getNewItem();
-      String uuid = getStringProperty(stack,UUID_TAG);
+      String uuid = getStringProperty(stack, UUID_TAG);
       if(uuid.isEmpty() || uuid.equals("-") || uuid.equals(ArcanaNovum.BLANK_UUID)){
-         putProperty(newStack,UUID_TAG,UUID.randomUUID().toString());
+         putProperty(newStack, UUID_TAG, UUID.randomUUID().toString());
       }else{
-         putProperty(newStack,UUID_TAG,uuid);
+         putProperty(newStack, UUID_TAG, uuid);
       }
-      CompoundTag augments = getCompoundProperty(stack,AUGMENTS_TAG);
-      ListTag catalysts = getListProperty(stack,CATALYSTS_TAG);
-      ArcanaSkin skin = ArcanaSkin.getSkinFromString(getStringProperty(stack,SKIN_TAG));
+      CompoundTag augments = getCompoundProperty(stack, AUGMENTS_TAG);
+      ListTag catalysts = getListProperty(stack, CATALYSTS_TAG);
+      ArcanaSkin skin = ArcanaSkin.getSkinFromString(getStringProperty(stack, SKIN_TAG));
       if(!augments.isEmpty()) putProperty(newStack, AUGMENTS_TAG, augments);
       if(!catalysts.isEmpty()) putProperty(newStack, CATALYSTS_TAG, catalysts);
-      if(skin != null) putProperty(newStack,SKIN_TAG,skin.getSerializedName());
-      addCrafter(newStack,getCrafter(stack), getOrigin(stack),server);
+      if(skin != null) putProperty(newStack, SKIN_TAG, skin.getSerializedName());
+      addCrafter(newStack, getCrafter(stack), getOrigin(stack), server);
       
-      EnchantmentHelper.setEnchantments(newStack,stack.getEnchantments());
+      EnchantmentHelper.setEnchantments(newStack, stack.getEnchantments());
       
       ArmorTrim trim = stack.get(DataComponents.TRIM);
       if(trim != null){
@@ -298,59 +301,61 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       
       DyedItemColor dye = stack.get(DataComponents.DYED_COLOR);
       if(dye != null){
-         newStack.set(DataComponents.DYED_COLOR,dye);
+         newStack.set(DataComponents.DYED_COLOR, dye);
       }
       
       if(hasProperty(stack, EnhancedStatUtils.ENHANCED_STAT_TAG)){
-         EnhancedStatUtils.enhanceItem(newStack,getDoubleProperty(stack,EnhancedStatUtils.ENHANCED_STAT_TAG));
+         EnhancedStatUtils.enhanceItem(newStack, getDoubleProperty(stack, EnhancedStatUtils.ENHANCED_STAT_TAG));
       }
       
       if(stack.has(DataComponents.CUSTOM_NAME)){
-         newStack.set(DataComponents.CUSTOM_NAME,stack.get(DataComponents.CUSTOM_NAME));
+         newStack.set(DataComponents.CUSTOM_NAME, stack.get(DataComponents.CUSTOM_NAME));
       }
       
       if(stack.has(DataComponents.CONTAINER)){
-         newStack.set(DataComponents.CONTAINER,stack.get(DataComponents.CONTAINER));
+         newStack.set(DataComponents.CONTAINER, stack.get(DataComponents.CONTAINER));
       }
-   
-      return buildItemLore(newStack,server);
+      
+      return buildItemLore(newStack, server);
    }
    
    public ItemStack initializeArcanaTag(ItemStack stack, boolean creativeMenuItem){
-      putProperty(stack,ID_TAG,id);
-      putProperty(stack,RARITY_TAG, ArcanaRarity.getRarityInt(rarity));
-      putProperty(stack,VERSION_TAG, ArcanaItem.VERSION + getItemVersion());
-      putProperty(stack,UUID_TAG,ArcanaNovum.BLANK_UUID);
-      putProperty(stack,AUGMENTS_TAG, new CompoundTag());
-      putProperty(stack,CATALYSTS_TAG,new ListTag());
+      putProperty(stack, ID_TAG, id);
+      putProperty(stack, RARITY_TAG, ArcanaRarity.getRarityInt(rarity));
+      putProperty(stack, VERSION_TAG, ArcanaItem.VERSION + getItemVersion());
+      putProperty(stack, UUID_TAG, ArcanaNovum.BLANK_UUID);
+      putProperty(stack, AUGMENTS_TAG, new CompoundTag());
+      putProperty(stack, CATALYSTS_TAG, new ListTag());
       if(creativeMenuItem){
-         putProperty(stack,UNINITIALIZED_TAG,true);
+         putProperty(stack, UNINITIALIZED_TAG, true);
       }else{
-         removeProperty(stack,UNINITIALIZED_TAG);
+         removeProperty(stack, UNINITIALIZED_TAG);
       }
       if(displayName != null){
-         stack.set(DataComponents.ITEM_NAME,displayName);
+         stack.set(DataComponents.ITEM_NAME, displayName);
       }
       return stack;
    }
    
    public ItemStack initializeArcanaTag(ItemStack stack){
-      return initializeArcanaTag(stack,true);
+      return initializeArcanaTag(stack, true);
    }
    
-   public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){ return stack; }
+   public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
+      return stack;
+   }
    
    public Item.Properties getArcanaItemComponents(){
       return new Item.Properties().stacksTo(1)
             .component(DataComponents.LORE, new ItemLore(getItemLore(null)))
             .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO))
-            .component(DataComponents.TOOLTIP_DISPLAY,getTooltipDisplayComponent())
+            .component(DataComponents.TOOLTIP_DISPLAY, getTooltipDisplayComponent())
             ;
    }
    
    public Item.Properties getArcanaArrowItemComponents(int color){
-      return getArcanaItemComponents().stacksTo(64).component(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(),Optional.of(color),new ArrayList<>(),Optional.empty()));
+      return getArcanaItemComponents().stacksTo(64).component(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.of(color), new ArrayList<>(), Optional.empty()));
    }
    
    public Item.Properties getEquipmentArcanaItemComponents(){
@@ -360,7 +365,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public static String getUUID(ItemStack item){
       if(!ArcanaItemUtils.isArcane(item))
          return null;
-      return getStringProperty(item,UUID_TAG);
+      return getStringProperty(item, UUID_TAG);
    }
    
    public int compareTo(@NotNull ArcanaItem otherItem){
@@ -487,7 +492,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       
       if(skin != null){
          loreList.add(Component.literal(""));
-         loreList.add(TextUtils.removeItalics(Component.translatable("text.arcananovum.item_skin",skin.getName()).withColor(skin.getPrimaryColor())));
+         loreList.add(TextUtils.removeItalics(Component.translatable("text.arcananovum.item_skin", skin.getName()).withColor(skin.getPrimaryColor())));
          List<MutableComponent> descLines = skin.getDescription();
          for(MutableComponent descLine : descLines){
             loreList.add(descLine.withStyle(ChatFormatting.ITALIC).withColor(skin.getSecondaryColor()));
@@ -506,28 +511,28 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
             default -> "Crafted by";
          };
          loreList.add(TextUtils.removeItalics(Component.literal("")
-               .append(Component.literal(crafted+" ").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_PURPLE))
+               .append(Component.literal(crafted + " ").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_PURPLE))
                .append(Component.literal(crafterName).withStyle(ChatFormatting.LIGHT_PURPLE))));
       }
       
       loreList.add(TextUtils.removeItalics(Component.literal("")
-            .append(ArcanaRarity.getColoredLabel(rarity,true))
+            .append(ArcanaRarity.getColoredLabel(rarity, true))
             .append(Component.literal(" Arcana Item").withStyle(ChatFormatting.DARK_PURPLE))));
       
       if(EnhancedStatUtils.isEnhanced(item)){
          loreList.add(Component.literal(""));
          
-         double percentile = getDoubleProperty(item,EnhancedStatUtils.ENHANCED_STAT_TAG);
+         double percentile = getDoubleProperty(item, EnhancedStatUtils.ENHANCED_STAT_TAG);
          DecimalFormat df = new DecimalFormat("#0.00");
          df.setRoundingMode(RoundingMode.DOWN);
          loreList.add(TextUtils.removeItalics(Component.literal("")
                .append(Component.literal("Stardust Infusion: ").withStyle(ChatFormatting.YELLOW))
-               .append(Component.literal(df.format(percentile*100)+"%").withStyle(ChatFormatting.GOLD))));
+               .append(Component.literal(df.format(percentile * 100) + "%").withStyle(ChatFormatting.GOLD))));
       }
       
       ItemEnchantments enchantComp = EnchantmentHelper.getEnchantmentsForCrafting(item);
       Object2IntOpenHashMap<Holder<Enchantment>> enchants = new Object2IntOpenHashMap<>();
-      enchantComp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
+      enchantComp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(), entry.getIntValue()));
       
       if(!enchants.isEmpty()){
          loreList.add(Component.literal(""));
@@ -545,20 +550,20 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
             for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchants.object2IntEntrySet()){
                Holder<Enchantment> registryEntry = entry.getKey();
                int level = entry.getIntValue();
-               loreList.add(TextUtils.removeItalics(Component.literal(Enchantment.getFullname(registryEntry,level).getString()).withStyle(ChatFormatting.BLUE)));
+               loreList.add(TextUtils.removeItalics(Component.literal(Enchantment.getFullname(registryEntry, level).getString()).withStyle(ChatFormatting.BLUE)));
             }
          }else{
             for(int i = 0; i < registryEntryList.size(); i++){
                Holder<Enchantment> enchantment = registryEntryList.get(i);
                if(enchants.containsKey(enchantment)){
                   int level = enchants.getInt(enchantment);
-                  loreList.add(TextUtils.removeItalics(Component.literal(Enchantment.getFullname(enchantment,level).getString()).withStyle(ChatFormatting.BLUE)));
+                  loreList.add(TextUtils.removeItalics(Component.literal(Enchantment.getFullname(enchantment, level).getString()).withStyle(ChatFormatting.BLUE)));
                }
             }
          }
       }
       
-      CompoundTag augmentTag = getCompoundProperty(item,AUGMENTS_TAG);
+      CompoundTag augmentTag = getCompoundProperty(item, AUGMENTS_TAG);
       if(!augmentTag.keySet().isEmpty()){
          loreList.add(Component.literal(""));
          loreList.add(TextUtils.removeItalics(Component.literal("Augmentations:").withStyle(ChatFormatting.DARK_AQUA)));
@@ -566,7 +571,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
             ArcanaAugment augment = ArcanaAugments.registry.get(key);
             MutableComponent txt = augment.getTranslatedName();
             if(augment.getTiers().length > 1){
-               txt.append(Component.literal(" "+TextUtils.intToRoman(augmentTag.getIntOr(key, 0))));
+               txt.append(Component.literal(" " + TextUtils.intToRoman(augmentTag.getIntOr(key, 0))));
             }
             loreList.add(TextUtils.removeItalics(txt.withStyle(ChatFormatting.BLUE)));
          }
@@ -578,27 +583,27 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       Equippable equip = item.get(DataComponents.EQUIPPABLE);
       if(equip != null && attrs != null){
          EquipmentSlot slot = equip.slot();
-         double armor = attrs.compute(Attributes.ARMOR, 0,slot);
-         double toughness = attrs.compute(Attributes.ARMOR_TOUGHNESS, 0,slot);
-         double kbRes = attrs.compute(Attributes.KNOCKBACK_RESISTANCE, 0,slot);
+         double armor = attrs.compute(Attributes.ARMOR, 0, slot);
+         double toughness = attrs.compute(Attributes.ARMOR_TOUGHNESS, 0, slot);
+         double kbRes = attrs.compute(Attributes.KNOCKBACK_RESISTANCE, 0, slot);
          double health = attrs.compute(Attributes.MAX_HEALTH, 20.0, slot) - 20.0;
          boolean anyUnusual = false;
          MutableComponent text = Component.literal("").withStyle(ChatFormatting.GOLD);
          if(armor != 0 || toughness != 0){
             text.append(MinecraftUtils.getAtlasedTexture(Items.IRON_CHESTPLATE).withStyle(ChatFormatting.WHITE));
-            text.append(Component.literal(" "+TextUtils.readableDouble(armor, 2)+" | "));
+            text.append(Component.literal(" " + TextUtils.readableDouble(armor, 2) + " | "));
             text.append(MinecraftUtils.getAtlasedTexture(Items.DIAMOND_CHESTPLATE).withStyle(ChatFormatting.WHITE));
-            text.append(Component.literal(" "+TextUtils.readableDouble(toughness, 2)+" | "));
+            text.append(Component.literal(" " + TextUtils.readableDouble(toughness, 2) + " | "));
             anyUnusual = true;
          }
          if(kbRes != 0){
             text.append(MinecraftUtils.getAtlasedTexture(Items.NETHERITE_CHESTPLATE).withStyle(ChatFormatting.WHITE));
-            text.append(Component.literal(" "+TextUtils.readableDouble(kbRes, 2)+" | "));
+            text.append(Component.literal(" " + TextUtils.readableDouble(kbRes, 2) + " | "));
             anyUnusual = true;
          }
          if(health != 0){
             text.append(MinecraftUtils.getAtlasedTexture(AtlasIds.GUI, Identifier.parse("hud/heart/full")).withStyle(ChatFormatting.WHITE));
-            text.append(Component.literal((health > 0 ? " +" : " ")+TextUtils.readableDouble(health, 2)+" | "));
+            text.append(Component.literal((health > 0 ? " +" : " ") + TextUtils.readableDouble(health, 2) + " | "));
             anyUnusual = true;
          }
          if(anyUnusual) statLines.add(text);
@@ -622,19 +627,19 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
          MutableComponent text = Component.literal("").withStyle(ChatFormatting.GOLD);
          if(dmg != 1 || speed != 4.0){
             text.append(MinecraftUtils.getAtlasedTexture(Items.DIAMOND_SWORD).withStyle(ChatFormatting.WHITE));
-            text.append(Component.literal(" "+TextUtils.readableDouble(dmg, 2)+" | "));
+            text.append(Component.literal(" " + TextUtils.readableDouble(dmg, 2) + " | "));
             text.append(MinecraftUtils.getAtlasedTexture(Items.GOLDEN_SWORD).withStyle(ChatFormatting.WHITE));
-            text.append(Component.literal(" "+TextUtils.readableDouble(speed, 2)+" | "));
+            text.append(Component.literal(" " + TextUtils.readableDouble(speed, 2) + " | "));
             anyUnusual = true;
          }
          if(rangeMin != 0 || rangeMax != 3.0){
             text.append(MinecraftUtils.getAtlasedTexture(Items.IRON_SPEAR).withStyle(ChatFormatting.WHITE));
-            text.append(Component.literal(" "+TextUtils.readableDouble(rangeMin, 2)+"-"+TextUtils.readableDouble(rangeMax, 2)+" | "));
+            text.append(Component.literal(" " + TextUtils.readableDouble(rangeMin, 2) + "-" + TextUtils.readableDouble(rangeMax, 2) + " | "));
             anyUnusual = true;
          }
          if(shieldDisable != 0){
             text.append(MinecraftUtils.getAtlasedTexture(Items.COPPER_AXE).withStyle(ChatFormatting.WHITE));
-            text.append(Component.literal(" "+TextUtils.readableDouble(shieldDisable, 2)+" | "));
+            text.append(Component.literal(" " + TextUtils.readableDouble(shieldDisable, 2) + " | "));
             anyUnusual = true;
          }
          if(anyUnusual) statLines.add(text);
@@ -655,24 +660,24 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       Fireworks fireworks = item.get(DataComponents.FIREWORKS);
       // TODO
       
-      item.set(DataComponents.LORE, new ItemLore(loreList,loreList));
+      item.set(DataComponents.LORE, new ItemLore(loreList, loreList));
       return item;
    }
    
    public static TooltipDisplay getTooltipDisplayComponent(){
       return TooltipDisplay.DEFAULT
-            .withHidden(DataComponents.UNBREAKABLE,true)
-            .withHidden(DataComponents.ENCHANTMENTS,true)
-            .withHidden(DataComponents.BUNDLE_CONTENTS,true)
-            .withHidden(DataComponents.CONTAINER,true)
-            .withHidden(DataComponents.ATTRIBUTE_MODIFIERS,true)
-            .withHidden(DataComponents.FIREWORK_EXPLOSION,true)
-            .withHidden(DataComponents.POTION_CONTENTS,true)
-            .withHidden(DataComponents.BASE_COLOR,true)
-            .withHidden(DataComponents.DYED_COLOR,true)
-            .withHidden(DataComponents.FIREWORKS,true)
-            .withHidden(DataComponents.CHARGED_PROJECTILES,true)
-            .withHidden(DataComponents.INTANGIBLE_PROJECTILE,true)
+            .withHidden(DataComponents.UNBREAKABLE, true)
+            .withHidden(DataComponents.ENCHANTMENTS, true)
+            .withHidden(DataComponents.BUNDLE_CONTENTS, true)
+            .withHidden(DataComponents.CONTAINER, true)
+            .withHidden(DataComponents.ATTRIBUTE_MODIFIERS, true)
+            .withHidden(DataComponents.FIREWORK_EXPLOSION, true)
+            .withHidden(DataComponents.POTION_CONTENTS, true)
+            .withHidden(DataComponents.BASE_COLOR, true)
+            .withHidden(DataComponents.DYED_COLOR, true)
+            .withHidden(DataComponents.FIREWORKS, true)
+            .withHidden(DataComponents.CHARGED_PROJECTILES, true)
+            .withHidden(DataComponents.INTANGIBLE_PROJECTILE, true)
             ;
    }
 }

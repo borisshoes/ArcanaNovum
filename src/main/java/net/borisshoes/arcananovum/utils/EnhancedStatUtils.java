@@ -36,6 +36,7 @@ import java.util.Optional;
 
 public class EnhancedStatUtils {
    public static final String ENHANCED_STAT_TAG = "stardust_enhanced";
+   private static final ParticleOptions STARDUST_PARTICLE = new DustParticleOptions(0xf7ed57, 0.61f);
    
    public static boolean isItemEnhanceable(ItemStack stack){
       return (stack.is(ItemTags.ARMOR_ENCHANTABLE)) ||
@@ -256,7 +257,7 @@ public class EnhancedStatUtils {
       return Math.min(1, increased);
    }
    
-   public static void glowInfusedGear(LivingEntity entity){
+   public static void glowInfusedGear(LivingEntity entity, double chance){
       if(!(entity.level() instanceof ServerLevel world)) return;
       ItemStack helmet = entity.getItemBySlot(EquipmentSlot.HEAD);
       ItemStack chest = entity.getItemBySlot(EquipmentSlot.CHEST);
@@ -268,32 +269,30 @@ public class EnhancedStatUtils {
       if(helmet.isEmpty() && chest.isEmpty() && legs.isEmpty() && boots.isEmpty() && body.isEmpty() && mainhand.isEmpty() && offhand.isEmpty())
          return;
       
-      double chance = 0.075;
       double width = entity.getBbWidth() / 3;
       double leyway = entity.getBbHeight() / 12.0;
       Vec3 pos = entity.position().add(0, leyway, 0);
       double section = (entity.getEyePosition().y - entity.position().y - leyway) / 4.0;
-      ParticleOptions particle = new DustParticleOptions(0xf7ed57, 0.61f);
       ArrayList<Vec3> positions = new ArrayList<>();
-      if(EnhancedStatUtils.isEnhanced(helmet) && entity.random.nextFloat() < chance){
+      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(helmet)){
          positions.add(new Vec3(pos.x, pos.y + (section * 4), pos.z));
       }
-      if((EnhancedStatUtils.isEnhanced(chest) || EnhancedStatUtils.isEnhanced(body)) && entity.random.nextFloat() < chance){
+      if(entity.random.nextFloat() < chance && (EnhancedStatUtils.isEnhanced(chest) || EnhancedStatUtils.isEnhanced(body))){
          positions.add(new Vec3(pos.x, pos.y + (section * 3), pos.z));
       }
-      if(EnhancedStatUtils.isEnhanced(legs) && entity.random.nextFloat() < chance){
+      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(legs)){
          positions.add(new Vec3(pos.x, pos.y + (section * 2), pos.z));
       }
-      if(EnhancedStatUtils.isEnhanced(boots) && entity.random.nextFloat() < chance){
+      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(boots)){
          positions.add(new Vec3(pos.x, pos.y + (section * 1), pos.z));
       }
-      if(EnhancedStatUtils.isEnhanced(mainhand) && entity.random.nextFloat() < chance){
+      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(mainhand)){
          Vec3 newPos = new Vec3(pos.x, pos.y + (section * 2.5), pos.z);
          Vec3 look = entity.getForward().multiply(1, 0, 1).normalize().scale(width * 1.5);
          Vec3 handPos = newPos.add(-look.z, 0, look.x).add(entity.getForward().multiply(1, 0, 1).normalize().scale(width * 3));
          positions.add(handPos);
       }
-      if(EnhancedStatUtils.isEnhanced(offhand) && entity.random.nextFloat() < chance){
+      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(offhand)){
          Vec3 newPos = new Vec3(pos.x, pos.y + (section * 2.5), pos.z);
          Vec3 look = entity.getForward().multiply(1, 0, 1).normalize().scale(width * 1.5);
          Vec3 handPos = newPos.add(look.z, 0, -look.x).add(entity.getForward().multiply(1, 0, 1).normalize().scale(width * 3));
@@ -303,7 +302,7 @@ public class EnhancedStatUtils {
       for(ServerPlayer player : world.getPlayers(p -> p.distanceTo(entity) < 25)){
          if(player.equals(entity)) continue;
          for(Vec3 poses : positions){
-            world.sendParticles(particle, poses.x, poses.y, poses.z, 1, width, leyway, width, 0.02);
+            world.sendParticles(STARDUST_PARTICLE, poses.x, poses.y, poses.z, 1, width, leyway, width, 0.02);
          }
       }
    }

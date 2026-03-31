@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -14,6 +13,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -59,7 +59,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
 public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
-	public static final String ID = "arcane_singularity";
+   public static final String ID = "arcane_singularity";
    
    public static final String BOOKS_TAG = "books";
    public static final String SINGULARITY_TAG = "singularityId";
@@ -73,16 +73,16 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.LECTERN;
-      block = new ArcaneSingularityBlock(BlockBehaviour.Properties.of().noOcclusion().strength(2.5f,1200.0f).sound(SoundType.WOOD));
+      block = new ArcaneSingularityBlock(BlockBehaviour.Properties.of().noOcclusion().strength(2.5f, 1200.0f).sound(SoundType.WOOD));
       item = new ArcaneSingularityItem(this.block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NEBULOUS_ESSENCE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.OBTAIN_STARDUST, ResearchTasks.OBTAIN_NEBULOUS_ESSENCE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("ii_iridescent")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,BOOKS_TAG,new ListTag());
+      putProperty(stack, BOOKS_TAG, new ListTag());
       setPrefStack(stack);
    }
    
@@ -124,26 +124,26 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
       
       if(itemStack != null){
-         int size = getListProperty(itemStack,BOOKS_TAG).size();
+         int size = getListProperty(itemStack, BOOKS_TAG).size();
          if(size > 0){
             lore.add(Component.literal(""));
             lore.add(Component.literal("")
                   .append(Component.literal("Contains ").withStyle(ChatFormatting.DARK_AQUA))
-                  .append(Component.literal(""+size).withStyle(ChatFormatting.GREEN))
+                  .append(Component.literal("" + size).withStyle(ChatFormatting.GREEN))
                   .append(Component.literal(" Enchanted Books").withStyle(ChatFormatting.LIGHT_PURPLE)));
          }
       }
       
       addForgeLore(lore);
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      ListTag targetsList = getListProperty(stack,BOOKS_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,BOOKS_TAG,targetsList);
-      return buildItemLore(newStack,server);
+      ListTag targetsList = getListProperty(stack, BOOKS_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, BOOKS_TAG, targetsList);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -158,13 +158,13 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public Vec3i getCheckOffset(){
-      return new Vec3i(-1,-1,-2);
+      return new Vec3i(-1, -1, -2);
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("Arcane Singularity").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe Midnight Enchanter has proven more useful than I imagined. Now I have more Enchanted Books than I can possibly store in a library. I need a new method of book-keeping.\nBy condensing raw ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Arcane Singularity").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThe Midnight Enchanter has proven more useful than I imagined. Now I have more Enchanted Books than I can possibly store in a library. I need a new method of book-keeping.\nBy condensing raw ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Arcane Singularity").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nNebulous Essence down over and over, it forms a self-sustaining singularity. An Arcane black hole. Containing it was no easy feat, but now I have a massive storage space for my books…\n\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Arcane Singularity").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nThe Singularity is a single purpose, high density storage unit for Enchanted Books. Books can be sorted and filtered, and can be extracted at any time. \nBooks are bound to the Singularity, so they are kept with the block when moved.").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -173,7 +173,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    public class ArcaneSingularityItem extends ArcanaPolymerBlockItem {
       
       public ArcaneSingularityItem(Block block){
-         super(getThis(),block, getArcanaItemComponents());
+         super(getThis(), block, getArcanaItemComponents());
       }
       
       @Override
@@ -194,14 +194,14 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
          if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
             return Blocks.BARRIER.defaultBlockState();
          }else{
-            return Blocks.LECTERN.defaultBlockState().setValue(HORIZONTAL_FACING,state.getValue(HORIZONTAL_FACING));
+            return Blocks.LECTERN.defaultBlockState().setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
          }
       }
       
       @Nullable
       @Override
       public BlockState getStateForPlacement(BlockPlaceContext ctx){
-         return this.defaultBlockState().setValue(HORIZONTAL_FACING,ctx.getHorizontalDirection().getOpposite());
+         return this.defaultBlockState().setValue(HORIZONTAL_FACING, ctx.getHorizontalDirection().getOpposite());
       }
       
       @Override
@@ -231,14 +231,14 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
          if(singularity != null){
             if(playerEntity instanceof ServerPlayer player){
                if(singularity.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.level(),pos) == null){
+                  if(StarlightForge.findActiveForge(player.level(), pos) == null){
                      player.sendSystemMessage(Component.literal("The Enchanter must be within the range of an active Starlight Forge"));
                   }else{
                      singularity.openGui(player);
                   }
                }else{
                   player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(singularity.getMultiblockCheck(),player);
+                  multiblock.displayStructure(singularity.getMultiblockCheck(), player);
                }
             }
          }
@@ -254,23 +254,23 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof ArcaneSingularityBlockEntity singularity){
-            initializeArcanaBlock(stack,singularity);
-            singularity.initializeBooks(getListProperty(stack,BOOKS_TAG),world.registryAccess());
+            initializeArcanaBlock(stack, singularity);
+            singularity.initializeBooks(getListProperty(stack, BOOKS_TAG), world.registryAccess());
          }
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
       
       @Override
-      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return true;
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack SINGULARITY_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_bottom"));
       public static final ItemStack SINGULARITY_STEM = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_middle"));
       public static final ItemStack SINGULARITY_TOP_ON = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top"));
@@ -283,7 +283,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       private boolean active;
       private int ticks;
       
-      public Model(ServerLevel world, BlockState state) {
+      public Model(ServerLevel world, BlockState state){
          this.world = world;
          float direction = state.getValue(HORIZONTAL_FACING).toYRot();
          
@@ -307,10 +307,10 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       public void tick(){
          super.tick();
          
-         float stemOffset = 0.025f * Mth.sin(2*Mth.PI*ticks / 100);
-         float topOffset = stemOffset + 0.015f * Mth.sin(2*Mth.PI*ticks / 75);
-         this.top.setTranslation(new Vector3f(0,topOffset,0));
-         this.stem.setTranslation(new Vector3f(0,stemOffset,0));
+         float stemOffset = 0.025f * Mth.sin(2 * Mth.PI * ticks / 100);
+         float topOffset = stemOffset + 0.015f * Mth.sin(2 * Mth.PI * ticks / 75);
+         this.top.setTranslation(new Vector3f(0, topOffset, 0));
+         this.stem.setTranslation(new Vector3f(0, stemOffset, 0));
          this.top.startInterpolation();
          this.stem.startInterpolation();
          
@@ -318,7 +318,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
             boolean oldActive = this.active;
             ArcaneSingularityBlockEntity singularity = (ArcaneSingularityBlockEntity) world.getBlockEntity(this.blockPos());
             if(singularity != null){
-               this.active = singularity.isAssembled() && StarlightForge.findActiveForge(world,this.blockPos()) != null;
+               this.active = singularity.isAssembled() && StarlightForge.findActiveForge(world, this.blockPos()) != null;
             }else{
                this.active = false;
             }

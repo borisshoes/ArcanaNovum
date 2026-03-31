@@ -10,7 +10,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-public class EventAchievement extends ArcanaAchievement{
+public class EventAchievement extends ArcanaAchievement {
    
    public EventAchievement(String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward){
       super(id, 0, displayItem, arcanaItem, xpReward, pointsReward);
@@ -19,9 +19,9 @@ public class EventAchievement extends ArcanaAchievement{
    @Override
    public CompoundTag toNbt(){
       CompoundTag nbt = new CompoundTag();
-      nbt.putBoolean("acquired",isAcquired());
-      nbt.putString("id",id);
-      nbt.putInt("type",type);
+      nbt.putBoolean("acquired", isAcquired());
+      nbt.putString("id", id);
+      nbt.putInt("type", type);
       return nbt;
    }
    

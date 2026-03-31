@@ -10,7 +10,6 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
-import net.borisshoes.arcananovum.mixins.AbstractArrowAccessor;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
@@ -41,8 +40,8 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class SiphoningArrows extends RunicArrow {
-	public static final String ID = "siphoning_arrows";
-   public static final Identifier EFFECT_ID = ArcanaRegistry.arcanaId(ID+".overheal");
+   public static final String ID = "siphoning_arrows";
+   public static final Identifier EFFECT_ID = ArcanaRegistry.arcanaId(ID + ".overheal");
    
    public SiphoningArrows(){
       id = ID;
@@ -51,8 +50,8 @@ public class SiphoningArrows extends RunicArrow {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new SiphoningArrowsItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.OBTAIN_GLISTERING_MELON};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION, ResearchTasks.OBTAIN_GLISTERING_MELON};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -78,7 +77,7 @@ public class SiphoningArrows extends RunicArrow {
             .append(Component.literal("is proportional to the ").withStyle(ChatFormatting.RED))
             .append(Component.literal("damage ").withStyle(ChatFormatting.GOLD))
             .append(Component.literal("dealt.").withStyle(ChatFormatting.RED)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -87,42 +86,44 @@ public class SiphoningArrows extends RunicArrow {
          double percentage = ArcanaUtils.getArrowPercentage(arrow);
          double minHeal = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SIPHONING_ARROW_MIN_HEAL);
          double maxHeal = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SIPHONING_ARROW_MAX_HEAL);
-         float heal = (float) Mth.clamp(percentage*maxHeal,minHeal,maxHeal);
+         float heal = (float) Mth.clamp(percentage * maxHeal, minHeal, maxHeal);
          float overhealCap = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.SIPHONING_ARROW_OVERHEAL_PER_LVL).get(arrow.getAugment(ArcanaAugments.OVERHEAL));
          
          if(player.getHealth() < 1.5f){
             BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2, () -> {
-               if(entityHitResult.getEntity() instanceof Mob mob && mob.isDeadOrDying()) ArcanaAchievements.grant(player,ArcanaAchievements.CIRCLE_OF_LIFE);
+               if(entityHitResult.getEntity() instanceof Mob mob && mob.isDeadOrDying())
+                  ArcanaAchievements.grant(player, ArcanaAchievements.CIRCLE_OF_LIFE);
             }));
          }
          
-         float overheal = Mth.clamp((heal+player.getHealth()) - player.getMaxHealth(),0,overhealCap);
+         float overheal = Mth.clamp((heal + player.getHealth()) - player.getMaxHealth(), 0, overhealCap);
          if(overheal > 0){
             float curAbs = player.getAbsorptionAmount();
-            BorisLib.addTickTimerCallback(new OverhealTimerCallback(100,player,overheal));
+            BorisLib.addTickTimerCallback(new OverhealTimerCallback(100, player, overheal));
             SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 1.8f);
-            MinecraftUtils.addMaxAbsorption(player, SiphoningArrows.EFFECT_ID,overheal);
+            MinecraftUtils.addMaxAbsorption(player, SiphoningArrows.EFFECT_ID, overheal);
             player.setAbsorptionAmount((curAbs + overheal));
          }
          
          player.heal(heal);
-         player.level().sendParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getBbHeight()/2,player.getZ(),(int)Math.ceil(heal), .5,.5,.5,1);
+         player.level().sendParticles(ParticleTypes.HEART, player.getX(), player.getY() + player.getBbHeight() / 2, player.getZ(), (int) Math.ceil(heal), .5, .5, .5, 1);
       }
    }
    
    @Override
-   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){}
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
+   }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Siphoning Arrows").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nHealth manipulation is something that I have rarely explored. I’ve invoked some simple life runes to draw upon the health lost from my arrows and draw it back to me.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Siphoning Arrows").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nHealth manipulation is something that I have rarely explored. I’ve invoked some simple life runes to draw upon the health lost from my arrows and draw it back to me.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class SiphoningArrowsItem extends ArcanaPolymerArrowItem {
       public SiphoningArrowsItem(){
-         super(getThis(),getArcanaArrowItemComponents(15866018));
+         super(getThis(), getArcanaArrowItemComponents(15866018));
       }
       
       @Override

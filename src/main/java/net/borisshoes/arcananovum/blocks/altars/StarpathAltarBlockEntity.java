@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.StarpathAltarGui;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.borisshoes.borislib.BorisLib;
@@ -57,10 +58,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private int cooldown;
    private TargetEntry target;
@@ -73,13 +75,14 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       this.multiblock = ((MultiblockCore) ArcanaRegistry.STARPATH_ALTAR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
-      this.target = new TargetEntry("","", getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ());
+      this.target = new TargetEntry("", "", getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ());
       this.activeTicks = 0;
       this.savedTargets = new ArrayList<>();
       resetCooldown();
@@ -105,7 +108,8 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
          player.sendSystemMessage(Component.literal("You cannot access an active Altar").withStyle(ChatFormatting.RED));
          return;
       }
-      StarpathAltarGui gui = new StarpathAltarGui(player,this);;
+      StarpathAltarGui gui = new StarpathAltarGui(player, this);
+      ;
       gui.build();
       gui.open();
    }
@@ -113,19 +117,25 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    private void teleport(@Nullable ServerPlayer player){
       if(!(this.getLevel() instanceof ServerLevel serverWorld)) return;
       ServerLevel destWorld = getLevel().getServer().getLevel(getTargetDimension());
-      if(!destWorld.dimension().identifier().equals(getLevel().dimension().identifier()) && ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STARGATE) < 1) return;
-      AABB teleportBox = (new AABB(this.getBlockPos().offset(0,2,0))).inflate(5,2,5);
-      List<Entity> targets = this.getLevel().getEntities((Entity) null,teleportBox,(e)->e instanceof LivingEntity || e.getType().is(ArcanaRegistry.STARPATH_ALLOWED));
+      if(!destWorld.dimension().identifier().equals(getLevel().dimension().identifier()) && ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.STARGATE) < 1)
+         return;
+      AABB teleportBox = (new AABB(this.getBlockPos().offset(0, 2, 0))).inflate(5, 2, 5);
+      List<Entity> targets = this.getLevel().getEntities((Entity) null, teleportBox, (e) -> e instanceof LivingEntity || e.getType().is(ArcanaRegistry.STARPATH_ALLOWED));
       
-      int tries = 0; int range = 4; int height = 2;
+      int tries = 0;
+      int range = 4;
+      int height = 2;
       ArrayList<BlockPos> locations;
       do{
-         locations = SpawnPile.makeSpawnLocations(targets.size(),range, this.getTarget().getY()+height, destWorld, this.getTarget());
-         tries++; range++; height += 16; // Expand search area
+         locations = SpawnPile.makeSpawnLocations(targets.size(), range, this.getTarget().getY() + height, destWorld, this.getTarget());
+         tries++;
+         range++;
+         height += 16; // Expand search area
       }while(locations.size() != targets.size() && tries < 5);
       if(locations.size() != targets.size()){
          for(Entity target : targets){
-            if(target instanceof ServerPlayer targetPlayer) targetPlayer.displayClientMessage(Component.literal("The teleport goes awry, everyone is shunted uncontrollably!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+            if(target instanceof ServerPlayer targetPlayer)
+               targetPlayer.displayClientMessage(Component.literal("The teleport goes awry, everyone is shunted uncontrollably!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
          }
          locations = new ArrayList<>();
          for(int i = 0; i < targets.size(); i++){
@@ -137,26 +147,27 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
          Entity target = targets.get(i);
          BlockPos location = locations.get(i);
          target.teleport(new TeleportTransition(destWorld, location.getCenter(), Vec3.ZERO, target.getYRot(), target.getXRot(), TeleportTransition.PLACE_PORTAL_TICKET));
-         ArcanaEffectUtils.recallTeleport(destWorld,target.position());
+         ArcanaEffectUtils.recallTeleport(destWorld, target.position());
          
          if(target instanceof ServerPlayer p && Math.sqrt(this.getBlockPos().distSqr(this.getTarget())) >= 100000){
-            ArcanaAchievements.grant(p,ArcanaAchievements.FAR_FROM_HOME);
+            ArcanaAchievements.grant(p, ArcanaAchievements.FAR_FROM_HOME);
          }
          if(player != null && (target instanceof TamableAnimal tameable && tameable.isOwnedBy(player) || (target instanceof ServerPlayer && target != player)) && targets.contains(player)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.ADVENTURING_PARTY);
+            ArcanaAchievements.grant(player, ArcanaAchievements.ADVENTURING_PARTY);
          }
       }
-      SoundUtils.playSound(destWorld,this.getTarget(), SoundEvents.PORTAL_TRAVEL, SoundSource.BLOCKS, 2, 1.5f);
+      SoundUtils.playSound(destWorld, this.getTarget(), SoundEvents.PORTAL_TRAVEL, SoundSource.BLOCKS, 2, 1.5f);
    }
    
    public boolean startTeleport(@Nullable ServerPlayer player){
       if(this.getCooldown() > 0 || !(this.getLevel() instanceof ServerLevel serverWorld)) return false;
       ServerLevel destWorld = getLevel().getServer().getLevel(getTargetDimension());
-      if(!destWorld.dimension().identifier().equals(getLevel().dimension().identifier()) && ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STARGATE) < 1) return false;
+      if(!destWorld.dimension().identifier().equals(getLevel().dimension().identifier()) && ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.STARGATE) < 1)
+         return false;
       
       this.setActiveTicks(500);
       this.resetCooldown();
-      ArcanaEffectUtils.starpathAltarAnim(destWorld,this.getBlockPos().getCenter());
+      ArcanaEffectUtils.starpathAltarAnim(destWorld, this.getBlockPos().getCenter());
       BorisLib.addTickTimerCallback(new GenericTimer(500, () -> {
          teleport(player);
          if(player == null && getCrafterId() != null && !getCrafterId().isEmpty()){
@@ -178,10 +189,10 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    public int calculateCost(){
       BlockPos origin = getBlockPos().mutable();
       BlockPos target = this.target.getBlockCoords();
-      int multiplier = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ASTRAL_PATHFINDER);
+      int multiplier = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.ASTRAL_PATHFINDER);
       int blocksPerItem = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STARPATH_ALTAR_BLOCKS_PER_EYE);
       int blocksPerUnit = blocksPerItem * (1 << multiplier);
-      int cost = Math.max(1,(int) (Math.sqrt(origin.distSqr(target)) / blocksPerUnit));
+      int cost = Math.max(1, (int) (Math.sqrt(origin.distSqr(target)) / blocksPerUnit));
       if(!getTargetDimension().identifier().equals(getLevel().dimension().identifier())){
          cost += cost + 16;
       }
@@ -197,7 +208,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.STARPATH_ALTAR).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.STARPATH_ALTAR).getCheckOffset()), null);
    }
    
    private void tick(){
@@ -210,9 +221,9 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       boolean isActive = isActive();
       
       for(BlockPos blockPos : BlockPos.withinManhattan(worldPosition, 4, 0, 4)){
-         BlockState state =  level.getBlockState(blockPos);
+         BlockState state = level.getBlockState(blockPos);
          if((state.is(Blocks.SCULK_CATALYST) || blockPos.equals(worldPosition)) && state.getValue(BlockStateProperties.BLOOM) != isActive){
-            level.setBlock(blockPos,state.setValue(BlockStateProperties.BLOOM, isActive), Block.UPDATE_ALL);
+            level.setBlock(blockPos, state.setValue(BlockStateProperties.BLOOM, isActive), Block.UPDATE_ALL);
          }
       }
       
@@ -222,7 +233,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       this.setChanged();
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
       
       boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(StarpathAltar.StarpathAltarBlock.ACTIVATABLE).orElse(false);
@@ -253,14 +264,14 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    }
    
    public void resetCooldown(){
-      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CONSTELLATION_DRIFT);
+      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.CONSTELLATION_DRIFT);
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STARPATH_ALTAR_COOLDOWN);
       int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.STARPATH_ALTAR_COOLDOWN_PER_LVL).get(cooldownLevel);
       this.cooldown = Math.max(1, baseCooldown - cooldownReduction);
    }
    
    public void setTarget(BlockPos pos){
-      this.target = new TargetEntry("","",pos.getX(), pos.getY(), pos.getZ());
+      this.target = new TargetEntry("", "", pos.getX(), pos.getY(), pos.getZ());
    }
    
    public void setTarget(TargetEntry pos){
@@ -269,7 +280,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    
    public BlockPos getTarget(){
       if(this.target == null){
-         this.target = new TargetEntry("","", getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ());
+         this.target = new TargetEntry("", "", getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ());
       }
       return this.target.getBlockCoords();
    }
@@ -298,6 +309,10 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -311,11 +326,11 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
          ListTag targetList = new ListTag();
          for(TargetEntry entry : this.savedTargets){
             CompoundTag target = new CompoundTag();
-            target.putString("name",entry.name);
+            target.putString("name", entry.name);
             target.putString("dimension", entry.dimension);
-            target.putInt("x",entry.x);
-            target.putInt("y",entry.y);
-            target.putInt("z",entry.z);
+            target.putInt("x", entry.x);
+            target.putInt("y", entry.y);
+            target.putInt("z", entry.z);
             targetList.add(target);
          }
          return targetList;
@@ -329,8 +344,8 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       for(Tag e : targetList){
          CompoundTag target = ((CompoundTag) e);
          this.savedTargets.add(new TargetEntry(
-               target.getStringOr("name",""),
-               target.getStringOr("dimension",""),
+               target.getStringOr("name", ""),
+               target.getStringOr("dimension", ""),
                target.getIntOr("x", 0),
                target.getIntOr("y", 0),
                target.getIntOr("z", 0)));
@@ -343,18 +358,20 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.cooldown = view.getIntOr("cooldown", 0);
-      this.target = new TargetEntry("","", getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ());;
-      view.read("target",ENTRY_CODEC).ifPresent(data -> {
+      this.target = new TargetEntry("", "", getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ());
+      ;
+      view.read("target", ENTRY_CODEC).ifPresent(data -> {
          this.target = data;
       });
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
       
-      view.read("targets",ENTRY_CODEC.listOf()).ifPresent(targets -> {
+      view.read("targets", ENTRY_CODEC.listOf()).ifPresent(targets -> {
          this.savedTargets = new ArrayList<>(targets);
       });
    }
@@ -362,19 +379,20 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      view.putInt("cooldown",this.cooldown);
-      view.storeNullable("target",ENTRY_CODEC, target);
-      view.storeNullable("targets",ENTRY_CODEC.listOf(),this.savedTargets);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      view.putInt("cooldown", this.cooldown);
+      view.storeNullable("target", ENTRY_CODEC, target);
+      view.storeNullable("targets", ENTRY_CODEC.listOf(), this.savedTargets);
    }
    
    public record TargetEntry(String name, String dimension, int x, int y, int z) {
       public BlockPos getBlockCoords(){
-         return new BlockPos(x,y,z);
+         return new BlockPos(x, y, z);
       }
    }
    

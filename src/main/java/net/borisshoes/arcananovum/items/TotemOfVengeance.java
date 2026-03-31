@@ -48,17 +48,17 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class TotemOfVengeance extends ArcanaItem {
-	public static final String ID = "totem_of_vengeance";
+   public static final String ID = "totem_of_vengeance";
    
    public TotemOfVengeance(){
       id = ID;
       name = "Totem Of Vengeance";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS,ArcaneTomeGui.TomeFilter.EQUIPMENT};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS, ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.TOTEM_OF_UNDYING;
       item = new TotemOfVengeanceItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.ADVANCEMENT_TOTEM_OF_UNDYING,ResearchTasks.KILL_EVOKER,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.EFFECT_STRENGTH,ResearchTasks.EFFECT_FIRE_RESISTANCE,ResearchTasks.EFFECT_SWIFTNESS};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.ADVANCEMENT_TOTEM_OF_UNDYING, ResearchTasks.KILL_EVOKER, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.EFFECT_STRENGTH, ResearchTasks.EFFECT_FIRE_RESISTANCE, ResearchTasks.EFFECT_SWIFTNESS};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -110,7 +110,7 @@ public class TotemOfVengeance extends ArcanaItem {
             .append(Component.literal(", you will ").withStyle(ChatFormatting.DARK_GRAY))
             .append(Component.literal("perish").withStyle(ChatFormatting.DARK_RED))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    private static DeathProtection getTotemComponent(int furyLevel, boolean byPlayer){
@@ -128,8 +128,8 @@ public class TotemOfVengeance extends ArcanaItem {
                   new ApplyStatusEffectsConsumeEffect(
                         List.of(
                               new MobEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, duration, 1),
-                              new MobEffectInstance(MobEffects.STRENGTH, duration, baseStr+extraStr),
-                              new MobEffectInstance(MobEffects.SPEED, duration, baseSpd+extraSpd)
+                              new MobEffectInstance(MobEffects.STRENGTH, duration, baseStr + extraStr),
+                              new MobEffectInstance(MobEffects.SPEED, duration, baseSpd + extraSpd)
                         )
                   )
             )
@@ -138,14 +138,14 @@ public class TotemOfVengeance extends ArcanaItem {
    
    public ItemStack upgradeLevel(ItemStack stack, boolean byPlayer){
       if(!(ArcanaItemUtils.identifyItem(stack) instanceof TotemOfVengeance)) return stack;
-      int furyLevel = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RETALIATIVE_FURY);
+      int furyLevel = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RETALIATIVE_FURY);
       stack.set(DataComponents.DEATH_PROTECTION, getTotemComponent(furyLevel, byPlayer));
       return stack;
    }
    
    public void triggerTotem(ItemStack stack, LivingEntity living, DamageSource source){
       if(living instanceof ServerPlayer player){
-         int furyLvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RETALIATIVE_FURY);
+         int furyLvl = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RETALIATIVE_FURY);
          Entity attacker = source.getEntity() != null ? source.getEntity() : player.getKillCredit() != null ? player.getKillCredit() : null;
          boolean byPlayer = attacker instanceof Player;
          stack.set(DataComponents.DEATH_PROTECTION, getTotemComponent(furyLvl, byPlayer));
@@ -153,14 +153,14 @@ public class TotemOfVengeance extends ArcanaItem {
          int extraDur = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PER_LVL).get(furyLvl);
          double playerMod = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PERCENT_AGAINST_PLAYER);
          int duration = byPlayer ? (int) ((baseDur + extraDur) * playerMod) : baseDur + extraDur;
-         BorisLib.addTickTimerCallback(new VengeanceTotemTimerCallback(duration,stack,player,attacker));
-         player.level().sendParticles(ParticleTypes.ANGRY_VILLAGER,player.position().x,player.position().y+player.getBbHeight()/2,player.position().z,25,.5,.6,.5,0.05);
+         BorisLib.addTickTimerCallback(new VengeanceTotemTimerCallback(duration, stack, player, attacker));
+         player.level().sendParticles(ParticleTypes.ANGRY_VILLAGER, player.position().x, player.position().y + player.getBbHeight() / 2, player.position().z, 25, .5, .6, .5, 0.05);
          
          if(source.is(ArcanaDamageTypes.VENGEANCE_TOTEM)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.REVENGEANCE);
+            ArcanaAchievements.grant(player, ArcanaAchievements.REVENGEANCE);
          }
          
-         ArcanaAchievements.progress(player,ArcanaAchievements.TOO_ANGRY_TO_DIE,0); // Start the timer
+         ArcanaAchievements.progress(player, ArcanaAchievements.TOO_ANGRY_TO_DIE, 0); // Start the timer
          ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TOTEM_OF_VENGEANCE_ACTIVATE));
       }
    }
@@ -169,7 +169,7 @@ public class TotemOfVengeance extends ArcanaItem {
    @Override
    public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
       if(ArcanaItemUtils.identifyItem(stack) instanceof TotemOfVengeance && augment == ArcanaAugments.RETALIATIVE_FURY){
-         return upgradeLevel(stack,false);
+         return upgradeLevel(stack, false);
       }
       return stack;
    }
@@ -177,7 +177,7 @@ public class TotemOfVengeance extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("      Totem Of\n     Vengeance").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nTotems of Undying are some of the oldest, yet most advanced Arcana I have seen. Ancient, yet powerful. I wonder if I can push their capabilities further, perhaps even to the point of ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Totem Of\n     Vengeance").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nTotems of Undying are some of the oldest, yet most advanced Arcana I have seen. Ancient, yet powerful. I wonder if I can push their capabilities further, perhaps even to the point of ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Totem Of\n     Vengeance").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nimmortality?\n\nMy experiments have yielded disturbing results. The Totems use soul magic, and the only way to enhance them is to use some of my tricks from the Nether to add more soul energy.  ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Totem Of\n     Vengeance").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nHowever, this condensation of Nether soul magic into the ancient design of the Totem twists it into something sinister. My new Totem has become overwhelmed by the violence of stolen souls and now it seeks vengeance.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Totem Of\n     Vengeance").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), Component.literal("\nIt will not stop until the soul energy is expended or it succeeds in its task. If it runs out of souls then it will consume mine in the process.\n\nUpon taking fatal damage, the Totem prevents me from ").withStyle(ChatFormatting.BLACK)));
@@ -189,8 +189,8 @@ public class TotemOfVengeance extends ArcanaItem {
    
    public class TotemOfVengeanceItem extends ArcanaPolymerItem {
       public TotemOfVengeanceItem(){
-         super(getThis(),getArcanaItemComponents()
-               .component(DataComponents.DEATH_PROTECTION, getTotemComponent(0,false))
+         super(getThis(), getArcanaItemComponents()
+               .component(DataComponents.DEATH_PROTECTION, getTotemComponent(0, false))
          );
       }
       

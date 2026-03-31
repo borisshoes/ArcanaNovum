@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.borislib.utils.TextUtils;
 
 public class LevelUtils {
    

@@ -60,8 +60,8 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class MagmaticEversource extends EnergyItem implements GeomanticStele.Interaction{
-	public static final String ID = "magmatic_eversource";
+public class MagmaticEversource extends EnergyItem implements GeomanticStele.Interaction {
+   public static final String ID = "magmatic_eversource";
    
    public static final String USES_TAG = "charges";
    
@@ -69,28 +69,28 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       id = ID;
       name = "Magmatic Eversource";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),ArcaneTomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.LAVA_BUCKET;
       item = new MagmaticEversourceItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_LAVA_BUCKET,ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.UNLOCK_AQUATIC_EVERSOURCE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_LAVA_BUCKET, ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS, ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.UNLOCK_AQUATIC_EVERSOURCE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,MODE_TAG,0); // 0 place, 1 remove
-      putProperty(stack,USES_TAG,1);
+      putProperty(stack, MODE_TAG, 0); // 0 place, 1 remove
+      putProperty(stack, USES_TAG, 1);
       setPrefStack(stack);
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      int mode = getIntProperty(stack,MODE_TAG);
-      int charges = getIntProperty(stack,USES_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,MODE_TAG,mode);
-      putProperty(newStack,USES_TAG,charges);
-      return buildItemLore(newStack,server);
+      int mode = getIntProperty(stack, MODE_TAG);
+      int charges = getIntProperty(stack, USES_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, MODE_TAG, mode);
+      putProperty(newStack, USES_TAG, charges);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -132,10 +132,10 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
          lore.add(Component.literal("")
                .append(Component.literal("Charges ").withStyle(ChatFormatting.GOLD))
                .append(Component.literal("- ").withStyle(ChatFormatting.DARK_RED))
-               .append(Component.literal(""+charges).withStyle(ChatFormatting.RED)));
+               .append(Component.literal("" + charges).withStyle(ChatFormatting.RED)));
       }
       
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -146,18 +146,18 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
    @Override
    public int getMaxEnergy(ItemStack item){ // 30 second recharge time
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.MAGMATIC_EVERSOURCE_COOLDOWN);
-      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.MAGMATIC_EVERSOURCE_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ERUPTION));
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.MAGMATIC_EVERSOURCE_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.ERUPTION));
       return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    public int getMaxCharges(ItemStack item){
-      return ArcanaNovum.CONFIG.getIntList(ArcanaConfig.MAGMATIC_EVERSOURCE_CHARGES_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.VOLCANIC_CHAMBER));
+      return ArcanaNovum.CONFIG.getIntList(ArcanaConfig.MAGMATIC_EVERSOURCE_CHARGES_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.VOLCANIC_CHAMBER));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nMy inventory issue expands to lava as well as water. Unfortunately, there isn’t lava in the air I can pull from and condense.\nA different solution is in order: The Nether.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nMy inventory issue expands to lava as well as water. Unfortunately, there isn’t lava in the air I can pull from and condense.\nA different solution is in order: The Nether.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nA limitless realm of molten rock that I can pull from through a microscopic portal. The only downside is that it takes time to siphon lava through the portal. The Magmatic Eversource functions exactly like the Aquatic  ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Magmatic\n    Eversource").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nEversource, however it takes time to recharge after creating lava.\n\nUsing the Eversource will generate or drain lava.\nSneak Using will switch the mode of the Eversource.\n").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -165,7 +165,7 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
    
    @Override
    public Vec3 getBaseRange(){
-      return new Vec3(0,0,0);
+      return new Vec3(0, 0, 0);
    }
    
    @Override
@@ -173,20 +173,20 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
       
       if(world.random.nextFloat() < 0.15){
-         world.sendParticles(ParticleTypes.DRIPPING_LAVA,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+         world.sendParticles(ParticleTypes.DRIPPING_LAVA, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);
       }
       if(world.random.nextFloat() < 0.15){
-         world.sendParticles(ParticleTypes.FALLING_LAVA,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+         world.sendParticles(ParticleTypes.FALLING_LAVA, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);
       }
       
-      int charges = getIntProperty(stack,USES_TAG);
+      int charges = getIntProperty(stack, USES_TAG);
       if(world.getServer().getTickCount() % 20 == 0){
          int maxCharges = getMaxCharges(stack);
          if(charges < maxCharges){
             addEnergy(stack, 1); // Recharge
             if(getEnergy(stack) >= getMaxEnergy(stack)){
-               setEnergy(stack,0);
-               putProperty(stack,USES_TAG,charges+1);
+               setEnergy(stack, 0);
+               putProperty(stack, USES_TAG, charges + 1);
                buildItemLore(stack, world.getServer());
             }
             stele.setChanged();
@@ -195,9 +195,9 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       
       BlockPos geyserPos = stele.getBlockPos().above(5);
       if(world.getFluidState(geyserPos).isSource() && world.getFluidState(geyserPos).is(Fluids.LAVA)) return;
-      if(charges > 0 && placeFluid(Fluids.LAVA,null, world, geyserPos, null, true)){
+      if(charges > 0 && placeFluid(Fluids.LAVA, null, world, geyserPos, null, true)){
          stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MAGMATIC_EVERSOURCE_USE));
-         putProperty(stack,USES_TAG,charges-1);
+         putProperty(stack, USES_TAG, charges - 1);
          buildItemLore(stack, world.getServer());
          stele.setChanged();
       }
@@ -213,7 +213,7 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       boolean bl = blockState.canBeReplaced(fluid);
       bl2 = blockState.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, pos, blockState, fluid);
       if(!bl2){
-         return hitResult != null && placeFluid(fluid,player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null, silent);
+         return hitResult != null && placeFluid(fluid, player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null, silent);
       }
       if(block instanceof LiquidBlockContainer fluidFillable){
          if(fluid == Fluids.LAVA){
@@ -244,8 +244,8 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
-         int mode = getIntProperty(itemStack,MODE_TAG);
-         boolean onCD = getIntProperty(itemStack,USES_TAG) <= 0;
+         int mode = getIntProperty(itemStack, MODE_TAG);
+         boolean onCD = getIntProperty(itemStack, USES_TAG) <= 0;
          
          List<String> stringList = new ArrayList<>();
          if(!onCD){
@@ -262,7 +262,7 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
             }
          }
          
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -275,13 +275,13 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(world.getServer().getTickCount() % 20 == 0){
-            int charges = getIntProperty(stack,USES_TAG);
+            int charges = getIntProperty(stack, USES_TAG);
             int maxCharges = getMaxCharges(stack);
             if(charges < maxCharges){
                addEnergy(stack, 1); // Recharge
                if(getEnergy(stack) >= getMaxEnergy(stack)){
-                  setEnergy(stack,0);
-                  putProperty(stack,USES_TAG,charges+1);
+                  setEnergy(stack, 0);
+                  putProperty(stack, USES_TAG, charges + 1);
                   buildItemLore(stack, entity.level().getServer());
                }
             }
@@ -292,25 +292,25 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
-         int mode = getIntProperty(stack,MODE_TAG);
-         int charges = getIntProperty(stack,USES_TAG);
+         int mode = getIntProperty(stack, MODE_TAG);
+         int charges = getIntProperty(stack, USES_TAG);
          
          if(playerEntity.isShiftKeyDown()){
-            int newMode = (mode+1) % 2;
-            putProperty(stack,MODE_TAG,newMode);
+            int newMode = (mode + 1) % 2;
+            putProperty(stack, MODE_TAG, newMode);
             if(newMode == 1){
-               player.displayClientMessage(Component.literal("The Eversource Evaporates").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_EMPTY_LAVA,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Evaporates").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_EMPTY_LAVA, 1.0f, 1.0f);
             }else{
-               player.displayClientMessage(Component.literal("The Eversource Condenses").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL_LAVA,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Condenses").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL_LAVA, 1.0f, 1.0f);
             }
             return InteractionResult.SUCCESS_SERVER;
          }
          
          if(mode != 1 && charges <= 0){
-            player.displayClientMessage(Component.literal("The Eversource is Recharging").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
+            player.displayClientMessage(Component.literal("The Eversource is Recharging").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
             return InteractionResult.PASS;
          }
          
@@ -341,10 +341,10 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
             }
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer ? blockPos : blockPos2;
-            if(placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult, false)){
+            if(placeFluid(fluid, playerEntity, world, blockPos3, blockHitResult, false)){
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MAGMATIC_EVERSOURCE_USE)); // Add xp
-               ArcanaAchievements.progress(player,ArcanaAchievements.HELLGATE,1);
-               putProperty(stack,USES_TAG,charges-1);
+               ArcanaAchievements.progress(player, ArcanaAchievements.HELLGATE, 1);
+               putProperty(stack, USES_TAG, charges - 1);
                buildItemLore(stack, playerEntity.level().getServer());
                playerEntity.awardStat(Stats.ITEM_USED.get(this));
                return InteractionResult.SUCCESS_SERVER;

@@ -50,14 +50,14 @@ public class PlayerDeathCallback {
    }
    
    public static void onPlayerCopy(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive){
-      if (!alive && !(oldPlayer.level().getGameRules().get(GameRules.KEEP_INVENTORY) || oldPlayer.isSpectator())) {
-         for (int i = 0; i < oldPlayer.getInventory().getContainerSize(); i++) {
+      if(!alive && !(oldPlayer.level().getGameRules().get(GameRules.KEEP_INVENTORY) || oldPlayer.isSpectator())){
+         for(int i = 0; i < oldPlayer.getInventory().getContainerSize(); i++){
             ItemStack oldStack = oldPlayer.getInventory().getItem(i);
             ItemStack newStack = newPlayer.getInventory().getItem(i);
-            if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), oldStack) > 0 && !ItemStack.matches(oldStack, newStack)) {
-               if (newStack.isEmpty()) {
+            if(EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), oldStack) > 0 && !ItemStack.matches(oldStack, newStack)){
+               if(newStack.isEmpty()){
                   newPlayer.getInventory().setItem(i, oldStack);
-               } else {
+               }else{
                   newPlayer.getInventory().placeItemBackInInventory(oldStack);
                }
             }

@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class SpawnerHarness extends ArcanaItem {
-	public static final String ID = "spawner_harness";
+   public static final String ID = "spawner_harness";
    
    public static final String SPAWNER_TAG = "spawner";
    
@@ -60,13 +60,13 @@ public class SpawnerHarness extends ArcanaItem {
       itemVersion = 1;
       vanillaItem = Items.SPAWNER;
       item = new SpawnerHarnessItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SILK_TOUCH,ResearchTasks.BREAK_SPAWNER,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SILK_TOUCH, ResearchTasks.BREAK_SPAWNER, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,SPAWNER_TAG,new CompoundTag());
+      putProperty(stack, SPAWNER_TAG, new CompoundTag());
       setPrefStack(stack);
    }
    
@@ -94,7 +94,7 @@ public class SpawnerHarness extends ArcanaItem {
       
       String type = "Uncaptured";
       if(itemStack != null){
-         CompoundTag spawnerTag = getCompoundProperty(itemStack,SPAWNER_TAG);
+         CompoundTag spawnerTag = getCompoundProperty(itemStack, SPAWNER_TAG);
          boolean hasSpawner = !spawnerTag.isEmpty();
          
          if(hasSpawner){
@@ -120,16 +120,16 @@ public class SpawnerHarness extends ArcanaItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      CompoundTag spawnerNbt = getCompoundProperty(stack,SPAWNER_TAG).copy();
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,SPAWNER_TAG,spawnerNbt);
-      return buildItemLore(newStack,server);
+      CompoundTag spawnerNbt = getCompoundProperty(stack, SPAWNER_TAG).copy();
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, SPAWNER_TAG, spawnerNbt);
+      return buildItemLore(newStack, server);
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Spawner Harness").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nSpawners have always been one of the few blocks that are beyond the reach of the Silk Touch enchantment. Perhaps I can enhance the enchant a bit further by giving the magic a Harness to channel").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Spawner Harness").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nSpawners have always been one of the few blocks that are beyond the reach of the Silk Touch enchantment. Perhaps I can enhance the enchant a bit further by giving the magic a Harness to channel").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Spawner Harness").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nadditional Arcana to. \n\nThe Harness itself has to be incredibly durable to withstand the Arcana driving the enchant into overdrive, however, even with my best efforts, the Harness can break after use.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Spawner Harness").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nUse the Harness on a spawner to capture the spawner.\n\nThe Harness can then place the spawner elsewhere, with a 15% chance to break after use.\n").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -146,13 +146,13 @@ public class SpawnerHarness extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         CompoundTag spawnerData = getCompoundProperty(itemStack,SPAWNER_TAG);
+         CompoundTag spawnerData = getCompoundProperty(itemStack, SPAWNER_TAG);
          boolean hasSpawner = spawnerData.contains("SpawnData");
          
          if(!hasSpawner){
             stringList.add("empty");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -168,58 +168,60 @@ public class SpawnerHarness extends ArcanaItem {
          if(player == null) return InteractionResult.PASS;
          try{
             ItemStack stack = context.getItemInHand();
-            CompoundTag spawnerTag = getCompoundProperty(stack,SPAWNER_TAG);
+            CompoundTag spawnerTag = getCompoundProperty(stack, SPAWNER_TAG);
             
             if(!spawnerTag.isEmpty()){ // Has spawner, try to place
                Direction side = context.getClickedFace();
                BlockPos placePos = context.getClickedPos().offset(side.getUnitVec3i());
                if(world.getBlockState(placePos).isAir()){
                   world.setBlock(placePos, Blocks.SPAWNER.defaultBlockState(), Block.UPDATE_ALL);
-                  BlockEntity blockEntity = BlockEntity.loadStatic(placePos, Blocks.SPAWNER.defaultBlockState(),spawnerTag,world.registryAccess());
+                  BlockEntity blockEntity = BlockEntity.loadStatic(placePos, Blocks.SPAWNER.defaultBlockState(), spawnerTag, world.registryAccess());
                   if(blockEntity != null){
                      world.setBlockEntity(blockEntity);
                   }
                   
-                  boolean reinforced = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS) > 0;
+                  boolean reinforced = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.REINFORCED_CHASSIS) > 0;
                   double breakChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SPAWNER_HARNESS_BREAK_PERCENT);
                   if(player.random.nextFloat() > breakChance || reinforced){ // Chance of the harness breaking after use
-                     player.displayClientMessage(Component.literal("The harness successfully places the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
-                     SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.CHAIN_PLACE, 1,.1f);
-                     putProperty(stack,SPAWNER_TAG,new CompoundTag());
-                     buildItemLore(stack,player.level().getServer());
+                     player.displayClientMessage(Component.literal("The harness successfully places the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                     SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.CHAIN_PLACE, 1, .1f);
+                     putProperty(stack, SPAWNER_TAG, new CompoundTag());
+                     buildItemLore(stack, player.level().getServer());
                   }else{
-                     player.displayClientMessage(Component.literal("The harness shatters upon placing the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
-                     SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.SHIELD_BREAK, 1,.5f);
-                     putProperty(stack,SPAWNER_TAG,new CompoundTag());
-                     buildItemLore(stack,player.level().getServer());
-                     stack.consume(stack.getCount(),player);
+                     player.displayClientMessage(Component.literal("The harness shatters upon placing the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                     SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.SHIELD_BREAK, 1, .5f);
+                     putProperty(stack, SPAWNER_TAG, new CompoundTag());
+                     buildItemLore(stack, player.level().getServer());
+                     stack.consume(stack.getCount(), player);
                   }
-                  if(!reinforced) ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SPAWNER_HARNESS_USE)*0.15)); // Add xp
+                  if(!reinforced)
+                     ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SPAWNER_HARNESS_USE) * 0.15)); // Add xp
                   return InteractionResult.SUCCESS_SERVER;
                }else{
-                  player.displayClientMessage(Component.literal("The harness cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+                  player.displayClientMessage(Component.literal("The harness cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                }
             }else if(world.getBlockState(context.getClickedPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(context.getClickedPos()) instanceof SpawnerBlockEntity){
                SpawnerBlockEntity spawner = (SpawnerBlockEntity) world.getBlockEntity(context.getClickedPos());
                CompoundTag spawnerNbt = spawner.saveWithFullMetadata(world.registryAccess());
-               Entity renderedEntity = spawner.getSpawner().getOrCreateDisplayEntity(world,context.getClickedPos());
+               Entity renderedEntity = spawner.getSpawner().getOrCreateDisplayEntity(world, context.getClickedPos());
                if(renderedEntity != null){
                   String entityTypeId = EntityType.getKey(renderedEntity.getType()).toString();
                   String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
-                  player.displayClientMessage(Component.literal("The harness captures the "+entityTypeName+" spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC),true);
-                  if(entityTypeId.equals(EntityType.getKey(EntityType.SILVERFISH).toString())) ArcanaAchievements.grant((ServerPlayer) player,ArcanaAchievements.FINALLY_USEFUL);
+                  player.displayClientMessage(Component.literal("The harness captures the " + entityTypeName + " spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                  if(entityTypeId.equals(EntityType.getKey(EntityType.SILVERFISH).toString()))
+                     ArcanaAchievements.grant((ServerPlayer) player, ArcanaAchievements.FINALLY_USEFUL);
                }
                
-               putProperty(stack,SPAWNER_TAG,spawnerNbt);
-               world.destroyBlock(context.getClickedPos(),false);
+               putProperty(stack, SPAWNER_TAG, spawnerNbt);
+               world.destroyBlock(context.getClickedPos(), false);
                
-               SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.CHAIN_BREAK, 1,.1f);
-               buildItemLore(stack,player.level().getServer());
+               SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.CHAIN_BREAK, 1, .1f);
+               buildItemLore(stack, player.level().getServer());
                
                return InteractionResult.SUCCESS_SERVER;
             }
-         }catch (Exception e){
+         }catch(Exception e){
             e.printStackTrace();
          }
          return InteractionResult.PASS;

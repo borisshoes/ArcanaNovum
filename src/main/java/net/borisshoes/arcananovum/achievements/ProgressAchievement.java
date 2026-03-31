@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.achievements;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
-import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -15,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.text.DecimalFormat;
 
-public class ProgressAchievement extends ArcanaAchievement{
+public class ProgressAchievement extends ArcanaAchievement {
    
    private int goal;
    private int progress;
@@ -33,7 +32,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    protected boolean setProgress(int progress){
       boolean had = isAcquired();
-      this.progress = Mth.clamp(progress,0,goal);
+      this.progress = Mth.clamp(progress, 0, goal);
       setAcquired(this.progress >= goal);
       return isAcquired() && !had;
    }
@@ -49,9 +48,9 @@ public class ProgressAchievement extends ArcanaAchievement{
    @Override
    public CompoundTag toNbt(){
       CompoundTag nbt = new CompoundTag();
-      nbt.putBoolean("acquired",isAcquired());
-      nbt.putString("id",id);
-      nbt.putInt("type",type);
+      nbt.putBoolean("acquired", isAcquired());
+      nbt.putString("id", id);
+      nbt.putInt("type", type);
       nbt.putInt("progress", progress);
       nbt.putInt("goal", goal);
       return nbt;
@@ -79,7 +78,7 @@ public class ProgressAchievement extends ArcanaAchievement{
             .append(Component.literal(" / ").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(TextUtils.readableInt(goal)).withStyle(ChatFormatting.AQUA))
             .append(Component.literal(" | ").withStyle(ChatFormatting.DARK_AQUA))
-            .append(Component.literal(df.format(percent)+"%").withStyle(ChatFormatting.BLUE));
+            .append(Component.literal(df.format(percent) + "%").withStyle(ChatFormatting.BLUE));
       
       if(achievement != null && achievement.isAcquired()){
          text[1] = Component.literal("Achieved!").withStyle(ChatFormatting.AQUA);

@@ -34,7 +34,7 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends AvoidEntityGoa
       this.toAvoid = getServerLevel(this.mob).getNearestEntity(
             this.mob.level().getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double) this.maxDist, 3.0, (double) this.maxDist), (livingEntity) -> true),
             TargetingConditions.forCombat()
-                  .range((double)this.maxDist)
+                  .range((double) this.maxDist)
                   .selector((entity, world) -> predicateOnAvoidEntity.test(entity) && avoidPredicate.test(entity)),
             this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
       if(this.toAvoid == null){
@@ -50,18 +50,18 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends AvoidEntityGoa
             if(this.path != null){
                if(this.toAvoid instanceof Player player){
                   Inventory inv = player.getInventory();
-                  for(int i = 0; i<inv.getContainerSize(); i++){
+                  for(int i = 0; i < inv.getContainerSize(); i++){
                      ItemStack item = inv.getItem(i);
                      if(item.isEmpty()){
                         continue;
                      }
-   
+                     
                      boolean isArcane = ArcanaItemUtils.isArcane(item);
                      if(!isArcane)
                         continue; // Item not arcane, skip
                      
                      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-                     if(arcanaItem instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item,ArcanaRegistry.FELIDAE_CHARM.getItem())){
+                     if(arcanaItem instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item, ArcanaRegistry.FELIDAE_CHARM.getItem())){
                         return true;
                      }
                   }

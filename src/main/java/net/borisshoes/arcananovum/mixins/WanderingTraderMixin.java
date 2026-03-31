@@ -35,8 +35,8 @@ public class WanderingTraderMixin {
          Registry<Item> itemRegistry = trader.registryAccess().lookupOrThrow(Registries.ITEM);
          itemRegistry.getTagOrEmpty(ArcanaRegistry.WORKSHOP_ITEMS).forEach(items::add);
          
-         List<Tuple<ArcanaRarity,Integer>> weights = List.of(new Tuple<>(ArcanaRarity.MUNDANE,10),new Tuple<>(ArcanaRarity.EMPOWERED,25),new Tuple<>(ArcanaRarity.EXOTIC,15),new Tuple<>(ArcanaRarity.SOVEREIGN,5),new Tuple<>(ArcanaRarity.DIVINE,1));
-         ArcanaRarity rarity = AlgoUtils.getWeightedOption(weights,trader.getRandom().nextLong());
+         List<Tuple<ArcanaRarity, Integer>> weights = List.of(new Tuple<>(ArcanaRarity.MUNDANE, 10), new Tuple<>(ArcanaRarity.EMPOWERED, 25), new Tuple<>(ArcanaRarity.EXOTIC, 15), new Tuple<>(ArcanaRarity.SOVEREIGN, 5), new Tuple<>(ArcanaRarity.DIVINE, 1));
+         ArcanaRarity rarity = AlgoUtils.getWeightedOption(weights, trader.getRandom().nextLong());
          items = items.stream().filter(entry -> {
             ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(entry.getRegisteredName());
             return arcanaItem != null && arcanaItem.getRarity() == rarity;
@@ -46,15 +46,15 @@ public class WanderingTraderMixin {
          ItemStack notes = new ItemStack(ArcanaRegistry.ARCANE_NOTES);
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(items.get(trader.getRandom().nextInt(items.size())).getRegisteredName());
          String arcanaId = arcanaItem.getId();
-         ArcanaItem.putProperty(notes, ArcaneNotesItem.UNLOCK_ID_TAG,arcanaId);
+         ArcanaItem.putProperty(notes, ArcaneNotesItem.UNLOCK_ID_TAG, arcanaId);
          ArcaneNotesItem.buildLore(notes);
          
          ItemStack waystone = ArcanaRegistry.WAYSTONE.getNewItem();
-         ArcanaRegistry.WAYSTONE.addCrafter(waystone,null,2,trader.level().getServer());
+         ArcanaRegistry.WAYSTONE.addCrafter(waystone, null, 2, trader.level().getServer());
          
-         MerchantOffer offer1 = new MerchantOffer(new ItemCost(Items.EMERALD_BLOCK, trader.getRandom().nextIntBetweenInclusive(10,16)), notes.copy(), 1, 1, 0.05f);
-         MerchantOffer offer2 = new MerchantOffer(new ItemCost(ArcanaRegistry.STARDUST, trader.getRandom().nextIntBetweenInclusive(3,16)), new ItemStack(Items.EMERALD,trader.getRandom().nextIntBetweenInclusive(1,24)), 12, 1, 0.05f);
-         MerchantOffer offer3 = new MerchantOffer(new ItemCost(Items.EMERALD, trader.getRandom().nextIntBetweenInclusive(32,64)),waystone, 1, 1, 0.05f);
+         MerchantOffer offer1 = new MerchantOffer(new ItemCost(Items.EMERALD_BLOCK, trader.getRandom().nextIntBetweenInclusive(10, 16)), notes.copy(), 1, 1, 0.05f);
+         MerchantOffer offer2 = new MerchantOffer(new ItemCost(ArcanaRegistry.STARDUST, trader.getRandom().nextIntBetweenInclusive(3, 16)), new ItemStack(Items.EMERALD, trader.getRandom().nextIntBetweenInclusive(1, 24)), 12, 1, 0.05f);
+         MerchantOffer offer3 = new MerchantOffer(new ItemCost(Items.EMERALD, trader.getRandom().nextIntBetweenInclusive(32, 64)), waystone, 1, 1, 0.05f);
          trader.getOffers().add(offer1);
          trader.getOffers().add(offer2);
          trader.getOffers().add(offer3);

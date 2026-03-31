@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -12,6 +11,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class IgneousCollider extends ArcanaBlock {
-	public static final String ID = "igneous_collider";
+   public static final String ID = "igneous_collider";
    
    public IgneousCollider(){
       id = ID;
@@ -53,8 +53,8 @@ public class IgneousCollider extends ArcanaBlock {
       vanillaItem = Items.LODESTONE;
       block = new IgneousColliderBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(3.5f, 1200.0f).sound(SoundType.LODESTONE));
       item = new IgneousColliderItem(this.block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_PICKAXE,ResearchTasks.BREAK_OBSIDIAN,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_PICKAXE, ResearchTasks.BREAK_OBSIDIAN, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -98,20 +98,20 @@ public class IgneousCollider extends ArcanaBlock {
             .append(Component.literal(", ").withStyle(ChatFormatting.LIGHT_PURPLE))
             .append(Component.literal("crying obsidian").withColor(0x660066))
             .append(Component.literal(" will be made.").withStyle(ChatFormatting.LIGHT_PURPLE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Igneous Collider").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nMining Obsidian sucks. It's time intensive and mindlessly boring. Making a contraption to do it for me would be of great benefit. Some ductwork and enchanted pickaxes should work nicely.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Igneous Collider").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nMining Obsidian sucks. It's time intensive and mindlessly boring. Making a contraption to do it for me would be of great benefit. Some ductwork and enchanted pickaxes should work nicely.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Igneous Collider").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nThe Igneous Collider takes water and lava from either a source block or a cauldron that is adjacent to its side and spits out an Obsidian above it every minute. A Netherite block below the Collider produces Crying Obsidian.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class IgneousColliderItem extends ArcanaPolymerBlockItem {
       public IgneousColliderItem(Block block){
-         super(getThis(),block, getArcanaItemComponents());
+         super(getThis(), block, getArcanaItemComponents());
       }
       
       @Override
@@ -146,12 +146,12 @@ public class IgneousCollider extends ArcanaBlock {
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack COLLIDER = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/igneous_collider"));
       
       private final ServerLevel world;

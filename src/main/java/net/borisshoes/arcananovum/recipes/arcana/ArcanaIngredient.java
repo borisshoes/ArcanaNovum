@@ -38,23 +38,23 @@ public class ArcanaIngredient {
    protected Predicate<ItemStack> itemPredicate;
    protected final ItemStack exampleStack;
    protected final boolean ignoresResourceful;
-   protected final List<Tuple<ResourceKey<Enchantment>,Integer>> enchantments = new ArrayList<>();
+   protected final List<Tuple<ResourceKey<Enchantment>, Integer>> enchantments = new ArrayList<>();
    protected Holder<Potion> potion;
    protected final List<MobEffectInstance> effects = new ArrayList<>();
    
-   public static final ArcanaIngredient EMPTY = new ArcanaIngredient(List.of(Either.left(Items.AIR)),0, true, ItemStack.EMPTY, ItemStack::isEmpty);
+   public static final ArcanaIngredient EMPTY = new ArcanaIngredient(List.of(Either.left(Items.AIR)), 0, true, ItemStack.EMPTY, ItemStack::isEmpty);
    
    public ArcanaIngredient(Item itemType, int count, boolean ignoresResourceful){
       this.count = count;
       this.ignoresResourceful = ignoresResourceful;
-      this.exampleStack = new ItemStack(itemType,count);
+      this.exampleStack = new ItemStack(itemType, count);
       this.acceptedItems.add(Either.left(itemType));
       this.itemPredicate = (stack) -> acceptedItems.stream().anyMatch(e -> (e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get())));
    }
    
    public ArcanaIngredient(TagKey<Item> itemType, int count){
       this.count = count;
-      this.exampleStack = new ItemStack(MinecraftUtils.getFirstItemFromTag(itemType),count);
+      this.exampleStack = new ItemStack(MinecraftUtils.getFirstItemFromTag(itemType), count);
       this.acceptedItems.add(Either.right(itemType));
       this.itemPredicate = (stack) -> acceptedItems.stream().anyMatch(e -> (e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get())));
       this.ignoresResourceful = false;
@@ -62,7 +62,7 @@ public class ArcanaIngredient {
    
    public ArcanaIngredient(Item itemType, int count){
       this.count = count;
-      this.exampleStack = new ItemStack(itemType,count);
+      this.exampleStack = new ItemStack(itemType, count);
       this.acceptedItems.add(Either.left(itemType));
       this.itemPredicate = (stack) -> acceptedItems.stream().anyMatch(e -> (e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get())));
       this.ignoresResourceful = false;
@@ -77,7 +77,7 @@ public class ArcanaIngredient {
    }
    
    public ArcanaIngredient copyWithCount(int newCount){
-      return new ArcanaIngredient(acceptedItems,newCount,ignoresResourceful,exampleStack,itemPredicate);
+      return new ArcanaIngredient(acceptedItems, newCount, ignoresResourceful, exampleStack, itemPredicate);
    }
    
    public ArcanaIngredient withEnchantments(ArcanaIngredient.EnchantmentEntry... enchantments){
@@ -90,8 +90,8 @@ public class ArcanaIngredient {
       });
       
       for(EnchantmentEntry enchantment : enchantments){
-         this.exampleStack.enchant(enchantment.enchantment(),enchantment.level());
-         this.enchantments.add(new Tuple<>(enchantment.enchantmentKey(),enchantment.level()));
+         this.exampleStack.enchant(enchantment.enchantment(), enchantment.level());
+         this.enchantments.add(new Tuple<>(enchantment.enchantmentKey(), enchantment.level()));
       }
       
       return this;
@@ -192,8 +192,8 @@ public class ArcanaIngredient {
    }
    
    public String getCodeString(char character){
-      if(this.exampleStack.isEmpty()) return character+" = ArcanaIngredient.EMPTY;";
-      StringBuilder builder = new StringBuilder(character+" = new ArcanaIngredient(Items.");
+      if(this.exampleStack.isEmpty()) return character + " = ArcanaIngredient.EMPTY;";
+      StringBuilder builder = new StringBuilder(character + " = new ArcanaIngredient(Items.");
       String id = BuiltInRegistries.ITEM.getKey(this.exampleStack.getItem()).getPath().toUpperCase(Locale.ROOT);
       builder.append(id).append(", ").append(this.exampleStack.getCount());
       if(this.ignoresResourceful){
@@ -209,7 +209,7 @@ public class ArcanaIngredient {
             builder.append(", ");
             builder.append(enchantment.getB());
             builder.append(")");
-            if(this.enchantments.indexOf(enchantment) < this.enchantments.size()-1){
+            if(this.enchantments.indexOf(enchantment) < this.enchantments.size() - 1){
                builder.append(", ");
             }
          }
@@ -265,7 +265,7 @@ public class ArcanaIngredient {
       // Serialize enchantments
       if(!enchantments.isEmpty()){
          JsonObject enchantmentsJson = new JsonObject();
-         for(Tuple<ResourceKey<Enchantment>,Integer> enchantTuple : enchantments){
+         for(Tuple<ResourceKey<Enchantment>, Integer> enchantTuple : enchantments){
             enchantmentsJson.addProperty(enchantTuple.getA().identifier().toString(), enchantTuple.getB());
          }
          json.add("enchantments", enchantmentsJson);
@@ -348,7 +348,7 @@ public class ArcanaIngredient {
                if(enchant == null) continue;
                mutable.set(enchant, enchantment.getB());
             }
-            EnchantmentHelper.setEnchantments(ingredient.exampleStack,mutable.toImmutable());
+            EnchantmentHelper.setEnchantments(ingredient.exampleStack, mutable.toImmutable());
          }
       }
       
@@ -364,7 +364,7 @@ public class ArcanaIngredient {
             if(foundPotion != null){
                ingredient.potion = foundPotion;
                effectsList.addAll(foundPotion.value().getEffects());
-               ingredient.exampleStack.set(DataComponents.POTION_CONTENTS,new PotionContents(foundPotion));
+               ingredient.exampleStack.set(DataComponents.POTION_CONTENTS, new PotionContents(foundPotion));
             }
          }else if(potionsElement.isJsonArray()){
             // It's an array of effects
@@ -390,7 +390,7 @@ public class ArcanaIngredient {
                if(ingredient.exampleStack.is(Items.POTION)){
                   ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, Items.POTION.getName().copy().setStyle(Style.EMPTY.withItalic(false)));
                }else if(ingredient.exampleStack.is(Items.SPLASH_POTION)){
-                  ingredient.exampleStack.set(DataComponents.CUSTOM_NAME,Items.SPLASH_POTION.getName().copy().setStyle(Style.EMPTY.withItalic(false)));
+                  ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, Items.SPLASH_POTION.getName().copy().setStyle(Style.EMPTY.withItalic(false)));
                }else if(ingredient.exampleStack.is(Items.LINGERING_POTION)){
                   ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, Items.LINGERING_POTION.getName().copy().setStyle(Style.EMPTY.withItalic(false)));
                }
@@ -422,7 +422,7 @@ public class ArcanaIngredient {
       return ingredient;
    }
    
-   public record EnchantmentEntry(ResourceKey<Enchantment> enchantmentKey, Holder<Enchantment> enchantment, int level){
+   public record EnchantmentEntry(ResourceKey<Enchantment> enchantmentKey, Holder<Enchantment> enchantment, int level) {
       public EnchantmentEntry(ResourceKey<Enchantment> enchantmentKey, int level){
          this(enchantmentKey, MinecraftUtils.getEnchantment(enchantmentKey), level);
       }

@@ -21,6 +21,6 @@ public class EmpoweredArcanePaper extends NormalPolymerItem {
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.EMPOWERED_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.EMPOWERED_ARCANE_PAPER,4), ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.EMPOWERED_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.EMPOWERED_ARCANE_PAPER, 4), ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
    }
 }

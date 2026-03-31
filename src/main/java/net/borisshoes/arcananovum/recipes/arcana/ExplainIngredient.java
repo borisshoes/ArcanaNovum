@@ -45,9 +45,9 @@ public class ExplainIngredient extends ArcanaIngredient {
    }
    
    public ExplainIngredient withName(Component name){
-      this.exampleStack.set(DataComponents.ITEM_NAME,name);
+      this.exampleStack.set(DataComponents.ITEM_NAME, name);
       if(displayOverride != null){
-         this.displayOverride.set(DataComponents.ITEM_NAME,name);
+         this.displayOverride.set(DataComponents.ITEM_NAME, name);
       }
       this.displayName = name;
       return this;
@@ -55,9 +55,9 @@ public class ExplainIngredient extends ArcanaIngredient {
    
    public ExplainIngredient withLore(List<Component> lore){
       this.lore = lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-      this.exampleStack.set(DataComponents.LORE,new ItemLore(this.lore));
+      this.exampleStack.set(DataComponents.LORE, new ItemLore(this.lore));
       if(displayOverride != null){
-         this.displayOverride.set(DataComponents.LORE,new ItemLore(this.lore));
+         this.displayOverride.set(DataComponents.LORE, new ItemLore(this.lore));
       }
       return this;
    }
@@ -66,9 +66,9 @@ public class ExplainIngredient extends ArcanaIngredient {
    public ArcanaIngredient copyWithCount(int newCount){
       ExplainIngredient ingredient;
       if(displayOverride != null){
-         ingredient = new ExplainIngredient(this.displayOverride,this.count,ingredientName,show);
+         ingredient = new ExplainIngredient(this.displayOverride, this.count, ingredientName, show);
       }else{
-         ingredient = new ExplainIngredient(this.itemType,this.count,ingredientName,show);
+         ingredient = new ExplainIngredient(this.itemType, this.count, ingredientName, show);
       }
       if(displayName != null){
          ingredient = ingredient.withName(this.displayName);

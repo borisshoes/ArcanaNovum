@@ -63,13 +63,13 @@ public class Waystone extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.IRON_NUGGET;
       item = new Waystone.WaystoneItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_USE_LODESTONE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
-      putProperty(stack,LOCATION_TAG,getUnattunedTag());
-      putProperty(stack,GATEWAY_TAG,false);
+      putProperty(stack, LOCATION_TAG, getUnattunedTag());
+      putProperty(stack, GATEWAY_TAG, false);
       stack.setCount(item.getDefaultMaxStackSize());
       setPrefStack(stack);
    }
@@ -77,7 +77,7 @@ public class Waystone extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe channels of Arcana that course through the realms, Leylines, as the old texts call them, are quite interesting. My measurements suggest that they are not static, but their ebb and flow mostly").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThe channels of Arcana that course through the realms, Leylines, as the old texts call them, are quite interesting. My measurements suggest that they are not static, but their ebb and flow mostly").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\naround a path, and on a timescale I would consider to be glacial. It might not be the most precise thing, but I can use the faintly unique Arcana of each Leyline to uniquely mark a location in any dimension.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nIt seems like I can transmute a stone to hold on to this compound Leyline signature, as long as it doesn’t get too hot.\n\nUsing the Waystone marks my current location, rotation and dimension.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Waystone").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nHeating the Waystone on a campfire for a few minutes releases the imbued location.\n\nHolding the Waystone in my offhand turns it into a compass that glows when facing its imbued location.\n").withStyle(ChatFormatting.BLACK)));
@@ -139,9 +139,9 @@ public class Waystone extends ArcanaItem {
                dimensionName = target.world().identifier().toString();
             }
             
-            location = dimensionName + " ("+(int)target.position().x()+","+(int)target.position().y()+","+(int)target.position().z()+")";
+            location = dimensionName + " (" + (int) target.position().x() + "," + (int) target.position().y() + "," + (int) target.position().z() + ")";
             lore.add(Component.literal(""));
-            lore.add(Component.literal((isForGateway(stack) ? "Astral Gateway" : "Location")+" - "+location).withStyle(dimColor));
+            lore.add(Component.literal((isForGateway(stack) ? "Astral Gateway" : "Location") + " - " + location).withStyle(dimColor));
          }else{
             lore.add(Component.literal(""));
             lore.add(Component.literal("Unattuned").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
@@ -152,49 +152,49 @@ public class Waystone extends ArcanaItem {
    
    public static CompoundTag getUnattunedTag(){
       CompoundTag newComp = new CompoundTag();
-      newComp.putBoolean(UNATTUNED_TAG,true);
+      newComp.putBoolean(UNATTUNED_TAG, true);
       return newComp;
    }
    
    public static void setUnattuned(ItemStack stack){
-      putProperty(stack,LOCATION_TAG,getUnattunedTag());
-      putProperty(stack,GATEWAY_TAG,false);
+      putProperty(stack, LOCATION_TAG, getUnattunedTag());
+      putProperty(stack, GATEWAY_TAG, false);
    }
    
    public static boolean isUnattuned(ItemStack stack){
       if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return false;
-      CompoundTag comp = ArcanaItem.getCompoundProperty(stack,LOCATION_TAG);
+      CompoundTag comp = ArcanaItem.getCompoundProperty(stack, LOCATION_TAG);
       return comp.getBooleanOr(UNATTUNED_TAG, true) || getTarget(stack) == null;
    }
    
    public static boolean isForGateway(ItemStack stack){
       if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return false;
-      CompoundTag comp = ArcanaItem.getCompoundProperty(stack,GATEWAY_TAG);
+      CompoundTag comp = ArcanaItem.getCompoundProperty(stack, GATEWAY_TAG);
       return comp.getBooleanOr(UNATTUNED_TAG, true) || getTarget(stack) == null;
    }
    
    public static void setForGateway(ItemStack stack){
-      putProperty(stack,GATEWAY_TAG,true);
+      putProperty(stack, GATEWAY_TAG, true);
    }
    
    public static void saveTarget(ItemStack stack, WaystoneTarget target){
       if(!stack.is(ArcanaRegistry.WAYSTONE.getItem()) || target == null) return;
       CompoundTag newComp = new CompoundTag();
-      newComp.putString("dim",target.world().identifier().toString());
-      newComp.putDouble("x",target.position().x);
-      newComp.putDouble("y",target.position().y);
-      newComp.putDouble("z",target.position().z);
-      newComp.putFloat("yaw",target.yaw());
-      newComp.putFloat("pitch",target.pitch());
-      newComp.putBoolean("unattuned",false);
-      ArcanaItem.putProperty(stack,LOCATION_TAG,newComp);
-      stack.set(DataComponents.LODESTONE_TRACKER,new LodestoneTracker(Optional.of(new GlobalPos(target.world(), BlockPos.containing(target.position()))),false));
+      newComp.putString("dim", target.world().identifier().toString());
+      newComp.putDouble("x", target.position().x);
+      newComp.putDouble("y", target.position().y);
+      newComp.putDouble("z", target.position().z);
+      newComp.putFloat("yaw", target.yaw());
+      newComp.putFloat("pitch", target.pitch());
+      newComp.putBoolean("unattuned", false);
+      ArcanaItem.putProperty(stack, LOCATION_TAG, newComp);
+      stack.set(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.of(new GlobalPos(target.world(), BlockPos.containing(target.position()))), false));
    }
    
    public static WaystoneTarget getTarget(ItemStack stack){
       if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return null;
-      CompoundTag comp = ArcanaItem.getCompoundProperty(stack,LOCATION_TAG);
-      String worldStr = comp.getStringOr("dim","");
+      CompoundTag comp = ArcanaItem.getCompoundProperty(stack, LOCATION_TAG);
+      String worldStr = comp.getStringOr("dim", "");
       ResourceKey<Level> worldKey = null;
       for(ServerLevel world : BorisLib.SERVER.getAllLevels()){
          if(world.dimension().identifier().toString().equals(worldStr)){
@@ -203,12 +203,12 @@ public class Waystone extends ArcanaItem {
          }
       }
       if(worldKey == null) return null;
-      double x = comp.getDoubleOr("x",0);
-      double y = comp.getDoubleOr("y",0);
-      double z = comp.getDoubleOr("z",0);
-      float yaw = comp.getFloatOr("yaw",0);
-      float pitch = comp.getFloatOr("pitch",0);
-      return new WaystoneTarget(worldKey,new Vec3(x,y,z),yaw,pitch);
+      double x = comp.getDoubleOr("x", 0);
+      double y = comp.getDoubleOr("y", 0);
+      double z = comp.getDoubleOr("z", 0);
+      float yaw = comp.getFloatOr("yaw", 0);
+      float pitch = comp.getFloatOr("pitch", 0);
+      return new WaystoneTarget(worldKey, new Vec3(x, y, z), yaw, pitch);
    }
    
    public class WaystoneItem extends ArcanaPolymerItem {
@@ -220,8 +220,8 @@ public class Waystone extends ArcanaItem {
       public InteractionResult use(Level world, Player user, InteractionHand hand){
          ItemStack stack = user.getItemInHand(hand);
          if(isUnattuned(stack) && user instanceof ServerPlayer player){
-            saveTarget(stack,new WaystoneTarget(user.level().dimension(), user.position(), user.getYRot(), user.getXRot()));
-            buildItemLore(stack,player.level().getServer());
+            saveTarget(stack, new WaystoneTarget(user.level().dimension(), user.position(), user.getYRot(), user.getXRot()));
+            buildItemLore(stack, player.level().getServer());
             SoundUtils.playSongToPlayer(player, SoundEvents.LODESTONE_COMPASS_LOCK, 1, 0.7f);
             return InteractionResult.SUCCESS_SERVER;
          }else{
@@ -235,24 +235,25 @@ public class Waystone extends ArcanaItem {
          if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown() && !isUnattuned(stack)){
             if(context.getLevel().getBlockEntity(context.getClickedPos()) instanceof StarpathAltarBlockEntity sabe){
                WaystoneTarget target = getTarget(stack);
-               if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(),ArcanaAugments.STARGATE) > 0 || target.world.identifier().equals(context.getLevel().dimension().identifier())){
+               if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(), ArcanaAugments.STARGATE) > 0 || target.world.identifier().equals(context.getLevel().dimension().identifier())){
                   sabe.setTarget(new StarpathAltarBlockEntity.TargetEntry(
-                        MinecraftUtils.getFormattedDimName(target.world).getString()+" "+ BlockPos.containing(target.position()).toShortString(),
+                        MinecraftUtils.getFormattedDimName(target.world).getString() + " " + BlockPos.containing(target.position()).toShortString(),
                         target.world.identifier().toString(),
                         (int) target.position().x(),
                         (int) target.position().y(),
                         (int) target.position().z()
-                        ));
-                  SoundUtils.playSound(context.getPlayer().level(),context.getClickedPos(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS,1,0.7f);
+                  ));
+                  SoundUtils.playSound(context.getPlayer().level(), context.getClickedPos(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1, 0.7f);
                   return InteractionResult.SUCCESS_SERVER;
                }
             }
          }else if(isUnattuned(stack) && context.getLevel().getBlockEntity(context.getClickedPos()) instanceof AstralGatewayBlockEntity gateway){
             BlockPos pos = context.getClickedPos();
-            saveTarget(stack,new WaystoneTarget(context.getLevel().dimension(), pos.getCenter(), 0, 0));
+            saveTarget(stack, new WaystoneTarget(context.getLevel().dimension(), pos.getCenter(), 0, 0));
             setForGateway(stack);
-            buildItemLore(stack,context.getLevel().getServer());
-            if(context.getPlayer() instanceof ServerPlayer player) SoundUtils.playSongToPlayer(player, SoundEvents.LODESTONE_COMPASS_LOCK, 1, 1.1f);
+            buildItemLore(stack, context.getLevel().getServer());
+            if(context.getPlayer() instanceof ServerPlayer player)
+               SoundUtils.playSongToPlayer(player, SoundEvents.LODESTONE_COMPASS_LOCK, 1, 1.1f);
             return InteractionResult.SUCCESS_SERVER;
          }
          return super.useOn(context);
@@ -273,7 +274,7 @@ public class Waystone extends ArcanaItem {
          boolean shouldAdd = slot == EquipmentSlot.OFFHAND && !stack.has(DataComponents.LODESTONE_TRACKER) && getTarget(stack) != null;
          if(shouldAdd){
             WaystoneTarget target = getTarget(stack);
-            stack.set(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.of(new GlobalPos(target.world(), BlockPos.containing(target.position()))),false));
+            stack.set(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.of(new GlobalPos(target.world(), BlockPos.containing(target.position()))), false));
          }else if(slot != EquipmentSlot.OFFHAND && stack.has(DataComponents.LODESTONE_TRACKER)){
             stack.remove(DataComponents.LODESTONE_TRACKER);
          }
@@ -299,10 +300,11 @@ public class Waystone extends ArcanaItem {
                }
             }
          }else{
-            return BuiltInRegistries.ITEM.getResourceKey(getPolymerItem(stack,context)).get().identifier();
+            return BuiltInRegistries.ITEM.getResourceKey(getPolymerItem(stack, context)).get().identifier();
          }
       }
    }
    
-   public record WaystoneTarget(ResourceKey<Level> world, Vec3 position, float yaw, float pitch){}
+   public record WaystoneTarget(ResourceKey<Level> world, Vec3 position, float yaw, float pitch) {
+   }
 }

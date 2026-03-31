@@ -93,9 +93,9 @@ public class TransmogrificationCatalyst extends ArcanaItem {
          ArcanaSkin skin = ArcanaSkin.getSkinFromString(getStringProperty(itemStack, SELECTED_SKIN_TAG));
          lore.add(Component.literal(""));
          if(skin != null){
-            lore.add(Component.translatable("text.arcananovum.attuned_item_skin",skin.getName()).withColor(skin.getPrimaryColor()));
+            lore.add(Component.translatable("text.arcananovum.attuned_item_skin", skin.getName()).withColor(skin.getPrimaryColor()));
          }else{
-            lore.add(Component.translatable("text.arcananovum.attuned_item_skin",Component.translatable("text.arcananovum.default")).withStyle(ChatFormatting.WHITE));
+            lore.add(Component.translatable("text.arcananovum.attuned_item_skin", Component.translatable("text.arcananovum.default")).withStyle(ChatFormatting.WHITE));
          }
       }
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
@@ -104,9 +104,9 @@ public class TransmogrificationCatalyst extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("Transmogrification\n      Catalyst").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal("\nMy contributions to Arcana seem to have not gone unnoticed, or unrewarded. To fully capitalize on my new ability to reskin, or transmogrify, my creations, I must make a new form of ").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("Transmogrification\n      Catalyst").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\npseudo-augmentation catalyst. It shouldn't need much Arcana, so a simple adaptation of my Catalytic Matrix will suffice.\n\nEach Transmogrification Catalyst can be Used to select one of my ").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("Transmogrification\n      Catalyst").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Component.literal("\navailable skins.\n\nTo apply my new aesthetic choice, I must consult my book of transmutations and use a Transmutation Altar to apply the Catalyst as a focus, to my applicable Arcana Item.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Transmogrification\n      Catalyst").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nMy contributions to Arcana seem to have not gone unnoticed, or unrewarded. To fully capitalize on my new ability to reskin, or transmogrify, my creations, I must make a new form of ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Transmogrification\n      Catalyst").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\npseudo-augmentation catalyst. It shouldn't need much Arcana, so a simple adaptation of my Catalytic Matrix will suffice.\n\nEach Transmogrification Catalyst can be Used to select one of my ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Transmogrification\n      Catalyst").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\navailable skins.\n\nTo apply my new aesthetic choice, I must consult my book of transmutations and use a Transmutation Altar to apply the Catalyst as a focus, to my applicable Arcana Item.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -128,13 +128,13 @@ public class TransmogrificationCatalyst extends ArcanaItem {
          if(!data.hasAnySkin()) return InteractionResult.PASS;
          List<ArcanaSkin> skins = new ArrayList<>(data.getAllSkins());
          skins.addFirst(null);
-         TransmogrificationGui gui = new TransmogrificationGui(player,skins,(skin) -> {
+         TransmogrificationGui gui = new TransmogrificationGui(player, skins, (skin) -> {
             if(skin != null){
-               putProperty(stack,SELECTED_SKIN_TAG,skin.getSerializedName());
+               putProperty(stack, SELECTED_SKIN_TAG, skin.getSerializedName());
             }else{
-               removeProperty(stack,SELECTED_SKIN_TAG);
+               removeProperty(stack, SELECTED_SKIN_TAG);
             }
-            buildItemLore(stack,player.level().getServer());
+            buildItemLore(stack, player.level().getServer());
          });
          gui.open();
          return InteractionResult.SUCCESS_SERVER;

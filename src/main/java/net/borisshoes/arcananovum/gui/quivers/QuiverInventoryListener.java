@@ -26,6 +26,7 @@ public class QuiverInventoryListener implements ContainerListener {
    public void finishUpdate(){
       updating = false;
    }
+   
    public void setUpdating(){
       updating = true;
    }

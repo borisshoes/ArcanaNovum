@@ -73,14 +73,14 @@ public class SpearOfTenbrous extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.NETHERITE_SWORD;
       item = new SpearOfTenbrousItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SPEAR_OF_TENBROUS};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Magirush"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,SPEAR_ID_TAG,"");
+      putProperty(stack, SPEAR_ID_TAG, "");
       setPrefStack(stack);
    }
    
@@ -146,7 +146,7 @@ public class SpearOfTenbrous extends ArcanaItem {
    public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
       if(ArcanaItemUtils.identifyItem(stack) instanceof SpearOfTenbrous){
          if(augment == ArcanaAugments.STARLESS_DOMAIN && level >= 1){
-            EnhancedStatUtils.enhanceItem(stack,1);
+            EnhancedStatUtils.enhanceItem(stack, 1);
          }
       }
       return stack;
@@ -155,7 +155,7 @@ public class SpearOfTenbrous extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("Spear Of Tenbrous").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nWhat little I know of Tenbrous is of their unending vitriol and hatred. It seems as though they were involved in the creation of the End, as well as its current state of destruction.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Spear Of Tenbrous").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nWhat little I know of Tenbrous is of their unending vitriol and hatred. It seems as though they were involved in the creation of the End, as well as its current state of destruction.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Spear Of Tenbrous").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD), Component.literal("\nFrom what I gather, Tenbrous was superseded by Enderia in some sort of ritual. Talk about cruelty begetting more cruelty… \nIt interests me as to why Enderia chose to keep this last relic of her predecessor.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Spear Of Tenbrous").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD), Component.literal("\nWielding the Spear fills me with a nauseating feeling of disgust, as well as a surge of intoxicating power. Its unusually long reach lets me outrange most foes in melee combat.\n\nI can throw the Spear and it will immediately ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Spear Of Tenbrous").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD), Component.literal("\nturn into a black smoke that returns to my hand and reforms.\n\nHowever, it takes me a moment to gather myself enough to throw the Spear again. \nA creature impaled by ").withStyle(ChatFormatting.BLACK)));
@@ -165,15 +165,15 @@ public class SpearOfTenbrous extends ArcanaItem {
    
    public class SpearOfTenbrousItem extends ArcanaPolymerItem implements ProjectileItem {
       public SpearOfTenbrousItem(){
-         super(getThis(),getEquipmentArcanaItemComponents()
+         super(getThis(), getEquipmentArcanaItemComponents()
                .component(DataComponents.TOOL, new Tool(List.of(), 1.0F, 2, false))
                .component(DataComponents.WEAPON, new Weapon(1))
-               .component(DataComponents.ATTACK_RANGE,new AttackRange(1.0f,4.75f,1.0f,6.75f,0.1375f,0.5f))
+               .component(DataComponents.ATTACK_RANGE, new AttackRange(1.0f, 4.75f, 1.0f, 6.75f, 0.1375f, 0.5f))
                .component(DataComponents.DAMAGE_TYPE, new EitherHolder<>(ArcanaDamageTypes.ARCANE_LIGHTNING))
                .component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0f)
                .component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(SoundEvents.SPEAR_ATTACK), Optional.of(SoundEvents.SPEAR_HIT)))
                .component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, 20))
-               .component(DataComponents.USE_EFFECTS, new UseEffects(true,true,1.0f))
+               .component(DataComponents.USE_EFFECTS, new UseEffects(true, true, 1.0f))
                .attributes(ItemAttributeModifiers.builder()
                      .add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 6.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
                      .add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, -3.0F, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
@@ -194,37 +194,37 @@ public class SpearOfTenbrous extends ArcanaItem {
          if(slot == null){
             stack.remove(DataComponents.KINETIC_WEAPON);
             stack.remove(DataComponents.CONSUMABLE);
-            ArcanaItem.removeProperty(stack,HAND_TAG);
+            ArcanaItem.removeProperty(stack, HAND_TAG);
          }else if(slot == EquipmentSlot.MAINHAND){
             stack.remove(DataComponents.KINETIC_WEAPON);
             stack.set(DataComponents.CONSUMABLE, Consumable.builder().consumeSeconds(72000).animation(ItemUseAnimation.TRIDENT).sound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.AMETHYST_BLOCK_CHIME)).build());
          }else if(slot == EquipmentSlot.OFFHAND){
             stack.remove(DataComponents.CONSUMABLE);
             stack.set(DataComponents.KINETIC_WEAPON, new KineticWeapon(
-                        10,
-                        10,
-                        KineticWeapon.Condition.ofAttackerSpeed(175, 7.0f),
-                        KineticWeapon.Condition.ofAttackerSpeed(350, 5.1f),
-                        KineticWeapon.Condition.ofRelativeSpeed(525, 4.6f),
-                        0.38f,
-                        1.25f,
-                        Optional.of(SoundEvents.SPEAR_USE),
-                        Optional.of(SoundEvents.SPEAR_HIT)));
+                  10,
+                  10,
+                  KineticWeapon.Condition.ofAttackerSpeed(175, 7.0f),
+                  KineticWeapon.Condition.ofAttackerSpeed(350, 5.1f),
+                  KineticWeapon.Condition.ofRelativeSpeed(525, 4.6f),
+                  0.38f,
+                  1.25f,
+                  Optional.of(SoundEvents.SPEAR_USE),
+                  Optional.of(SoundEvents.SPEAR_HIT)));
          }
       }
       
       @Override
-      public boolean releaseUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks) {
-         if(stack.has(DataComponents.KINETIC_WEAPON)) return super.releaseUsing(stack,world,user,remainingUseTicks);
+      public boolean releaseUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks){
+         if(stack.has(DataComponents.KINETIC_WEAPON)) return super.releaseUsing(stack, world, user, remainingUseTicks);
          if(!(user instanceof Player playerEntity)) return false;
          
          int i = this.getUseDuration(stack, user) - remainingUseTicks;
          if(i < 10) return false;
-         if (stack.nextDamageWillBreak()) return false;
+         if(stack.nextDamageWillBreak()) return false;
          
          Holder<SoundEvent> registryEntry = EnchantmentHelper.pickHighestLevel(stack, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
          playerEntity.awardStat(Stats.ITEM_USED.get(this));
-         if (world instanceof ServerLevel serverWorld) {
+         if(world instanceof ServerLevel serverWorld){
             stack.hurtWithoutBreaking(1, playerEntity);
             int slot = playerEntity.getInventory().findSlotMatchingItem(stack);
             SpearOfTenbrousEntity spearEntity = Projectile.spawnProjectileFromRotation(SpearOfTenbrousEntity::new, serverWorld, stack, playerEntity, 0.0F, 3.5F, 0.1F);
@@ -241,23 +241,25 @@ public class SpearOfTenbrous extends ArcanaItem {
       }
       
       @Override
-      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand) {
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(stack.has(DataComponents.KINETIC_WEAPON)){
-            InteractionResult sup = super.use(world,playerEntity,hand);
+            InteractionResult sup = super.use(world, playerEntity, hand);
             if(sup == InteractionResult.CONSUME || sup == InteractionResult.SUCCESS){
-               if(ArcanaItem.getStringProperty(stack,HAND_TAG).equals(InteractionHand.MAIN_HAND.name())) playerEntity.releaseUsingItem();
-               ArcanaItem.putProperty(stack,HAND_TAG,hand.name());
+               if(ArcanaItem.getStringProperty(stack, HAND_TAG).equals(InteractionHand.MAIN_HAND.name()))
+                  playerEntity.releaseUsingItem();
+               ArcanaItem.putProperty(stack, HAND_TAG, hand.name());
             }
             return sup;
          }
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
-         if (stack.nextDamageWillBreak()) {
+         if(stack.nextDamageWillBreak()){
             return InteractionResult.FAIL;
-         } else {
+         }else{
             playerEntity.startUsingItem(hand);
-            if(ArcanaItem.getStringProperty(stack,HAND_TAG).equals(InteractionHand.OFF_HAND.name())) playerEntity.releaseUsingItem();
-            ArcanaItem.putProperty(stack,HAND_TAG,hand.name());
+            if(ArcanaItem.getStringProperty(stack, HAND_TAG).equals(InteractionHand.OFF_HAND.name()))
+               playerEntity.releaseUsingItem();
+            ArcanaItem.putProperty(stack, HAND_TAG, hand.name());
             return InteractionResult.CONSUME;
          }
       }
@@ -277,30 +279,30 @@ public class SpearOfTenbrous extends ArcanaItem {
       }
       
       @Override
-      public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+      public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker){
          if(attacker.level() instanceof ServerLevel serverWorld){
             ParticleOptions particles = ParticleTypes.COMPOSTER;
             if(ArcanaItem.getSkin(stack) == ArcanaSkin.ZEPHOS_LANCE){
-               particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT,0x53D1FF,0.0f);
+               particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT, 0x53D1FF, 0.0f);
             }
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> attacker.position().add(0,attacker.getBbHeight()/2,0), () -> target.position().add(0,target.getBbHeight()/2,0), (int)(Math.random()*5+5), 0.5, particles,
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> attacker.position().add(0, attacker.getBbHeight() / 2, 0), () -> target.position().add(0, target.getBbHeight() / 2, 0), (int) (Math.random() * 5 + 5), 0.5, particles,
                   8, 1, 0, 1, false, 0, 5);
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, target::position, () -> target.position().add(0,target.getEyeHeight(),0), (int)(5 + 2*target.getEyeHeight()), target.getBbWidth(), particles,
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, target::position, () -> target.position().add(0, target.getEyeHeight(), 0), (int) (5 + 2 * target.getEyeHeight()), target.getBbWidth(), particles,
                   8, 1, 0, 1, false, 0, 5);
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> target.position().add(0,target.getEyeHeight(),0), target::position, (int)(5 + 2*target.getEyeHeight()), target.getBbWidth(), particles,
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> target.position().add(0, target.getEyeHeight(), 0), target::position, (int) (5 + 2 * target.getEyeHeight()), target.getBbWidth(), particles,
                   8, 1, 0, 1, false, 0, 5);
          }
       }
       
       @Override
-      public ItemUseAnimation getUseAnimation(ItemStack stack) {
+      public ItemUseAnimation getUseAnimation(ItemStack stack){
          if(stack.has(DataComponents.KINETIC_WEAPON)) return ItemUseAnimation.SPEAR;
          return ItemUseAnimation.TRIDENT;
       }
       
       @Override
-      public int getUseDuration(ItemStack stack, LivingEntity user) {
-         if(stack.has(DataComponents.KINETIC_WEAPON)) return super.getUseDuration(stack,user);
+      public int getUseDuration(ItemStack stack, LivingEntity user){
+         if(stack.has(DataComponents.KINETIC_WEAPON)) return super.getUseDuration(stack, user);
          return 72000;
       }
       

@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.mixins;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
 import net.borisshoes.arcananovum.research.ResearchTasks;
@@ -15,7 +14,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,7 +30,7 @@ public class BaseSpawnerMixin {
       
       if(world instanceof ServerLevel serverWorld){
          ChunkAccess chunk = world.getChunk(pos);
-         if(ContinuumAnchor.isChunkLoaded(serverWorld,chunk.getPos())){
+         if(ContinuumAnchor.isChunkLoaded(serverWorld, chunk.getPos())){
             return true;
          }
       }
@@ -51,7 +49,7 @@ public class BaseSpawnerMixin {
    @Inject(method = "serverTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;levelEvent(ILnet/minecraft/core/BlockPos;I)V"))
    private void arcananovum$infuserMobCapSet(ServerLevel world, BlockPos pos, CallbackInfo ci, @Local Entity entity){
       if(!(entity instanceof Mob mob)) return;
-      BlockPos infuserPos = pos.offset(0,-2,0);
+      BlockPos infuserPos = pos.offset(0, -2, 0);
       BlockEntity be = world.getBlockEntity(infuserPos);
       boolean infuserActive = (be instanceof SpawnerInfuserBlockEntity infuser) && infuser.isActive();
       if(infuserActive) mob.addTag("$arcananovum.infused_spawn");

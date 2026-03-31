@@ -19,7 +19,7 @@ public class GenericArcanaIngredient extends ArcanaIngredient {
    
    @Override
    public ArcanaIngredient copyWithCount(int newCount){
-      return new GenericArcanaIngredient(item,newCount);
+      return new GenericArcanaIngredient(item, newCount);
    }
    
    @Override

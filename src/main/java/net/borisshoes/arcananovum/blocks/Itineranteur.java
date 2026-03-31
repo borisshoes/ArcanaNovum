@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -13,6 +12,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -89,22 +89,22 @@ public class Itineranteur extends ArcanaBlock {
       vanillaItem = Items.LANTERN;
       block = new ItineranteurBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(3.0f, 1200.0f).lightLevel(ItineranteurBlock::getLightLevel).sound(SoundType.METAL));
       item = new ItineranteurItem(block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
-      researchTasks = new ResourceKey[]{ResearchTasks.EFFECT_SWIFTNESS,ResearchTasks.OBTAIN_BEACON,ResearchTasks.WALK_ONE_KILOMETER,ResearchTasks.OBTAIN_LANTERN};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
+      researchTasks = new ResourceKey[]{ResearchTasks.EFFECT_SWIFTNESS, ResearchTasks.OBTAIN_BEACON, ResearchTasks.WALK_ONE_KILOMETER, ResearchTasks.OBTAIN_LANTERN};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,COLOR_TAG,LanternType.YELLOW.getId());
+      putProperty(stack, COLOR_TAG, LanternType.YELLOW.getId());
       setPrefStack(stack);
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      String color = getStringProperty(stack,COLOR_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,COLOR_TAG,color);
-      return buildItemLore(newStack,server);
+      String color = getStringProperty(stack, COLOR_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, COLOR_TAG, color);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -160,9 +160,9 @@ public class Itineranteur extends ArcanaBlock {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Itineranteur").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal("\nBeacons are expensive, and walking is tiresome and slow. I've used some arcane and alchemical trickery to make a mini-beacon out of a lantern. It will put some swiftness in the step of anyone ").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("    Itineranteur").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nwalking along its designated path.\n\nUse a placed Itineranteur to designate its path. Selecting blocks on the ground will add or remove them from its path. Those walking on any of these blocks will feel its effects.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("    Itineranteur").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nUsing the Itineranteur again will exit configuration mode.\n\nAs someone who never passes up a chance for a bit of aesthetic choice, I can craft different looking Itineranteurs out of most lantern types.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Itineranteur").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nBeacons are expensive, and walking is tiresome and slow. I've used some arcane and alchemical trickery to make a mini-beacon out of a lantern. It will put some swiftness in the step of anyone ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Itineranteur").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nwalking along its designated path.\n\nUse a placed Itineranteur to designate its path. Selecting blocks on the ground will add or remove them from its path. Those walking on any of these blocks will feel its effects.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Itineranteur").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nUsing the Itineranteur again will exit configuration mode.\n\nAs someone who never passes up a chance for a bit of aesthetic choice, I can craft different looking Itineranteurs out of most lantern types.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -185,8 +185,8 @@ public class Itineranteur extends ArcanaBlock {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         stringList.add(getStringProperty(itemStack,COLOR_TAG));
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         stringList.add(getStringProperty(itemStack, COLOR_TAG));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -218,7 +218,7 @@ public class Itineranteur extends ArcanaBlock {
    }
    
    public class ItineranteurBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock, SimpleWaterloggedBlock {
-      public static final EnumProperty<LanternType> TYPE = EnumProperty.create("lantern_type",LanternType.class);
+      public static final EnumProperty<LanternType> TYPE = EnumProperty.create("lantern_type", LanternType.class);
       public static final BooleanProperty HANGING = BlockStateProperties.HANGING;
       public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
       private static final VoxelShape SHAPE_STANDING = Shapes.or(Block.column(4.0, 7.0, 9.0), Block.column(6.0, 0.0, 7.0));
@@ -251,15 +251,15 @@ public class Itineranteur extends ArcanaBlock {
       
       @org.jspecify.annotations.Nullable
       @Override
-      public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
+      public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext){
          FluidState fluidState = blockPlaceContext.getLevel().getFluidState(blockPlaceContext.getClickedPos());
          
-         for (Direction direction : blockPlaceContext.getNearestLookingDirections()) {
-            if (direction.getAxis() == Direction.Axis.Y) {
+         for(Direction direction : blockPlaceContext.getNearestLookingDirections()){
+            if(direction.getAxis() == Direction.Axis.Y){
                BlockState blockState = this.defaultBlockState().setValue(HANGING, direction == Direction.UP);
-               if (blockState.canSurvive(blockPlaceContext.getLevel(), blockPlaceContext.getClickedPos())) {
+               if(blockState.canSurvive(blockPlaceContext.getLevel(), blockPlaceContext.getClickedPos())){
                   blockState = blockState.setValue(WATERLOGGED, fluidState.getType() == Fluids.WATER);
-                  blockState = blockState.setValue(TYPE, LanternType.fromString(getStringProperty(blockPlaceContext.getItemInHand(),COLOR_TAG)));
+                  blockState = blockState.setValue(TYPE, LanternType.fromString(getStringProperty(blockPlaceContext.getItemInHand(), COLOR_TAG)));
                   return blockState;
                }
             }
@@ -269,22 +269,22 @@ public class Itineranteur extends ArcanaBlock {
       }
       
       @Override
-      protected VoxelShape getShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext) {
+      protected VoxelShape getShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext){
          return blockState.getValue(HANGING) ? SHAPE_HANGING : SHAPE_STANDING;
       }
       
       @Override
-      protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+      protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder){
          builder.add(HANGING, WATERLOGGED, TYPE);
       }
       
       @Override
-      protected boolean canSurvive(BlockState blockState, LevelReader levelReader, BlockPos blockPos) {
+      protected boolean canSurvive(BlockState blockState, LevelReader levelReader, BlockPos blockPos){
          Direction direction = getConnectedDirection(blockState).getOpposite();
          return Block.canSupportCenter(levelReader, blockPos.relative(direction), direction.getOpposite());
       }
       
-      protected static Direction getConnectedDirection(BlockState blockState) {
+      protected static Direction getConnectedDirection(BlockState blockState){
          return blockState.getValue(HANGING) ? Direction.DOWN : Direction.UP;
       }
       
@@ -298,8 +298,8 @@ public class Itineranteur extends ArcanaBlock {
             BlockPos blockPos2,
             BlockState blockState2,
             RandomSource randomSource
-      ) {
-         if ((Boolean)blockState.getValue(WATERLOGGED)) {
+      ){
+         if((Boolean) blockState.getValue(WATERLOGGED)){
             scheduledTickAccess.scheduleTick(blockPos, Fluids.WATER, Fluids.WATER.getTickDelay(levelReader));
          }
          
@@ -309,12 +309,12 @@ public class Itineranteur extends ArcanaBlock {
       }
       
       @Override
-      protected FluidState getFluidState(BlockState blockState) {
+      protected FluidState getFluidState(BlockState blockState){
          return blockState.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(blockState);
       }
       
       @Override
-      protected boolean isPathfindable(BlockState blockState, PathComputationType pathComputationType) {
+      protected boolean isPathfindable(BlockState blockState, PathComputationType pathComputationType){
          return false;
       }
       
@@ -325,17 +325,18 @@ public class Itineranteur extends ArcanaBlock {
       
       @Override
       protected InteractionResult useWithoutItem(BlockState blockState, Level level, BlockPos blockPos, Player player, BlockHitResult blockHitResult){
-         if(!(level.getBlockEntity(blockPos) instanceof ItineranteurBlockEntity itineranteur)) return InteractionResult.PASS;
+         if(!(level.getBlockEntity(blockPos) instanceof ItineranteurBlockEntity itineranteur))
+            return InteractionResult.PASS;
          if(itineranteur.getEditor() == null && player instanceof ServerPlayer serverPlayer){
-            SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.LANTERN_PLACE,1,0.75f + level.random.nextFloat()*0.5f);
+            SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.LANTERN_PLACE, 1, 0.75f + level.random.nextFloat() * 0.5f);
             itineranteur.setEditor(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
          }else if(itineranteur.getEditor().equals(player)){
-            SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.LANTERN_PLACE,1,0.75f + level.random.nextFloat()*0.5f);
+            SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.LANTERN_PLACE, 1, 0.75f + level.random.nextFloat() * 0.5f);
             itineranteur.setEditor(null);
             return InteractionResult.SUCCESS_SERVER;
          }else{
-            player.displayClientMessage(Component.literal("Someone else is editing the Itineranteur").withStyle(ChatFormatting.RED),true);
+            player.displayClientMessage(Component.literal("Someone else is editing the Itineranteur").withStyle(ChatFormatting.RED), true);
          }
          return super.useWithoutItem(blockState, level, blockPos, player, blockHitResult);
       }
@@ -345,12 +346,12 @@ public class Itineranteur extends ArcanaBlock {
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       private final ServerLevel world;
       private final ItemDisplayElement main;
       

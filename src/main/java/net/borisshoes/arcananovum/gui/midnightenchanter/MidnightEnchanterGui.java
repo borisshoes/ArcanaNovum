@@ -148,7 +148,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
          essenceItem.setCallback((clickType) -> {
             int rawEssence = ArcanaUtils.calcEssenceFromEnchants(getStack());
             double modifier = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MIDNIGHT_ENCHANTER_ESSENCE_RATE) +
-                  ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.MIDNIGHT_ENCHANTER_ESSENCE_RATE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA));
+                  ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.MIDNIGHT_ENCHANTER_ESSENCE_RATE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.ESSENCE_SUPERNOVA));
             int essence = (int) (rawEssence * modifier);
             SimpleContainer sinv = new SimpleContainer(essence / 64 + 1);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE) * essence);
@@ -783,7 +783,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
    @Override
    public void onClose(){
       if(!player.isDeadOrDying() && !player.isSpectator()){
-         MinecraftUtils.returnItems(inventory,player);
+         MinecraftUtils.returnItems(inventory, player);
       }else if(blockEntity.getLevel() != null){
          Containers.dropContents(blockEntity.getLevel(), blockEntity.getBlockPos().above(1), inventory);
       }

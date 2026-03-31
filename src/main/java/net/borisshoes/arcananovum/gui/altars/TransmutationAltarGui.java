@@ -35,18 +35,18 @@ public class TransmutationAltarGui extends SimpleGui {
          TransmutationAltarRecipeGui recipeGui = new TransmutationAltarRecipeGui(player, this, Optional.of(blockEntity));
          recipeGui.buildPage();
          recipeGui.open();
-      }else if(index == 4  && blockEntity.getLevel() instanceof ServerLevel serverWorld){
+      }else if(index == 4 && blockEntity.getLevel() instanceof ServerLevel serverWorld){
          if(blockEntity.getCooldown() <= 0){
             if(blockEntity.checkTransmute() != null){
                blockEntity.startTransmute(player);
             }else{
                player.sendSystemMessage(Component.literal("No Transmutation Items Found").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             }
             close();
          }else{
-            player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
-            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
+            player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             close();
          }
       }
@@ -66,7 +66,7 @@ public class TransmutationAltarGui extends SimpleGui {
    public void buildMenuGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.EQUAYUS_COLOR)).setName(Component.literal("Transmutation Altar").withStyle(ChatFormatting.BLUE)));
+         setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.EQUAYUS_COLOR)).setName(Component.literal("Transmutation Altar").withStyle(ChatFormatting.BLUE)));
       }
       
       GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideDefaultTooltip();
@@ -77,9 +77,9 @@ public class TransmutationAltarGui extends SimpleGui {
          cooldownItem.setName((Component.literal("")
                .append(Component.literal("Altar Recharging").withStyle(ChatFormatting.BLUE))));
          cooldownItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal((blockEntity.getCooldown()/20)+" Seconds").withStyle(ChatFormatting.DARK_PURPLE)))));
+               .append(Component.literal((blockEntity.getCooldown() / 20) + " Seconds").withStyle(ChatFormatting.DARK_PURPLE)))));
       }
-      setSlot(0,cooldownItem);
+      setSlot(0, cooldownItem);
       
       GuiElementBuilder recipeItem = GuiElementBuilder.from(GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK)).hideDefaultTooltip();
       recipeItem.setName((Component.literal("")
@@ -88,7 +88,7 @@ public class TransmutationAltarGui extends SimpleGui {
             .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(" to view all Transmutation Recipes").withStyle(ChatFormatting.BLUE)))));
       
-      setSlot(2,recipeItem);
+      setSlot(2, recipeItem);
       
       
       if(blockEntity.getCooldown() <= 0){
@@ -98,14 +98,14 @@ public class TransmutationAltarGui extends SimpleGui {
          activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Click").withStyle(ChatFormatting.BLUE))
                .append(Component.literal(" to begin a Transmutation").withStyle(ChatFormatting.DARK_PURPLE)))));
-         setSlot(4,activateItem);
+         setSlot(4, activateItem);
       }else{
          GuiElementBuilder activateItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.CANCEL_COLOR, ArcanaColors.EQUAYUS_COLOR));
          activateItem.setName((Component.literal("")
                .append(Component.literal("Altar Recharging").withStyle(ChatFormatting.BLUE))));
          activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal((blockEntity.getCooldown()/20)+" Seconds").withStyle(ChatFormatting.DARK_PURPLE)))));
-         setSlot(4,activateItem);
+               .append(Component.literal((blockEntity.getCooldown() / 20) + " Seconds").withStyle(ChatFormatting.DARK_PURPLE)))));
+         setSlot(4, activateItem);
       }
    }
    

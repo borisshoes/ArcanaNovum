@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class MundaneCatalyst extends ArcanaItem {
-	public static final String ID = "mundane_catalyst";
+   public static final String ID = "mundane_catalyst";
    
    public MundaneCatalyst(){
       id = ID;
@@ -30,8 +30,8 @@ public class MundaneCatalyst extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.QUARTZ;
       item = new MundaneCatalystItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_CATALYTIC_MATRIX,ResearchTasks.OBTAIN_QUARTZ,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_CATALYTIC_MATRIX, ResearchTasks.OBTAIN_QUARTZ, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -63,13 +63,13 @@ public class MundaneCatalyst extends ArcanaItem {
             .append(Component.literal("Tinkering Menu").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(" of a ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("Twilight Anvil").withStyle(ChatFormatting.GREEN)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("      Mundane\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe Catalytic Matrix is truly incredible. Everyday, I discover new equations that it can implement. With some extra crystals, I can adapt it to augment the abilities ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Mundane\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThe Catalytic Matrix is truly incredible. Everyday, I discover new equations that it can implement. With some extra crystals, I can adapt it to augment the abilities ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Mundane\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nof every item I’ve made.").withStyle(ChatFormatting.BLACK)));
       return list;
    }

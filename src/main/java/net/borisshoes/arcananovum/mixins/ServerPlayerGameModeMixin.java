@@ -35,7 +35,7 @@ public class ServerPlayerGameModeMixin {
          ItemStack mineStack = player.getMainHandItem();
          if(ArcanaItemUtils.identifyItem(mineStack) instanceof PickaxeOfCeptyus pick && mineStack.has(DataComponents.TOOL)){
             if(mineStack.get(DataComponents.TOOL).getMiningSpeed(state) > mineStack.get(DataComponents.TOOL).defaultMiningSpeed()){
-               pick.mining(player,mineStack);
+               pick.mining(player, mineStack);
             }
          }
       }

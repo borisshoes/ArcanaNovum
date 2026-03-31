@@ -42,7 +42,7 @@ public class ArcanaItemUtils {
    public static boolean isArcane(ItemStack item){
       try{
          if(item == null) return false;
-         ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.getValue(ArcanaRegistry.arcanaId( ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
+         ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.getValue(ArcanaRegistry.arcanaId(ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
          return arcanaItem != null;
       }catch(Exception e){
          e.printStackTrace();
@@ -100,7 +100,7 @@ public class ArcanaItemUtils {
    
    public static ArcanaItem identifyItem(ItemStack item){
       if(isArcane(item)){
-         return ArcanaRegistry.ARCANA_ITEMS.getValue(ArcanaRegistry.arcanaId( ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
+         return ArcanaRegistry.ARCANA_ITEMS.getValue(ArcanaRegistry.arcanaId(ArcanaItem.getStringProperty(item, ArcanaItem.ID_TAG)));
       }
       return null;
    }
@@ -128,7 +128,7 @@ public class ArcanaItemUtils {
    
    public static ItemStack getHolderStack(ServerPlayer player, String uuid){
       Inventory inv = player.getInventory();
-      for(int i = 0; i<inv.getContainerSize(); i++){
+      for(int i = 0; i < inv.getContainerSize(); i++){
          ItemStack item = inv.getItem(i);
          if(item.isEmpty()){
             continue;
@@ -160,15 +160,15 @@ public class ArcanaItemUtils {
             dimensionName = "End";
          }
          BlockPos pos = blockEntity.getBlockPos();
-         String posStr = " ("+pos.getX()+","+pos.getY()+","+pos.getZ()+")";
+         String posStr = " (" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + ")";
          
          ArcanaItemContainer worldContainer = new ArcanaItemContainer(
                Identifier.withDefaultNamespace("in_world"),
-               new SimpleContainer(1), 1,1000,
+               new SimpleContainer(1), 1, 1000,
                Component.literal("World"),
-               Component.literal(dimensionName+posStr),
+               Component.literal(dimensionName + posStr),
                0.25);
-         ArcanaInvItem invItem = new ArcanaInvItem(arcanaBlockEntity.getArcanaItem(),1,arcanaBlockEntity.getAugments(),new ArrayList<>(List.of(worldContainer)));
+         ArcanaInvItem invItem = new ArcanaInvItem(arcanaBlockEntity.getArcanaItem(), 1, arcanaBlockEntity.getAugments(), new ArrayList<>(List.of(worldContainer)));
          arcanaInv.add(invItem);
       }
       
@@ -181,21 +181,21 @@ public class ArcanaItemUtils {
       PlayerEnderChestContainer eChest = player.getEnderChestInventory();
       ArcanaItemContainer eChestCont = new ArcanaItemContainer(
             Identifier.withDefaultNamespace("ender_chest"),
-            player.getEnderChestInventory(), player.getEnderChestInventory().getContainerSize(),100,
+            player.getEnderChestInventory(), player.getEnderChestInventory().getContainerSize(), 100,
             Component.literal("EC"),
             Items.ENDER_CHEST.getName().copy(),
             0.5);
-      arcanaInvHelper(inv,arcanaInv,new ArrayList<>());
-      arcanaInvHelper(eChest,arcanaInv,new ArrayList<>(List.of(eChestCont)));
+      arcanaInvHelper(inv, arcanaInv, new ArrayList<>());
+      arcanaInvHelper(eChest, arcanaInv, new ArrayList<>(List.of(eChestCont)));
       for(ArcanaItemContainer arcanaItemContainer : DataAccess.getGlobal(EnderCrateChannels.KEY).arcanaInventoriesForPlayer(player.getUUID())){
-         arcanaInvHelper(arcanaItemContainer.getInventory(),arcanaInv,new ArrayList<>(List.of(arcanaItemContainer)));
+         arcanaInvHelper(arcanaItemContainer.getInventory(), arcanaInv, new ArrayList<>(List.of(arcanaItemContainer)));
       }
       arcanaInv.addAll(getActiveArcanaBlocks(player));
       return arcanaInv;
    }
    
    public static void arcanaInvHelper(Container inv, List<ArcanaInvItem> arcanaInv, List<ArcanaItemContainer> containers){
-      for(int i = 0; i<inv.getContainerSize(); i++){
+      for(int i = 0; i < inv.getContainerSize(); i++){
          ItemStack item = inv.getItem(i);
          if(item.isEmpty())
             continue;
@@ -207,48 +207,49 @@ public class ArcanaItemUtils {
             SimpleContainer bundleInv = new SimpleContainer(bundleComp.size());
             int index = 0;
             for(ItemStack itemStack : bundleComp.itemsCopy()){
-               bundleInv.setItem(index,itemStack);
+               bundleInv.setItem(index, itemStack);
                index++;
             }
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
             containersCopy.add(new ArcanaItemContainer(
                   Identifier.withDefaultNamespace("bundle"),
-                  bundleInv, bundleInv.getContainerSize(),5,
+                  bundleInv, bundleInv.getContainerSize(), 5,
                   Component.literal("BD"),
                   item.getItemName().copy(),
                   1));
-            arcanaInvHelper(bundleInv,arcanaInv,containersCopy);
+            arcanaInvHelper(bundleInv, arcanaInv, containersCopy);
          }else if(isBox && !isArcane){
             ItemContainerContents comp = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
             NonNullList<ItemStack> shulkerItems = NonNullList.withSize(27, ItemStack.EMPTY);
             comp.copyInto(shulkerItems);
             SimpleContainer shulkerInv = new SimpleContainer(27);
             for(int j = 0; j < shulkerItems.size(); j++){
-               shulkerInv.setItem(j,shulkerItems.get(j));
+               shulkerInv.setItem(j, shulkerItems.get(j));
             }
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
             containersCopy.add(new ArcanaItemContainer(
                   Identifier.withDefaultNamespace("shulker_box"),
-                  shulkerInv, shulkerInv.getContainerSize(),50,
+                  shulkerInv, shulkerInv.getContainerSize(), 50,
                   Component.literal("SB"),
                   item.getItemName().copy(),
                   0.5));
-            arcanaInvHelper(shulkerInv,arcanaInv,containersCopy);
+            arcanaInvHelper(shulkerInv, arcanaInv, containersCopy);
          }
          if(!isArcane){
             continue;
          }
          ArcanaItem arcanaItem = identifyItem(item);
-         if(!ArcanaItem.hasProperty(item,ArcanaItem.UUID_TAG) || ArcanaItem.getUUID(item).equals(ArcanaNovum.BLANK_UUID)) continue;
+         if(!ArcanaItem.hasProperty(item, ArcanaItem.UUID_TAG) || ArcanaItem.getUUID(item).equals(ArcanaNovum.BLANK_UUID))
+            continue;
          if(arcanaItem instanceof ArcanaItemContainer.ArcanaItemContainerHaver containerHaver){
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
             ArcanaItemContainer arcanaContainer = containerHaver.getArcanaItemContainer(item);
             containersCopy.add(arcanaContainer);
-            arcanaInvHelper(arcanaContainer.getInventory(),arcanaInv,containersCopy);
+            arcanaInvHelper(arcanaContainer.getInventory(), arcanaInv, containersCopy);
          }
          
-         ArcanaInvItem invItem = new ArcanaInvItem(arcanaItem,item.getCount(),ArcanaAugments.getAugmentsOnItem(item),containers);
-         int contains = ArcanaInvItem.invContains(arcanaInv,invItem);
+         ArcanaInvItem invItem = new ArcanaInvItem(arcanaItem, item.getCount(), ArcanaAugments.getAugmentsOnItem(item), containers);
+         int contains = ArcanaInvItem.invContains(arcanaInv, invItem);
          if(contains >= 0){
             arcanaInv.get(contains).count += invItem.count;
             arcanaInv.get(contains).addItem(item);
@@ -266,7 +267,7 @@ public class ArcanaItemUtils {
          ArcanaItem arcanaItem = arcanaInvItem.item;
          int prefCount = arcanaItem.getPrefItem().getCount();
          double containerMod = arcanaInvItem.getFocusedConcMod(player);
-         concSum += (int) (Math.ceil(arcanaInvItem.count/(double)prefCount) * Math.ceil(containerMod*(ArcanaRarity.getConcentration(arcanaItem.getRarity())+ arcanaInvItem.getAugmentConc(player))));
+         concSum += (int) (Math.ceil(arcanaInvItem.count / (double) prefCount) * Math.ceil(containerMod * (ArcanaRarity.getConcentration(arcanaItem.getRarity()) + arcanaInvItem.getAugmentConc(player))));
       }
       return concSum;
    }
@@ -277,10 +278,10 @@ public class ArcanaItemUtils {
       
       List<ArcanaInvItem> arcanaInv = getArcanaInventory(player);
       Comparator<ArcanaInvItem> comparator = (ArcanaInvItem i1, ArcanaInvItem i2) -> {
-         int r1 = i1.count* ArcanaRarity.getConcentration(i1.item.getRarity());
-         r1 += (int) (10000*i1.getSortMod());
-         int r2 = i2.count* ArcanaRarity.getConcentration(i2.item.getRarity());
-         r2 += (int) (10000*i2.getSortMod());
+         int r1 = i1.count * ArcanaRarity.getConcentration(i1.item.getRarity());
+         r1 += (int) (10000 * i1.getSortMod());
+         int r2 = i2.count * ArcanaRarity.getConcentration(i2.item.getRarity());
+         r2 += (int) (10000 * i2.getSortMod());
          return r1 - r2;
       };
       arcanaInv.sort(comparator);
@@ -289,16 +290,16 @@ public class ArcanaItemUtils {
          ArcanaItem arcanaItem = arcanaInvItem.item;
          int prefCount = arcanaItem.getPrefItem().getCount();
          double containerMod = arcanaInvItem.getFocusedConcMod(player);
-         int multiplier = (int)Math.ceil(arcanaInvItem.count/(double)prefCount);
-   
-         int itemConc = multiplier * (int)Math.ceil(containerMod*(ArcanaRarity.getConcentration(arcanaItem.getRarity())+ arcanaInvItem.getAugmentConc(player)));
+         int multiplier = (int) Math.ceil(arcanaInvItem.count / (double) prefCount);
          
-         String multStr = multiplier > 1 ? " x"+multiplier : "";
+         int itemConc = multiplier * (int) Math.ceil(containerMod * (ArcanaRarity.getConcentration(arcanaItem.getRarity()) + arcanaInvItem.getAugmentConc(player)));
+         
+         String multStr = multiplier > 1 ? " x" + multiplier : "";
          MutableComponent contStr = arcanaInvItem.getContainerString();
          MutableComponent line = Component.literal("")
                .append((Component.literal("- ").append(arcanaItem.getTranslatedName())).withStyle(ChatFormatting.DARK_AQUA))
                .append(Component.literal(multStr).withStyle(ChatFormatting.BLUE))
-               .append(Component.literal(" ("+itemConc+") ").withStyle(ChatFormatting.DARK_GREEN))
+               .append(Component.literal(" (" + itemConc + ") ").withStyle(ChatFormatting.DARK_GREEN))
                .append(contStr.withStyle(ChatFormatting.DARK_PURPLE));
          list.add(line);
       }
@@ -313,10 +314,10 @@ public class ArcanaItemUtils {
       for(ArcanaInvItem arcanaInvItem : arcanaInv){
          ArcanaItem arcanaItem = arcanaInvItem.item;
          int prefCount = arcanaItem.getPrefItem().getCount();
-         int multiplier = (int)Math.ceil(arcanaInvItem.count/(double)prefCount);
+         int multiplier = (int) Math.ceil(arcanaInvItem.count / (double) prefCount);
          double containerMod = arcanaInvItem.getFocusedConcMod(player);
-         int itemConc = multiplier * (int)Math.ceil(containerMod*(ArcanaRarity.getConcentration(arcanaItem.getRarity())+ arcanaInvItem.getAugmentConc(player)));
-
+         int itemConc = multiplier * (int) Math.ceil(containerMod * (ArcanaRarity.getConcentration(arcanaItem.getRarity()) + arcanaInvItem.getAugmentConc(player)));
+         
          if(itemConc > 0) itemsTakingConc += multiplier;
       }
       return itemsTakingConc;
@@ -357,12 +358,12 @@ public class ArcanaItemUtils {
       public final ArcanaItem item;
       public final String hash;
       private final ArrayList<Tuple<String, ItemStack>> stacks;
-      private final TreeMap<ArcanaAugment,Integer> augments;
+      private final TreeMap<ArcanaAugment, Integer> augments;
       private final List<ArcanaItemContainer> containers;
       private double concMod;
       private int sortMod;
       
-      public ArcanaInvItem(ArcanaItem item, int count, TreeMap<ArcanaAugment,Integer> augments, List<ArcanaItemContainer> containers){
+      public ArcanaInvItem(ArcanaItem item, int count, TreeMap<ArcanaAugment, Integer> augments, List<ArcanaItemContainer> containers){
          this.count = count;
          this.item = item;
          this.stacks = new ArrayList<>();
@@ -388,7 +389,7 @@ public class ArcanaItemUtils {
          
          this.hash = item.getId() + augHash + contHash;
       }
-   
+      
       public static int invContains(List<ArcanaInvItem> inv, ArcanaInvItem invItem){
          for(int i = 0; i < inv.size(); i++){
             ArcanaInvItem arcanaInvItem = inv.get(i);
@@ -400,13 +401,13 @@ public class ArcanaItemUtils {
       }
       
       public void addItem(ItemStack stack){
-         stacks.add(new Tuple<>(ArcanaItem.getUUID(stack),stack));
+         stacks.add(new Tuple<>(ArcanaItem.getUUID(stack), stack));
       }
       
       public ArrayList<Tuple<String, ItemStack>> getStacks(){
          return stacks;
       }
-   
+      
       public int getCount(){
          return count;
       }
@@ -414,7 +415,7 @@ public class ArcanaItemUtils {
       public double getConcMod(){
          return concMod;
       }
-   
+      
       public double getSortMod(){
          return sortMod;
       }
@@ -429,9 +430,9 @@ public class ArcanaItemUtils {
             ArcanaAugment aug = entry.getKey();
             int itemLvl = entry.getValue();
             int profileLvl = profile.getAugmentLevel(aug);
-            augmentConc += Math.max(0,itemLvl-profileLvl);
+            augmentConc += Math.max(0, itemLvl - profileLvl);
          }
-         return Math.max(0,augmentConc-adaptabilityBonus);
+         return Math.max(0, augmentConc - adaptabilityBonus);
       }
       
       public double getFocusedConcMod(ServerPlayer player){
@@ -440,7 +441,7 @@ public class ArcanaItemUtils {
          if(focus == 1){
             boolean isEChest = false;
             boolean isShulker = false;
-   
+            
             for(ArcanaItemContainer container : containers){
                if(container.getId().equals(Identifier.withDefaultNamespace("ender_chest"))){
                   isEChest = true;
@@ -466,13 +467,13 @@ public class ArcanaItemUtils {
          }
          return getConcMod();
       }
-   
+      
       public MutableComponent getShortContainerString(){
          if(containers.isEmpty()) return Component.literal("Inv");
          MutableComponent comp = Component.literal("");
          for(int i = 0; i < containers.size(); i++){
             comp.append(containers.get(i).getConcModStr());
-            if(i != containers.size()-1){
+            if(i != containers.size() - 1){
                comp.append("+");
             }
          }
@@ -484,7 +485,7 @@ public class ArcanaItemUtils {
          MutableComponent comp = Component.literal("[");
          for(int i = 0; i < containers.size(); i++){
             comp.append(containers.get(i).getContainerName());
-            if(i != containers.size()-1){
+            if(i != containers.size() - 1){
                comp.append(" + ");
             }
          }
@@ -495,7 +496,7 @@ public class ArcanaItemUtils {
          }
       }
       
-      public TreeMap<ArcanaAugment,Integer> getAugments(){
+      public TreeMap<ArcanaAugment, Integer> getAugments(){
          return augments;
       }
    }

@@ -32,8 +32,8 @@ public class ArcanistsBeltGui extends SimpleGui {
    /**
     * Constructs a new simple container gui for the supplied player.
     *
-    * @param player                the player to server this gui to
-    *                              will be treated as slots of this gui
+    * @param player the player to server this gui to
+    *               will be treated as slots of this gui
     */
    public ArcanistsBeltGui(ServerPlayer player, ArcanistsBelt belt, ItemStack beltStack, int slotCount){
       super(MenuType.GENERIC_9x1, player, false);
@@ -46,9 +46,9 @@ public class ArcanistsBeltGui extends SimpleGui {
       inv = new SimpleContainer(9);
       for(int i = 0; i < inv.getContainerSize(); i++){
          if(i < slotCount){
-            setSlotRedirect(i, new ArcanistsBeltSlot(inv,i,i,0));
+            setSlotRedirect(i, new ArcanistsBeltSlot(inv, i, i, 0));
          }else{
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL))
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL))
                   .setName(Component.literal("Slot Locked").withStyle(ChatFormatting.DARK_PURPLE))
                   .addLoreLine(TextUtils.removeItalics(Component.literal("")
                         .append(Component.literal("Unlock this slot with Augments").withStyle(ChatFormatting.LIGHT_PURPLE)))));
@@ -58,7 +58,7 @@ public class ArcanistsBeltGui extends SimpleGui {
       ItemContainerContents beltItems = beltStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
       beltItems.stream().forEachOrdered(stack -> {
-         inv.setItem(i.get(),stack);
+         inv.setItem(i.get(), stack);
          i.getAndIncrement();
       });
       
@@ -72,7 +72,7 @@ public class ArcanistsBeltGui extends SimpleGui {
       }else if(index > 9){
          int invSlot = index >= 36 ? index - 36 : index;
          ItemStack stack = player.getInventory().getItem(invSlot);
-         if(ItemStack.isSameItemSameComponents(beltStack,stack)){
+         if(ItemStack.isSameItemSameComponents(beltStack, stack)){
             close();
             return false;
          }
@@ -93,10 +93,10 @@ public class ArcanistsBeltGui extends SimpleGui {
          if(arcanaItem != null && arcanaItem.hasCategory(ArcaneTomeGui.TomeFilter.CHARMS)) charmCount++;
       }
       beltStack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(items));
-      belt.buildItemLore(beltStack,player.level().getServer());
+      belt.buildItemLore(beltStack, player.level().getServer());
       
       if(charmCount >= slotCount){
-         ArcanaAchievements.grant(player,ArcanaAchievements.BELT_CHARMING);
+         ArcanaAchievements.grant(player, ArcanaAchievements.BELT_CHARMING);
       }
    }
 }

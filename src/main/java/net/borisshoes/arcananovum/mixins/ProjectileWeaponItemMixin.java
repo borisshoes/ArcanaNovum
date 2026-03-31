@@ -29,16 +29,16 @@ public class ProjectileWeaponItemMixin {
    @Inject(method = "useAmmo", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", shift = At.Shift.BEFORE))
    private static void arcananovum$decreaseQuiver(ItemStack stack, ItemStack projectileStack, LivingEntity shooter, boolean multishot, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 2) ItemStack itemStack){
       if(shooter instanceof ServerPlayer playerEntity){
-         QuiverItem.decreaseQuiver(stack,itemStack,playerEntity);
-         EverlastingRocket.decreaseRocket(itemStack,playerEntity);
+         QuiverItem.decreaseQuiver(stack, itemStack, playerEntity);
+         EverlastingRocket.decreaseRocket(itemStack, playerEntity);
       }
    }
    
-   @Inject(method = "useAmmo", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getCount()I",shift = At.Shift.BEFORE))
+   @Inject(method = "useAmmo", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getCount()I", shift = At.Shift.BEFORE))
    private static void arcananovum$modifyProjectiles(ItemStack stack, ItemStack projectileStack, LivingEntity shooter, boolean multishot, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 0) LocalIntRef i){
       if(i.get() != 0 &&
-            EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(Enchantments.INFINITY),stack) >= 1 &&
-            ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENHANCED_INFINITY) >= 1 &&
+            EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(Enchantments.INFINITY), stack) >= 1 &&
+            ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.ENHANCED_INFINITY) >= 1 &&
             (projectileStack.is(Items.SPECTRAL_ARROW) || projectileStack.is(Items.TIPPED_ARROW))){
          i.set(0);
       }
@@ -47,9 +47,9 @@ public class ProjectileWeaponItemMixin {
    @ModifyExpressionValue(method = "createProjectile", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ArrowItem;createArrow(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;"))
    private AbstractArrow arcananovum$createAlchemicalArrow(AbstractArrow regularArrow, Level world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical){
       if(weaponStack.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && (projectileStack.is(Items.TIPPED_ARROW) || projectileStack.is(Items.SPECTRAL_ARROW))){
-         int spectralLvl = ArcanaAugments.getAugmentOnItem(weaponStack,ArcanaAugments.SPECTRAL_AMPLIFICATION);
-         int prolificLvl = ArcanaAugments.getAugmentOnItem(weaponStack,ArcanaAugments.PROLIFIC_POTIONS);
-         return new ArbalestArrowEntity(world, shooter, spectralLvl,prolificLvl, projectileStack, weaponStack);
+         int spectralLvl = ArcanaAugments.getAugmentOnItem(weaponStack, ArcanaAugments.SPECTRAL_AMPLIFICATION);
+         int prolificLvl = ArcanaAugments.getAugmentOnItem(weaponStack, ArcanaAugments.PROLIFIC_POTIONS);
+         return new ArbalestArrowEntity(world, shooter, spectralLvl, prolificLvl, projectileStack, weaponStack);
       }
       return regularArrow;
    }

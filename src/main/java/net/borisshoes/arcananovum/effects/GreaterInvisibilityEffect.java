@@ -23,14 +23,14 @@ import java.util.List;
 public class GreaterInvisibilityEffect extends MobEffect implements PolymerStatusEffect {
    
    public GreaterInvisibilityEffect(){
-      super(MobEffectCategory.BENEFICIAL,0xb7dded);
+      super(MobEffectCategory.BENEFICIAL, 0xb7dded);
    }
    
    @Override
    public boolean applyEffectTick(ServerLevel world, LivingEntity entity, int amplifier){
       Vec3 pos = entity.position();
-      world.sendParticles(ParticleTypes.SMOKE,pos.x,pos.y+entity.getBbHeight()/2,pos.z,1,.4,.4,.4,0);
-      return super.applyEffectTick(world, entity,amplifier);
+      world.sendParticles(ParticleTypes.SMOKE, pos.x, pos.y + entity.getBbHeight() / 2, pos.z, 1, .4, .4, .4, 0);
+      return super.applyEffectTick(world, entity, amplifier);
    }
    
    @Override
@@ -41,7 +41,7 @@ public class GreaterInvisibilityEffect extends MobEffect implements PolymerStatu
    @Override
    public void onEffectStarted(LivingEntity entity, int amplifier){
       if(entity.level().getServer() != null){
-         addInvis(entity.level().getServer(),entity);
+         addInvis(entity.level().getServer(), entity);
       }
       super.onEffectStarted(entity, amplifier);
    }

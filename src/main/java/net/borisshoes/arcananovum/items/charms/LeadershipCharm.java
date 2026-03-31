@@ -46,7 +46,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Interaction {
-	public static final String ID = "leadership_charm";
+   public static final String ID = "leadership_charm";
    
    public LeadershipCharm(){
       id = ID;
@@ -55,7 +55,7 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CHARMS, ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.AMETHYST_SHARD;
       item = new LeadershipCharmItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_LEADERSHIP_CHARM};
       
       ItemStack stack = new ItemStack(item);
@@ -93,13 +93,13 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
             .append(Component.literal("and ").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal("mends gear").withStyle(ChatFormatting.GREEN))
             .append(Component.literal(".").withStyle(ChatFormatting.YELLOW)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("      Charm of\n     Leadership").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nA rare pendant, gifted only by Divine Entities. Whoever holds the amulet is imbued with a surge of confidence powerful enough to radiate a visible aura. They say anything is possible when ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Charm of\n     Leadership").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nA rare pendant, gifted only by Divine Entities. Whoever holds the amulet is imbued with a surge of confidence powerful enough to radiate a visible aura. They say anything is possible when ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Charm of\n     Leadership").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nfollowing a glowing leader…\n\nThe Charm grants the wielder and all those nearby a bout of regeneration, strength and resistance. It also has the ability to mend ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Charm of\n     Leadership").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nthe gear of all players in its radius without need for the Mending enchantment. ").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -107,38 +107,38 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      int invigor = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION);
-      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range),stele.getBlockPos().getCenter().add(range));
+      int invigor = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.INVIGORATION);
+      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
       List<ServerPlayer> inRangePlayers = world.getPlayers(p -> !p.isSpectator() && p.getBoundingBox().intersects(box));
-      for(ServerPlayer plyr: inRangePlayers){
-         applyEffect(plyr,invigor,null);
+      for(ServerPlayer plyr : inRangePlayers){
+         applyEffect(plyr, invigor, null);
       }
       
       if(world.getServer().getTickCount() % 20 == 0){
-         double theta = Math.PI/(80)*(world.getServer().getTickCount()%160);
-         ArcanaEffectUtils.sphere(world,null,stele.getBlockPos().getCenter().add(0,1,0), ParticleTypes.HAPPY_VILLAGER,1.5,50,1,0.1,0,theta);
+         double theta = Math.PI / (80) * (world.getServer().getTickCount() % 160);
+         ArcanaEffectUtils.sphere(world, null, stele.getBlockPos().getCenter().add(0, 1, 0), ParticleTypes.HAPPY_VILLAGER, 1.5, 50, 1, 0.1, 0, theta);
       }
    }
    
    @Override
    public Vec3 getBaseRange(){
-      return new Vec3(12,8,12);
+      return new Vec3(12, 8, 12);
    }
    
    private void applyEffect(ServerPlayer player, int invigor, @Nullable UUID causingEntity){
       float mightStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_MIGHT_PER_LVL).get(invigor);
       float fortStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_FORTITUDE_PER_LVL).get(invigor);
       float rejuvStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_REJUVENATION_PER_LVL).get(invigor);
-      ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION,arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()+"_"+invigor),100,rejuvStr,true,true,false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
-      ConditionInstance might = new ConditionInstance(Conditions.MIGHT,arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()+"_"+invigor),100,mightStr,true,true,false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
-      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE,arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()+"_"+invigor),100, -(fortStr),true,true,false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
-      Conditions.addCondition(player.level().getServer(),player,rejuv);
-      Conditions.addCondition(player.level().getServer(),player,might);
-      Conditions.addCondition(player.level().getServer(),player,fortitude);
+      ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId() + "_" + invigor), 100, rejuvStr, true, true, false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
+      ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId() + "_" + invigor), 100, mightStr, true, true, false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
+      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId() + "_" + invigor), 100, -(fortStr), true, true, false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
+      Conditions.addCondition(player.level().getServer(), player, rejuv);
+      Conditions.addCondition(player.level().getServer(), player, might);
+      Conditions.addCondition(player.level().getServer(), player, fortitude);
       
-      MobEffectInstance str = new MobEffectInstance(MobEffects.STRENGTH, 20 * 5 + 5, 1+invigor, false, false, true);
-      MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5 + 5, 1+invigor/2, false, false, true);
-      MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 20 * 5 + 5, 1+invigor, false, false, true);
+      MobEffectInstance str = new MobEffectInstance(MobEffects.STRENGTH, 20 * 5 + 5, 1 + invigor, false, false, true);
+      MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5 + 5, 1 + invigor / 2, false, false, true);
+      MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 20 * 5 + 5, 1 + invigor, false, false, true);
       player.addEffect(str);
       player.addEffect(res);
       player.addEffect(regen);
@@ -155,13 +155,13 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
             int durability = item.getDamageValue();
             if(durability <= 0)
                continue;
-            durability = Mth.clamp(durability - 15*(1+invigor), 0, Integer.MAX_VALUE);
+            durability = Mth.clamp(durability - 15 * (1 + invigor), 0, Integer.MAX_VALUE);
             
             item.setDamageValue(durability);
          }
       }
       if(player.level().getServer().getTickCount() % 10 == 0){
-         player.level().sendParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY()+.75, player.getZ(), 4, .2, .2, .2, 10);
+         player.level().sendParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY() + .75, player.getZ(), 4, .2, .2, .2, 10);
       }
    }
    
@@ -180,30 +180,30 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          // Give AoE resistance, regen, and strength, and repair gear.
-         int invigor = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION);
+         int invigor = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.INVIGORATION);
          double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.LEADERSHIP_CHARM_RADIUS);
          double extraRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.LEADERSHIP_CHARM_INVIGORATION_RADIUS_PER_LVL).get(invigor);
          
-         double effectRange = baseRange+extraRange;
+         double effectRange = baseRange + extraRange;
          Vec3 playerPos = player.position();
-         List<ServerPlayer> inRangePlayers = serverWorld.getPlayers(p -> !p.isSpectator() && p.distanceToSqr(playerPos) <= effectRange*effectRange);
+         List<ServerPlayer> inRangePlayers = serverWorld.getPlayers(p -> !p.isSpectator() && p.distanceToSqr(playerPos) <= effectRange * effectRange);
          
          MobEffectInstance glow = new MobEffectInstance(MobEffects.GLOWING, 20 * 5 + 5, 0, false, false, true);
          player.addEffect(glow);
          
-         for(ServerPlayer plyr: inRangePlayers){
-            applyEffect(plyr,invigor,entity.getUUID());
+         for(ServerPlayer plyr : inRangePlayers){
+            applyEffect(plyr, invigor, entity.getUUID());
             if(world.getServer().getTickCount() % 10 == 0){
-               world.sendParticles(player, ParticleTypes.HAPPY_VILLAGER, false,true, player.getX(), player.getY()+3, player.getZ(), 5, .1, .3, .1, 10);
+               world.sendParticles(player, ParticleTypes.HAPPY_VILLAGER, false, true, player.getX(), player.getY() + 3, player.getZ(), 5, .1, .3, .1, 10);
             }
          }
-         if(inRangePlayers.size() >= 6) ArcanaAchievements.grant(player,ArcanaAchievements.RAID_LEADER);
+         if(inRangePlayers.size() >= 6) ArcanaAchievements.grant(player, ArcanaAchievements.RAID_LEADER);
          
          // Particle effects
          if(serverWorld.getServer().getTickCount() % 10 == 0){
-            double theta = Math.PI/(80)*(serverWorld.getServer().getTickCount()%160); // 8 second duration
-            ArcanaEffectUtils.sphere(serverWorld,null,player.position(), ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0,theta);
-            ArcanaEffectUtils.circle(serverWorld,null,player.position(), ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0);
+            double theta = Math.PI / (80) * (serverWorld.getServer().getTickCount() % 160); // 8 second duration
+            ArcanaEffectUtils.sphere(serverWorld, null, player.position(), ParticleTypes.HAPPY_VILLAGER, effectRange, 100, 1, 0.1, 0, theta);
+            ArcanaEffectUtils.circle(serverWorld, null, player.position(), ParticleTypes.HAPPY_VILLAGER, effectRange, 100, 1, 0.1, 0);
          }
       }
    }

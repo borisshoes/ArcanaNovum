@@ -5,7 +5,6 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
-import net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -29,13 +28,13 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 public class CelestialAltarGui extends SimpleGui {
    private final CelestialAltarBlockEntity blockEntity;
    private final boolean control;
-   private final int[] lightLvl = {15,11,7,3,0,3,7,11};
+   private final int[] lightLvl = {15, 11, 7, 3, 0, 3, 7, 11};
    
    public CelestialAltarGui(ServerPlayer player, CelestialAltarBlockEntity blockEntity){
       super(MenuType.HOPPER, player, false);
       this.blockEntity = blockEntity;
       setTitle(Component.literal("Celestial Altar"));
-      control = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STELLAR_CONTROL) >= 1;
+      control = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.STELLAR_CONTROL) >= 1;
    }
    
    @Override
@@ -46,27 +45,27 @@ public class CelestialAltarGui extends SimpleGui {
          if(!control){
             blockEntity.setPhase(phase == 4 ? 0 : 4);
          }else{
-            blockEntity.setPhase((phase+1) % 8);
+            blockEntity.setPhase((phase + 1) % 8);
          }
       }else if(index == 4){
          if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-            blockEntity.setMode((mode+1) % 2);
+            blockEntity.setMode((mode + 1) % 2);
          }else{
             if(blockEntity.getCooldown() <= 0 && blockEntity.getLevel() instanceof ServerLevel serverWorld){
-               Tuple<Item,Integer> cost = CelestialAltarBlockEntity.getCost();
-               if(MinecraftUtils.removeItems(player, cost.getA(),cost.getB())){
+               Tuple<Item, Integer> cost = CelestialAltarBlockEntity.getCost();
+               if(MinecraftUtils.removeItems(player, cost.getA(), cost.getB())){
                   blockEntity.startStarChange(player);
                   close();
                }else{
-                  player.displayClientMessage(Component.literal("You do not have "+ cost.getB()+" ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                  player.displayClientMessage(Component.literal("You do not have " + cost.getB() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
                         .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
-                        .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)),false);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
+                        .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                   close();
                }
             }else{
-               player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
+               player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                close();
             }
          }
@@ -89,8 +88,8 @@ public class CelestialAltarGui extends SimpleGui {
       int mode = blockEntity.getMode();
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         GuiElementBuilder menuItem = mode == 0 ? GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.CELESTIAL_DAY_COLOR)) : GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.CELESTIAL_NIGHT_COLOR));
-         setSlot(i,menuItem.setName(Component.literal("Celestial Altar").withStyle(mode == 0 ? ChatFormatting.YELLOW : ChatFormatting.AQUA)));
+         GuiElementBuilder menuItem = mode == 0 ? GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.CELESTIAL_DAY_COLOR)) : GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.CELESTIAL_NIGHT_COLOR));
+         setSlot(i, menuItem.setName(Component.literal("Celestial Altar").withStyle(mode == 0 ? ChatFormatting.YELLOW : ChatFormatting.AQUA)));
       }
       
       GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideDefaultTooltip();
@@ -101,12 +100,12 @@ public class CelestialAltarGui extends SimpleGui {
          cooldownItem.setName((Component.literal("")
                .append(Component.literal("Altar Recharging").withStyle(ChatFormatting.BLUE))));
          cooldownItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal((blockEntity.getCooldown()/20)+" Seconds").withStyle(ChatFormatting.GOLD)))));
+               .append(Component.literal((blockEntity.getCooldown() / 20) + " Seconds").withStyle(ChatFormatting.GOLD)))));
       }
-      setSlot(0,cooldownItem);
+      setSlot(0, cooldownItem);
       
       ItemStack lightItem = new ItemStack(Items.LIGHT);
-      lightItem.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(BlockStateProperties.LEVEL,lightLvl[phase]));
+      lightItem.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(BlockStateProperties.LEVEL, lightLvl[phase]));
       GuiElementBuilder phaseItem = GuiElementBuilder.from(lightItem).hideDefaultTooltip();
       
       if(mode == 0){
@@ -124,7 +123,7 @@ public class CelestialAltarGui extends SimpleGui {
          phaseItem.setName((Component.literal("")
                .append(Component.literal("Time of Day").withStyle(ChatFormatting.GOLD))));
          phaseItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal("Selected: "+phaseStr).withStyle(ChatFormatting.YELLOW)))));
+               .append(Component.literal("Selected: " + phaseStr).withStyle(ChatFormatting.YELLOW)))));
          phaseItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
          phaseItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Click to change the time").withStyle(ChatFormatting.GRAY)))));
@@ -143,30 +142,30 @@ public class CelestialAltarGui extends SimpleGui {
          phaseItem.setName((Component.literal("")
                .append(Component.literal("Moon Phase").withStyle(ChatFormatting.GOLD))));
          phaseItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-               .append(Component.literal("Selected: "+phaseStr).withStyle(ChatFormatting.YELLOW)))));
+               .append(Component.literal("Selected: " + phaseStr).withStyle(ChatFormatting.YELLOW)))));
          phaseItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
          phaseItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Click to change the phase").withStyle(ChatFormatting.GRAY)))));
       }
-      setSlot(2,phaseItem);
+      setSlot(2, phaseItem);
       
       
       GuiElementBuilder activateItem = new GuiElementBuilder(mode == 0 ? Items.GLOWSTONE : Items.SEA_LANTERN);
-      Tuple<Item,Integer> cost = CelestialAltarBlockEntity.getCost();
+      Tuple<Item, Integer> cost = CelestialAltarBlockEntity.getCost();
       activateItem.setName((Component.literal("")
             .append(Component.literal("Activate Altar").withStyle(mode == 0 ? ChatFormatting.GOLD : ChatFormatting.BLUE))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Click to move the sky").withStyle(ChatFormatting.AQUA)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("Current Mode: "+(mode == 0 ? "Solar" : "Lunar")).withStyle(ChatFormatting.YELLOW)))));
+            .append(Component.literal("Current Mode: " + (mode == 0 ? "Solar" : "Lunar")).withStyle(ChatFormatting.YELLOW)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Right Click to switch modes").withStyle(ChatFormatting.DARK_GRAY)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("The Altar Requires "+cost.getB()+" ").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("The Altar Requires " + cost.getB() + " ").withStyle(ChatFormatting.AQUA))
             .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
-      setSlot(4,activateItem);
+      setSlot(4, activateItem);
    }
    
    

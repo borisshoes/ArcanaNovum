@@ -13,7 +13,7 @@ public class NulMementoEvent extends Event {
    private final ItemStack memento;
    
    public NulMementoEvent(int interval, ServerPlayer player, ItemStack memento){
-      super(ID, interval+10);
+      super(ID, interval + 10);
       this.player = player;
       this.memento = memento;
    }

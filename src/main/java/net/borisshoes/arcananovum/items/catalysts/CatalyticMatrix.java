@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class CatalyticMatrix extends ArcanaItem {
-	public static final String ID = "catalytic_matrix";
+   public static final String ID = "catalytic_matrix";
    
    public CatalyticMatrix(){
       id = ID;
@@ -32,8 +32,8 @@ public class CatalyticMatrix extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.NETHER_STAR;
       item = new CatalyticMatrixItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -70,19 +70,19 @@ public class CatalyticMatrix extends ArcanaItem {
             .append(Component.literal(" of ").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal("Arcana").withStyle(ChatFormatting.LIGHT_PURPLE))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("  Catalytic Matrix").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThe full power of a Runic Matrix shouldn’t be necessary to further unlock abilities within the items I’ve made. Breaking one into self-contained fragments should be more efficient.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Catalytic Matrix").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThe full power of a Runic Matrix shouldn’t be necessary to further unlock abilities within the items I’ve made. Breaking one into self-contained fragments should be more efficient.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class CatalyticMatrixItem extends ArcanaPolymerItem {
       public CatalyticMatrixItem(){
-         super(getThis(),getArcanaItemComponents().stacksTo(4));
+         super(getThis(), getArcanaItemComponents().stacksTo(4));
       }
       
       @Override

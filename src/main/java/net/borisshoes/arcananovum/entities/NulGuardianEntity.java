@@ -79,7 +79,7 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
       this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(10.0);
       this.reassessWeaponGoal();
       this.setDropChance(EquipmentSlot.MAINHAND, 0);
-      MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE,-1,1,false,false,false);
+      MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, -1, 1, false, false, false);
       this.addEffect(res);
       return entityData2;
    }
@@ -113,10 +113,10 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
       super.die(damageSource);
       
       if(this.construct != null && this.mage && this.level() instanceof ServerLevel serverWorld){
-         ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePosition, this.construct::getEyePosition,20,1.0, ParticleTypes.RAID_OMEN,4,1,0,0,false,0,50);
+         ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePosition, this.construct::getEyePosition, 20, 1.0, ParticleTypes.RAID_OMEN, 4, 1, 0, 0, false, 0, 50);
          BorisLib.addTickTimerCallback(new GenericTimer(50, () -> {
             if(this.construct != null && this.construct.isAlive()){
-               this.construct.hurtServer(serverWorld, ArcanaDamageTypes.of(this.level(),ArcanaDamageTypes.CONCENTRATION,damageSource.getDirectEntity(),damageSource.getEntity()), 35);
+               this.construct.hurtServer(serverWorld, ArcanaDamageTypes.of(this.level(), ArcanaDamageTypes.CONCENTRATION, damageSource.getDirectEntity(), damageSource.getEntity()), 35);
             }
          }));
       }
@@ -133,7 +133,7 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
             if(this.tickCount % 20 == 0 && this.construct.distanceTo(this) < NulConstructEntity.FIGHT_RANGE){
                this.construct.heal(this.construct.isExalted() ? 2.0f : 5.0f);
                
-               List<Entity> entities = serverWorld.getEntities(this,getBoundingBox().inflate(NulConstructEntity.FIGHT_RANGE), e -> !e.isSpectator() && e.distanceTo(this) < 16.0 && (e instanceof NulGuardianEntity));
+               List<Entity> entities = serverWorld.getEntities(this, getBoundingBox().inflate(NulConstructEntity.FIGHT_RANGE), e -> !e.isSpectator() && e.distanceTo(this) < 16.0 && (e instanceof NulGuardianEntity));
                Collections.shuffle(entities);
                for(Entity entity : entities){
                   NulGuardianEntity otherGuardian = (NulGuardianEntity) entity;
@@ -141,11 +141,11 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
                }
                
                if(this.tickCount % 80 == 0){
-                  ParticleOptions dust = new DustParticleOptions(0x9e0945,0.8f);
-                  ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePosition, this.construct::getEyePosition,12,0.5, dust,8,1,0,0,false,0,60);
+                  ParticleOptions dust = new DustParticleOptions(0x9e0945, 0.8f);
+                  ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePosition, this.construct::getEyePosition, 12, 0.5, dust, 8, 1, 0, 0, false, 0, 60);
                   
                   if(!entities.isEmpty()){
-                     ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePosition, entities.getFirst()::getEyePosition,12,0.5, dust,8,1,0,0,false,0,60);
+                     ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePosition, entities.getFirst()::getEyePosition, 12, 0.5, dust, 8, 1, 0, 0, false, 0, 60);
                   }
                }
             }
@@ -160,7 +160,8 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
       
       if(this.construct != null && this.construct.isExalted()) modified *= 0.75f;
       if(source.is(ArcanaRegistry.NUL_CONSTRUCT_VULNERABLE_TO)) modified *= 2.0f;
-      if(source.is(DamageTypes.WITHER) || source.is(DamageTypes.WITHER_SKULL) || source.is(ArcanaDamageTypes.NUL)) modified *= 0.0f;
+      if(source.is(DamageTypes.WITHER) || source.is(DamageTypes.WITHER_SKULL) || source.is(ArcanaDamageTypes.NUL))
+         modified *= 0.0f;
       if(source.is(DamageTypeTags.IS_EXPLOSION)) modified *= 0.5f;
       if(source.is(DamageTypeTags.BYPASSES_ARMOR)) modified *= 0.85f;
       
@@ -179,7 +180,7 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    }
    
    @Override
-   public void performRangedAttack(LivingEntity target, float pullProgress) {
+   public void performRangedAttack(LivingEntity target, float pullProgress){
       if(!this.isSilent()){
          this.playSound(SoundEvents.WITHER_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
       }
@@ -224,8 +225,8 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    @Override
    protected void addAdditionalSaveData(ValueOutput view){
       super.addAdditionalSaveData(view);
-      view.putBoolean("mage",mage);
-      if(this.construct != null) view.putString("construct",this.construct.getStringUUID());
+      view.putBoolean("mage", mage);
+      if(this.construct != null) view.putString("construct", this.construct.getStringUUID());
    }
    
    @Override

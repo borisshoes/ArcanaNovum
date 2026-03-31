@@ -25,7 +25,7 @@ public class PoolElementStructurePieceMixin {
       if(!nbt.contains("pool_element")){
          CompoundTag nbtElement = new CompoundTag();
          String poolId = element.toString();
-         String poolId2 = poolId.substring(0,poolId.length()-2);
+         String poolId2 = poolId.substring(0, poolId.length() - 2);
          String split = "\\[";
          String[] poolIdArray = poolId2.split(split);
          String poolLocation = poolIdArray[poolIdArray.length - 1];

@@ -69,18 +69,18 @@ public class AequalisScientia extends ArcanaItem {
       id = ID;
       name = "Aequalis Scientia";
       rarity = ArcanaRarity.DIVINE;
-      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),ArcaneTomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.DIAMOND;
       itemVersion = 2;
       item = new AequalisScientiaItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TRANSMUTATION_ALTAR,ResearchTasks.OBTAIN_DIVINE_CATALYST,ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_CAKE_TO_NOTE_BLOCK,ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_ITEM_TO_PLAYER};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TRANSMUTATION_ALTAR, ResearchTasks.OBTAIN_DIVINE_CATALYST, ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_CAKE_TO_NOTE_BLOCK, ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_ITEM_TO_PLAYER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,USES_TAG, ArcanaNovum.CONFIG.getInt(ArcanaConfig.AEQUALIS_SCIENTIA_BASE_USES));
-      putProperty(stack,TRANSMUTATION_TAG,"");
+      putProperty(stack, USES_TAG, ArcanaNovum.CONFIG.getInt(ArcanaConfig.AEQUALIS_SCIENTIA_BASE_USES));
+      putProperty(stack, TRANSMUTATION_TAG, "");
       setPrefStack(stack);
    }
    
@@ -91,12 +91,12 @@ public class AequalisScientia extends ArcanaItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      int uses = getIntProperty(stack,USES_TAG);
-      String transmutationId = getStringProperty(stack,TRANSMUTATION_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,USES_TAG,uses);
-      putProperty(newStack,TRANSMUTATION_TAG,transmutationId);
-      return buildItemLore(newStack,server);
+      int uses = getIntProperty(stack, USES_TAG);
+      String transmutationId = getStringProperty(stack, TRANSMUTATION_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, USES_TAG, uses);
+      putProperty(newStack, TRANSMUTATION_TAG, transmutationId);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -202,7 +202,7 @@ public class AequalisScientia extends ArcanaItem {
       
       if(itemStack != null){
          int uses = getIntProperty(itemStack, USES_TAG);
-         String useStr = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.TIMELESS_WISDOM) > 0 ? "∞" : uses+"";
+         String useStr = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.TIMELESS_WISDOM) > 0 ? "∞" : uses + "";
          lore.add(Component.literal(""));
          lore.add(Component.literal("")
                .append(Component.literal("Reallocation Uses").withStyle(ChatFormatting.AQUA))
@@ -227,11 +227,11 @@ public class AequalisScientia extends ArcanaItem {
       boolean[] conditions = new boolean[]{
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.NUL_MEMENTO.getItem()),
             ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()),
       };
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -240,9 +240,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nNul might claim to be the god of knowledge. He 'forgets' that my experience beats his one hundred-fold.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,0b10));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 0, 1, 0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -250,9 +250,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nI still muse about your trickery to acquire that pickaxe. Ceptyus must be enraged that a player managed to breach their realm.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,1.3f))
-      ),new int[]{},0,1,0b100));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 1.3f))
+      ), new int[]{}, 0, 1, 0b100));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -260,9 +260,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nEverything has value, especially life. My Sister knows that better than anyone, I just wish she'd remember that more often.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,0b1));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 0, 1, 0b1));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -270,9 +270,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nKnowledge is a most interesting possession. Its value changes based on who holds it.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},1,1,0b0));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -280,9 +280,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nA skill for a skill, an augment for an augment... Would you call that a fair trade?").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},1,1,0b0));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -290,9 +290,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nWhat do you think of my Brother? Is it worth dealing with Death?").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,0b10));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 0, 1, 0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -300,9 +300,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nVery few have had the wisdom to make my grand trade. I'm glad that you did.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},1,1,0b0));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -310,9 +310,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nHave caution when taking my Brother's challenges. He forgets how fragile you can be.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,0b10));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 0, 1, 0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -320,9 +320,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nPerfectly Balanced. As all things should be...").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},1,1,0b0));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -330,9 +330,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nYou too, have a gift from Gaialtus? Treasure it!").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,0b100000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 0, 1, 0b100000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -340,9 +340,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nThat Spear frightens me. Such cruel violence should never be endorsed.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,0b1000000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 0, 1, 0b1000000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -355,10 +355,10 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Enderia").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                   .append(Component.literal("\nAt least you have some sense in you. Bury that Spear in the deepest hole you can dig!").withStyle(ChatFormatting.DARK_PURPLE))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL,0.3f,1.4f))
-      ),new int[]{0,80},0,1,0b1010000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.3f, 1.4f))
+      ), new int[]{0, 80}, 0, 1, 0b1010000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -376,11 +376,11 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nYou do not know Gaialtus as this Player and I do. And my true power comes not from divinity, but from the lifetimes I spent researching our world.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.6f))
-      ),new int[]{0,80,100},0,1,0b101000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.6f))
+      ), new int[]{0, 80, 100}, 0, 1, 0b101000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -388,9 +388,9 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nTreasure those trousers, they will help you create anything your mind desires.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,0b100000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{}, 0, 1, 0b100000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -413,12 +413,12 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\nIndeed, so very long ago...").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.6f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.6f))
-      ),new int[]{0,80,100,50},0,1,0b1000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.6f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.6f))
+      ), new int[]{0, 80, 100, 50}, 0, 1, 0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -441,12 +441,12 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\nThere's no one else I would rather have at my side.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.9f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,1.4f))
-      ),new int[]{0,60,80,60},0,1,0b1000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.9f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 1.4f))
+      ), new int[]{0, 60, 80, 60}, 0, 1, 0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -470,12 +470,12 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\nI shall keep that title for eons to come, even if only to make you laugh.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITH_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,1.4f))
-      ),new int[]{0,80,60,60},0,1,0b1000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITH_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 1.4f))
+      ), new int[]{0, 80, 60, 60}, 0, 1, 0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -493,11 +493,11 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nPlayer, whatever he has in store for you, remember you can always find your own path instead.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.8f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,100,120},0,1,0b1000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.8f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{0, 100, 120}, 0, 1, 0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -515,11 +515,11 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nI am not like you and Nul, showing power through violence. My influence is subtle, like the rising tide - it's far stronger than you realize.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL,0.3f,1.4f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,120,100},0,1,0b10000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.3f, 1.4f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{0, 120, 100}, 0, 1, 0b10000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -537,20 +537,20 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nYou must never have visited the Overworld and seen what is done to my kind. Maybe this Player will show you sometime.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL,0.3f,1.4f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,120,100},0,1,0b10000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.3f, 1.4f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{0, 120, 100}, 0, 1, 0b10000));
       
-      DialogHelper helper = new DialogHelper(dialogOptions,conditions);
-      helper.sendDialog(List.of(player),helper.getWeightedResult(),true);
+      DialogHelper helper = new DialogHelper(dialogOptions, conditions);
+      helper.sendDialog(List.of(player), helper.getWeightedResult(), true);
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Aequalis Scientia").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nI believe I have solved two mysteries in one! The entity that powers my Transmutation Altar is a Divine creature that calls themselves Equayus, the God of Balance, Trade, and Wisdom.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Aequalis Scientia").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nI believe I have solved two mysteries in one! The entity that powers my Transmutation Altar is a Divine creature that calls themselves Equayus, the God of Balance, Trade, and Wisdom.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Aequalis Scientia").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nThe transmutations that I perform are actually an implicit barter with Equayus for items of equal value. They were kind enough to trade a few of my Sovereign Catalysts for some Divine energy to use in another Catalyst.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Aequalis Scientia").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nFrom there I was able to transmute a stone with Divine energy. Equayus was impressed with my understanding and has imbued the stone with their rune. This stone is the final piece to the Altar").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Aequalis Scientia").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nand is used in the keystone position to conduct advanced transmutations.\n\nEquayus told me that I have a solid grasp on the value of materials, but need to learn the value of knowledge.").withStyle(ChatFormatting.BLACK)));
@@ -585,7 +585,7 @@ public class AequalisScientia extends ArcanaItem {
             ArcanaPlayerData data = ArcanaNovum.data(player);
             if(!data.completedCeptyus() && data.canAttemptCeptyus() && data.getLastCeptyusAttempt() <= 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.CEPTYUS_EVENT_ENABLED)){
                Structure structure = player.level().structureManager().registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.ANCIENT_CITY);
-               StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(),structure);
+               StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(), structure);
                if(start.isValid() && start.canBeReferenced()){
                   data.startCeptyus(player);
                   data.setLastCeptyusAttempt(36000);
@@ -597,11 +597,11 @@ public class AequalisScientia extends ArcanaItem {
       @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
-         String transmutationId = getStringProperty(stack,TRANSMUTATION_TAG);
+         String transmutationId = getStringProperty(stack, TRANSMUTATION_TAG);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.SUCCESS_SERVER;
          
          if(transmutationId.isEmpty()){
-            TransmutationAltarRecipeGui transmutationGui = new TransmutationAltarRecipeGui(player,null, Optional.empty());
+            TransmutationAltarRecipeGui transmutationGui = new TransmutationAltarRecipeGui(player, null, Optional.empty());
             transmutationGui.enableSelectionMode(stack);
             transmutationGui.buildPage();
             transmutationGui.open();
@@ -614,130 +614,130 @@ public class AequalisScientia extends ArcanaItem {
                
                if(recipe instanceof CommutativeTransmutationRecipe commieRecipe){
                   if(commieRecipe.validCommunalInput(playerEntity.getItemInHand(InteractionHand.OFF_HAND))){
-                     ItemStack input = getAndSplitValidCommunalStack(stack,commieRecipe,playerEntity.getItemInHand(InteractionHand.OFF_HAND), player);
+                     ItemStack input = getAndSplitValidCommunalStack(stack, commieRecipe, playerEntity.getItemInHand(InteractionHand.OFF_HAND), player);
                      if(input == null){
-                        player.displayClientMessage(Component.literal("You do not have a valid input item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+                        player.displayClientMessage(Component.literal("You do not have a valid input item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
-                     ItemStack reagent1 = getAndSplitValidReagent1(stack,recipe,player);
+                     ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                      if(reagent1 == null){
-                        MinecraftUtils.returnItems(new SimpleContainer(input),player);
-                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()),false);
+                        MinecraftUtils.returnItems(new SimpleContainer(input), player);
+                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
-                     ItemStack reagent2 = getAndSplitValidReagent2(stack,recipe,player);
+                     ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                      if(reagent2 == null){
-                        MinecraftUtils.returnItems(new SimpleContainer(input),player);
-                        MinecraftUtils.returnItems(new SimpleContainer(reagent1),player);
-                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()),false);
+                        MinecraftUtils.returnItems(new SimpleContainer(input), player);
+                        MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
+                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
                      ItemStack focus = playerEntity.getItemInHand(InteractionHand.OFF_HAND).split(1);
                      
-                     items = List.of(input,focus,reagent1,reagent2,stack);
-                     results = commieRecipe.doTransmutation(input,focus,reagent1,reagent2,stack,player);
+                     items = List.of(input, focus, reagent1, reagent2, stack);
+                     results = commieRecipe.doTransmutation(input, focus, reagent1, reagent2, stack, player);
                   }else{
                      results = null;
-                     player.displayClientMessage(Component.literal("Your offhand must be a valid focus item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+                     player.displayClientMessage(Component.literal("Your offhand must be a valid focus item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                }else if(recipe instanceof InfusionTransmutationRecipe infusionRecipe){
-                  ItemStack input = getAndSplitValidStack(stack,infusionRecipe.getInputCount(),infusionRecipe.getInputPredicate(),player,true);
+                  ItemStack input = getAndSplitValidStack(stack, infusionRecipe.getInputCount(), infusionRecipe.getInputPredicate(), player, true);
                   if(input == null){
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(infusionRecipe.getInputName()),false);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(infusionRecipe.getInputName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
-                  ItemStack reagent1 = getAndSplitValidReagent1(stack,recipe,player);
+                  ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                   if(reagent1 == null){
-                     MinecraftUtils.returnItems(new SimpleContainer(input),player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()),false);
+                     MinecraftUtils.returnItems(new SimpleContainer(input), player);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
-                  ItemStack reagent2 = getAndSplitValidReagent2(stack,recipe,player);
+                  ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                   if(reagent2 == null){
-                     MinecraftUtils.returnItems(new SimpleContainer(input),player);
-                     MinecraftUtils.returnItems(new SimpleContainer(reagent1),player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()),false);
+                     MinecraftUtils.returnItems(new SimpleContainer(input), player);
+                     MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   
-                  items = List.of(input, ItemStack.EMPTY,reagent1,reagent2,stack);
-                  results = infusionRecipe.doTransmutation(input,null,reagent1,reagent2,stack,player);
+                  items = List.of(input, ItemStack.EMPTY, reagent1, reagent2, stack);
+                  results = infusionRecipe.doTransmutation(input, null, reagent1, reagent2, stack, player);
                }else if(recipe instanceof PermutationTransmutationRecipe permutationRecipe){
-                  ItemStack input = getAndSplitValidStack(stack,permutationRecipe.getInput(),player,true);
+                  ItemStack input = getAndSplitValidStack(stack, permutationRecipe.getInput(), player, true);
                   if(input == null){
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(permutationRecipe.getInput().getHoverName()),false);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(permutationRecipe.getInput().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
-                  ItemStack reagent1 = getAndSplitValidReagent1(stack,recipe,player);
+                  ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                   if(reagent1 == null){
-                     MinecraftUtils.returnItems(new SimpleContainer(input),player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()),false);
+                     MinecraftUtils.returnItems(new SimpleContainer(input), player);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
-                  ItemStack reagent2 = getAndSplitValidReagent2(stack,recipe,player);
+                  ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                   if(reagent2 == null){
-                     MinecraftUtils.returnItems(new SimpleContainer(input),player);
-                     MinecraftUtils.returnItems(new SimpleContainer(reagent1),player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()),false);
+                     MinecraftUtils.returnItems(new SimpleContainer(input), player);
+                     MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   
-                  items = List.of(input, ItemStack.EMPTY,reagent1,reagent2,stack);
-                  results = permutationRecipe.doTransmutation(input,null,reagent1,reagent2,stack,player);
+                  items = List.of(input, ItemStack.EMPTY, reagent1, reagent2, stack);
+                  results = permutationRecipe.doTransmutation(input, null, reagent1, reagent2, stack, player);
                }else if(recipe instanceof AequalisUnattuneTransmutationRecipe unattuneRecipe){
-                  Predicate<ItemStack> aeqPred = aeq -> !getStringProperty(aeq,TRANSMUTATION_TAG).isEmpty();
-                  ItemStack input = getAndSplitValidStack(stack,ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItem(),aeqPred,player,true);
+                  Predicate<ItemStack> aeqPred = aeq -> !getStringProperty(aeq, TRANSMUTATION_TAG).isEmpty();
+                  ItemStack input = getAndSplitValidStack(stack, ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItem(), aeqPred, player, true);
                   if(input == null){
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have a valid ")).append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName()),false);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have a valid ")).append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
-                  ItemStack reagent1 = getAndSplitValidReagent1(stack,recipe,player);
+                  ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                   if(reagent1 == null){
-                     MinecraftUtils.returnItems(new SimpleContainer(input),player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()),false);
+                     MinecraftUtils.returnItems(new SimpleContainer(input), player);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
-                  ItemStack reagent2 = getAndSplitValidReagent2(stack,recipe,player);
+                  ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                   if(reagent2 == null){
-                     MinecraftUtils.returnItems(new SimpleContainer(input),player);
-                     MinecraftUtils.returnItems(new SimpleContainer(reagent1),player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()),false);
+                     MinecraftUtils.returnItems(new SimpleContainer(input), player);
+                     MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
+                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   
-                  items = List.of(input, ItemStack.EMPTY,reagent1,reagent2,stack);
-                  results = unattuneRecipe.doTransmutation(input,null,reagent1,reagent2,stack,player);
+                  items = List.of(input, ItemStack.EMPTY, reagent1, reagent2, stack);
+                  results = unattuneRecipe.doTransmutation(input, null, reagent1, reagent2, stack, player);
                }else if(recipe instanceof TransmogrificationTransmutationRecipe transmogRecipe){
                   ItemStack arcanaStack = playerEntity.getItemInHand(InteractionHand.OFF_HAND);
                   ArcanaItem heldItem = ArcanaItemUtils.identifyItem(arcanaStack);
                   
                   if(heldItem != null){
-                     ItemStack cata = getAndSplitValidTransmogStack(stack,arcanaStack,player);
+                     ItemStack cata = getAndSplitValidTransmogStack(stack, arcanaStack, player);
                      if(cata == null){
-                        player.displayClientMessage(Component.literal("You do not have a valid Transmogrification Catalyst.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+                        player.displayClientMessage(Component.literal("You do not have a valid Transmogrification Catalyst.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
-                     ItemStack reagent1 = getAndSplitValidReagent1(stack,recipe,player);
+                     ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                      if(reagent1 == null){
-                        MinecraftUtils.returnItems(new SimpleContainer(cata),player);
-                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()),false);
+                        MinecraftUtils.returnItems(new SimpleContainer(cata), player);
+                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
-                     ItemStack reagent2 = getAndSplitValidReagent2(stack,recipe,player);
+                     ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                      if(reagent2 == null){
-                        MinecraftUtils.returnItems(new SimpleContainer(cata),player);
-                        MinecraftUtils.returnItems(new SimpleContainer(reagent1),player);
-                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()),false);
+                        MinecraftUtils.returnItems(new SimpleContainer(cata), player);
+                        MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
+                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
                      ItemStack input = playerEntity.getItemInHand(InteractionHand.OFF_HAND).split(1);
                      
-                     items = List.of(input,cata,reagent1,reagent2,stack);
-                     results = transmogRecipe.doTransmutation(input,cata,reagent1,reagent2,stack,player);
+                     items = List.of(input, cata, reagent1, reagent2, stack);
+                     results = transmogRecipe.doTransmutation(input, cata, reagent1, reagent2, stack, player);
                   }else{
                      results = null;
-                     player.displayClientMessage(Component.literal("Your offhand must be a valid Arcana Item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),false);
+                     player.displayClientMessage(Component.literal("Your offhand must be a valid Arcana Item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                }else{
@@ -746,22 +746,22 @@ public class AequalisScientia extends ArcanaItem {
                
                if(items != null && results != null){
                   playerEntity.getInventory().removeItem(stack);
-                  Vec3 center = player.position().add(player.getLookAngle().multiply(3,0,3)).add(0,2,0);
-                  ArcanaEffectUtils.aequalisTransmuteAnim(player.level(),center,0,player.getRotationVector(),1,items.get(0),items.get(1),items.get(2),items.get(3),items.get(4));
+                  Vec3 center = player.position().add(player.getLookAngle().multiply(3, 0, 3)).add(0, 2, 0);
+                  ArcanaEffectUtils.aequalisTransmuteAnim(player.level(), center, 0, player.getRotationVector(), 1, items.get(0), items.get(1), items.get(2), items.get(3), items.get(4));
                   
                   BorisLib.addTickTimerCallback(player.level(), new GenericTimer(500, () -> {
                      for(ItemStack result : results){
                         if(result.is(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())){
                            ArcanaNovum.data(player).addCraftedSilent(result);
-                           ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE);
+                           ArcanaAchievements.grant(player, ArcanaAchievements.PRICE_OF_KNOWLEDGE);
                         }
-                        Containers.dropItemStack(world, center.x,center.y,center.z,result);
+                        Containers.dropItemStack(world, center.x, center.y, center.z, result);
                      }
                      ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE));
                   }));
                }
             }else{
-               putProperty(stack, AequalisScientia.TRANSMUTATION_TAG,"");
+               putProperty(stack, AequalisScientia.TRANSMUTATION_TAG, "");
             }
          }
          return InteractionResult.SUCCESS_SERVER;
@@ -776,7 +776,7 @@ public class AequalisScientia extends ArcanaItem {
             ItemStack invStack = inventory.getItem(i);
             if(invStack.equals(aequalis)) continue;
             
-            ItemStack computedReagent1 = recipe.getComputedReagent1(invStack,-1);
+            ItemStack computedReagent1 = recipe.getComputedReagent1(invStack, -1);
             if(computedReagent1 == null) continue;
             int needed = computedReagent1.getCount();
             if(invStack.getCount() >= needed){
@@ -794,7 +794,7 @@ public class AequalisScientia extends ArcanaItem {
             ItemStack invStack = inventory.getItem(i);
             if(invStack.equals(aequalis)) continue;
             
-            ItemStack computedReagent1 = recipe.getComputedReagent2(invStack,-1);
+            ItemStack computedReagent1 = recipe.getComputedReagent2(invStack, -1);
             if(computedReagent1 == null) continue;
             int needed = computedReagent1.getCount();
             if(invStack.getCount() >= needed){
@@ -833,7 +833,8 @@ public class AequalisScientia extends ArcanaItem {
             ArcanaSkin skin = ArcanaSkin.getSkinFromString(ArcanaItem.getStringProperty(invStack, TransmogrificationCatalyst.SELECTED_SKIN_TAG));
             ArcanaSkin curSkin = ArcanaItem.getSkin(arcanaStack);
             if(skin == null && curSkin == null) continue;
-            if(skin != null && !skin.getArcanaItem().getId().equals(ArcanaItemUtils.identifyItem(arcanaStack).getId())) continue;
+            if(skin != null && !skin.getArcanaItem().getId().equals(ArcanaItemUtils.identifyItem(arcanaStack).getId()))
+               continue;
             if(skin != null && curSkin != null && skin.getId().equals(curSkin.getId())) continue;
             
             if(invStack.getCount() >= 1){

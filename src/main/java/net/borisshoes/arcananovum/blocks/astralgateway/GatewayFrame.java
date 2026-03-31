@@ -819,12 +819,13 @@ public class GatewayFrame {
    
    /**
     * Deserializes a GatewayFrame from a CompoundTag.
+    *
     * @return The deserialized GatewayFrame, or null if the tag is invalid.
     */
    public static GatewayFrame fromTag(CompoundTag tag){
       if(tag == null || tag.isEmpty()) return null;
       
-      try {
+      try{
          // Core position
          int[] coreArray = tag.getIntArray("core").orElse(new int[0]);
          if(coreArray.length != 3) return null;
@@ -874,7 +875,7 @@ public class GatewayFrame {
          }
          
          return new GatewayFrame(core, type, axis, maxSize, forceRectangular, forceConvex, blocks, enclosed, size, finished, valid);
-      } catch(Exception e){
+      }catch(Exception e){
          return null;
       }
    }

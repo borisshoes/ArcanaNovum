@@ -13,7 +13,7 @@ public class ShulkerCoreGui extends SimpleGui {
    private ShulkerCore core;
    private ItemStack item;
    private boolean valid;
-
+   
    public ShulkerCoreGui(MenuType<?> type, ServerPlayer player, ShulkerCore core, ItemStack item){
       super(type, player, false);
       this.core = core;
@@ -30,10 +30,10 @@ public class ShulkerCoreGui extends SimpleGui {
       if(!valid){
          // Return invalid item
          Container inv = getSlotRedirect(2).container;
-         for(int i = 0; i<inv.getContainerSize(); i++){
+         for(int i = 0; i < inv.getContainerSize(); i++){
             ItemStack stack = inv.getItem(i);
             if(!stack.isEmpty()){
-         
+               
                ItemEntity itemEntity;
                boolean bl = player.getInventory().add(stack);
                if(!bl || !stack.isEmpty()){
@@ -51,16 +51,16 @@ public class ShulkerCoreGui extends SimpleGui {
             }
          }
       }
-      core.buildItemLore(item,player.level().getServer());
+      core.buildItemLore(item, player.level().getServer());
    }
    
    public void validStone(ItemStack newStone){
       valid = true;
-      core.setStone(item,newStone);
+      core.setStone(item, newStone);
    }
    
    public void notValid(){
       valid = false;
-      core.setStone(item,null);
+      core.setStone(item, null);
    }
 }

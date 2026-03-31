@@ -27,7 +27,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
    
    @Override
    public ArcanaIngredient copyWithCount(int newCount){
-      return new SoulstoneIngredient(souls,repeatable,consume, ignoreEssenceEggTypes,type);
+      return new SoulstoneIngredient(souls, repeatable, consume, ignoreEssenceEggTypes, type);
    }
    
    @Override
@@ -37,7 +37,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
             if(!type.equals(Soulstone.getType(stack)))
                return false;
          }
-
+         
          if(!ignoreEssenceEggTypes){
             EntityType<?> eType = EntityType.byString(Soulstone.getType(stack)).orElse(null);
             if(eType != null && eType.is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)) return false;
@@ -65,9 +65,9 @@ public class SoulstoneIngredient extends ArcanaIngredient {
                return stack;
             }
             if(repeatable){
-               return Soulstone.setSouls(stack,Soulstone.getSouls(stack) % souls);
+               return Soulstone.setSouls(stack, Soulstone.getSouls(stack) % souls);
             }else{
-               return Soulstone.setSouls(stack,Soulstone.getSouls(stack)-souls);
+               return Soulstone.setSouls(stack, Soulstone.getSouls(stack) - souls);
             }
          }
       }
@@ -80,7 +80,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          name += " (Not Consumed)";
       }
       if(type != null){
-         name += " ("+souls+"+ "+ EntityType.byString(type).get().getDescription().getString()+")";
+         name += " (" + souls + "+ " + EntityType.byString(type).get().getDescription().getString() + ")";
       }
       return name;
    }
@@ -92,7 +92,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
    
    @Override
    public ItemStack ingredientAsStack(){
-      return Soulstone.getShowcaseItem(souls,type);
+      return Soulstone.getShowcaseItem(souls, type);
    }
    
    public JsonObject toJson(){

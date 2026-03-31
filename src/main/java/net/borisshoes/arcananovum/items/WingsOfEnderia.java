@@ -49,7 +49,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.EQUIPMENT_ASSET_REGISTRY_KEY;
 
 public class WingsOfEnderia extends EnergyItem {
-	public static final String ID = "wings_of_enderia";
+   public static final String ID = "wings_of_enderia";
    
    public WingsOfEnderia(){
       id = ID;
@@ -59,7 +59,7 @@ public class WingsOfEnderia extends EnergyItem {
       itemVersion = 1;
       vanillaItem = Items.ELYTRA;
       item = new WingsOfEnderiaItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_WINGS_OF_ENDERIA};
       
       ItemStack stack = new ItemStack(item);
@@ -73,7 +73,7 @@ public class WingsOfEnderia extends EnergyItem {
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
       curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.PROTECTION),4)
+            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.PROTECTION), 4)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
@@ -103,13 +103,13 @@ public class WingsOfEnderia extends EnergyItem {
             .append(Component.literal(" and are ").withStyle(ChatFormatting.LIGHT_PURPLE))
             .append(Component.literal("unbreakable").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(".").withStyle(ChatFormatting.LIGHT_PURPLE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
       if(ArcanaItemUtils.identifyItem(stack) instanceof WingsOfEnderia && augment == ArcanaAugments.SCALES_OF_THE_CHAMPION && level >= 1){
-         EnhancedStatUtils.enhanceItem(stack,1);
+         EnhancedStatUtils.enhanceItem(stack, 1);
       }
       return stack;
    }
@@ -122,7 +122,7 @@ public class WingsOfEnderia extends EnergyItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("   Armored Wings\n     of Enderia").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nMy expedition to the End was nothing like I imagined it would be… Seeing the mad tyrant, Enderia, in person… Nul and Equayus joining me in defeating her… ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Armored Wings\n     of Enderia").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nMy expedition to the End was nothing like I imagined it would be… Seeing the mad tyrant, Enderia, in person… Nul and Equayus joining me in defeating her… ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Armored Wings\n     of Enderia").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nThe ancient names they spoke of like they were family? How old was she?\n\nI appear to be missing a significant amount of history. Nevertheless, the Goddess of Wrath has been defeated; reduced to this small, ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Armored Wings\n     of Enderia").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nblack, very angry egg. From her broken body, I collected a large portion of scales. Curiously enough, two of them contained runes. I have fashioned myself a copy of her wings.\n\nEven if they are only ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Armored Wings\n     of Enderia").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\na fraction as durable as hers, they will be nearly indestructible.\n\nThe Armored Wings of Enderia are Elytra that double as enchanted Netherite.\n\nThey store kinetic ").withStyle(ChatFormatting.BLACK)));
@@ -132,7 +132,7 @@ public class WingsOfEnderia extends EnergyItem {
    
    public class WingsOfEnderiaItem extends ArcanaPolymerItem {
       public WingsOfEnderiaItem(){
-         super(getThis(),getEquipmentArcanaItemComponents()
+         super(getThis(), getEquipmentArcanaItemComponents()
                .humanoidArmor(ArmorMaterials.NETHERITE, ArmorType.CHESTPLATE)
                .component(DataComponents.GLIDER, Unit.INSTANCE)
          );
@@ -144,7 +144,7 @@ public class WingsOfEnderia extends EnergyItem {
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
          Identifier modelId = ArcanaItem.getSkin(itemStack) != null ? ArcanaItem.getSkin(itemStack).getModelId() : ArcanaRegistry.arcanaId(ID);
          Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, modelId)).build();
-         baseStack.set(DataComponents.EQUIPPABLE,newComp);
+         baseStack.set(DataComponents.EQUIPPABLE, newComp);
          return baseStack;
       }
       
@@ -161,9 +161,9 @@ public class WingsOfEnderia extends EnergyItem {
             if(player.isFallFlying()){ // Wings of Enderia
                int beforeE = getEnergy(item);
                int toAdd = ArcanaNovum.CONFIG.getInt(ArcanaConfig.WINGS_OF_ENDERIA_ENERGY_RATE);
-               wings.addEnergy(item,toAdd); // Add 1 energy for each tick of flying
+               wings.addEnergy(item, toAdd); // Add 1 energy for each tick of flying
                if(beforeE / 1000 != EnergyItem.getEnergy(item) / 1000)
-                  player.displayClientMessage(Component.literal("Wing Energy Stored: "+ EnergyItem.getEnergy(item)).withStyle(ChatFormatting.DARK_PURPLE),true);
+                  player.displayClientMessage(Component.literal("Wing Energy Stored: " + EnergyItem.getEnergy(item)).withStyle(ChatFormatting.DARK_PURPLE), true);
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WINGS_OF_ENDERIA_FLY)); // Add xp
             }
             CompoundTag leftShoulder = player.getShoulderEntityLeft();

@@ -33,8 +33,9 @@ public class RenameGui extends AnvilInputGui {
    
    /**
     * Constructs a new input gui for the provided player.
-    * @param player                the player to serve this gui to
-    *                              will be treated as slots of this gui
+    *
+    * @param player the player to serve this gui to
+    *               will be treated as slots of this gui
     */
    public RenameGui(ServerPlayer player, TwilightAnvilBlockEntity blockEntity){
       super(player, false);
@@ -50,10 +51,10 @@ public class RenameGui extends AnvilInputGui {
       setSlot(1, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)).hideTooltip());
       
       inv = new SimpleContainer(2);
-      listener = new TinkerInventoryListener(this,1,blockEntity);
+      listener = new TinkerInventoryListener(this, 1, blockEntity);
       inv.addListener(listener);
       
-      setSlotRedirect(0, new Slot(inv,0,0,0));
+      setSlotRedirect(0, new Slot(inv, 0, 0, 0));
    }
    
    @Override
@@ -64,12 +65,12 @@ public class RenameGui extends AnvilInputGui {
             if(newName.getString().isBlank()){
                item.remove(DataComponents.CUSTOM_NAME);
             }else{
-               item.set(DataComponents.CUSTOM_NAME,newName);
+               item.set(DataComponents.CUSTOM_NAME, newName);
                if(ArcanaItemUtils.isArcane(item)){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.TOUCH_OF_PERSONALITY);
+                  ArcanaAchievements.grant(player, ArcanaAchievements.TOUCH_OF_PERSONALITY);
                }
             }
-            SoundUtils.playSound(player.level(),blockEntity.getBlockPos(), SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));
+            SoundUtils.playSound(player.level(), blockEntity.getBlockPos(), SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1f, (float) (0.75f * 0.5f * Math.random()));
             this.close();
          }
       }
@@ -79,14 +80,14 @@ public class RenameGui extends AnvilInputGui {
    @Override
    public void onInput(String input){
       if(item == null || item.isEmpty()){
-         setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
+         setSlot(2, GuiElementBuilder.from(ItemStack.EMPTY));
          return;
       }
       String string = sanitize(input);
       ItemStack newItem = item.copy();
       Component name = newItem.getHoverName();
       if(string == null || string.equals(name.getString())){
-         setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
+         setSlot(2, GuiElementBuilder.from(ItemStack.EMPTY));
          return;
       }
       if(StringUtil.isBlank(string)){
@@ -104,7 +105,7 @@ public class RenameGui extends AnvilInputGui {
             newItem.set(DataComponents.CUSTOM_NAME, Component.literal(string));
          }
       }
-      setSlot(2,GuiElementBuilder.from(newItem));
+      setSlot(2, GuiElementBuilder.from(newItem));
    }
    
    @Nullable
@@ -128,7 +129,7 @@ public class RenameGui extends AnvilInputGui {
    
    @Override
    public void onClose(){
-      MinecraftUtils.returnItems(inv,player);
+      MinecraftUtils.returnItems(inv, player);
    }
    
    @Override

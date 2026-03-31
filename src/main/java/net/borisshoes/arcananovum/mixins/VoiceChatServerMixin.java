@@ -30,7 +30,7 @@ public class VoiceChatServerMixin {
       UUID groupId = args.get(4);
       String source = args.get(5);
       if(sender != null && sender.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) && packet instanceof PlayerSoundPacket playerSoundPacket){
-         args.set(1, new LocationSoundPacket(sender.getUUID(), sender.getUUID(), sender.getEyePosition(), packet.getData(), packet.getSequenceNumber(), playerSoundPacket.getDistance(), (String)null));
+         args.set(1, new LocationSoundPacket(sender.getUUID(), sender.getUUID(), sender.getEyePosition(), packet.getData(), packet.getSequenceNumber(), playerSoundPacket.getDistance(), (String) null));
          args.set(5, "spectator");
       }
    }

@@ -62,23 +62,23 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class AquaticEversource extends ArcanaItem implements GeomanticStele.Interaction{
-	public static final String ID = "aquatic_eversource";
+public class AquaticEversource extends ArcanaItem implements GeomanticStele.Interaction {
+   public static final String ID = "aquatic_eversource";
    
    public AquaticEversource(){
       id = ID;
       name = "Aquatic Eversource";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),ArcaneTomeGui.TomeFilter.ITEMS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.WATER_BUCKET;
       item = new AquaticEversourceItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_HEART_OF_THE_SEA,ResearchTasks.OBTAIN_BLUE_ICE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_HEART_OF_THE_SEA, ResearchTasks.OBTAIN_BLUE_ICE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,MODE_TAG,0); // 0 place, 1 remove
+      putProperty(stack, MODE_TAG, 0); // 0 place, 1 remove
       setPrefStack(stack);
    }
    
@@ -89,10 +89,10 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      int mode = getIntProperty(stack,MODE_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,MODE_TAG,mode);
-      return buildItemLore(newStack,server);
+      int mode = getIntProperty(stack, MODE_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, MODE_TAG, mode);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -121,13 +121,13 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
             .append(Component.literal("and ").withStyle(ChatFormatting.AQUA))
             .append(Component.literal("removing ").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal("water.").withStyle(ChatFormatting.AQUA)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("       Aquatic\n    Eversource").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nCarrying numerous water buckets is a waste of inventory space.\nA rudimentary contraption capable of portable condensation should alleviate this issue.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Aquatic\n    Eversource").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nCarrying numerous water buckets is a waste of inventory space.\nA rudimentary contraption capable of portable condensation should alleviate this issue.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("       Aquatic\n    Eversource").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nThe trinket I created can pull water straight from the air to produce limitless water.\n\nA reversal of the process lets me use the trinket to evaporate any fluid type.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("       Aquatic\n    Eversource").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nUsing the Eversource will generate or drain water.\n\nSneak Using will switch the mode of the Eversource.\n").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -135,7 +135,7 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
    
    @Override
    public Vec3 getBaseRange(){
-      return new Vec3(0,0,0);
+      return new Vec3(0, 0, 0);
    }
    
    @Override
@@ -143,21 +143,21 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
       Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
       
       if(world.random.nextFloat() < 0.15){
-         world.sendParticles(ParticleTypes.DRIPPING_WATER,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+         world.sendParticles(ParticleTypes.DRIPPING_WATER, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);
       }
       if(world.random.nextFloat() < 0.15){
-         world.sendParticles(ParticleTypes.FALLING_WATER,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+         world.sendParticles(ParticleTypes.FALLING_WATER, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);
       }
       
       BlockPos geyserPos = stele.getBlockPos().above(5);
       if(world.getFluidState(geyserPos).isSource() && world.getFluidState(geyserPos).is(Fluids.WATER)) return;
-      int mode = getIntProperty(stack,MODE_TAG);
-      int placeStatus = placeFluid(Fluids.WATER,null, world, geyserPos, null, false, true);
+      int mode = getIntProperty(stack, MODE_TAG);
+      int placeStatus = placeFluid(Fluids.WATER, null, world, geyserPos, null, false, true);
       if(placeStatus > 0){
          if(mode == 2 && placeStatus == 2){
             for(BlockPos floodPos : BlockPos.betweenClosed(geyserPos.offset(-1, 0, -1), geyserPos.offset(1, 0, 1))){
                if(floodPos.equals(geyserPos)) continue;
-               if(placeFluid(Fluids.WATER,null, world, floodPos, null, true, true) > 0){
+               if(placeFluid(Fluids.WATER, null, world, floodPos, null, true, true) > 0){
                   stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE));
                }
             }
@@ -177,16 +177,17 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
       boolean bl = blockState.canBeReplaced(fluid);
       bl2 = blockState.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, pos, blockState, fluid) && !flood;
       if(!bl2){
-         return hitResult == null ? 0 : placeFluid(fluid,player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null, flood, silent);
+         return hitResult == null ? 0 : placeFluid(fluid, player, world, hitResult.getBlockPos().relative(hitResult.getDirection()), null, flood, silent);
       }
       
       if(world.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && fluid.is(FluidTags.WATER)){
          int i = pos.getX();
          int j = pos.getY();
          int k = pos.getZ();
-         if(!silent) world.playSound(player, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.6f + (world.random.nextFloat() - world.random.nextFloat()) * 0.8f);
-         for (int l = 0; l < 8; ++l){
-            world.addParticle(ParticleTypes.LARGE_SMOKE, (double)i + Math.random(), (double)j + Math.random(), (double)k + Math.random(), 0.0, 0.0, 0.0);
+         if(!silent)
+            world.playSound(player, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.6f + (world.random.nextFloat() - world.random.nextFloat()) * 0.8f);
+         for(int l = 0; l < 8; ++l){
+            world.addParticle(ParticleTypes.LARGE_SMOKE, (double) i + Math.random(), (double) j + Math.random(), (double) k + Math.random(), 0.0, 0.0, 0.0);
          }
          return 1;
       }
@@ -222,7 +223,7 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
-         int mode = getIntProperty(itemStack,MODE_TAG);
+         int mode = getIntProperty(itemStack, MODE_TAG);
          
          List<String> stringList = new ArrayList<>();
          if(mode == 1){
@@ -230,7 +231,7 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
          }else{
             stringList.add("place");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -250,21 +251,21 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
-         int mode = getIntProperty(stack,MODE_TAG);
-         boolean floodgate = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FLOODGATE) > 0;
+         int mode = getIntProperty(stack, MODE_TAG);
+         boolean floodgate = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.FLOODGATE) > 0;
          
          if(playerEntity.isShiftKeyDown()){
-            int newMode = (mode+1) % (floodgate ? 3 : 2);
-            putProperty(stack,MODE_TAG,newMode);
+            int newMode = (mode + 1) % (floodgate ? 3 : 2);
+            putProperty(stack, MODE_TAG, newMode);
             if(newMode == 1){
-               player.displayClientMessage(Component.literal("The Eversource Evaporates").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_EMPTY,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Evaporates").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_EMPTY, 1.0f, 1.0f);
             }else if(newMode == 2){
-               player.displayClientMessage(Component.literal("The Eversource Swells").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Swells").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL, 1.0f, 1.0f);
             }else{
-               player.displayClientMessage(Component.literal("The Eversource Condenses").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL,1.0f,1.0f);
+               player.displayClientMessage(Component.literal("The Eversource Condenses").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL, 1.0f, 1.0f);
             }
             return InteractionResult.SUCCESS_SERVER;
          }
@@ -296,21 +297,21 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
             }
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof LiquidBlockContainer ? blockPos : blockPos2;
-            int placeStatus = placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult, false, false);
+            int placeStatus = placeFluid(fluid, playerEntity, world, blockPos3, blockHitResult, false, false);
             if(placeStatus > 0){
                if(mode == 2 && placeStatus == 2){
                   for(BlockPos floodPos : BlockPos.betweenClosed(blockPos3.offset(-1, 0, -1), blockPos3.offset(1, 0, 1))){
                      if(floodPos.equals(blockPos3)) continue;
-                     if(placeFluid(fluid,playerEntity, world, floodPos, null, true, false) > 0){
+                     if(placeFluid(fluid, playerEntity, world, floodPos, null, true, false) > 0){
                         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
-                        ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN,1);
+                        ArcanaAchievements.progress(player, ArcanaAchievements.POCKET_OCEAN, 1);
                      }
                   }
                }
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
-               ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN,1);
+               ArcanaAchievements.progress(player, ArcanaAchievements.POCKET_OCEAN, 1);
                playerEntity.awardStat(Stats.ITEM_USED.get(this));
-               playerEntity.getCooldowns().addCooldown(stack,5);
+               playerEntity.getCooldowns().addCooldown(stack, 5);
                return InteractionResult.SUCCESS_SERVER;
             }
             return InteractionResult.FAIL;

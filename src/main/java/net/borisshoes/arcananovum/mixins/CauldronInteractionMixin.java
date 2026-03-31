@@ -41,7 +41,7 @@ public interface CauldronInteractionMixin {
       final CauldronInteraction CLEAN_DYEABLE_ITEM = (state, world, pos, player, hand, stack) -> {
          if(!stack.is(ItemTags.DYEABLE)){
             return InteractionResult.TRY_WITH_EMPTY_HAND;
-         } else if(!stack.has(DataComponents.DYED_COLOR)){
+         }else if(!stack.has(DataComponents.DYED_COLOR)){
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          }else{
             if(!world.isClientSide()){
@@ -73,8 +73,9 @@ public interface CauldronInteractionMixin {
       // Eversources
       emptyCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
          if(!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         int mode = ArcanaItem.getIntProperty(stack,AquaticEversource.MODE_TAG);
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+         int mode = ArcanaItem.getIntProperty(stack, AquaticEversource.MODE_TAG);
          if(mode == 1){
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          }
@@ -85,15 +86,16 @@ public interface CauldronInteractionMixin {
             world.gameEvent(null, GameEvent.FLUID_PLACE, pos);
             serverPlayer.awardStat(Stats.ITEM_USED.get(stack.getItem()));
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
-            ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.POCKET_OCEAN,1);
+            ArcanaAchievements.progress(serverPlayer, ArcanaAchievements.POCKET_OCEAN, 1);
          }
          return InteractionResult.SUCCESS_SERVER;
       });
       
       waterCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
          if(!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         int mode = ArcanaItem.getIntProperty(stack,AquaticEversource.MODE_TAG);
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+         int mode = ArcanaItem.getIntProperty(stack, AquaticEversource.MODE_TAG);
          if(!world.isClientSide()){
             if(mode == 1){
                player.awardStat(Stats.USE_CAULDRON);
@@ -106,7 +108,7 @@ public interface CauldronInteractionMixin {
                world.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
                world.gameEvent(null, GameEvent.FLUID_PLACE, pos);
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE)); // Add xp
-               ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.POCKET_OCEAN,1);
+               ArcanaAchievements.progress(serverPlayer, ArcanaAchievements.POCKET_OCEAN, 1);
             }
             serverPlayer.awardStat(Stats.ITEM_USED.get(stack.getItem()));
          }
@@ -115,8 +117,9 @@ public interface CauldronInteractionMixin {
       
       lavaCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
          if(!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         int mode = ArcanaItem.getIntProperty(stack,AquaticEversource.MODE_TAG);
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+         int mode = ArcanaItem.getIntProperty(stack, AquaticEversource.MODE_TAG);
          if(!world.isClientSide()){
             if(mode == 1){
                player.awardStat(Stats.USE_CAULDRON);
@@ -133,8 +136,9 @@ public interface CauldronInteractionMixin {
       
       snowCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
          if(!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         int mode = ArcanaItem.getIntProperty(stack,AquaticEversource.MODE_TAG);
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+         int mode = ArcanaItem.getIntProperty(stack, AquaticEversource.MODE_TAG);
          if(!world.isClientSide()){
             if(mode == 1){
                player.awardStat(Stats.USE_CAULDRON);
@@ -152,13 +156,14 @@ public interface CauldronInteractionMixin {
       
       emptyCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
          if(!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         int mode = ArcanaItem.getIntProperty(stack,MagmaticEversource.MODE_TAG);
-         int charges = ArcanaItem.getIntProperty(stack,MagmaticEversource.USES_TAG);
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+         int mode = ArcanaItem.getIntProperty(stack, MagmaticEversource.MODE_TAG);
+         int charges = ArcanaItem.getIntProperty(stack, MagmaticEversource.USES_TAG);
          
          if(mode != 1 && charges <= 0){
-            player.displayClientMessage(Component.literal("The Eversource is Recharging").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(serverPlayer, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
+            player.displayClientMessage(Component.literal("The Eversource is Recharging").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+            SoundUtils.playSongToPlayer(serverPlayer, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          }
          
@@ -173,8 +178,8 @@ public interface CauldronInteractionMixin {
             serverPlayer.awardStat(Stats.ITEM_USED.get(stack.getItem()));
             
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_MAGMATIC_EVERSOURCE_USE)); // Add xp
-            ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.HELLGATE,1);
-            ArcanaItem.putProperty(stack,MagmaticEversource.USES_TAG,charges-1);
+            ArcanaAchievements.progress(serverPlayer, ArcanaAchievements.HELLGATE, 1);
+            ArcanaItem.putProperty(stack, MagmaticEversource.USES_TAG, charges - 1);
             eversource.buildItemLore(stack, serverPlayer.level().getServer());
          }
          return InteractionResult.SUCCESS_SERVER;
@@ -182,8 +187,9 @@ public interface CauldronInteractionMixin {
       
       lavaCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
          if(!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         int mode = ArcanaItem.getIntProperty(stack,MagmaticEversource.MODE_TAG);
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+         int mode = ArcanaItem.getIntProperty(stack, MagmaticEversource.MODE_TAG);
          
          if(!world.isClientSide()){
             if(mode == 1){
@@ -201,8 +207,9 @@ public interface CauldronInteractionMixin {
       
       waterCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
          if(!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         int mode = ArcanaItem.getIntProperty(stack,MagmaticEversource.MODE_TAG);
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+         int mode = ArcanaItem.getIntProperty(stack, MagmaticEversource.MODE_TAG);
          
          
          if(!world.isClientSide()){
@@ -221,8 +228,9 @@ public interface CauldronInteractionMixin {
       
       snowCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
          if(!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-         int mode = ArcanaItem.getIntProperty(stack,MagmaticEversource.MODE_TAG);
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+         int mode = ArcanaItem.getIntProperty(stack, MagmaticEversource.MODE_TAG);
          
          if(!world.isClientSide()){
             if(mode == 1){

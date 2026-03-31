@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-public class ArcanaItemResearchTask extends ResearchTask{
+public class ArcanaItemResearchTask extends ResearchTask {
    
    private final ArcanaItem arcanaItem;
    

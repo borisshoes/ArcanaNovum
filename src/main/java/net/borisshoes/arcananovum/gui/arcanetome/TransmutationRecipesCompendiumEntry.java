@@ -12,7 +12,7 @@ import net.minecraft.world.item.component.ItemLore;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransmutationRecipesCompendiumEntry extends CompendiumEntry{
+public class TransmutationRecipesCompendiumEntry extends CompendiumEntry {
    
    public TransmutationRecipesCompendiumEntry(){
       super(new ArcaneTomeGui.TomeFilter[]{}, GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK));
@@ -22,7 +22,7 @@ public class TransmutationRecipesCompendiumEntry extends CompendiumEntry{
       loreText.add(Component.literal("")
             .append(TextUtils.removeItalics(Component.literal("Click").withStyle(ChatFormatting.GREEN)))
             .append(TextUtils.removeItalics(Component.literal(" to view all Transmutation Recipes")).withStyle(ChatFormatting.LIGHT_PURPLE)));
-      displayStack.set(DataComponents.LORE, new ItemLore(loreText,loreText));
+      displayStack.set(DataComponents.LORE, new ItemLore(loreText, loreText));
    }
    
    @Override

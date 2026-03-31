@@ -18,7 +18,7 @@ public class DataFixer {
       for(int i = 0; i < list.size(); i++){
          CompoundTag arrow = list.getCompoundOrEmpty(i);
          int slot = arrow.getByteOr("Slot", (byte) 0);
-         ItemStack arrowStack = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, server.registryAccess()),arrow).result().orElse(ItemStack.EMPTY);
+         ItemStack arrowStack = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, server.registryAccess()), arrow).result().orElse(ItemStack.EMPTY);
          if(arrowStack.getCount() > 0 && !arrowStack.isEmpty())
             stackList.add(arrowStack);
       }

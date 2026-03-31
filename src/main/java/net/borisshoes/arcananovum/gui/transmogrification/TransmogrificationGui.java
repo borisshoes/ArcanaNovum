@@ -8,7 +8,6 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.gui.PagedGui;
-import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -43,7 +42,7 @@ public class TransmogrificationGui extends PagedGui<ArcanaSkin> {
          }else{
             ArcanaItem arcanaItem = skin.getArcanaItem();
             ItemStack skinStack = arcanaItem.getPrefItemNoLore();
-            ArcanaItem.putProperty(skinStack,ArcanaItem.SKIN_TAG,skin.getSerializedName());
+            ArcanaItem.putProperty(skinStack, ArcanaItem.SKIN_TAG, skin.getSerializedName());
             item = GuiElementBuilder.from(skinStack).hideDefaultTooltip();
             item.setName(skin.getName().withStyle(ChatFormatting.BOLD).withColor(skin.getPrimaryColor()));
             List<MutableComponent> descLines = skin.getDescription();
@@ -51,7 +50,7 @@ public class TransmogrificationGui extends PagedGui<ArcanaSkin> {
                item.addLoreLine(descLine.withStyle(ChatFormatting.ITALIC).withColor(skin.getSecondaryColor()));
             }
             item.addLoreLine(Component.literal(""));
-            item.addLoreLine(Component.translatable("text.arcananovum.item_skin",skinStack.getItemName().copy().withStyle(s -> s.withBold(false))).withColor(skinStack.getItemName().getStyle().getColor().getValue()));
+            item.addLoreLine(Component.translatable("text.arcananovum.item_skin", skinStack.getItemName().copy().withStyle(s -> s.withBold(false))).withColor(skinStack.getItemName().getStyle().getColor().getValue()));
             for(Tuple<MutableComponent, MutableComponent> attribution : skin.getAttributions()){
                item.addLoreLine(Component.literal("").withStyle(ChatFormatting.ITALIC)
                      .append(attribution.getA().withColor(skin.getSecondaryColor()))

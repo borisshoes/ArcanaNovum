@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ContainmentCirclet extends ArcanaItem {
-	public static final String ID = "containment_circlet";
+   public static final String ID = "containment_circlet";
    
    public static final String CONTENTS_TAG = "contents";
    public static final String HP_TAG = "hp";
@@ -65,15 +65,15 @@ public class ContainmentCirclet extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.HEART_OF_THE_SEA;
       item = new ContainmentCircletItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TAME_AN_ANIMAL,ResearchTasks.USE_ENDER_CHEST};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TAME_AN_ANIMAL, ResearchTasks.USE_ENDER_CHEST};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,CONTENTS_TAG,new CompoundTag());
-      putProperty(stack,HP_TAG,0.0f);
-      putProperty(stack,MAX_HP_TAG,0.0f);
+      putProperty(stack, CONTENTS_TAG, new CompoundTag());
+      putProperty(stack, HP_TAG, 0.0f);
+      putProperty(stack, MAX_HP_TAG, 0.0f);
       setPrefStack(stack);
    }
    
@@ -112,12 +112,12 @@ public class ContainmentCirclet extends ArcanaItem {
       
       boolean hasCreature = false;
       if(itemStack != null){
-         CompoundTag contents = getCompoundProperty(itemStack,CONTENTS_TAG);
-         int hp = (int) getFloatProperty(itemStack,HP_TAG);
-         int maxHp = (int) getFloatProperty(itemStack,MAX_HP_TAG);
+         CompoundTag contents = getCompoundProperty(itemStack, CONTENTS_TAG);
+         int hp = (int) getFloatProperty(itemStack, HP_TAG);
+         int maxHp = (int) getFloatProperty(itemStack, MAX_HP_TAG);
          
          if(BorisLib.SERVER != null){
-            try (ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(LogUtils.getLogger())){
+            try(ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(LogUtils.getLogger())){
                ValueInput readView = TagValueInput.create(logging, BorisLib.SERVER.registryAccess(), contents);
                Optional<EntityType<?>> entity = EntityType.by(readView);
                if(!contents.isEmpty() && entity.isPresent()){
@@ -126,7 +126,7 @@ public class ContainmentCirclet extends ArcanaItem {
                   lore.add(Component.literal("")
                         .append(Component.literal("Contains").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.literal(" - ").withStyle(ChatFormatting.AQUA))
-                        .append(Component.literal(entityTypeName+" ("+hp+"/"+maxHp+")").withStyle(ChatFormatting.GREEN)));
+                        .append(Component.literal(entityTypeName + " (" + hp + "/" + maxHp + ")").withStyle(ChatFormatting.GREEN)));
                   hasCreature = true;
                }
             }
@@ -140,57 +140,57 @@ public class ContainmentCirclet extends ArcanaItem {
                .append(Component.literal("Nothing").withStyle(ChatFormatting.GREEN)));
       }
       
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
-      float hp = getFloatProperty(stack,HP_TAG);
-      float maxHp = getFloatProperty(stack,MAX_HP_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,CONTENTS_TAG,contents);
-      putProperty(newStack,HP_TAG,hp);
-      putProperty(newStack,MAX_HP_TAG,maxHp);
-      return buildItemLore(newStack,server);
+      CompoundTag contents = getCompoundProperty(stack, CONTENTS_TAG);
+      float hp = getFloatProperty(stack, HP_TAG);
+      float maxHp = getFloatProperty(stack, MAX_HP_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, CONTENTS_TAG, contents);
+      putProperty(newStack, HP_TAG, hp);
+      putProperty(newStack, MAX_HP_TAG, maxHp);
+      return buildItemLore(newStack, server);
    }
    
    // Normal override in item class doesn't work because tamed animals consume the item interaction
    public InteractionResult useOnEntity(Player user, LivingEntity entity, InteractionHand hand){
       ItemStack stack = user.getItemInHand(hand);
       if(!ArcanaItemUtils.isArcane(stack)) return InteractionResult.PASS;
-      CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
+      CompoundTag contents = getCompoundProperty(stack, CONTENTS_TAG);
       
       if(!contents.isEmpty()){
-         user.displayClientMessage(Component.literal("The Circlet is occupied").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
+         user.displayClientMessage(Component.literal("The Circlet is occupied").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
          SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
          return InteractionResult.SUCCESS_SERVER;
       }
       if(entity.getType().is(ArcanaRegistry.CONTAINMENT_CIRCLET_DISALLOWED) || entity.isDeadOrDying()){
-         user.displayClientMessage(Component.literal("The Circlet cannot contain this creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
+         user.displayClientMessage(Component.literal("The Circlet cannot contain this creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
          SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
          return InteractionResult.SUCCESS_SERVER;
       }
       
-      boolean hostiles = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CONFINEMENT) > 0;
+      boolean hostiles = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.CONFINEMENT) > 0;
       
       if(entity instanceof Enemy && !hostiles){
-         user.displayClientMessage(Component.literal("This Circlet cannot capture hostile creatures").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
+         user.displayClientMessage(Component.literal("This Circlet cannot capture hostile creatures").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
          SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
       }else if(entity instanceof Mob){
-         try (ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(entity.problemPath(),LogUtils.getLogger())){
+         try(ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(entity.problemPath(), LogUtils.getLogger())){
             TagValueOutput writeView = TagValueOutput.createWithContext(logging, entity.level().registryAccess());
             entity.saveWithoutId(writeView);
             CompoundTag data = writeView.buildResult();
             data.putString("id", EntityType.getKey(entity.getType()).toString());
-            putProperty(stack,CONTENTS_TAG,data);
-            putProperty(stack,HP_TAG,entity.getHealth());
-            putProperty(stack,MAX_HP_TAG,entity.getMaxHealth());
+            putProperty(stack, CONTENTS_TAG, data);
+            putProperty(stack, HP_TAG, entity.getHealth());
+            putProperty(stack, MAX_HP_TAG, entity.getMaxHealth());
             entity.discard();
-            user.displayClientMessage(Component.literal("The Circlet contains the creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
+            user.displayClientMessage(Component.literal("The Circlet contains the creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
             SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
             ArcanaNovum.data(user).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CONTAINMENT_CIRCLET_USE)); // Add xp
-            buildItemLore(stack,user.level().getServer());
+            buildItemLore(stack, user.level().getServer());
          }
       }
       
@@ -200,7 +200,7 @@ public class ContainmentCirclet extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("Containment Circlet").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nPets are amazing companions. They’re also masochistic idiots with a love for getting into trouble. If only I had some sort of pocket ball, a pokeb… a Containment Circlet to keep them safe.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Containment Circlet").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nPets are amazing companions. They’re also masochistic idiots with a love for getting into trouble. If only I had some sort of pocket ball, a pokeb… a Containment Circlet to keep them safe.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Containment Circlet").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nUsing the Circlet on a passive or tamed mob captures it.\n\nUsing the Circlet again releases the creature.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
@@ -215,8 +215,8 @@ public class ContainmentCirclet extends ArcanaItem {
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
-         CompoundTag contents = getCompoundProperty(itemStack,CONTENTS_TAG);
-         boolean confinement = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CONFINEMENT) >= 1;
+         CompoundTag contents = getCompoundProperty(itemStack, CONTENTS_TAG);
+         boolean confinement = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.CONFINEMENT) >= 1;
          
          List<String> stringList = new ArrayList<>();
          if(confinement){
@@ -232,7 +232,7 @@ public class ContainmentCirclet extends ArcanaItem {
                stringList.add("filled");
             }
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -241,14 +241,14 @@ public class ContainmentCirclet extends ArcanaItem {
          ItemStack stack = context.getItemInHand();
          if(!ArcanaItemUtils.isArcane(stack) || context.getPlayer() == null) return InteractionResult.PASS;
          
-         CompoundTag contents = getCompoundProperty(stack,CONTENTS_TAG);
-         float hp = getFloatProperty(stack,HP_TAG);
+         CompoundTag contents = getCompoundProperty(stack, CONTENTS_TAG);
+         float hp = getFloatProperty(stack, HP_TAG);
          if(contents.isEmpty()) return InteractionResult.PASS;
          
-         try (ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(context.getPlayer().problemPath(),LogUtils.getLogger())) {
-            ValueInput readView = TagValueInput.create(logging, context.getLevel().registryAccess(),contents);
-            Optional<Entity> optional = EntityType.create(readView,context.getLevel(), EntitySpawnReason.MOB_SUMMONED);
-            Vec3 summonPos = context.getClickLocation().add(0,0.5,0);
+         try(ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(context.getPlayer().problemPath(), LogUtils.getLogger())){
+            ValueInput readView = TagValueInput.create(logging, context.getLevel().registryAccess(), contents);
+            Optional<Entity> optional = EntityType.create(readView, context.getLevel(), EntitySpawnReason.MOB_SUMMONED);
+            Vec3 summonPos = context.getClickLocation().add(0, 0.5, 0);
             
             if(optional.isPresent() && context.getLevel() instanceof ServerLevel serverWorld){
                Entity newEntity = optional.get();
@@ -259,17 +259,17 @@ public class ContainmentCirclet extends ArcanaItem {
                }
                
                serverWorld.addFreshEntity(newEntity);
-               putProperty(stack,CONTENTS_TAG,new CompoundTag());
+               putProperty(stack, CONTENTS_TAG, new CompoundTag());
                
                if(context.getPlayer() instanceof ServerPlayer player){
-                  player.displayClientMessage(Component.literal("The Circlet releases its captive").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
+                  player.displayClientMessage(Component.literal("The Circlet releases its captive").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
                   
                   if(newEntity instanceof TamableAnimal tameable && tameable.isOwnedBy(player)){
-                     ArcanaAchievements.grant(player,ArcanaAchievements.I_CHOOSE_YOU);
+                     ArcanaAchievements.grant(player, ArcanaAchievements.I_CHOOSE_YOU);
                   }
                }
-               buildItemLore(stack,serverWorld.getServer());
+               buildItemLore(stack, serverWorld.getServer());
                return InteractionResult.SUCCESS_SERVER;
             }
          }
@@ -282,14 +282,14 @@ public class ContainmentCirclet extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          
-         float hp = getFloatProperty(stack,HP_TAG);
-         float maxHp = getFloatProperty(stack,MAX_HP_TAG);
-         boolean heals = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HEALING_CIRCLET) > 0;
+         float hp = getFloatProperty(stack, HP_TAG);
+         float maxHp = getFloatProperty(stack, MAX_HP_TAG);
+         boolean heals = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.HEALING_CIRCLET) > 0;
          double hpPerSecond = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CONTAINMENT_CIRCLET_HEALING_RATE);
          
          if(heals && player.level().getServer().getTickCount() % 20 == 0){
-            putProperty(stack,HP_TAG,Math.min(maxHp,hp+hpPerSecond));
-            buildItemLore(stack,serverWorld.getServer());
+            putProperty(stack, HP_TAG, Math.min(maxHp, hp + hpPerSecond));
+            buildItemLore(stack, serverWorld.getServer());
          }
       }
       

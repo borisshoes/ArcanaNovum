@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(FishingHook.class)
 public class FishingHookMixin {
    
-   @Inject(method = "pullEntity", at = @At(value="INVOKE",target= "Lnet/minecraft/world/entity/Entity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
+   @Inject(method = "pullEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
    private void arcananovum$pullHookedEntity(CallbackInfo ci){
       FishingHook bobber = (FishingHook) (Object) this;
       

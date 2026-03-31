@@ -15,8 +15,10 @@ public class RepairItemRecipeMixin {
    @ModifyReturnValue(method = "canCombine", at = @At("RETURN"))
    private static boolean arcananovum$binaryBladesCombine(boolean original, ItemStack itemStack, ItemStack itemStack2){
       if(!original) return false;
-      if(!itemStack.is(ArcanaRegistry.BINARY_BLADES.getItem()) && !itemStack2.is(ArcanaRegistry.BINARY_BLADES.getItem())) return true;
-      if(ArcanaItem.getBooleanProperty(itemStack, BinaryBlades.FAKE_TAG) || ArcanaItem.getBooleanProperty(itemStack2, BinaryBlades.FAKE_TAG)) return false;
+      if(!itemStack.is(ArcanaRegistry.BINARY_BLADES.getItem()) && !itemStack2.is(ArcanaRegistry.BINARY_BLADES.getItem()))
+         return true;
+      if(ArcanaItem.getBooleanProperty(itemStack, BinaryBlades.FAKE_TAG) || ArcanaItem.getBooleanProperty(itemStack2, BinaryBlades.FAKE_TAG))
+         return false;
       return true;
    }
 }

@@ -64,7 +64,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 
 public class NulMemento extends EnergyItem {
-	public static final String ID = "nul_memento";
+   public static final String ID = "nul_memento";
    
    public static final String HEAD_TAG = "onHead";
    private static final Item textureItem = Items.TINTED_GLASS;
@@ -76,14 +76,14 @@ public class NulMemento extends EnergyItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
       item = new NulMementoItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST,ResearchTasks.KILL_CONSTRUCT};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST, ResearchTasks.KILL_CONSTRUCT};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,ACTIVE_TAG,false);
-      putProperty(stack,HEAD_TAG,false);
+      putProperty(stack, ACTIVE_TAG, false);
+      putProperty(stack, HEAD_TAG, false);
       setPrefStack(stack);
    }
    
@@ -92,7 +92,7 @@ public class NulMemento extends EnergyItem {
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
       curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.PROTECTION),4)
+            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.PROTECTION), 4)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
@@ -166,9 +166,9 @@ public class NulMemento extends EnergyItem {
             energy /= 20;
             String duration;
             if(energy >= 100){
-               duration = ((energy/60)+1)+" Minutes";
+               duration = ((energy / 60) + 1) + " Minutes";
             }else{
-               duration = energy+" Seconds";
+               duration = energy + " Seconds";
             }
             lore.add(Component.literal(""));
             lore.add(Component.literal("")
@@ -185,7 +185,7 @@ public class NulMemento extends EnergyItem {
    @Override
    public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
       if(ArcanaItemUtils.identifyItem(stack) instanceof NulMemento && augment == ArcanaAugments.DEATHS_CHAMPION && level >= 1){
-         EnhancedStatUtils.enhanceItem(stack,1);
+         EnhancedStatUtils.enhanceItem(stack, 1);
       }
       return stack;
    }
@@ -193,7 +193,7 @@ public class NulMemento extends EnergyItem {
    @Override
    public int getMaxEnergy(ItemStack item){
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN);
-      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TEMPO_MORTUUS));
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.TEMPO_MORTUUS));
       return Math.max(1, baseCooldown - cooldownReduction);
    }
    
@@ -206,110 +206,110 @@ public class NulMemento extends EnergyItem {
       }
       
       if(living.level() instanceof ServerLevel world){
-         world.sendParticles(ParticleTypes.LARGE_SMOKE,living.getX(),living.getY()+living.getBbHeight()/2,living.getZ(),100,.4,.4,.4,0.07);
+         world.sendParticles(ParticleTypes.LARGE_SMOKE, living.getX(), living.getY() + living.getBbHeight() / 2, living.getZ(), 100, .4, .4, .4, 0.07);
       }
       
       if(living instanceof ServerPlayer player){
          DialogHelper dialogHelper = new DialogHelper();
          
          if(isActive(stack)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.DEATHS_DOOR);
+            ArcanaAchievements.grant(player, ArcanaAchievements.DEATHS_DOOR);
             
-            dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+            dialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                   Component.literal("\n")
                         .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                         .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                         .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
                   Component.literal("")
                         .append(Component.literal("Now is no time to die on me. Pull yourself together!").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
-            )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,1.4f))),new int[]{},1,1,-1),true);
+            )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 1.4f))), new int[]{}, 1, 1, -1), true);
             living.setHealth(1.0f);
             living.addEffect(new MobEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, 600, 0));
             return true;
          }
          
          if(!constructInterference && Event.getEventsOfType(CeptyusOpenEvent.class).stream().noneMatch(c -> c.getPlayer().equals(player))){
-            DialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+            DialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                   Component.literal("\n")
                         .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                         .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                         .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
                   Component.literal("")
                         .append(Component.literal("Let my gift offer you a second chance.").withStyle(ChatFormatting.DARK_GRAY))
-            )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
+            )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, -1), true);
          }
          ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_NUL_MEMENTO_PROTECT));
       }
       
-      setEnergy(stack,getMaxEnergy(stack));
+      setEnergy(stack, getMaxEnergy(stack));
       
       living.setHealth(1.0f);
       living.removeAllEffects();
-      living.addEffect(new MobEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, constructInterference ? 300/2 : 300, 0));
+      living.addEffect(new MobEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, constructInterference ? 300 / 2 : 300, 0));
       living.addEffect(new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, 100, 0));
       living.level().broadcastEntityEvent(living, EntityEvent.PROTECTED_FROM_DEATH);
       return true;
    }
    
    public boolean isActive(ItemStack stack){
-      return getBooleanProperty(stack,ACTIVE_TAG);
+      return getBooleanProperty(stack, ACTIVE_TAG);
    }
    
    public void forgor(ItemStack stack, ServerPlayer player){
-      putProperty(stack,ACTIVE_TAG,true);
+      putProperty(stack, ACTIVE_TAG, true);
       
       int increments = 100;
-      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId(ID),increments*5,1.0f,false,true,true, AttributeModifier.Operation.ADD_VALUE,null);
-      MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, increments*5, 9, false, false, true);
-      MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, increments*5 , 4, false, false, true);
-      MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS,increments*5 , 4, false, false, true);
-      Conditions.addCondition(player.level().getServer(),player,nearsight);
+      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), increments * 5, 1.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, null);
+      MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, increments * 5, 9, false, false, true);
+      MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, increments * 5, 4, false, false, true);
+      MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, increments * 5, 4, false, false, true);
+      Conditions.addCondition(player.level().getServer(), player, nearsight);
       player.addEffect(slow);
       player.addEffect(fatigue);
       player.addEffect(weakness);
       
       final boolean[] cont = {true};
       int resolve = ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.RESOLVE);
-      final int maxConc = LevelUtils.concFromXp(ArcanaNovum.data(player).getXP(),resolve);
+      final int maxConc = LevelUtils.concFromXp(ArcanaNovum.data(player).getXP(), resolve);
       DialogHelper dialogHelper = new DialogHelper();
       
-      dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+      dialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n\n\n\n")
                   .append(Component.literal("As the crushing weight of ").withStyle(ChatFormatting.DARK_GRAY))
                   .append(Component.literal("concentration").withStyle(ChatFormatting.RED))
                   .append(Component.literal(" takes your mind you hear the ").withStyle(ChatFormatting.DARK_GRAY))
                   .append(Component.literal("Nul Memento").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR))
                   .append(Component.literal(" whisper...")).withStyle(ChatFormatting.DARK_GRAY)
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
-      Event.addEvent(new NulMementoEvent(increments,player,stack));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, -1), false);
+      Event.addEvent(new NulMementoEvent(increments, player, stack));
       
-      BorisLib.addTickTimerCallback(new GenericTimer(increments*1, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments * 1, () -> {
          if(cont[0]){
             ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               Event.addEvent(new NulMementoEvent(increments,player,stack));
-               dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+               Event.addEvent(new NulMementoEvent(increments, player, stack));
+               dialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                      Component.literal("\n\n\n\n")
                            .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                            .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                            .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                            .append(Component.literal("\nFeel the weight, embrace it... let me in...").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
-               )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
+               )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, -1), true);
             }
          }
       }));
-      BorisLib.addTickTimerCallback(new GenericTimer(increments*2, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments * 2, () -> {
          if(cont[0]){
             ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               Event.addEvent(new NulMementoEvent(increments,player,stack));
-               dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+               Event.addEvent(new NulMementoEvent(increments, player, stack));
+               dialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                      Component.literal("\n\n\n\n")
                            .append(Component.literal("You feel as though your ").withStyle(ChatFormatting.DARK_GRAY))
                            .append(Component.literal("skull").withStyle(ChatFormatting.GRAY))
@@ -318,55 +318,55 @@ public class NulMemento extends EnergyItem {
                            .append(Component.literal(" when an ").withStyle(ChatFormatting.DARK_GRAY))
                            .append(Component.literal("encouraging voice").withStyle(ChatFormatting.GRAY))
                            .append(Component.literal(" lifts you.").withStyle(ChatFormatting.DARK_GRAY))
-               )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
+               )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, -1), false);
             }
          }
       }));
-      BorisLib.addTickTimerCallback(new GenericTimer(increments*3, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments * 3, () -> {
          if(cont[0]){
             ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               Event.addEvent(new NulMementoEvent(increments,player,stack));
-               dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+               Event.addEvent(new NulMementoEvent(increments, player, stack));
+               dialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                      Component.literal("\n\n\n\n")
                            .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                            .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                            .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                            .append(Component.literal("\nYour secrets are safe with me. Be free of this burden, for I now bear it alone.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
-               )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
+               )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, -1), true);
             }
          }
       }));
-      BorisLib.addTickTimerCallback(new GenericTimer(increments*4, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments * 4, () -> {
          if(cont[0]){
             ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               Event.addEvent(new NulMementoEvent(increments,player,stack));
-               dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+               Event.addEvent(new NulMementoEvent(increments, player, stack));
+               dialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                      Component.literal("\n\n\n\n")
                            .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                            .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                            .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                            .append(Component.literal("\nThat is, until we meet again...").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
-               )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
+               )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, -1), true);
             }
          }
       }));
-      BorisLib.addTickTimerCallback(new GenericTimer(increments*5, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments * 5, () -> {
          if(cont[0]){
             ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               Event.addEvent(new NulMementoEvent(increments,player,stack));
-               dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+               Event.addEvent(new NulMementoEvent(increments, player, stack));
+               dialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                      Component.literal("\n\n\n\n")
                            .append(Component.literal("The ").withStyle(ChatFormatting.DARK_GRAY))
                            .append(Component.literal("Nul Memento").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -378,10 +378,10 @@ public class NulMemento extends EnergyItem {
                            .append(Component.literal(" from the ").withStyle(ChatFormatting.DARK_GRAY))
                            .append(Component.literal("overwhelming ").withStyle(ChatFormatting.RED))
                            .append(Component.literal("Arcana.").withStyle(ChatFormatting.LIGHT_PURPLE))
-               )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
+               )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, -1), false);
                
-               MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA,200, 4, false, false, true);
-               MobEffectInstance ward = new MobEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT,increments*2, 0, false, false, true);
+               MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA, 200, 4, false, false, true);
+               MobEffectInstance ward = new MobEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, increments * 2, 0, false, false, true);
                player.addEffect(nausea);
                player.addEffect(ward);
                headStack.shrink(headStack.getCount());
@@ -389,27 +389,27 @@ public class NulMemento extends EnergyItem {
             }
          }
       }));
-      BorisLib.addTickTimerCallback(new GenericTimer(increments*6, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments * 6, () -> {
          if(cont[0]){
-            Event.addEvent(new NulMementoEvent(increments,player,stack));
-            dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+            Event.addEvent(new NulMementoEvent(increments, player, stack));
+            dialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                   Component.literal("\n\n\n\n")
                         .append(Component.literal("All of your Skill Points have been deallocated.").withStyle(ChatFormatting.AQUA))
-            )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
+            )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, -1), false);
             
             ArcanaNovum.data(player).removeAllAugments();
             ArcanaNovum.data(player).setCanAttemptCeptyus(true);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_NUL_MEMENTO_DEALLOCATE));
-            ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE);
-            ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC,1);
+            ArcanaAchievements.grant(player, ArcanaAchievements.LOST_KNOWLEDGE);
+            ArcanaAchievements.progress(player, ArcanaAchievements.AMNESIAC, 1);
          }
       }));
    }
    
    private void processHalted(ServerPlayer player){
-      player.displayClientMessage(Component.literal(""),false);
-      player.displayClientMessage(Component.literal(""),false);
-      player.displayClientMessage(Component.literal(""),false);
+      player.displayClientMessage(Component.literal(""), false);
+      player.displayClientMessage(Component.literal(""), false);
+      player.displayClientMessage(Component.literal(""), false);
       player.displayClientMessage(Component.literal("")
             .append(Component.literal("The weight of the ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
             .append(Component.literal("Nul Memento").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD, ChatFormatting.ITALIC))
@@ -423,11 +423,11 @@ public class NulMemento extends EnergyItem {
       boolean[] conditions = new boolean[]{
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
             ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()),
       };
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -437,7 +437,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("My Chosen... Will you continue show the courage that your peers lack?").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,0b0));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -446,7 +446,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("My dear Player, will you help us revitalize these realms to new heights?").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,0b0));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -455,7 +455,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("Everything faces me once... Few have ever faced me twice.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,0b0));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -464,7 +464,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("Take care in the dark secrets you seek. For only I can ever take them away.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,0b0));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -473,7 +473,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("What do you think of my Sister's realm? Do you see the need for my mission now?").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b1));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b1));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -482,7 +482,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("So you've met my kin, Equayus? What sort of exchange did you have?").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b10));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -491,7 +491,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("I sense my kin's Arcana on you... I trust your deal was worthwhile.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b10));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -500,7 +500,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("Equayus and I might not always see eye to eye, but we both have these realms' best intentions at heart.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b10));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -509,7 +509,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("Your ingenuity in acquiring that Pick did not go unnoticed. But remember that it was my gift that saved you.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b100));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b100));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -518,7 +518,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("Gaialtus turned its back on this world and left it to fall to ruin. What good is a creator that abandons their creation?").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b100000));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b100000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -527,7 +527,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("If Gaialtus was still here, none of my work would be necessary. Yet here I am, picking up its slack to maintain peace.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b100000));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b100000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -540,10 +540,10 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nBrother, you know not of what you speak. Decay is sometimes a necessary precursor to greater regrowth.").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,90},0,1,0b101000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{0, 90}, 0, 1, 0b101000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -556,10 +556,10 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
                   .append(Component.literal("\nBrother, it is always good to hear your voice again...").withStyle(ChatFormatting.AQUA))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,60},0,1,0b1000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f))
+      ), new int[]{0, 60}, 0, 1, 0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -568,7 +568,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("That Spear you wield harnesses shadow Arcana far darker than anything I have seen, It's almost frightening. Be cautious with it.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b1000000));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b1000000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -577,7 +577,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
                   .append(Component.literal("I never knew such vitriol could come from a mere Spear. Tenbrous must've been quite powerful.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b1000000));
+      )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 0, 1, 0b1000000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -595,11 +595,11 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\nAre you sure whatever you did was truly permanent? Such a shame all that power went to waste on you...").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL,0.5f,1.4f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))
-      ),new int[]{0,60,60},0,1,0b1010000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.5f, 1.4f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))
+      ), new int[]{0, 60, 60}, 0, 1, 0b1010000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -617,11 +617,11 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\nAt last, our goals united again.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,1.2f))
-      ),new int[]{0,60,60},0,1,0b1000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, 0.5f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 1.2f))
+      ), new int[]{0, 60, 60}, 0, 1, 0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -639,11 +639,11 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\nIt was not my actions that led to this. This Player did it of their own power. Perhaps in time your arrogance will turn to humility.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL,0.5f,1.4f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))
-      ),new int[]{0,60,60},0,1,0b10000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.5f, 1.4f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))
+      ), new int[]{0, 60, 60}, 0, 1, 0b10000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Component.literal("\n")
@@ -671,23 +671,23 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\nFood for thought, my Sister.").withStyle(ChatFormatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL,0.5f,1.4f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f),
-            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL,0.1f,0.6f),
-            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT,0.3f,0.7f))
-      ),new int[]{0,80,100,80,60},0,1,0b10000));
+      )), new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.5f, 1.4f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f),
+            new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.1f, 0.6f),
+            new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))
+      ), new int[]{0, 80, 100, 80, 60}, 0, 1, 0b10000));
       
       
-      DialogHelper helper = new DialogHelper(dialogOptions,conditions);
-      helper.sendDialog(List.of(player),helper.getWeightedResult(),true);
+      DialogHelper helper = new DialogHelper(dialogOptions, conditions);
+      helper.sendDialog(List.of(player), helper.getWeightedResult(), true);
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Nul Memento").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis entity of Death that I have acquired a passing familiarity with is most intriguing. He wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded. I was gifted this strange ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Nul Memento").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThis entity of Death that I have acquired a passing familiarity with is most intriguing. He wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded. I was gifted this strange ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Nul Memento").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nskull, and was informed that I have become one of his ‘chosen’.\nI’m not sure what to think of this. What machinations could a Deity of Death be planning such that he needs help from me? The Memento whispers to me every so often.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Nul Memento").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nI have come to learn the entity calls himself Nul, the God of Death and Knowledge. He speaks of Arcana, and secrets that I have yet to learn. He warns that one mind can only hold so much knowledge at one time. ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Nul Memento").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR), Component.literal("\nHowever, he offers his aid in circumventing this limitation. \nThis Memento reacts to an overburdened mind when worn and will make me forget all of the skills I have learned. ").withStyle(ChatFormatting.BLACK)));
@@ -717,7 +717,7 @@ public class NulMemento extends EnergyItem {
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
          Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).build();
-         baseStack.set(DataComponents.EQUIPPABLE,newComp);
+         baseStack.set(DataComponents.EQUIPPABLE, newComp);
          return baseStack;
       }
       
@@ -727,13 +727,13 @@ public class NulMemento extends EnergyItem {
          if(!(entity instanceof ServerPlayer player)) return;
          
          boolean nowOnHead = player.getItemBySlot(EquipmentSlot.HEAD).equals(stack);
-         boolean wasOnHead = getBooleanProperty(stack,HEAD_TAG);
+         boolean wasOnHead = getBooleanProperty(stack, HEAD_TAG);
          if(nowOnHead != wasOnHead){
-            putProperty(stack,HEAD_TAG,nowOnHead);
+            putProperty(stack, HEAD_TAG, nowOnHead);
          }
          if(nowOnHead && getEnergy(stack) > 0){
-            addEnergy(stack,-1);
-            buildItemLore(stack,entity.level().getServer());
+            addEnergy(stack, -1);
+            buildItemLore(stack, entity.level().getServer());
          }
          
          double dialogChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MEMENTO_DIALOG_CHANCE);

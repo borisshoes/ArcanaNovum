@@ -17,9 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(DamageSource.class)
 public class DamageSourceMixin {
    
-   @Shadow @Final private @Nullable Entity directEntity;
+   @Shadow
+   @Final
+   private @Nullable Entity directEntity;
    
-   @Inject(method= "getLocalizedDeathMessage",at=@At(value="RETURN"), cancellable = true)
+   @Inject(method = "getLocalizedDeathMessage", at = @At(value = "RETURN"), cancellable = true)
    private void arcananovum$deathMessage(LivingEntity killed, CallbackInfoReturnable<Component> cir){
       DamageSource source = (DamageSource) (Object) this;
       
@@ -35,7 +37,7 @@ public class DamageSourceMixin {
          };
          final Component deathMsg = Component.literal("")
                .append(Component.literal(killed.getScoreboardName()).withStyle(playerColor).withStyle())
-               .append(Component.literal(deathStrings[(int)(Math.random()*deathStrings.length)]).withStyle(ChatFormatting.WHITE));
+               .append(Component.literal(deathStrings[(int) (Math.random() * deathStrings.length)]).withStyle(ChatFormatting.WHITE));
          cir.setReturnValue(deathMsg);
       }
    }

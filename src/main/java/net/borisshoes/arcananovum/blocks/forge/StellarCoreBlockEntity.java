@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.stellarcore.StellarCoreGui;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
@@ -52,10 +53,11 @@ import static net.borisshoes.arcananovum.blocks.forge.StellarCore.MOLTEN_CORE_IT
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
 public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, WorldlyContainer, ContainerListener, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
@@ -70,11 +72,12 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       this.inventory.addListener(this);
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
    }
    
@@ -98,25 +101,25 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       
       if(assembled && seenForge){
          Direction dir = blockState.getValue(HORIZONTAL_FACING);
-         ArcanaEffectUtils.stellarCoreAnim(serverWorld, worldPosition.offset(dir.getUnitVec3i().multiply(-2)).getCenter().add(0,1,0),ticks % 300, dir);
+         ArcanaEffectUtils.stellarCoreAnim(serverWorld, worldPosition.offset(dir.getUnitVec3i().multiply(-2)).getCenter().add(0, 1, 0), ticks % 300, dir);
       }
       
       
       boolean lit = blockState.getValue(StellarCore.StellarCoreBlock.LIT);
       if(lit ^ assembled){
-         blockState = blockState.setValue(StellarCore.StellarCoreBlock.LIT,assembled);
+         blockState = blockState.setValue(StellarCore.StellarCoreBlock.LIT, assembled);
          level.setBlock(worldPosition, blockState, Block.UPDATE_ALL);
       }
       
       watchingPlayers.removeIf(player -> player.containerMenu == player.inventoryMenu);
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
    }
    
-   private Map<Item,Integer> getCraftingSalvageIngredients(ItemStack stack, MinecraftServer server){
-      Map<Item,Integer> bestRecipe = new HashMap<>();
+   private Map<Item, Integer> getCraftingSalvageIngredients(ItemStack stack, MinecraftServer server){
+      Map<Item, Integer> bestRecipe = new HashMap<>();
       if(stack.has(DataComponents.REPAIRABLE)){
          Repairable repairComp = stack.get(DataComponents.REPAIRABLE);
          List<ItemStack> repairItems = repairComp.items().stream().map(entry -> entry.value().getDefaultInstance()).toList();
@@ -137,9 +140,10 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
                }
             }
             
-            Map<Item,Integer> ingreds = new HashMap<>();
+            Map<Item, Integer> ingreds = new HashMap<>();
             for(Ingredient ingredient : ingredients){
-               ingredBlock: {
+               ingredBlock:
+               {
                   for(Holder<Item> ientry : ingredient.items().toList()){
                      for(ItemStack repairItem : repairItems){
                         if(repairItem.is(ientry.value())){
@@ -168,7 +172,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
    
    public List<ItemStack> salvageItem(ItemStack stack, MinecraftServer server){
       List<ItemStack> salvage = new ArrayList<>();
-      double salvageLvl = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STELLAR_CORE_SALVAGE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.DYSON_SPHERE));
+      double salvageLvl = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STELLAR_CORE_SALVAGE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.DYSON_SPHERE));
       if(ArcanaItemUtils.isArcane(stack)) return salvage;
       
       if(stack.has(DataComponents.REPAIRABLE)){
@@ -178,15 +182,17 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          Collection<RecipeHolder<SmithingRecipe>> smithingRecipes = server.getRecipeManager().getAllOfType(RecipeType.SMITHING);
          
          Item precursor = Items.AIR;
-         Map<Item,Integer> precursorSalvage = new HashMap<>();
+         Map<Item, Integer> precursorSalvage = new HashMap<>();
          for(RecipeHolder<SmithingRecipe> entry : smithingRecipes){
             if(entry.value() instanceof SmithingTransformRecipe smithingRecipe){
                if(!stack.is(smithingRecipe.result.item().value())) continue;
-               if(smithingRecipe.templateIngredient().isEmpty() || !smithingRecipe.templateIngredient().get().test(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE.getDefaultInstance())) continue;
-               if(smithingRecipe.additionIngredient().isEmpty() || repairItems.stream().noneMatch(repair -> smithingRecipe.additionIngredient().get().test(repair))) continue;
+               if(smithingRecipe.templateIngredient().isEmpty() || !smithingRecipe.templateIngredient().get().test(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE.getDefaultInstance()))
+                  continue;
+               if(smithingRecipe.additionIngredient().isEmpty() || repairItems.stream().noneMatch(repair -> smithingRecipe.additionIngredient().get().test(repair)))
+                  continue;
                
                for(Holder<Item> ientry : smithingRecipe.baseIngredient().items().toList()){
-                  Map<Item,Integer> salv = getCraftingSalvageIngredients(ientry.value().getDefaultInstance(),server);
+                  Map<Item, Integer> salv = getCraftingSalvageIngredients(ientry.value().getDefaultInstance(), server);
                   if(precursorSalvage.isEmpty()){
                      precursorSalvage = salv;
                      precursor = ientry.value();
@@ -203,27 +209,27 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          }
          
          
-         Map<Item,Integer> finalSalv;
+         Map<Item, Integer> finalSalv;
          if(precursor != Items.AIR && !precursorSalvage.isEmpty()){
             precursorSalvage.merge(Items.NETHERITE_SCRAP, 4, Integer::sum);
             finalSalv = precursorSalvage;
          }else{
-            finalSalv = getCraftingSalvageIngredients(stack,server);
+            finalSalv = getCraftingSalvageIngredients(stack, server);
          }
          
          finalSalv.forEach((salvItem, count) -> {
-            double baseCount = Math.round(count*salvageLvl);
+            double baseCount = Math.round(count * salvageLvl);
             int salvCount = (int) baseCount;
             if(this.getLevel().random.nextDouble() < (baseCount - salvCount - 1E-9)){
                salvCount++;
             }
-            salvage.add(new ItemStack(salvItem,salvCount));
+            salvage.add(new ItemStack(salvItem, salvCount));
          });
       }
       
       int rawStardust = ArcanaUtils.calcEssenceFromEnchants(stack);
       double modifier = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.STELLAR_CORE_STARDUST_RATE) +
-            ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STELLAR_CORE_STARDUST_RATE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.FUSION_INJECTORS));
+            ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STELLAR_CORE_STARDUST_RATE_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.FUSION_INJECTORS));
       int stardust = (int) (rawStardust * modifier);
       if(stardust > 0){
          while(stardust > 64){
@@ -236,7 +242,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       }
       
       List<ItemStack> salvageReturn = new ArrayList<>();
-      for(int i=0; i<stack.getCount(); i++){
+      for(int i = 0; i < stack.getCount(); i++){
          salvageReturn.addAll(salvage);
       }
       
@@ -244,7 +250,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
    }
    
    public void openGui(ServerPlayer player){
-      StellarCoreGui gui = new StellarCoreGui(player,this);
+      StellarCoreGui gui = new StellarCoreGui(player, this);
       gui.buildGui();
       gui.open();
       watchingPlayers.add(player);
@@ -262,7 +268,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.STELLAR_CORE).getCheckOffset()),serverWorld.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.STELLAR_CORE).getCheckOffset()), serverWorld.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -281,6 +287,10 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -295,14 +305,15 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.inventory = new SimpleContainer(getContainerSize());
       this.inventory.addListener(this);
-      if (!this.tryLoadLootTable(view)) {
+      if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -310,12 +321,13 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      if (!this.trySaveLootTable(view)) {
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      if(!this.trySaveLootTable(view)){
          ContainerHelper.saveAllItems(view, this.inventory.getItems());
       }
    }
@@ -337,7 +349,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
    @Override
    protected void setItems(NonNullList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
-         this.inventory.setItem(i,list.get(i));
+         this.inventory.setItem(i, list.get(i));
       }
    }
    
@@ -374,7 +386,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
             updating = false;
             return;
          }
-         boolean moltenCore = ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOLTEN_CORE) >= 1;
+         boolean moltenCore = ArcanaAugments.getAugmentFromMap(getAugments(), ArcanaAugments.MOLTEN_CORE) >= 1;
          BlockState blockState = serverWorld.getBlockState(worldPosition);
          Direction dir = blockState.getValue(HORIZONTAL_FACING);
          Vec3 itemSpawnPos = worldPosition.offset(dir.getUnitVec3i()).getCenter();
@@ -382,16 +394,16 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          ItemStack stack = inv.getItem(0);
          List<ItemStack> salvage = salvageItem(stack, serverWorld.getServer());
          if(!salvage.isEmpty()){
-            salvage = salvage.stream().filter(s -> !s.isEmpty() && s.getCount()>0).toList();
-            watchingPlayers.forEach(player -> ArcanaAchievements.progress(player,ArcanaAchievements.RECLAMATION, stack.getCount()));
+            salvage = salvage.stream().filter(s -> !s.isEmpty() && s.getCount() > 0).toList();
+            watchingPlayers.forEach(player -> ArcanaAchievements.progress(player, ArcanaAchievements.RECLAMATION, stack.getCount()));
             if(salvage.stream().anyMatch(s -> s.is(Items.NETHERITE_SCRAP))){
-               watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.SCRAP_TO_SCRAP));
+               watchingPlayers.forEach(player -> ArcanaAchievements.grant(player, ArcanaAchievements.SCRAP_TO_SCRAP));
             }
             
             inv.setItem(0, ItemStack.EMPTY);
             
             for(ItemStack itemStack : salvage){
-               Containers.dropItemStack(getLevel(), itemSpawnPos.x(),itemSpawnPos.y(),itemSpawnPos.z(), itemStack);
+               Containers.dropItemStack(getLevel(), itemSpawnPos.x(), itemSpawnPos.y(), itemSpawnPos.z(), itemStack);
             }
             
             watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STELLAR_CORE_SALVAGE)));
@@ -417,7 +429,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
                   items.add(moltenItem.copyWithCount(returnCount));
                }
                for(ItemStack itemStack : items){
-                  Containers.dropItemStack(serverWorld, itemSpawnPos.x(),itemSpawnPos.y(),itemSpawnPos.z(), itemStack);
+                  Containers.dropItemStack(serverWorld, itemSpawnPos.x(), itemSpawnPos.y(), itemSpawnPos.z(), itemStack);
                }
                
                SoundUtils.playSound(serverWorld, getBlockPos(), SoundEvents.BLAZE_DEATH, SoundSource.BLOCKS, 1, 0.8f);

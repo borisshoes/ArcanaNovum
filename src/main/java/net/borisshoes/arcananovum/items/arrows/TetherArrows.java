@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class TetherArrows extends RunicArrow {
-	public static final String ID = "tether_arrows";
+   public static final String ID = "tether_arrows";
    
    public TetherArrows(){
       id = ID;
@@ -43,8 +43,8 @@ public class TetherArrows extends RunicArrow {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new TetherArrowsItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.RIPTIDE_TRIDENT,ResearchTasks.FISH_MOB,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.RIPTIDE_TRIDENT, ResearchTasks.FISH_MOB, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -70,7 +70,7 @@ public class TetherArrows extends RunicArrow {
             .append(Component.literal(" a hit ").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal("entity ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("towards you.").withStyle(ChatFormatting.AQUA)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -81,15 +81,16 @@ public class TetherArrows extends RunicArrow {
          
          BorisLib.addTickTimerCallback(player.level(), new GenericTimer(1, () -> {
             Vec3 motion = player.position().subtract(hitPos);
-            Vec3 horizBoost = motion.multiply(1,0,1).normalize().scale(1.5);
+            Vec3 horizBoost = motion.multiply(1, 0, 1).normalize().scale(1.5);
             motion = motion.add(horizBoost);
-            double verticalMotion = motion.y < -3 ? (player.getY() - entity.getY())*.3 : velFromHeight(motion.y)/20;
-            Vec3 velocity = new Vec3(velFromLength(motion.x)*2.0/9.0,verticalMotion,velFromLength(motion.z)*2.0/9.0);
+            double verticalMotion = motion.y < -3 ? (player.getY() - entity.getY()) * .3 : velFromHeight(motion.y) / 20;
+            Vec3 velocity = new Vec3(velFromLength(motion.x) * 2.0 / 9.0, verticalMotion, velFromLength(motion.z) * 2.0 / 9.0);
             entity.setDeltaMovement(velocity);
-            if(entity instanceof ServerPlayer targetPlayer) targetPlayer.connection.send(new ClientboundSetEntityMotionPacket(targetPlayer));
+            if(entity instanceof ServerPlayer targetPlayer)
+               targetPlayer.connection.send(new ClientboundSetEntityMotionPacket(targetPlayer));
             
-            ArcanaEffectUtils.tetherArrowEntity(player.level(),entity,player);
-            SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_1, SoundSource.PLAYERS,.8f,.6f);
+            ArcanaEffectUtils.tetherArrowEntity(player.level(), entity, player);
+            SoundUtils.playSound(arrow.level(), player.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_1, SoundSource.PLAYERS, .8f, .6f);
          }));
       }
    }
@@ -100,15 +101,15 @@ public class TetherArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayer player){
          Vec3 hitPos = blockHitResult.getLocation();
          Vec3 motion = hitPos.subtract(player.position());
-         Vec3 horizBoost = motion.multiply(1,0,1).normalize().scale(1.5);
+         Vec3 horizBoost = motion.multiply(1, 0, 1).normalize().scale(1.5);
          //motion = motion.add(horizBoost);
-         Vec3 velocity = new Vec3(velFromLength(motion.x)*2.0/9.0,velFromHeight(motion.y)/20,velFromLength(motion.z)*2.0/9.0);
+         Vec3 velocity = new Vec3(velFromLength(motion.x) * 2.0 / 9.0, velFromHeight(motion.y) / 20, velFromLength(motion.z) * 2.0 / 9.0);
          player.setDeltaMovement(velocity);
          player.connection.send(new ClientboundSetEntityMotionPacket(player));
-         ArcanaEffectUtils.tetherArrowGrapple(player.level(),player,blockHitResult.getLocation());
-         SoundUtils.playSound(arrow.level(),player.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_2, SoundSource.PLAYERS,.8f,.6f);
+         ArcanaEffectUtils.tetherArrowGrapple(player.level(), player, blockHitResult.getLocation());
+         SoundUtils.playSound(arrow.level(), player.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_2, SoundSource.PLAYERS, .8f, .6f);
          
-         if(motion.y >= 12) ArcanaAchievements.progress(player,ArcanaAchievements.SPIDERMAN,1);
+         if(motion.y >= 12) ArcanaAchievements.progress(player, ArcanaAchievements.SPIDERMAN, 1);
       }
       
    }
@@ -117,7 +118,7 @@ public class TetherArrows extends RunicArrow {
    // TODO Redo the funny physics
    private double velFromLength(double d){
       double a = .96; // Drag
-      return -20*d*Math.log(a);
+      return -20 * d * Math.log(a);
    }
    
    private double velFromHeight(double h){
@@ -130,34 +131,34 @@ public class TetherArrows extends RunicArrow {
          h += 1.5;
       }
       
-      double exp = -Math.pow(a,(h/(a*b) - h/b));
-      double n = 20*a*b*(lambertNeg(exp/Math.E)+1);
-      return n/(a-1);
+      double exp = -Math.pow(a, (h / (a * b) - h / b));
+      double n = 20 * a * b * (lambertNeg(exp / Math.E) + 1);
+      return n / (a - 1);
    }
    
    
    private double appx1(double x, double y){
-      return x - (x*Math.exp(x)-y)/((x+1)*Math.exp(x));
+      return x - (x * Math.exp(x) - y) / ((x + 1) * Math.exp(x));
    }
    
    private double appx2(double x, double y){
-      return appx1(appx1(appx1(appx1(appx1(appx1(appx1(appx1(x,y),y),y),y),y),y),y),y);
+      return appx1(appx1(appx1(appx1(appx1(appx1(appx1(appx1(x, y), y), y), y), y), y), y), y);
    }
    
    private double lambertNeg(double y){
-      return y > -1/Math.E ? (y > 0 ? 0 : appx2(appx2(appx2(appx2(appx2(appx2(appx2(appx2(-2,y),y),y),y),y),y),y),y)) : 0;
+      return y > -1 / Math.E ? (y > 0 ? 0 : appx2(appx2(appx2(appx2(appx2(appx2(appx2(appx2(-2, y), y), y), y), y), y), y), y)) : 0;
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("   Tether Arrows").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThrough precise kinematic equations formed on the Matrix, these Arrows should form the perfect tether to pull me to the location I shoot. It can also pull creatures towards me.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Tether Arrows").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThrough precise kinematic equations formed on the Matrix, these Arrows should form the perfect tether to pull me to the location I shoot. It can also pull creatures towards me.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class TetherArrowsItem extends ArcanaPolymerArrowItem {
       public TetherArrowsItem(){
-         super(getThis(),getArcanaArrowItemComponents(10724259));
+         super(getThis(), getArcanaArrowItemComponents(10724259));
       }
       
       @Override

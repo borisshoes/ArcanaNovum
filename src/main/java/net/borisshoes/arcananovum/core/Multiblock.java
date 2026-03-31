@@ -5,7 +5,10 @@ import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -43,34 +46,34 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class Multiblock {
    private final int[][][] statePattern;
-   private final List<Tuple<BlockState,Predicate<BlockState>>> predicates;
+   private final List<Tuple<BlockState, Predicate<BlockState>>> predicates;
    
-   private static final HashMap<ServerPlayer,List<HolderAttachment>> MULTIBLOCK_DISPLAYS = new HashMap<>();
+   private static final HashMap<ServerPlayer, List<HolderAttachment>> MULTIBLOCK_DISPLAYS = new HashMap<>();
    
-   private Multiblock(int[][][] statePattern, List<Tuple<BlockState,Predicate<BlockState>>> predicates){
+   private Multiblock(int[][][] statePattern, List<Tuple<BlockState, Predicate<BlockState>>> predicates){
       this.statePattern = statePattern;
       this.predicates = predicates;
    }
    
-   public HashMap<Item,Integer> getMaterialList(){
-      HashMap<Item,Integer> mats = new HashMap<>();
+   public HashMap<Item, Integer> getMaterialList(){
+      HashMap<Item, Integer> mats = new HashMap<>();
       
       int width = statePattern.length;
       int height = statePattern[0].length;
       int length = statePattern[0][0].length;
       
-      for(int x=0;x<width;x++){
+      for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
             for(int z = 0; z < length; z++){
                int pattern = statePattern[x][y][z];
                if(pattern == -1) continue;
-               Tuple<BlockState,Predicate<BlockState>> pair = predicates.get(pattern);
+               Tuple<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
                Item item = pair.getA().getBlock().asItem();
                if(item == Items.AIR) continue;
                if(mats.containsKey(item)){
-                  mats.put(item,mats.get(item)+1);
+                  mats.put(item, mats.get(item) + 1);
                }else{
-                  mats.put(item,1);
+                  mats.put(item, 1);
                }
             }
          }
@@ -99,7 +102,7 @@ public class Multiblock {
          BlockState blockState = result.displayState();
          
          BlockDisplayElement element = createEmptyElement();
-         ElementHolder holder = createHolder(blockPos,checkParams.coreState(),checkParams.corePos(),result.predicate());
+         ElementHolder holder = createHolder(blockPos, checkParams.coreState(), checkParams.corePos(), result.predicate());
          HolderAttachment attachment = ChunkAttachment.ofTicking(holder, checkParams.world(), blockPos);
          
          if(blockState.isAir()){
@@ -125,7 +128,7 @@ public class Multiblock {
             }
          }
       }
-      MULTIBLOCK_DISPLAYS.put(player,playerAttachments);
+      MULTIBLOCK_DISPLAYS.put(player, playerAttachments);
    }
    
    public boolean matches(MultiblockCheck checkParams){
@@ -142,18 +145,18 @@ public class Multiblock {
       int height = rotatedPattern[0].length;
       int length = rotatedPattern[0][0].length;
       BlockPos cornerOffset = checkParams.cornerOffset();
-      BlockPos rotatedOffset = calculateRotOffset(numRotations,cornerOffset);
+      BlockPos rotatedOffset = calculateRotOffset(numRotations, cornerOffset);
       
       BlockPos corner = checkParams.corePos().offset(rotatedOffset);
-      for(int x=0;x<width;x++){
-         for(int y=0;y<height;y++){
-            for(int z=0;z<length;z++){
+      for(int x = 0; x < width; x++){
+         for(int y = 0; y < height; y++){
+            for(int z = 0; z < length; z++){
                int pattern = rotatedPattern[x][y][z];
                if(pattern == -1) continue;
                
-               BlockPos pos = corner.offset(x,y,z);
+               BlockPos pos = corner.offset(x, y, z);
                BlockState state = checkParams.world.getBlockState(pos);
-               Tuple<BlockState,Predicate<BlockState>> pair = predicates.get(pattern);
+               Tuple<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
                BlockState rotatedRawState = pair.getA();
                for(int i = 0; i < numRotations; i++){
                   rotatedRawState = rotatedRawState.rotate(Rotation.COUNTERCLOCKWISE_90);
@@ -168,7 +171,7 @@ public class Multiblock {
                };
                
                if(!rotatedPred.test(state)){
-                  incorrect.add(new MultiblockCheckResult(checkParams.world(),rotatedRawState,state,rotatedPred,new BlockPos(pos)));
+                  incorrect.add(new MultiblockCheckResult(checkParams.world(), rotatedRawState, state, rotatedPred, new BlockPos(pos)));
                }
             }
          }
@@ -204,9 +207,9 @@ public class Multiblock {
          int[][][] ret = new int[N][Y][M];
          
          for(int y = 0; y < Y; y++){
-            for (int r = 0; r < M; r++){
-               for (int c = 0; c < N; c++){
-                  ret[c][y][M-1-r] = rotatedPattern[r][y][c];
+            for(int r = 0; r < M; r++){
+               for(int c = 0; c < N; c++){
+                  ret[c][y][M - 1 - r] = rotatedPattern[r][y][c];
                }
             }
          }
@@ -221,19 +224,21 @@ public class Multiblock {
       int M = statePattern.length;
       int N = statePattern[0][0].length;
       for(int i = 0; i < numRotations; i++){
-         newPos = new BlockPos(newPos.getZ(),newPos.getY(),M-1-newPos.getX());
-         int T = M; M = N; N = T;
+         newPos = new BlockPos(newPos.getZ(), newPos.getY(), M - 1 - newPos.getX());
+         int T = M;
+         M = N;
+         N = T;
       }
       return newPos.multiply(-1);
    }
    
    public static Multiblock loadFromFile(String id){
-      return loadFromFile(MOD_ID,id);
+      return loadFromFile(MOD_ID, id);
    }
    
    public static Multiblock loadFromFile(String namespace, String id){
       try{
-         Optional<Optional<Path>> pathOptional = FabricLoader.getInstance().getModContainer(namespace).map(container -> container.findPath("data/"+namespace+"/multiblocks/"+id+".nbt"));
+         Optional<Optional<Path>> pathOptional = FabricLoader.getInstance().getModContainer(namespace).map(container -> container.findPath("data/" + namespace + "/multiblocks/" + id + ".nbt"));
          if(pathOptional.isEmpty() || pathOptional.get().isEmpty()){
             return null;
          }
@@ -248,7 +253,13 @@ public class Multiblock {
          int sizeZ = size.getIntOr(2, 0);
          
          int[][][] pattern = new int[sizeX][sizeY][sizeZ];
-         for(int i=0;i<sizeX;i++){for(int j=0;j<sizeY;j++){for(int k=0;k<sizeZ;k++){pattern[i][j][k] = -1;}}} // Set all elements to -1 because 0 is used by the palette
+         for(int i = 0; i < sizeX; i++){
+            for(int j = 0; j < sizeY; j++){
+               for(int k = 0; k < sizeZ; k++){
+                  pattern[i][j][k] = -1;
+               }
+            }
+         } // Set all elements to -1 because 0 is used by the palette
          
          ListTag blocks = compound.getListOrEmpty("blocks");
          for(Tag b : blocks){
@@ -259,73 +270,90 @@ public class Multiblock {
          
          // Build predicates for checking block states
          ListTag palette = compound.getListOrEmpty("palette");
-         List<Tuple<BlockState,Predicate<BlockState>>> preds = new ArrayList<>();
+         List<Tuple<BlockState, Predicate<BlockState>>> preds = new ArrayList<>();
          for(Tag e : palette){
             // Get the actual block
             CompoundTag blockTag = (CompoundTag) e;
             String blockName = blockTag.getStringOr("Name", "");
-            BlockState rawState = NbtUtils.readBlockState(BuiltInRegistries.BLOCK,blockTag); // Save raw state for display
+            BlockState rawState = NbtUtils.readBlockState(BuiltInRegistries.BLOCK, blockTag); // Save raw state for display
             Predicate<BlockState> pred;
             Identifier identifier = Identifier.parse(blockName);
             Optional<Holder.Reference<Block>> optional = BuiltInRegistries.BLOCK.get(ResourceKey.create(Registries.BLOCK, identifier));
             if(optional.isEmpty()){ // If block isn't found, let any block work
                pred = blockState -> true;
-               preds.add(new Tuple<>(rawState,pred));
+               preds.add(new Tuple<>(rawState, pred));
                continue;
             }
             
             // Block found, build predicate
-            Block block = (Block)((Holder<?>)optional.get()).value();
-            HashMap<Property<? extends Comparable<?>>,Comparable<?>> blockProperties = new HashMap<>();
+            Block block = (Block) ((Holder<?>) optional.get()).value();
+            HashMap<Property<? extends Comparable<?>>, Comparable<?>> blockProperties = new HashMap<>();
             if(blockTag.contains("Properties")){
                CompoundTag properties = blockTag.getCompoundOrEmpty("Properties");
                StateDefinition<Block, BlockState> stateManager = block.getStateDefinition();
-               for (String key : properties.keySet()){
+               for(String key : properties.keySet()){
                   Property<?> p = stateManager.getProperty(key);
                   if(p == null) continue;
-                  blockProperties.put(p,rawState.getValue(p)); // Add all properties to the map with all values that need to be checked
+                  blockProperties.put(p, rawState.getValue(p)); // Add all properties to the map with all values that need to be checked
                }
+            }
+            boolean allowSimilarBlocks = ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ALLOW_SIMILAR_BLOCK_CHECKS);
+            Set<Block> allowedBlocks = new HashSet<>();
+            if(allowSimilarBlocks){
+               allowedBlocks.addAll(ArcanaUtils.getSimilarBlocks(rawState.getBlock()));
+            }else{
+               allowedBlocks.add(rawState.getBlock());
             }
             
             pred = state -> {
-               if(!state.is(rawState.getBlock())) return false; // Check block type
+               if(!allowedBlocks.contains(state.getBlock())) return false; // Check block type
                boolean stairExempt = false;
-               if(rawState.getBlock() instanceof StairBlock && blockProperties.containsKey(StairBlock.FACING) && blockProperties.containsKey(StairBlock.SHAPE)){
-                  Direction desiredDirection = rawState.getValue(StairBlock.FACING);
-                  StairsShape desiredShape = rawState.getValue(StairBlock.SHAPE);
-                  Direction stateDirection = state.getValue(StairBlock.FACING);
-                  StairsShape stateShape = state.getValue(StairBlock.SHAPE);
-                  
-                  if((desiredShape.equals(StairsShape.INNER_LEFT) && stateShape.equals(StairsShape.INNER_RIGHT)) || (desiredShape.equals(StairsShape.OUTER_LEFT) && stateShape.equals(StairsShape.OUTER_RIGHT))){
-                     stairExempt = switch(desiredDirection){
-                        case NORTH -> stateDirection.equals(Direction.WEST);
-                        case SOUTH -> stateDirection.equals(Direction.EAST);
-                        case EAST -> stateDirection.equals(Direction.NORTH);
-                        case WEST -> stateDirection.equals(Direction.SOUTH);
-                        default -> false;
-                     };
-                  }else if((desiredShape.equals(StairsShape.INNER_RIGHT) && stateShape.equals(StairsShape.INNER_LEFT)) || (desiredShape.equals(StairsShape.OUTER_RIGHT) && stateShape.equals(StairsShape.OUTER_LEFT))){
-                     stairExempt = switch(desiredDirection){
-                        case WEST -> stateDirection.equals(Direction.NORTH);
-                        case EAST -> stateDirection.equals(Direction.SOUTH);
-                        case NORTH -> stateDirection.equals(Direction.EAST);
-                        case SOUTH -> stateDirection.equals(Direction.WEST);
-                        default -> false;
-                     };
+               checkStairExempt:
+               {
+                  if(rawState.getBlock() instanceof StairBlock && blockProperties.containsKey(StairBlock.FACING) && blockProperties.containsKey(StairBlock.SHAPE)){
+                     if(allowSimilarBlocks && (!state.hasProperty(StairBlock.FACING) || !state.hasProperty(StairBlock.SHAPE))){
+                        stairExempt = true;
+                        break checkStairExempt;
+                     }
+                     Direction desiredDirection = rawState.getValue(StairBlock.FACING);
+                     StairsShape desiredShape = rawState.getValue(StairBlock.SHAPE);
+                     Direction stateDirection = state.getValue(StairBlock.FACING);
+                     StairsShape stateShape = state.getValue(StairBlock.SHAPE);
+                     
+                     if((desiredShape.equals(StairsShape.INNER_LEFT) && stateShape.equals(StairsShape.INNER_RIGHT)) || (desiredShape.equals(StairsShape.OUTER_LEFT) && stateShape.equals(StairsShape.OUTER_RIGHT))){
+                        stairExempt = switch(desiredDirection){
+                           case NORTH -> stateDirection.equals(Direction.WEST);
+                           case SOUTH -> stateDirection.equals(Direction.EAST);
+                           case EAST -> stateDirection.equals(Direction.NORTH);
+                           case WEST -> stateDirection.equals(Direction.SOUTH);
+                           default -> false;
+                        };
+                     }else if((desiredShape.equals(StairsShape.INNER_RIGHT) && stateShape.equals(StairsShape.INNER_LEFT)) || (desiredShape.equals(StairsShape.OUTER_RIGHT) && stateShape.equals(StairsShape.OUTER_LEFT))){
+                        stairExempt = switch(desiredDirection){
+                           case WEST -> stateDirection.equals(Direction.NORTH);
+                           case EAST -> stateDirection.equals(Direction.SOUTH);
+                           case NORTH -> stateDirection.equals(Direction.EAST);
+                           case SOUTH -> stateDirection.equals(Direction.WEST);
+                           default -> false;
+                        };
+                     }
                   }
                }
                
                for(Map.Entry<Property<? extends Comparable<?>>, Comparable<?>> entry : blockProperties.entrySet()){
                   //System.out.println("Testing "+entry.getKey()+": Found "+state.get(entry.getKey())+" expecting: "+entry.getValue()+" | Matches:"+state.get(entry.getKey()).equals(entry.getValue()));
-                  if((entry.getKey().equals(StairBlock.FACING) || entry.getKey().equals(StairBlock.SHAPE)) && stairExempt) continue;
-                  if(!state.getValue(entry.getKey()).equals(entry.getValue())) return false; // Check all mapped properties
+                  if((entry.getKey().equals(StairBlock.FACING) || entry.getKey().equals(StairBlock.SHAPE)) && stairExempt)
+                     continue;
+                  if(!state.hasProperty(entry.getKey()) && allowSimilarBlocks) continue;
+                  if(!state.getValue(entry.getKey()).equals(entry.getValue()))
+                     return false; // Check all mapped properties
                }
                return true;
             };
-            preds.add(new Tuple<>(rawState,pred)); // Add predicate
+            preds.add(new Tuple<>(rawState, pred)); // Add predicate
          }
          
-         return new Multiblock(pattern,preds);
+         return new Multiblock(pattern, preds);
       }catch(Exception e){
          e.printStackTrace();
       }
@@ -333,7 +361,7 @@ public class Multiblock {
    }
    
    public ElementHolder createHolder(BlockPos pos, BlockState cs, BlockPos cp, Predicate<BlockState> p){
-      return new ElementHolder(){
+      return new ElementHolder() {
          int lifeTime = 600;
          final BlockState coreState = cs;
          final BlockPos corePos = cp;
@@ -384,8 +412,9 @@ public class Multiblock {
       return element;
    }
    
-   public record MultiblockCheck(ServerLevel world, BlockPos corePos, BlockState coreState, BlockPos cornerOffset, @Nullable Direction direction){
-      public MultiblockCheck {
+   public record MultiblockCheck(ServerLevel world, BlockPos corePos, BlockState coreState, BlockPos cornerOffset,
+                                 @Nullable Direction direction) {
+      public MultiblockCheck{
          Objects.requireNonNull(world);
          Objects.requireNonNull(corePos);
          Objects.requireNonNull(coreState);
@@ -393,8 +422,9 @@ public class Multiblock {
       }
    }
    
-   public record MultiblockCheckResult(ServerLevel world, BlockState displayState, BlockState foundState, Predicate<BlockState> predicate, BlockPos pos){
-      public MultiblockCheckResult {
+   public record MultiblockCheckResult(ServerLevel world, BlockState displayState, BlockState foundState,
+                                       Predicate<BlockState> predicate, BlockPos pos) {
+      public MultiblockCheckResult{
          Objects.requireNonNull(world);
          Objects.requireNonNull(displayState);
          Objects.requireNonNull(foundState);

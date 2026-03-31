@@ -7,13 +7,14 @@ import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
 
 public interface VirtualInventoryGui<I extends Container> {
    I getInventory();
+   
    ServerPlayer getPlayer();
    
-   default void onVirtualInventoryOpen() {
+   default void onVirtualInventoryOpen(){
       VIRTUAL_INVENTORY_GUIS.put(this, getPlayer());
    }
    
-   default void onVirtualInventoryClose() {
+   default void onVirtualInventoryClose(){
       VIRTUAL_INVENTORY_GUIS.remove(this);
    }
 }

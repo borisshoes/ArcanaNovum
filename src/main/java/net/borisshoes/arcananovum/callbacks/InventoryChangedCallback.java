@@ -32,7 +32,7 @@ public class InventoryChangedCallback {
          }
       }
       
-      if(EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),stack) > 0){
+      if(EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH), stack) > 0){
          ArcanaNovum.data(player).setResearchTask(ResearchTasks.OBTAIN_SILK_TOUCH, true);
       }
    }

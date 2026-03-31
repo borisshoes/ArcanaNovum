@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.StormcallerAltarGui;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
@@ -44,12 +45,13 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
-   public static final int[] DURATIONS = {-1,2,4,6,8,10,15,20,25,30,35,40,45,50,55,60};
+   public static final int[] DURATIONS = {-1, 2, 4, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60};
    
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private int cooldown;
    private int mode = 0; // 0 - clear sky, 1 - raining, 2 - thunder
@@ -62,25 +64,26 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       this.multiblock = ((MultiblockCore) ArcanaRegistry.STORMCALLER_ALTAR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
       this.mode = 0;
       this.duration = 0;
       resetCooldown();
    }
    
-   public static Tuple<Item,Integer> getCost(){
+   public static Tuple<Item, Integer> getCost(){
       try{
          String itemId = ArcanaNovum.CONFIG.getValue(ArcanaConfig.STORMCALLER_ALTAR_ITEM).toString();
          Optional<Holder.Reference<Item>> opt = BuiltInRegistries.ITEM.get(Identifier.parse(itemId));
          assert opt.isPresent();
-         return new Tuple<>(opt.get().value(),1);
+         return new Tuple<>(opt.get().value(), 1);
       }catch(Exception e){
-         return new Tuple<>(Items.DIAMOND_BLOCK,1);
+         return new Tuple<>(Items.DIAMOND_BLOCK, 1);
       }
    }
    
@@ -98,7 +101,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
          default -> dur;
       };
       if(mode == 0 && serverWorld.isRaining() && player != null){
-         ArcanaAchievements.grant(player,ArcanaAchievements.COME_AGAIN_RAIN);
+         ArcanaAchievements.grant(player, ArcanaAchievements.COME_AGAIN_RAIN);
       }
       
       serverWorld.setWeatherParameters(mode == 0 ? dur : 0, mode >= 1 ? dur : 0, mode >= 1, mode == 2);
@@ -118,10 +121,11 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       
       this.resetCooldown();
       this.setActive(true);
-      ArcanaEffectUtils.stormcallerAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0);
+      ArcanaEffectUtils.stormcallerAltarAnim(serverWorld, this.getBlockPos().getCenter(), 0);
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
          changeWeather(finalPlayer);
-         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STORMCALLER_ALTAR_ACTIVATE));
+         if(finalPlayer != null)
+            ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STORMCALLER_ALTAR_ACTIVATE));
       }));
       return true;
    }
@@ -131,7 +135,8 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
          player.sendSystemMessage(Component.literal("You cannot access an active Altar").withStyle(ChatFormatting.RED));
          return;
       }
-      StormcallerAltarGui gui = new StormcallerAltarGui(player,this);;
+      StormcallerAltarGui gui = new StormcallerAltarGui(player, this);
+      ;
       gui.build();
       gui.open();
    }
@@ -151,7 +156,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.STORMCALLER_ALTAR).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.STORMCALLER_ALTAR).getCheckOffset()), null);
    }
    
    private void tick(){
@@ -165,7 +170,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
       
       boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE).orElse(false);
@@ -196,7 +201,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    public void resetCooldown(){
-      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CLOUD_SEEDING);
+      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.CLOUD_SEEDING);
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STORMCALLER_ALTAR_COOLDOWN);
       int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.STORMCALLER_ALTAR_COOLDOWN_PER_LVL).get(cooldownLevel);
       this.cooldown = Math.max(1, baseCooldown - cooldownReduction);
@@ -234,6 +239,10 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -248,12 +257,13 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.cooldown = view.getIntOr("cooldown", 0);
       this.mode = view.getIntOr("mode", 0);
       this.duration = view.getIntOr("duration", 0);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -261,13 +271,14 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      view.putInt("cooldown",this.cooldown);
-      view.putInt("mode",this.mode);
-      view.putInt("duration",this.duration);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      view.putInt("cooldown", this.cooldown);
+      view.putInt("mode", this.mode);
+      view.putInt("duration", this.duration);
    }
 }

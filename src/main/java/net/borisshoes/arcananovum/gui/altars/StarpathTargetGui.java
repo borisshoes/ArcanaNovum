@@ -27,7 +27,7 @@ public class StarpathTargetGui extends AnvilInputGui {
    private final Consumer<Object> onCompletion;
    
    public StarpathTargetGui(ServerPlayer player, StarpathAltarBlockEntity blockEntity, boolean targetMode, SimpleGui returnGui, Consumer<Object> onCompletion){
-      super(player,false);
+      super(player, false);
       this.blockEntity = blockEntity;
       this.targetMode = targetMode;
       this.returnGui = returnGui;
@@ -39,13 +39,13 @@ public class StarpathTargetGui extends AnvilInputGui {
          locationItem.setName((Component.literal("Enter a Location").withStyle(ChatFormatting.GOLD)));
          locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Use format: x,y,z").withStyle(ChatFormatting.YELLOW)))));
-         setSlot(0,locationItem);
+         setSlot(0, locationItem);
       }else{
          GuiElementBuilder locationItem = new GuiElementBuilder(Items.WRITABLE_BOOK).hideDefaultTooltip();
          locationItem.setName((Component.literal("Enter a Name").withStyle(ChatFormatting.GOLD)));
-         setSlot(0,locationItem);
+         setSlot(0, locationItem);
       }
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.STARPATH_COLOR)).hideTooltip());
+      setSlot(1, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.STARPATH_COLOR)).hideTooltip());
    }
    
    private BlockPos parseValid(){
@@ -53,7 +53,7 @@ public class StarpathTargetGui extends AnvilInputGui {
       if(split.length != 3) return null;
       
       try{
-         BlockPos target = new BlockPos(Integer.parseInt(split[0]),Integer.parseInt(split[1]),Integer.parseInt(split[2]));
+         BlockPos target = new BlockPos(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
          if(blockEntity.getLevel() != null && blockEntity.getLevel().isOutsideBuildHeight(target)){
             return null;
          }
@@ -70,7 +70,7 @@ public class StarpathTargetGui extends AnvilInputGui {
          if(targetMode){
             BlockPos parsed = parseValid();
             if(parsed == null){
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }else{
                onCompletion.accept(parsed);
                this.close();
@@ -78,7 +78,7 @@ public class StarpathTargetGui extends AnvilInputGui {
          }else if(text != null){
             String trimmedName = text.trim();
             if(trimmedName.isBlank() || trimmedName.length() > 50){
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }else{
                onCompletion.accept(trimmedName);
                this.close();
@@ -100,14 +100,14 @@ public class StarpathTargetGui extends AnvilInputGui {
          if(parsed == null){
             setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Component.literal("Invalid Location").withStyle(ChatFormatting.DARK_AQUA)));
          }else{
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).hideDefaultTooltip().setName(Component.literal("Valid Location: "+parsed.toShortString()).withStyle(ChatFormatting.DARK_AQUA)));
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).hideDefaultTooltip().setName(Component.literal("Valid Location: " + parsed.toShortString()).withStyle(ChatFormatting.DARK_AQUA)));
          }
       }else if(text != null){
          String trimmedName = text.trim();
          if(trimmedName.isBlank() || trimmedName.length() > 50){
             setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Component.literal("Invalid Name").withStyle(ChatFormatting.DARK_AQUA)));
          }else{
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).setName(Component.literal("Valid Name: "+trimmedName).withStyle(ChatFormatting.DARK_AQUA)));
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).setName(Component.literal("Valid Name: " + trimmedName).withStyle(ChatFormatting.DARK_AQUA)));
          }
       }
    }

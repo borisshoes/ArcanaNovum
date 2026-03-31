@@ -70,23 +70,23 @@ public class GreavesOfGaialtus extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.DIAMOND_LEGGINGS;
       item = new GreavesOfGaialtusItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_GREAVES_OF_GAIALTUS};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("tcmEcho")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("tcmEcho"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,ACTIVE_TAG,true);
+      putProperty(stack, ACTIVE_TAG, true);
       setPrefStack(stack);
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,ACTIVE_TAG,active);
-      return buildItemLore(newStack,server);
+      boolean active = getBooleanProperty(stack, ACTIVE_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, ACTIVE_TAG, active);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -146,7 +146,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
             .append(Component.literal(" auto-refill.").withStyle(ChatFormatting.DARK_GREEN)));
       
       if(itemStack != null){
-         List<Tuple<Item,Integer>> cargo = getCargoList(itemStack);
+         List<Tuple<Item, Integer>> cargo = getCargoList(itemStack);
          
          if(cargo.isEmpty()){
             lore.add(Component.literal(""));
@@ -171,15 +171,15 @@ public class GreavesOfGaialtus extends ArcanaItem {
                if(count > item.getDefaultMaxStackSize()){
                   lore.add(Component.literal("")
                         .append(Component.literal(" - ").withStyle(ChatFormatting.DARK_GREEN))
-                        .append(Component.literal(count+"").withStyle(ChatFormatting.GREEN))
+                        .append(Component.literal(count + "").withStyle(ChatFormatting.GREEN))
                         .append(Component.literal(" (").withStyle(ChatFormatting.DARK_GREEN))
-                        .append(Component.literal(stacks+" Stacks + "+leftover).withStyle(ChatFormatting.GREEN))
+                        .append(Component.literal(stacks + " Stacks + " + leftover).withStyle(ChatFormatting.GREEN))
                         .append(Component.literal(") of ").withStyle(ChatFormatting.DARK_GREEN))
                         .append(item.getName().copy().withStyle(ChatFormatting.AQUA)));
                }else{
                   lore.add(Component.literal("")
                         .append(Component.literal(" - ").withStyle(ChatFormatting.DARK_GREEN))
-                        .append(Component.literal(count+"").withStyle(ChatFormatting.GREEN))
+                        .append(Component.literal(count + "").withStyle(ChatFormatting.GREEN))
                         .append(Component.literal(" of ").withStyle(ChatFormatting.DARK_GREEN))
                         .append(item.getName().copy().withStyle(ChatFormatting.AQUA)));
                }
@@ -188,9 +188,9 @@ public class GreavesOfGaialtus extends ArcanaItem {
             if(leftOverCount > 0){
                lore.add(Component.literal("")
                      .append(Component.literal(" - ").withStyle(ChatFormatting.DARK_GREEN))
-                     .append(Component.literal(leftOverCount+"").withStyle(ChatFormatting.AQUA))
+                     .append(Component.literal(leftOverCount + "").withStyle(ChatFormatting.AQUA))
                      .append(Component.literal(" more items of ").withStyle(ChatFormatting.GREEN))
-                     .append(Component.literal((cargo.size()-10)+"").withStyle(ChatFormatting.AQUA))
+                     .append(Component.literal((cargo.size() - 10) + "").withStyle(ChatFormatting.AQUA))
                      .append(Component.literal(" types...").withStyle(ChatFormatting.GREEN)));
             }
          }
@@ -202,7 +202,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Greaves Of\n      Gaialtus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nEquayus once spoke to me of Gaialtus, the long lost progenitor of the Overworld. They mentioned only good things, a seemingly rare attitude towards the so-called").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Greaves Of\n      Gaialtus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nEquayus once spoke to me of Gaialtus, the long lost progenitor of the Overworld. They mentioned only good things, a seemingly rare attitude towards the so-called").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Greaves Of\n      Gaialtus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\n‘progenitors’.\n\nEquayus said that they met once, and Gaialtus was kind enough to offer them something incredibly important; a wonderfully cryptic tale.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Greaves Of\n      Gaialtus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nThese Greaves contain a condensed fraction of their essence, that of creativity and protection. \nThey are similar to Netherite, but are incredibly cozy, and have pockets that ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Greaves Of\n      Gaialtus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\ncould fit mountains inside.\n\nSneak Using the Greaves access their pockets, where copious amounts of building blocks can be stored. \n\n ").withStyle(ChatFormatting.BLACK)));
@@ -215,7 +215,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
    public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
       if(ArcanaItemUtils.identifyItem(stack) instanceof GreavesOfGaialtus){
          if(augment == ArcanaAugments.NATURES_EMBRACE && level >= 1){
-            EnhancedStatUtils.enhanceItem(stack,1);
+            EnhancedStatUtils.enhanceItem(stack, 1);
          }else if(augment == ArcanaAugments.CREATORS_TOUCH && level >= 1){
             ItemAttributeModifiers modifiers = stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
             List<ItemAttributeModifiers.Entry> attributeList = new ArrayList<>();
@@ -227,16 +227,16 @@ public class GreavesOfGaialtus extends ArcanaItem {
                }
             }
             
-            attributeList.add(new ItemAttributeModifiers.Entry(Attributes.BLOCK_INTERACTION_RANGE,new AttributeModifier(ArcanaRegistry.arcanaId(this.id),1.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.LEGS));
+            attributeList.add(new ItemAttributeModifiers.Entry(Attributes.BLOCK_INTERACTION_RANGE, new AttributeModifier(ArcanaRegistry.arcanaId(this.id), 1.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.LEGS));
             ItemAttributeModifiers newComponent = new ItemAttributeModifiers(attributeList);
-            stack.set(DataComponents.ATTRIBUTE_MODIFIERS,newComponent);
+            stack.set(DataComponents.ATTRIBUTE_MODIFIERS, newComponent);
          }
       }
       return stack;
    }
    
-   public List<Tuple<Item,Integer>> getCargoList(ItemStack greaves){
-      List<Tuple<Item,Integer>> list = new ArrayList<>();
+   public List<Tuple<Item, Integer>> getCargoList(ItemStack greaves){
+      List<Tuple<Item, Integer>> list = new ArrayList<>();
       if(!(ArcanaItemUtils.identifyItem(greaves) instanceof GreavesOfGaialtus)) return list;
       ItemContainerContents containerItems = greaves.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       containerItems.stream().forEach(stack -> {
@@ -251,7 +251,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
             }
          }
          if(!found){
-            list.add(new Tuple<>(item,stack.getCount()));
+            list.add(new Tuple<>(item, stack.getCount()));
          }
       });
       list.sort((pair1, pair2) -> pair2.getB().compareTo(pair1.getB()));
@@ -260,10 +260,10 @@ public class GreavesOfGaialtus extends ArcanaItem {
    
    public ItemStack getStackOf(ItemStack greaves, ItemStack refillStack){
       if(!(ArcanaItemUtils.identifyItem(greaves) instanceof GreavesOfGaialtus)) return ItemStack.EMPTY;
-      List<ItemStack> stacks = MinecraftUtils.getMatchingItemsFromContainerComp(greaves,refillStack.getItem());
+      List<ItemStack> stacks = MinecraftUtils.getMatchingItemsFromContainerComp(greaves, refillStack.getItem());
       ItemStack returnStack = ItemStack.EMPTY;
       for(ItemStack stack : stacks){
-         if(ItemStack.isSameItemSameComponents(refillStack,stack)){
+         if(ItemStack.isSameItemSameComponents(refillStack, stack)){
             if(returnStack.isEmpty() || stack.getCount() < returnStack.getCount()){
                returnStack = stack;
             }
@@ -273,10 +273,10 @@ public class GreavesOfGaialtus extends ArcanaItem {
    }
    
    public class GreavesOfGaialtusItem extends ArcanaPolymerItem {
-      public static final int[] GREAVES_SLOT_COUNT = new int[]{18,27,36,45,54};
+      public static final int[] GREAVES_SLOT_COUNT = new int[]{18, 27, 36, 45, 54};
       
       public GreavesOfGaialtusItem(){
-         super(getThis(),getEquipmentArcanaItemComponents()
+         super(getThis(), getEquipmentArcanaItemComponents()
                .humanoidArmor(ArmorMaterials.NETHERITE, ArmorType.LEGGINGS)
                .component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
          );
@@ -287,7 +287,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
          Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, ArcanaRegistry.arcanaId(ID))).build();
-         baseStack.set(DataComponents.EQUIPPABLE,newComp);
+         baseStack.set(DataComponents.EQUIPPABLE, newComp);
          return baseStack;
       }
       
@@ -310,18 +310,18 @@ public class GreavesOfGaialtus extends ArcanaItem {
          if(playerEntity instanceof ServerPlayer player && player.isShiftKeyDown()){
             ItemStack stack = playerEntity.getItemInHand(hand);
             if(hand == InteractionHand.MAIN_HAND){
-               GreavesOfGaialtusGui gui = new GreavesOfGaialtusGui(player, GreavesOfGaialtus.this, stack, GREAVES_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PLANETARY_POCKETS)]);
+               GreavesOfGaialtusGui gui = new GreavesOfGaialtusGui(player, GreavesOfGaialtus.this, stack, GREAVES_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PLANETARY_POCKETS)]);
                gui.build();
                gui.open();
             }else if(hand == InteractionHand.OFF_HAND){
-               boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
-               putProperty(stack,ACTIVE_TAG,active);
+               boolean active = !getBooleanProperty(stack, ACTIVE_TAG);
+               putProperty(stack, ACTIVE_TAG, active);
                if(active){
-                  player.displayClientMessage(Component.literal("Your pockets zip open").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ARMOR_EQUIP_LEATHER, 0.5f,1.2f);
+                  player.displayClientMessage(Component.literal("Your pockets zip open").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ARMOR_EQUIP_LEATHER, 0.5f, 1.2f);
                }else{
-                  player.displayClientMessage(Component.literal("Your pockets zip closed").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ARMOR_EQUIP_LEATHER, 0.5f,0.7f);
+                  player.displayClientMessage(Component.literal("Your pockets zip closed").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ARMOR_EQUIP_LEATHER, 0.5f, 0.7f);
                }
             }
             Inventory inv = player.getInventory();
@@ -329,30 +329,30 @@ public class GreavesOfGaialtus extends ArcanaItem {
             player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), 7, player.getItemBySlot(EquipmentSlot.LEGS)));
             return InteractionResult.SUCCESS_SERVER;
          }
-         return super.use(world,playerEntity,hand);
+         return super.use(world, playerEntity, hand);
       }
       
       @Override
-      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference) {
+      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference){
          if(playerEntity.level().isClientSide() || !(playerEntity instanceof ServerPlayer player)) return false;
-         if (clickType == ClickAction.PRIMARY && otherStack.isEmpty()) {
+         if(clickType == ClickAction.PRIMARY && otherStack.isEmpty()){
             return false;
-         } else {
+         }else{
             ItemContainerContents beltItems = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
             List<ItemStack> beltList = beltItems.stream().toList();
             
             if(clickType == ClickAction.PRIMARY && !otherStack.isEmpty()){ // Try insert
                if(!GreavesSlot.isValidItem(otherStack)){
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL, 1f, 1f);
                }else{
-                  int size = GREAVES_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PLANETARY_POCKETS)];
+                  int size = GREAVES_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PLANETARY_POCKETS)];
                   int count = otherStack.getCount();
-                  Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
+                  Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems, size, otherStack);
                   if(count == addPair.getB().getCount()){
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL,1f,1f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL, 1f, 1f);
                   }else{
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT,0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
-                     stack.set(DataComponents.CONTAINER,addPair.getA());
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+                     stack.set(DataComponents.CONTAINER, addPair.getA());
                   }
                }
                buildItemLore(stack, BorisLib.SERVER);
@@ -362,7 +362,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                for(ItemStack itemStack : beltList.reversed()){
                   if(!itemStack.isEmpty()){
                      cursorStackReference.set(itemStack.copyAndClear());
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE,0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
                      found = true;
                      break;
                   }
@@ -370,7 +370,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                
                if(found){
                   stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(beltList));
-                  buildItemLore(stack,BorisLib.SERVER);
+                  buildItemLore(stack, BorisLib.SERVER);
                   return true;
                }else{
                   return false;

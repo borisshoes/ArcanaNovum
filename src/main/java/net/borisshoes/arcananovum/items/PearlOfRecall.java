@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class PearlOfRecall extends EnergyItem {
-	public static final String ID = "pearl_of_recall";
+   public static final String ID = "pearl_of_recall";
    
    public static final String HEAT_TAG = "heat";
    public static final String LOCATION_TAG = "location";
@@ -61,16 +61,16 @@ public class PearlOfRecall extends EnergyItem {
       initEnergy = 600;
       vanillaItem = Items.ENDER_EYE;
       item = new PearlOfRecallItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.UNLOCK_WAYSTONE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.ADVANCEMENT_USE_LODESTONE, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.UNLOCK_WAYSTONE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,HEAT_TAG, 0);
+      putProperty(stack, HEAT_TAG, 0);
       CompoundTag locTag = new CompoundTag();
-      locTag.putString("dim","unattuned");
-      putProperty(stack,LOCATION_TAG,locTag);
+      locTag.putString("dim", "unattuned");
+      putProperty(stack, LOCATION_TAG, locTag);
       setPrefStack(stack);
    }
    
@@ -113,7 +113,7 @@ public class PearlOfRecall extends EnergyItem {
                .append(Component.literal("Charged - ").withStyle(ChatFormatting.DARK_AQUA))
                .append(Component.literal("100%").withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE)));
       }else{
-         CompoundTag locNbt = getCompoundProperty(itemStack,LOCATION_TAG);
+         CompoundTag locNbt = getCompoundProperty(itemStack, LOCATION_TAG);
          String dim = locNbt.getStringOr("dim", "");
          int x = (int) locNbt.getDoubleOr("x", 0.0);
          int y = (int) locNbt.getDoubleOr("y", 0.0);
@@ -138,7 +138,7 @@ public class PearlOfRecall extends EnergyItem {
          
          
          if(!dim.equals("unattuned")){
-            location = dimensionName + " ("+x+","+y+","+z+")";
+            location = dimensionName + " (" + x + "," + y + "," + z + ")";
             lore.add(Component.literal("")
                   .append(Component.literal("Location - ").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(Component.literal(location).withStyle(dimColor)));
@@ -148,13 +148,13 @@ public class PearlOfRecall extends EnergyItem {
                   .append(Component.literal("Unbound").withStyle(ChatFormatting.GRAY)));
          }
          
-         int charge = (getEnergy(itemStack)*100/getMaxEnergy(itemStack));
+         int charge = (getEnergy(itemStack) * 100 / getMaxEnergy(itemStack));
          String charging = charge == 100 ? "Charged" : "Charging";
          lore.add(Component.literal("")
-               .append(Component.literal(charging+" - ").withStyle(ChatFormatting.DARK_AQUA))
-               .append(Component.literal(charge+"%").withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE)));
+               .append(Component.literal(charging + " - ").withStyle(ChatFormatting.DARK_AQUA))
+               .append(Component.literal(charge + "%").withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE)));
       }
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -165,22 +165,22 @@ public class PearlOfRecall extends EnergyItem {
    @Override
    public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PEARL_OF_RECALL_COOLDOWN);
-      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PEARL_OF_RECALL_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RECALL_ACCELERATION));
+      int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PEARL_OF_RECALL_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.RECALL_ACCELERATION));
       return Math.max(1, baseCooldown - cooldownReduction);
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      CompoundTag locNbt = getCompoundProperty(stack,LOCATION_TAG).copy();
-      int heat = getIntProperty(stack,HEAT_TAG);
-      ItemStack newItem = super.updateItem(stack,server);
-      putProperty(newItem,LOCATION_TAG,locNbt);
-      putProperty(newItem,HEAT_TAG, heat);
-      return buildItemLore(newItem,server);
+      CompoundTag locNbt = getCompoundProperty(stack, LOCATION_TAG).copy();
+      int heat = getIntProperty(stack, HEAT_TAG);
+      ItemStack newItem = super.updateItem(stack, server);
+      putProperty(newItem, LOCATION_TAG, locNbt);
+      putProperty(newItem, HEAT_TAG, heat);
+      return buildItemLore(newItem, server);
    }
    
    private void teleport(ItemStack item, ServerPlayer player){
-      CompoundTag locNbt = getCompoundProperty(item,LOCATION_TAG);
+      CompoundTag locNbt = getCompoundProperty(item, LOCATION_TAG);
       String dim = locNbt.getStringOr("dim", "");
       double x = locNbt.getDoubleOr("x", 0.0);
       double y = locNbt.getDoubleOr("y", 0.0);
@@ -189,19 +189,21 @@ public class PearlOfRecall extends EnergyItem {
       float pitch = locNbt.getFloatOr("pitch", 0.0f);
       
       ServerLevel to = player.level();
-      for (ServerLevel w : player.level().getServer().getAllLevels()){
+      for(ServerLevel w : player.level().getServer().getAllLevels()){
          if(w.dimension().identifier().toString().equals(dim)){
             to = w;
             break;
          }
       }
       
-      player.teleport(new TeleportTransition(to, new Vec3(x,y,z), Vec3.ZERO, yaw, pitch, TeleportTransition.PLACE_PORTAL_TICKET));
-      setEnergy(item,0);
-      if(to.dimension().identifier().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,ArcanaAchievements.BACK_TO_HELL);
-      if(to.dimension().identifier().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,ArcanaAchievements.ASCENDING_TO_HEAVEN);
-      SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL,1,2f);
-      ArcanaEffectUtils.recallTeleport(to,player.position());
+      player.teleport(new TeleportTransition(to, new Vec3(x, y, z), Vec3.ZERO, yaw, pitch, TeleportTransition.PLACE_PORTAL_TICKET));
+      setEnergy(item, 0);
+      if(to.dimension().identifier().toString().equals("minecraft:the_nether"))
+         ArcanaAchievements.grant(player, ArcanaAchievements.BACK_TO_HELL);
+      if(to.dimension().identifier().toString().equals("minecraft:the_end"))
+         ArcanaAchievements.grant(player, ArcanaAchievements.ASCENDING_TO_HEAVEN);
+      SoundUtils.playSongToPlayer(player, SoundEvents.PORTAL_TRAVEL, 1, 2f);
+      ArcanaEffectUtils.recallTeleport(to, player.position());
    }
    
    @Override
@@ -212,15 +214,15 @@ public class PearlOfRecall extends EnergyItem {
       
       Waystone.WaystoneTarget target = Waystone.getTarget(waystone);
       if(target != null){
-         CompoundTag locNbt = getCompoundProperty(newArcanaItem,LOCATION_TAG);
+         CompoundTag locNbt = getCompoundProperty(newArcanaItem, LOCATION_TAG);
          locNbt.putString("dim", target.world().identifier().toString());
          locNbt.putDouble("x", target.position().x);
          locNbt.putDouble("y", target.position().y);
          locNbt.putDouble("z", target.position().z);
          locNbt.putFloat("yaw", target.yaw());
          locNbt.putFloat("pitch", target.pitch());
-         putProperty(newArcanaItem,LOCATION_TAG,locNbt);
-         buildItemLore(newArcanaItem,starlightForge.getLevel().getServer());
+         putProperty(newArcanaItem, LOCATION_TAG, locNbt);
+         buildItemLore(newArcanaItem, starlightForge.getLevel().getServer());
       }
       
       return newArcanaItem;
@@ -229,7 +231,7 @@ public class PearlOfRecall extends EnergyItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("Pearl of Recall").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it by using a Waystone to encode the location. ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Pearl of Recall").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it by using a Waystone to encode the location. ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Pearl of Recall").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nI can even use it multiple times after a recharge.\n\nUsing the Pearl permanently sets its Recall point.\n\nUsing the Pearl again starts to unfreeze the Pearl in time.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("Pearl of Recall").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nTaking damage resets the process and requires more recharging.\n\nAfter using the Pearl, it takes a while to resync to the timeline before use again.").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -249,7 +251,7 @@ public class PearlOfRecall extends EnergyItem {
          }else{
             stringList.add("charged");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -263,51 +265,51 @@ public class PearlOfRecall extends EnergyItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          
-
-         int heat = getIntProperty(stack,HEAT_TAG);
+         
+         int heat = getIntProperty(stack, HEAT_TAG);
          int warmup = ArcanaNovum.CONFIG.getInt(ArcanaConfig.PEARL_OF_RECALL_WARMUP);
          
          if(heat >= warmup){
-            teleport(stack,player);
-            putProperty(stack,HEAT_TAG, 0);
+            teleport(stack, player);
+            putProperty(stack, HEAT_TAG, 0);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_PEARL_OF_RECALL_USE)); // Add xp
          }else if(heat > 0){
-            putProperty(stack,HEAT_TAG, heat+1);
-            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.position());
+            putProperty(stack, HEAT_TAG, heat + 1);
+            ArcanaEffectUtils.recallTeleportCharge(serverWorld, player.position());
          }else if(heat == -1){
             // Teleport was cancelled by damage
             double cancelPercent = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PEARL_OF_RECALL_CANCEL_PERCENT);
-            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.position());
-            SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.ENDERMAN_HURT, SoundSource.PLAYERS, 8,0.8f);
-            putProperty(stack,HEAT_TAG, 0);
-            setEnergy(stack,(int)(getMaxEnergy(stack)*cancelPercent));
+            ArcanaEffectUtils.recallTeleportCancel(serverWorld, player.position());
+            SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.ENDERMAN_HURT, SoundSource.PLAYERS, 8, 0.8f);
+            putProperty(stack, HEAT_TAG, 0);
+            setEnergy(stack, (int) (getMaxEnergy(stack) * cancelPercent));
          }
          
-         if(ItemStack.isSameItemSameComponents(stack,player.getMainHandItem()) || ItemStack.isSameItemSameComponents(stack,player.getOffhandItem())){
-            CompoundTag locNbt = getCompoundProperty(stack,LOCATION_TAG);
+         if(ItemStack.isSameItemSameComponents(stack, player.getMainHandItem()) || ItemStack.isSameItemSameComponents(stack, player.getOffhandItem())){
+            CompoundTag locNbt = getCompoundProperty(stack, LOCATION_TAG);
             String dim = locNbt.getStringOr("dim", "");
             double x = locNbt.getDoubleOr("x", 0.0);
             double y = locNbt.getDoubleOr("y", 0.0);
             double z = locNbt.getDoubleOr("z", 0.0);
-            Vec3 loc = new Vec3(x,y,z);
+            Vec3 loc = new Vec3(x, y, z);
             if(player.level().dimension().identifier().toString().equals(dim) && player.position().distanceTo(loc) < 30){
-               ArcanaEffectUtils.recallLocation(serverWorld,loc,player);
+               ArcanaEffectUtils.recallLocation(serverWorld, loc, player);
             }
          }
          
          
          if(world.getServer().getTickCount() % 20 == 0){
             addEnergy(stack, 1); // Recharge
-            buildItemLore(stack,world.getServer());
+            buildItemLore(stack, world.getServer());
          }
       }
       
       @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack item = playerEntity.getItemInHand(hand);
-         boolean canClear = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CHRONO_TEAR) >= 1;
+         boolean canClear = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.CHRONO_TEAR) >= 1;
          if(playerEntity instanceof ServerPlayer player){
-            CompoundTag locNbt = getCompoundProperty(item,LOCATION_TAG);
+            CompoundTag locNbt = getCompoundProperty(item, LOCATION_TAG);
             String dim = locNbt.getStringOr("dim", "");
             
             if(!(canClear && player.isShiftKeyDown())){
@@ -318,12 +320,12 @@ public class PearlOfRecall extends EnergyItem {
                   locNbt.putDouble("z", playerEntity.position().z);
                   locNbt.putFloat("yaw", playerEntity.getYRot());
                   locNbt.putFloat("pitch", playerEntity.getXRot());
-                  putProperty(item,LOCATION_TAG,locNbt);
-                  buildItemLore(item,playerEntity.level().getServer());
+                  putProperty(item, LOCATION_TAG, locNbt);
+                  buildItemLore(item, playerEntity.level().getServer());
                }else{
                   int curEnergy = getEnergy(item);
                   if(curEnergy >= getMaxEnergy(item)){
-                     putProperty(item,HEAT_TAG, 1); // Starts the heat up process
+                     putProperty(item, HEAT_TAG, 1); // Starts the heat up process
                      SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 1, 1);
                   }else{
                      playerEntity.displayClientMessage(Component.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").withStyle(ChatFormatting.DARK_AQUA), true);
@@ -334,8 +336,8 @@ public class PearlOfRecall extends EnergyItem {
                if(!dim.equals("unattuned")){
                   locNbt = new CompoundTag();
                   locNbt.putString("dim", "unattuned");
-                  putProperty(item,LOCATION_TAG,locNbt);
-                  buildItemLore(item,playerEntity.level().getServer());
+                  putProperty(item, LOCATION_TAG, locNbt);
+                  buildItemLore(item, playerEntity.level().getServer());
                   
                   playerEntity.displayClientMessage(Component.literal("Saved Location Cleared").withStyle(ChatFormatting.DARK_AQUA), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_DEPLETE, 1, .7f);

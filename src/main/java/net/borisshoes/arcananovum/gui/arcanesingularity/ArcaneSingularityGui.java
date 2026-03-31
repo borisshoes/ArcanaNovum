@@ -56,7 +56,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
          GuiElementBuilder enchantBook = new GuiElementBuilder(Items.ENCHANTED_BOOK).glow();
          enchantBook.setName((Component.literal("Enchanted Book").withStyle(ChatFormatting.YELLOW)));
          for(Object2IntMap.Entry<Holder<Enchantment>> entry : comp.entrySet()){
-            enchantBook.addLoreLine(TextUtils.removeItalics(Enchantment.getFullname(entry.getKey(),entry.getIntValue())));
+            enchantBook.addLoreLine(TextUtils.removeItalics(Enchantment.getFullname(entry.getKey(), entry.getIntValue())));
          }
          enchantBook.addLoreLine(TextUtils.removeItalics(Component.empty()));
          enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -71,7 +71,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                   .append(Component.literal("Right Click").withStyle(ChatFormatting.AQUA))
                   .append(Component.literal(" to split the book").withStyle(ChatFormatting.LIGHT_PURPLE)))));
             
-            if(ItemStack.isSameItemSameComponents(item,selected)){
+            if(ItemStack.isSameItemSameComponents(item, selected)){
                enchantBook.addLoreLine(TextUtils.removeItalics(Component.empty()));
                enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("<< Selected >>").withStyle(ChatFormatting.BLUE))));
             }
@@ -82,7 +82,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
       elemClickFunction((targetBook, index, clickType) -> {
          List<ItemStack> books = getItemList();
          for(ItemStack book : books){
-            if(!ItemStack.isSameItemSameComponents(targetBook,book)) continue;
+            if(!ItemStack.isSameItemSameComponents(targetBook, book)) continue;
             
             if(accretion && clickType == ClickType.MOUSE_LEFT_SHIFT){ // merge book
                if(ItemStack.isSameItemSameComponents(targetBook, selected)){ // deselect book
@@ -90,13 +90,13 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                }else if(selected != ItemStack.EMPTY){ // find selected and merge
                   for(ItemStack otherBook : books){
                      if(ItemStack.isSameItemSameComponents(selected, otherBook)){
-                        ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.mergeBooks(book,otherBook);
+                        ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.mergeBooks(book, otherBook);
                         
                         if(result == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
-                           MinecraftUtils.returnItems(new SimpleContainer(new ItemStack(Items.BOOK)),player);
+                           MinecraftUtils.returnItems(new SimpleContainer(new ItemStack(Items.BOOK)), player);
                            selected = ItemStack.EMPTY;
                         }else if(result == ArcaneSingularityBlockEntity.SingularityResult.FAIL){
-                           player.displayClientMessage(Component.literal("Those books are incompatible").withStyle(ChatFormatting.RED),false);
+                           player.displayClientMessage(Component.literal("Those books are incompatible").withStyle(ChatFormatting.RED), false);
                         }
                         break;
                      }
@@ -105,24 +105,24 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                   selected = book;
                }
             }else if(accretion && clickType == ClickType.MOUSE_RIGHT){ // split book
-               if(MinecraftUtils.removeItems(player, Items.BOOK,1)){
+               if(MinecraftUtils.removeItems(player, Items.BOOK, 1)){
                   ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.splitBook(book);
                   if(result == ArcaneSingularityBlockEntity.SingularityResult.FULL){
-                     player.displayClientMessage(Component.literal("That Singularity is full").withStyle(ChatFormatting.RED),false);
+                     player.displayClientMessage(Component.literal("That Singularity is full").withStyle(ChatFormatting.RED), false);
                   }else if(result == ArcaneSingularityBlockEntity.SingularityResult.FAIL){
-                     player.displayClientMessage(Component.literal("That book cannot be split").withStyle(ChatFormatting.RED),false);
+                     player.displayClientMessage(Component.literal("That book cannot be split").withStyle(ChatFormatting.RED), false);
                   }else if(result == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
                      selected = ItemStack.EMPTY;
                   }
                }else{
-                  player.displayClientMessage(Component.literal("You need a book to split the enchants to").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1,1);
+                  player.displayClientMessage(Component.literal("You need a book to split the enchants to").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                }
             }else{
-               if(ItemStack.isSameItemSameComponents(book,selected)) selected = ItemStack.EMPTY;
+               if(ItemStack.isSameItemSameComponents(book, selected)) selected = ItemStack.EMPTY;
                if(blockEntity.removeBook(book) == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
                   ArcanaItem.removeProperty(book, ArcaneSingularity.SINGULARITY_TAG);
-                  MinecraftUtils.returnItems(new SimpleContainer(book),player);
+                  MinecraftUtils.returnItems(new SimpleContainer(book), player);
                }
             }
             break;
@@ -135,7 +135,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
    @Override
    public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
       if(index >= size && type == ClickType.MOUSE_LEFT_SHIFT){
-         int invSlot = index >= 27+size ? index - (27+size) : index-45;
+         int invSlot = index >= 27 + size ? index - (27 + size) : index - 45;
          ItemStack stack = player.getInventory().getItem(invSlot);
          if(stack.is(Items.ENCHANTED_BOOK) && EnchantmentHelper.hasAnyEnchantments(stack)){
             if(tryAddBook(stack)){
@@ -153,11 +153,11 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
       ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.addBook(book);
       
       if(result == ArcaneSingularityBlockEntity.SingularityResult.FULL){
-         player.displayClientMessage(Component.literal("The Singularity is Full").withStyle(ChatFormatting.RED),false);
+         player.displayClientMessage(Component.literal("The Singularity is Full").withStyle(ChatFormatting.RED), false);
          return false;
       }
       if(!isFull && blockEntity.getNumBooks() == capacity){
-         ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_QUASAR);
+         ArcanaAchievements.grant(player, ArcanaAchievements.ARCANE_QUASAR);
       }
       
       buildPage();
@@ -179,7 +179,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
       singularityItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(" a book in the singularity to remove it").withStyle(ChatFormatting.DARK_PURPLE)))));
-      setSlot(4,singularityItem);
+      setSlot(4, singularityItem);
    }
    
    @Override
@@ -226,9 +226,9 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
       public static final BookFilter ARMOR = new BookFilter("gui.arcananovum.armor_enchants", ChatFormatting.DARK_GREEN.getColor().intValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e ->
                   e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_HELMET)) ||
-                  e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_CHESTPLATE)) ||
-                  e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_LEGGINGS)) ||
-                  e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_BOOTS))));
+                        e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_CHESTPLATE)) ||
+                        e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_LEGGINGS)) ||
+                        e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_BOOTS))));
       public static final BookFilter MACES = new BookFilter("gui.arcananovum.mace_enchants", ChatFormatting.DARK_BLUE.getColor().intValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.MACE))));
       public static final BookFilter SPEARS = new BookFilter("gui.arcananovum.spear_enchants", 0xa0ffec,
@@ -284,7 +284,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
             Comparator.comparing(stack -> {
                java.util.Iterator<Holder<Enchantment>> iter = EnchantmentHelper.getEnchantmentsForCrafting(stack).keySet().iterator();
                if(iter.hasNext()){
-                  return Enchantment.getFullname(iter.next(),1).getString();
+                  return Enchantment.getFullname(iter.next(), 1).getString();
                }
                return "";
             }));

@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class PhotonicArrows extends RunicArrow {
-	public static final String ID = "photonic_arrows";
+   public static final String ID = "photonic_arrows";
    
    public PhotonicArrows(){
       id = ID;
@@ -47,8 +47,8 @@ public class PhotonicArrows extends RunicArrow {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new PhotonicArrowsItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON,ResearchTasks.OBTAIN_AMETHYST_CLUSTER,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON, ResearchTasks.OBTAIN_AMETHYST_CLUSTER, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -76,7 +76,7 @@ public class PhotonicArrows extends RunicArrow {
             .append(Component.literal("before hitting a ").withStyle(ChatFormatting.WHITE))
             .append(Component.literal("block").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(".").withStyle(ChatFormatting.WHITE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    public void shoot(Level world, LivingEntity entity, AbstractArrow proj, int alignmentLvl){
@@ -99,47 +99,50 @@ public class PhotonicArrows extends RunicArrow {
       int killCount = 0;
       for(Entity hit : lasercast.sortedHits()){
          float falloffDmg = (float) (falloff * hit.position().distanceTo(lasercast.startPos()));
-         float finalDmg = (float) ((hit instanceof ServerPlayer ? playerDmgMod : 1) * Math.max(minDamage,baseDmg+bonusDmg-falloffDmg));
+         float finalDmg = (float) ((hit instanceof ServerPlayer ? playerDmgMod : 1) * Math.max(minDamage, baseDmg + bonusDmg - falloffDmg));
          if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
             double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
             if(dp < -0.6){
-               ArcanaUtils.blockWithShield(hitPlayer,finalDmg);
+               ArcanaUtils.blockWithShield(hitPlayer, finalDmg);
                continue;
             }
          }
-         hit.hurtServer(serverWorld, ArcanaDamageTypes.of(entity.level(),ArcanaDamageTypes.PHOTONIC,proj,entity), finalDmg);
+         hit.hurtServer(serverWorld, ArcanaDamageTypes.of(entity.level(), ArcanaDamageTypes.PHOTONIC, proj, entity), finalDmg);
          
          if(hit instanceof Mob mob && mob.isDeadOrDying()){
             killCount++;
          }
-         bonusDmg = (float) Math.min(prismaticCap,bonusDmg + prismaticPerMob);
+         bonusDmg = (float) Math.min(prismaticCap, bonusDmg + prismaticPerMob);
       }
       
-      if(proj.getOwner() instanceof ServerPlayer player && killCount >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.X);
+      if(proj.getOwner() instanceof ServerPlayer player && killCount >= 10)
+         ArcanaAchievements.grant(player, ArcanaAchievements.X);
       
       if(proj.getOwner() instanceof ServerPlayer player && !lasercast.sortedHits().isEmpty() && proj instanceof RunicArrowEntity runicArrowEntity){
          runicArrowEntity.incArrowForEveryFoe(player);
       }
       
-      ArcanaEffectUtils.photonArrowShot(serverWorld,entity.getEyePosition().subtract(0,entity.getBbHeight()/4,0),lasercast.endPos(), Mth.clamp(percentage+0.3f,.4f,1f),0);
+      ArcanaEffectUtils.photonArrowShot(serverWorld, entity.getEyePosition().subtract(0, entity.getBbHeight() / 4, 0), lasercast.endPos(), Mth.clamp(percentage + 0.3f, .4f, 1f), 0);
    }
    
    @Override
-   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){}
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
+   }
    
    @Override
-   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){}
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
+   }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Photonic Arrows").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\n‘Straight as an arrow’. What a joke of a saying, I’ll show them what straight looks like. Some solar runes coupled with a focusing prism makes quite the combo. This brings a new meaning to ‘Shooting Lazers’.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Photonic Arrows").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\n‘Straight as an arrow’. What a joke of a saying, I’ll show them what straight looks like. Some solar runes coupled with a focusing prism makes quite the combo. This brings a new meaning to ‘Shooting Lazers’.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class PhotonicArrowsItem extends ArcanaPolymerArrowItem {
       public PhotonicArrowsItem(){
-         super(getThis(),getArcanaArrowItemComponents(11271167));
+         super(getThis(), getArcanaArrowItemComponents(11271167));
       }
       
       @Override

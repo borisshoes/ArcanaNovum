@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
    
-   @Inject(method= "enchant",at=@At("RETURN"))
+   @Inject(method = "enchant", at = @At("RETURN"))
    private void arcananovum$enchantItemLore(Holder<Enchantment> enchantment, int level, CallbackInfo ci){
       ItemStack stack = (ItemStack) (Object) this;
       if(ArcanaItemUtils.isArcane(stack)){

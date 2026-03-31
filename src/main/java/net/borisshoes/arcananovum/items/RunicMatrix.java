@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class RunicMatrix extends ArcanaItem {
-	public static final String ID = "runic_matrix";
+   public static final String ID = "runic_matrix";
    
    public RunicMatrix(){
       id = ID;
@@ -30,8 +30,8 @@ public class RunicMatrix extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.END_CRYSTAL;
       item = new RunicMatrixItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_END_CRYSTAL,ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS,ResearchTasks.OBTAIN_AMETHYST_SHARD};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_END_CRYSTAL, ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS, ResearchTasks.OBTAIN_AMETHYST_SHARD};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -65,13 +65,13 @@ public class RunicMatrix extends ArcanaItem {
             .append(Component.literal("of many different ").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal("effects").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_PURPLE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Runic Matrix").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nRunes are part of the old Arcana that are able to evoke targeted effects. Being able to freely swap and combine runes to dynamically create runic equations, like ingredients in a ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Runic Matrix").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nRunes are part of the old Arcana that are able to evoke targeted effects. Being able to freely swap and combine runes to dynamically create runic equations, like ingredients in a ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Runic Matrix").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), Component.literal("\ncrafting recipe, results in a device capable of producing a vast number of Arcane effects. This device should be capable of quickly switching and recombining runes and activating them with its internal power source.").withStyle(ChatFormatting.BLACK)));
       return list;
    }

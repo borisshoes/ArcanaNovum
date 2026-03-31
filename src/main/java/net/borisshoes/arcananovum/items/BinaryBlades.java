@@ -84,25 +84,25 @@ public class BinaryBlades extends EnergyItem {
       itemVersion = 0;
       vanillaItem = Items.IRON_SWORD;
       item = new BinaryBladesItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.INFUSE_ITEM, ResearchTasks.OBTAIN_NETHERITE_SWORD, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,SPLIT_TAG,false);
-      putProperty(stack,FAKE_TAG,false);
+      putProperty(stack, SPLIT_TAG, false);
+      putProperty(stack, FAKE_TAG, false);
       setPrefStack(stack);
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      boolean split = getBooleanProperty(stack,SPLIT_TAG);
-      boolean fake = getBooleanProperty(stack,FAKE_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,SPLIT_TAG,split);
-      putProperty(newStack,FAKE_TAG,fake);
-      return buildItemLore(newStack,server);
+      boolean split = getBooleanProperty(stack, SPLIT_TAG);
+      boolean fake = getBooleanProperty(stack, FAKE_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, SPLIT_TAG, split);
+      putProperty(newStack, FAKE_TAG, fake);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -162,7 +162,7 @@ public class BinaryBlades extends EnergyItem {
          if(starlightForge.getLevel() instanceof ServerLevel serverWorld){
             TwilightAnvilBlockEntity twilightAnvil;
             if((twilightAnvil = (TwilightAnvilBlockEntity) starlightForge.getForgeAddition(serverWorld, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY)) != null){
-               TwilightAnvilBlockEntity.AnvilOutputSet outputSet = twilightAnvil.calculateOutput(sword1,sword2);
+               TwilightAnvilBlockEntity.AnvilOutputSet outputSet = twilightAnvil.calculateOutput(sword1, sword2);
                if(!outputSet.output().isEmpty()){
                   combinedSword = outputSet.output().copy();
                }
@@ -171,11 +171,11 @@ public class BinaryBlades extends EnergyItem {
       }
       
       if(combinedSword.isEnchanted()){
-         EnchantmentHelper.setEnchantments(newArcanaItem,combinedSword.getEnchantments());
+         EnchantmentHelper.setEnchantments(newArcanaItem, combinedSword.getEnchantments());
       }
       
-      if(hasProperty(combinedSword,EnhancedStatUtils.ENHANCED_STAT_TAG)){
-         EnhancedStatUtils.enhanceItem(newArcanaItem,getDoubleProperty(combinedSword,EnhancedStatUtils.ENHANCED_STAT_TAG));
+      if(hasProperty(combinedSword, EnhancedStatUtils.ENHANCED_STAT_TAG)){
+         EnhancedStatUtils.enhanceItem(newArcanaItem, getDoubleProperty(combinedSword, EnhancedStatUtils.ENHANCED_STAT_TAG));
       }
       
       return newArcanaItem;
@@ -185,7 +185,7 @@ public class BinaryBlades extends EnergyItem {
       if(!(ArcanaItemUtils.identifyItem(item) instanceof BinaryBlades)) return null;
       int whiteDwarf = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.WHITE_DWARF_BLADES);
       if(whiteDwarf < 1) return null;
-      float[] reducePercentages = new float[]{0f,0.5f,0.75f,1.0f};
+      float[] reducePercentages = new float[]{0f, 0.5f, 0.75f, 1.0f};
       
       BlocksAttacks blockComp = new BlocksAttacks(
             0.15F,
@@ -202,12 +202,12 @@ public class BinaryBlades extends EnergyItem {
    private ItemStack getFakeItem(ItemStack item){
       if(!(ArcanaItemUtils.identifyItem(item) instanceof BinaryBlades)) return item;
       ItemStack fake = item.copy();
-      putProperty(fake,FAKE_TAG,true);
-      putProperty(fake,UUID_TAG, ArcanaNovum.BLANK_UUID);
+      putProperty(fake, FAKE_TAG, true);
+      putProperty(fake, UUID_TAG, ArcanaNovum.BLANK_UUID);
       
       boolean white = ArcanaAugments.getAugmentOnItem(fake, ArcanaAugments.WHITE_DWARF_BLADES) > 0;
       if(white){
-         fake.set(DataComponents.BLOCKS_ATTACKS,getWhiteDwarfBlock(item));
+         fake.set(DataComponents.BLOCKS_ATTACKS, getWhiteDwarfBlock(item));
       }
       fake.remove(DataComponents.ATTRIBUTE_MODIFIERS);
       fake.remove(DataComponents.USE_COOLDOWN);
@@ -220,7 +220,7 @@ public class BinaryBlades extends EnergyItem {
       int energy = getEnergy(stack);
       ItemAttributeModifiers modifiers = stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
       List<ItemAttributeModifiers.Entry> attributeList = new ArrayList<>();
-      boolean redGiant = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RED_GIANT_BLADES) > 0;
+      boolean redGiant = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RED_GIANT_BLADES) > 0;
       
       // Strip old movement and attack speed stats
       for(ItemAttributeModifiers.Entry entry : modifiers.modifiers()){
@@ -233,16 +233,16 @@ public class BinaryBlades extends EnergyItem {
       }
       
       if(energy > 0){
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MOVEMENT_SPEED,new AttributeModifier(ArcanaRegistry.arcanaId(MOVE_SPEED_TAG),0.5 * getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.MAINHAND));
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_SPEED,new AttributeModifier(ArcanaRegistry.arcanaId(ATTACK_SPEED_TAG),(double) getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MOVEMENT_SPEED, new AttributeModifier(ArcanaRegistry.arcanaId(MOVE_SPEED_TAG), 0.5 * getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.MAINHAND));
+         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_SPEED, new AttributeModifier(ArcanaRegistry.arcanaId(ATTACK_SPEED_TAG), (double) getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
          if(redGiant && energy >= 50){
             float dmgPerEnergy = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BINARY_BLADES_RED_GIANT_DMG_PER_ENERGY);
-            attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_DAMAGE,new AttributeModifier(ArcanaRegistry.arcanaId(ATTACK_DAMAGE_TAG),dmgPerEnergy * (getEnergy(stack) - 50.0), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
+            attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_DAMAGE, new AttributeModifier(ArcanaRegistry.arcanaId(ATTACK_DAMAGE_TAG), dmgPerEnergy * (getEnergy(stack) - 50.0), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
          }
       }
       
       ItemAttributeModifiers newComponent = new ItemAttributeModifiers(attributeList);
-      stack.set(DataComponents.ATTRIBUTE_MODIFIERS,newComponent);
+      stack.set(DataComponents.ATTRIBUTE_MODIFIERS, newComponent);
    }
    
    private ChatFormatting getColor(ItemStack stack){
@@ -256,7 +256,7 @@ public class BinaryBlades extends EnergyItem {
    }
    
    public static boolean isFakeBlade(ItemStack stack){
-      return stack.is(ArcanaRegistry.BINARY_BLADES.getItem()) && ArcanaItem.getBooleanProperty(stack,FAKE_TAG);
+      return stack.is(ArcanaRegistry.BINARY_BLADES.getItem()) && ArcanaItem.getBooleanProperty(stack, FAKE_TAG);
    }
    
    @Override
@@ -267,16 +267,16 @@ public class BinaryBlades extends EnergyItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nGazing up at the stars one night led me to observe two close stars dancing in the sky. Two stars harmoniously acting as one. Glancing over at my Forge gave me an idea.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nGazing up at the stars one night led me to observe two close stars dancing in the sky. Two stars harmoniously acting as one. Glancing over at my Forge gave me an idea.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nThe Binary Blades are two swords that act in unison, combining into one when stored and splitting in two when held. They grant an increased attack speed compared to normal weapons, with each strike acting like a note in a harmony. ").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("Binary Blades").withStyle(ChatFormatting.YELLOW,ChatFormatting.BOLD),Component.literal("\nSuccessive strikes grant the wielder increased movement and attack speed.\n\nWhen forging the two blades together, the essence of the upper sword becomes the primary and the lower sword becomes the secondary.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("Binary Blades").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD), Component.literal("\nSuccessive strikes grant the wielder increased movement and attack speed.\n\nWhen forging the two blades together, the essence of the upper sword becomes the primary and the lower sword becomes the secondary.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class BinaryBladesItem extends ArcanaPolymerItem {
       public BinaryBladesItem(){
-         super(getThis(),getEquipmentArcanaItemComponents()
-               .sword(ToolMaterial.NETHERITE, 2,-1.2f)
+         super(getThis(), getEquipmentArcanaItemComponents()
+               .sword(ToolMaterial.NETHERITE, 2, -1.2f)
          );
       }
       
@@ -286,7 +286,7 @@ public class BinaryBlades extends EnergyItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         boolean split = getBooleanProperty(itemStack,SPLIT_TAG);
+         boolean split = getBooleanProperty(itemStack, SPLIT_TAG);
          boolean pulsar = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.PULSAR_BLADES) > 0;
          boolean white = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.WHITE_DWARF_BLADES) > 0;
          boolean red = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.RED_GIANT_BLADES) > 0;
@@ -296,7 +296,7 @@ public class BinaryBlades extends EnergyItem {
          else if(red) stringList.add(split ? "singular_red" : "combined_red");
          else stringList.add(split ? "singular" : "combined");
          
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -310,7 +310,7 @@ public class BinaryBlades extends EnergyItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
          
-         boolean fake = getBooleanProperty(stack,FAKE_TAG);
+         boolean fake = getBooleanProperty(stack, FAKE_TAG);
          if(fake){
             if(!player.getOffhandItem().equals(stack) || !player.getMainHandItem().is(this)){
                stack.setCount(0);
@@ -325,35 +325,35 @@ public class BinaryBlades extends EnergyItem {
                boolean red2 = ArcanaAugments.getAugmentOnItem(mainStack, ArcanaAugments.RED_GIANT_BLADES) > 0;
                if(pulsar1 ^ pulsar2 || white1 ^ white2 || red1 ^ red2){
                   ArcanaNovum.data(player).restoreOffhand(player);
-                  ArcanaNovum.data(player).storeOffhand(player,getFakeItem(mainStack));
+                  ArcanaNovum.data(player).storeOffhand(player, getFakeItem(mainStack));
                }
             }
             return;
          }
          
-         boolean split = getBooleanProperty(stack,SPLIT_TAG);
+         boolean split = getBooleanProperty(stack, SPLIT_TAG);
          ItemStack handStack = player.getMainHandItem();
          int energy = getEnergy(stack);
          
          if(handStack.equals(stack)){
             if(!split){
-               putProperty(stack,SPLIT_TAG,true);
+               putProperty(stack, SPLIT_TAG, true);
             }
             if(!player.getOffhandItem().is(this)){
                ArcanaNovum.data(player).restoreOffhand(player);
-               ArcanaNovum.data(player).storeOffhand(player,getFakeItem(stack));
+               ArcanaNovum.data(player).storeOffhand(player, getFakeItem(stack));
             }
             
             if(world.getServer().getTickCount() % 40 == 0 || (energy > 0 && energy < getMaxEnergy(stack))){
                char[] unicodeChars = {'▁', '▂', '▃', '▅', '▆', '▇', '▌'};
                StringBuilder message = new StringBuilder("\uD83D\uDDE1 ✦ ");
-               for (int i = 0; i < 10; i++) {
+               for(int i = 0; i < 10; i++){
                   int segmentValue = energy - (i * 10);
-                  if (segmentValue <= 0) {
+                  if(segmentValue <= 0){
                      message.append(unicodeChars[0]);
-                  } else if (segmentValue >= 10) {
+                  }else if(segmentValue >= 10){
                      message.append(unicodeChars[unicodeChars.length - 1]);
-                  } else {
+                  }else{
                      int charIndex = (int) ((double) segmentValue / 10 * (unicodeChars.length - 1));
                      message.append(unicodeChars[charIndex]);
                   }
@@ -362,11 +362,11 @@ public class BinaryBlades extends EnergyItem {
                player.displayClientMessage(Component.literal(message.toString()).withStyle(getColor(stack)), true);
             }
          }else if(split){
-            putProperty(stack,SPLIT_TAG,false);
+            putProperty(stack, SPLIT_TAG, false);
          }
          
          if(world.getServer().getTickCount() % 5 == 0){
-            int redGiant = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RED_GIANT_BLADES);
+            int redGiant = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RED_GIANT_BLADES);
             if(energy >= 50 && redGiant >= 2){
                List<Entity> entities = new ArrayList<>(player.level().getEntities(player, player.getBoundingBox().inflate(8), e -> e.distanceTo(player) <= 3.5));
                for(Entity nearEntity : entities){
@@ -374,7 +374,7 @@ public class BinaryBlades extends EnergyItem {
                      living.igniteForSeconds(3);
                   }
                }
-               ArcanaEffectUtils.circle(player.level(),null,player.position().add(0,0.2,0), ParticleTypes.FLAME,0.5,8,2,0.1,0.05);
+               ArcanaEffectUtils.circle(player.level(), null, player.position().add(0, 0.2, 0), ParticleTypes.FLAME, 0.5, 8, 2, 0.1, 0.05);
             }
             
             int lastHitTime = getIntProperty(stack, LAST_HIT_TAG);
@@ -392,7 +392,7 @@ public class BinaryBlades extends EnergyItem {
             Event.addEvent(new BinaryBladesMaxEnergyEvent(player));
             long count = Event.getEventsOfType(BinaryBladesMaxEnergyEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count();
             if(count >= ((TimedAchievement) ArcanaAchievements.STARBURST_STREAM).getGoal()){
-               ArcanaAchievements.grant(player,ArcanaAchievements.STARBURST_STREAM);
+               ArcanaAchievements.grant(player, ArcanaAchievements.STARBURST_STREAM);
             }
             if(world.getServer().getTickCount() % 20 == 0){
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_BINARY_BLADES_MAX_ENERGY_PER_SECOND));
@@ -407,8 +407,8 @@ public class BinaryBlades extends EnergyItem {
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          
-         boolean fake = getBooleanProperty(stack,FAKE_TAG);
-         boolean split = getBooleanProperty(stack,SPLIT_TAG);
+         boolean fake = getBooleanProperty(stack, FAKE_TAG);
+         boolean split = getBooleanProperty(stack, SPLIT_TAG);
          BlocksAttacks blocksAttacksComponent = stack.get(DataComponents.BLOCKS_ATTACKS);
          if(blocksAttacksComponent != null){
             playerEntity.startUsingItem(hand);
@@ -417,7 +417,7 @@ public class BinaryBlades extends EnergyItem {
             return InteractionResult.PASS;
          }
          
-         int pulsar = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PULSAR_BLADES);
+         int pulsar = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PULSAR_BLADES);
          int energy = getEnergy(stack);
          int energyCost = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.BINARY_BLADES_PULSAR_ENERGY_CONSUMPTION_PER_LVL).get(pulsar);
          int energyGain = 0;
@@ -433,18 +433,18 @@ public class BinaryBlades extends EnergyItem {
                if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
                   double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
                   if(dp < -0.6){
-                     ArcanaUtils.blockWithShield(hitPlayer,damage);
+                     ArcanaUtils.blockWithShield(hitPlayer, damage);
                      continue;
                   }
                }
-               hit.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(),ArcanaDamageTypes.PHOTONIC,player), damage);
-               ArcanaItem.putProperty(stack,BinaryBlades.LAST_HIT_TAG,delay);
+               hit.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(), ArcanaDamageTypes.PHOTONIC, player), damage);
+               ArcanaItem.putProperty(stack, BinaryBlades.LAST_HIT_TAG, delay);
                energyGain += perHit;
             }
-            ArcanaEffectUtils.pulsarBladeShoot(player.level(),player.getEyePosition().subtract(0,player.getBbHeight()/4,0),lasercast.endPos(),0);
-            SoundUtils.playSound(player.level(),player.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS,1.0f,2.0f);
-            addEnergy(stack, energyGain-energyCost);
-            player.getCooldowns().addCooldown(stack,10);
+            ArcanaEffectUtils.pulsarBladeShoot(player.level(), player.getEyePosition().subtract(0, player.getBbHeight() / 4, 0), lasercast.endPos(), 0);
+            SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.0f, 2.0f);
+            addEnergy(stack, energyGain - energyCost);
+            player.getCooldowns().addCooldown(stack, 10);
             player.level().getChunkSource().sendToTrackingPlayersAndSelf(player, new ClientboundAnimatePacket(player, ClientboundAnimatePacket.SWING_OFF_HAND));
             return InteractionResult.SUCCESS_SERVER;
          }
@@ -456,7 +456,7 @@ public class BinaryBlades extends EnergyItem {
       public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference){
          boolean superRet = super.overrideOtherStackedOnMe(stack, otherStack, slot, clickType, playerEntity, cursorStackReference);
          if(!(playerEntity instanceof ServerPlayer player)) return superRet;
-         if(getBooleanProperty(stack,FAKE_TAG)){
+         if(getBooleanProperty(stack, FAKE_TAG)){
             stack.copyAndClear();
             ArcanaNovum.data(player).restoreOffhand(player);
             return false;

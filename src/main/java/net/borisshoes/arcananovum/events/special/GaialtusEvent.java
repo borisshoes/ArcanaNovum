@@ -34,8 +34,8 @@ public class GaialtusEvent extends Event {
       if(!player.level().equals(player.level().getServer().overworld())){
          markForRemoval();
          player.sendSystemMessage(Component.literal("\n")
-               .append(Component.literal("The breeze fades...").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC)),false);
-         SoundUtils.playSongToPlayer(player, SoundEvents.SOUL_ESCAPE.value(), 1f,1);
+               .append(Component.literal("The breeze fades...").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), false);
+         SoundUtils.playSongToPlayer(player, SoundEvents.SOUL_ESCAPE.value(), 1f, 1);
          return -1;
       }
       return stage;

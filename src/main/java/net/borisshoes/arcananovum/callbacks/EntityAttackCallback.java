@@ -18,11 +18,11 @@ public class EntityAttackCallback {
       ItemStack item = playerEntity.getItemInHand(hand);
       try{
          Inventory inv = playerEntity.getInventory();
-         for(int i = 0; i<inv.getContainerSize(); i++){
+         for(int i = 0; i < inv.getContainerSize(); i++){
             ItemStack invItem = inv.getItem(i);
             ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(invItem);
             if(arcanaItem instanceof ShadowStalkersGlaive glaive){ // Check for Shadow Stalkers Glaive
-               glaive.entityAttacked(playerEntity,invItem,entity);
+               glaive.entityAttacked(playerEntity, invItem, entity);
             }
          }
          

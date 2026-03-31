@@ -18,9 +18,10 @@ public class EntityMixin {
    @Inject(method = "isSteppingCarefully", at = @At("RETURN"), cancellable = true)
    private void arcananovum$greavesWindGrace(CallbackInfoReturnable<Boolean> cir){
       if(cir.getReturnValueZ()) return;
-      if(((Entity)(Object)this) instanceof LivingEntity living){
+      if(((Entity) (Object) this) instanceof LivingEntity living){
          ItemStack pants = living.getItemBySlot(EquipmentSlot.LEGS);
-         if(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus && ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.WINDS_GRACE) >= 1) cir.setReturnValue(true);
+         if(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus && ArcanaAugments.getAugmentOnItem(pants, ArcanaAugments.WINDS_GRACE) >= 1)
+            cir.setReturnValue(true);
       }
    }
 }

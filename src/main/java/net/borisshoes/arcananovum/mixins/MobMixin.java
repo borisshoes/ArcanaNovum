@@ -29,7 +29,7 @@ public class MobMixin {
       Mob mob = (Mob) (Object) this;
       if(mob.level() instanceof ServerLevel world){
          ChunkAccess chunk = world.getChunk(mob.blockPosition());
-         if(ContinuumAnchor.isChunkLoaded(world,chunk.getPos())){
+         if(ContinuumAnchor.isChunkLoaded(world, chunk.getPos())){
             //log("Entity: "+entity.getEntityName()+" ("+entity.getPos().toString()+") distSq: "+distToPlayerSq+" imDespSq: "+imDespSq);
             return 0.1;
          }
@@ -44,9 +44,9 @@ public class MobMixin {
          if(guardian.getConstruct() != null){
             List<BlockPos> poses = SpawnPile.makeSpawnLocations(1, 16, (ServerLevel) guardian.getConstruct().level(), EntityType.WITHER_SKELETON, guardian.getConstruct().blockPosition());
             if(poses.isEmpty() || poses.getFirst() == null) return;
-            ArcanaEffectUtils.shadowGlaiveTp((ServerLevel) guardian.level(),guardian.position());
+            ArcanaEffectUtils.shadowGlaiveTp((ServerLevel) guardian.level(), guardian.position());
             guardian.teleport(new TeleportTransition((ServerLevel) guardian.getConstruct().level(), poses.getFirst().getCenter(), Vec3.ZERO, guardian.getYRot(), guardian.getXRot(), TeleportTransition.DO_NOTHING));
-            ArcanaEffectUtils.shadowGlaiveTp((ServerLevel) guardian.level(),guardian.position());
+            ArcanaEffectUtils.shadowGlaiveTp((ServerLevel) guardian.level(), guardian.position());
             ci.cancel();
          }
       }

@@ -128,3 +128,6 @@ remappedSrc/
 
 # Generator Cache File
 /src/main/generated/.cache/
+
+# Coding Agent files
+AGENTS.md

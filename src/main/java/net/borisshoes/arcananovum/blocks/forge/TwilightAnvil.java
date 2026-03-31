@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -14,6 +13,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -56,7 +56,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
 public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
-	public static final String ID = "twilight_anvil";
+   public static final String ID = "twilight_anvil";
    
    private Multiblock multiblock;
    
@@ -69,8 +69,8 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
       vanillaItem = Items.ANVIL;
       block = new TwilightAnvilBlock(BlockBehaviour.Properties.of().noOcclusion().mapColor(MapColor.METAL).requiresCorrectToolForDrops().strength(5.0f, 1200.0f).sound(SoundType.ANVIL));
       item = new TwilightAnvilItem(this.block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_ANVIL,ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_ANVIL, ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("ii_iridescent")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))};
       
       ItemStack stack = new ItemStack(item);
@@ -109,7 +109,7 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
             .append(Component.literal("enhanced equipment").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
       addForgeLore(lore);
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -124,20 +124,20 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public Vec3i getCheckOffset(){
-      return new Vec3i(-1,-1,-1);
+      return new Vec3i(-1, -1, -1);
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Twilight Anvil").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nAnvils made of iron have their limits. They don’t interact with Arcana, and they are less durable than the diamond and netherite equipment used on them, causing frequent damage. An anvil reinforced with").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Twilight Anvil").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nAnvils made of iron have their limits. They don’t interact with Arcana, and they are less durable than the diamond and netherite equipment used on them, causing frequent damage. An anvil reinforced with").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Twilight Anvil").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nNetherite and infused with Arcana will have no such weaknesses.\n\nThe Anvil can act as a normal anvil, with no XP limit. The Anvil also enables the ability to Augment and rename Arcana items. It also can combine items infused with Stardust.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class TwilightAnvilItem extends ArcanaPolymerBlockItem {
       public TwilightAnvilItem(Block block){
-         super(getThis(),block, getArcanaItemComponents());
+         super(getThis(), block, getArcanaItemComponents());
       }
       
       @Override
@@ -158,14 +158,14 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
          if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
             return Blocks.BARRIER.defaultBlockState();
          }else{
-            return Blocks.ANVIL.defaultBlockState().setValue(HORIZONTAL_FACING,state.getValue(HORIZONTAL_FACING));
+            return Blocks.ANVIL.defaultBlockState().setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
          }
       }
       
       @Nullable
       @Override
       public BlockState getStateForPlacement(BlockPlaceContext ctx){
-         return this.defaultBlockState().setValue(HORIZONTAL_FACING,ctx.getHorizontalDirection().getClockWise());
+         return this.defaultBlockState().setValue(HORIZONTAL_FACING, ctx.getHorizontalDirection().getClockWise());
       }
       
       @Override
@@ -195,14 +195,14 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
          if(anvil != null){
             if(playerEntity instanceof ServerPlayer player){
                if(anvil.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.level(),pos) == null){
+                  if(StarlightForge.findActiveForge(player.level(), pos) == null){
                      player.sendSystemMessage(Component.literal("The Anvil must be within the range of an active Starlight Forge"));
                   }else{
-                     anvil.openGui(0, player,"");
+                     anvil.openGui(0, player, "");
                   }
                }else{
                   player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(anvil.getMultiblockCheck(),player);
+                  multiblock.displayStructure(anvil.getMultiblockCheck(), player);
                }
             }
          }
@@ -215,12 +215,12 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack ANVIL = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/twilight_anvil"));
       
       private final ServerLevel world;

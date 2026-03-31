@@ -66,8 +66,8 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
-	public static final String ID = "brain_jar";
+public class BrainJar extends EnergyItem implements GeomanticStele.Interaction {
+   public static final String ID = "brain_jar";
    private static final Item textureItem = Items.TINTED_GLASS;
    
    public BrainJar(){
@@ -77,13 +77,13 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.ZOMBIE_HEAD;
       item = new BrainJarItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
-      researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.BREAK_SCULK,ResearchTasks.LEVEL_100,ResearchTasks.ACTIVATE_MENDING,ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING,ResearchTasks.OBTAIN_ZOMBIE_HEAD,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
+      researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.BREAK_SCULK, ResearchTasks.LEVEL_100, ResearchTasks.ACTIVATE_MENDING, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING, ResearchTasks.OBTAIN_ZOMBIE_HEAD, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,ACTIVE_TAG,false);
+      putProperty(stack, ACTIVE_TAG, false);
       setPrefStack(stack);
    }
    
@@ -124,14 +124,14 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
       Component mendText = mending ? Component.literal("ON").withStyle(ChatFormatting.DARK_GREEN) : Component.literal("OFF").withStyle(ChatFormatting.RED);
       
       lore.add(Component.literal("")
-            .append(Component.literal(TextUtils.readableInt(xp)+" XP Stored - Mending ").withStyle(ChatFormatting.GREEN))
+            .append(Component.literal(TextUtils.readableInt(xp) + " XP Stored - Mending ").withStyle(ChatFormatting.GREEN))
             .append(mendText));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      int capLvl = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.UNENDING_WISDOM);
+      int capLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.UNENDING_WISDOM);
       int baseXP = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BRAIN_JAR_MAX_XP);
       int extraXP = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.BRAIN_JAR_MAX_XP_PER_LVL).get(capLvl);
       return baseXP + extraXP;
@@ -139,56 +139,57 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,ACTIVE_TAG,active);
-      return buildItemLore(newStack,server);
+      boolean active = getBooleanProperty(stack, ACTIVE_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, ACTIVE_TAG, active);
+      return buildItemLore(newStack, server);
    }
    
    public void openGui(Player playerEntity, ItemStack stack){
       if(!(playerEntity instanceof ServerPlayer player))
          return;
-      BrainJarGui gui = new BrainJarGui(MenuType.HOPPER,player,this, stack);
+      BrainJarGui gui = new BrainJarGui(MenuType.HOPPER, player, this, stack);
       gui.makeGui();
       gui.open();
    }
    
    public void toggleMending(BrainJarGui gui, ServerPlayer player, ItemStack stack){
-      boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
-      putProperty(stack,ACTIVE_TAG,active);
-      buildItemLore(stack,player.level().getServer());
+      boolean active = !getBooleanProperty(stack, ACTIVE_TAG);
+      putProperty(stack, ACTIVE_TAG, active);
+      buildItemLore(stack, player.level().getServer());
       gui.makeGui();
    }
    
    public void withdrawXP(ServerPlayer player, ItemStack stack, boolean single, BrainJarGui gui){
       if(single){
-         int xpToTake = Math.min(LevelUtils.vanillaLevelToTotalXp(player.experienceLevel+1) - player.totalExperience,getEnergy(stack));
-         addEnergy(stack,-xpToTake);
+         int xpToTake = Math.min(LevelUtils.vanillaLevelToTotalXp(player.experienceLevel + 1) - player.totalExperience, getEnergy(stack));
+         addEnergy(stack, -xpToTake);
          player.giveExperiencePoints(xpToTake);
       }else{
          player.giveExperiencePoints(getEnergy(stack));
-         setEnergy(stack,0);
+         setEnergy(stack, 0);
       }
       
       gui.makeGui();
-      buildItemLore(stack,player.level().getServer());
+      buildItemLore(stack, player.level().getServer());
    }
    
    public void depositXP(ServerPlayer player, ItemStack stack, boolean single, BrainJarGui gui){
       int xpToStore;
       if(single){
          int xpDiff = player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel);
-         xpToStore = xpDiff == 0 ? player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel - 1): xpDiff;
+         xpToStore = xpDiff == 0 ? player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel - 1) : xpDiff;
          xpToStore = Math.min(xpToStore, getMaxEnergy(stack) - getEnergy(stack));
       }else{
          xpToStore = Math.min(player.totalExperience, getMaxEnergy(stack) - getEnergy(stack));
       }
-      addEnergy(stack,xpToStore);
+      addEnergy(stack, xpToStore);
       player.giveExperiencePoints(-xpToStore);
-      if(xpToStore > 0 && getEnergy(stack) >= getMaxEnergy(stack)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK);
+      if(xpToStore > 0 && getEnergy(stack) >= getMaxEnergy(stack))
+         ArcanaAchievements.grant(player, ArcanaAchievements.BREAK_BANK);
       
       gui.makeGui();
-      buildItemLore(stack,player.level().getServer());
+      buildItemLore(stack, player.level().getServer());
    }
    
    @Override
@@ -199,7 +200,7 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("   Brain in a Jar").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time, similar to you and me.\nIf I can expand their capacity for ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Brain in a Jar").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time, similar to you and me.\nIf I can expand their capacity for ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Brain in a Jar").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nknowledge using the storage capabilities of Ender Chests, it should hold enough XP for practical use.\n\nThere should also be a way to incorporate the use of the Mending enchantment to have direct access to the storage.\n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Brain in a Jar").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nUse the Brain in a Jar to open its internal storage, where you can deposit or withdraw XP.\n \nSneak Use to toggle the Jar’s Mending interaction.\n\nThe Jar can store 1 million XP Points.\n").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -207,7 +208,7 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
    
    @Override
    public Vec3 getBaseRange(){
-      return new Vec3(16,8,16);
+      return new Vec3(16, 8, 16);
    }
    
    @Override
@@ -216,14 +217,14 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
       Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
       
       if(world.random.nextFloat() < 0.25){
-         world.sendParticles(ParticleTypes.SCRAPE,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.02);
+         world.sendParticles(ParticleTypes.SCRAPE, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);
       }
       if(world.random.nextFloat() < 0.25){
-         world.sendParticles(ParticleTypes.GLOW,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,.0);
+         world.sendParticles(ParticleTypes.GLOW, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .0);
       }
       
       if(world.getServer().getTickCount() % 10 == 0){
-         List<ExperienceOrb> attractXP = world.getEntitiesOfClass(ExperienceOrb.class,box);
+         List<ExperienceOrb> attractXP = world.getEntitiesOfClass(ExperienceOrb.class, box);
          int xpCount = 0;
          for(ExperienceOrb xp : attractXP){
             double x = stackPos.x() - xp.getX();
@@ -243,16 +244,16 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
       if(world.getServer().getTickCount() % 4 == 0){
          List<ExperienceOrb> absorbXP = world.getEntitiesOfClass(ExperienceOrb.class, new AABB(BlockPos.containing(stackPos)).inflate(2));
          for(ExperienceOrb xp : absorbXP){
-            addEnergy(stack,xp.getValue()*xp.count);
+            addEnergy(stack, xp.getValue() * xp.count);
             xp.discard();
          }
       }
       
-      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+      boolean active = getBooleanProperty(stack, ACTIVE_TAG);
       if(active && getEnergy(stack) > 0){
-         HashMap<ItemStack,ServerPlayer> tools = new HashMap<>();
+         HashMap<ItemStack, ServerPlayer> tools = new HashMap<>();
          
-         List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class,box);
+         List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class, box);
          for(LivingEntity living : inRangeEntities){
             if(living.isSpectator()) continue;
             // Check each player's inventory for gear that needs repairing
@@ -319,7 +320,7 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
             }
          }
          
-         double repairMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.BRAIN_JAR_REPAIR_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL));
+         double repairMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.BRAIN_JAR_REPAIR_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.TRADE_SCHOOL));
          for(ItemStack tool : tools.keySet()){
             if(getEnergy(stack) <= 0) break;
             int durability = tool.getDamageValue();
@@ -328,22 +329,22 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
                continue;
             int newDura = Mth.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
             if(tools.get(tool) != null){
-               ArcanaAchievements.progress(tools.get(tool),ArcanaAchievements.CERTIFIED_REPAIR,durability-newDura);
+               ArcanaAchievements.progress(tools.get(tool), ArcanaAchievements.CERTIFIED_REPAIR, durability - newDura);
                ArcanaNovum.data(tools.get(tool)).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_BRAIN_JAR_MEND_PER_XP));
             }
             stele.giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_BRAIN_JAR_MEND_PER_XP));
-            addEnergy(stack,-1);
-            buildItemLore(stack,world.getServer());
+            addEnergy(stack, -1);
+            buildItemLore(stack, world.getServer());
             tool.setDamageValue(newDura);
          }
       }
       
       int interestTick = (int) (0.8 * ArcanaNovum.CONFIG.getInt(ArcanaConfig.BRAIN_JAR_INTEREST_TICK));
       if(world.getServer().getTickCount() % interestTick == 0 && getEnergy(stack) < getMaxEnergy(stack)){
-         double interestRate = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.BRAIN_JAR_INTEREST_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.KNOWLEDGE_BANK));
+         double interestRate = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.BRAIN_JAR_INTEREST_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.KNOWLEDGE_BANK));
          int beforeEnergy = getEnergy(stack);
-         addEnergy(stack, (int) (interestRate*beforeEnergy));
-         buildItemLore(stack,world.getServer());
+         addEnergy(stack, (int) (interestRate * beforeEnergy));
+         buildItemLore(stack, world.getServer());
       }
       stele.setChanged();
    }
@@ -365,7 +366,7 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
-         boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
+         boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          
          List<String> stringList = new ArrayList<>();
          if(active){
@@ -373,7 +374,7 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
          }else{
             stringList.add("off");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -387,7 +388,7 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
-         boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+         boolean active = getBooleanProperty(stack, ACTIVE_TAG);
          if(active && getEnergy(stack) != 0){
             // Check each player's inventory for gear that needs repairing
             Inventory inv = player.getInventory();
@@ -402,15 +403,15 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
                
                if(hasMending){
                   int durability = tool.getDamageValue();
-                  double repairMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.BRAIN_JAR_REPAIR_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL));
+                  double repairMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.BRAIN_JAR_REPAIR_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.TRADE_SCHOOL));
                   int repairAmount = (int) Math.ceil(EnchantmentHelper.modifyDurabilityToRepairFromXp(player.level(), tool, 1) * repairMod);
                   if(durability <= 0 || !tool.isDamageableItem())
                      continue;
                   int newDura = Mth.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
-                  ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR,durability-newDura);
-                  addEnergy(stack,-1);
+                  ArcanaAchievements.progress(player, ArcanaAchievements.CERTIFIED_REPAIR, durability - newDura);
+                  addEnergy(stack, -1);
                   ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_BRAIN_JAR_MEND_PER_XP));
-                  buildItemLore(stack,player.level().getServer());
+                  buildItemLore(stack, player.level().getServer());
                   tool.setDamageValue(newDura);
                }
             }
@@ -418,13 +419,13 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
          
          int interestTick = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BRAIN_JAR_INTEREST_TICK);
          if(world.getServer().getTickCount() % interestTick == 0 && getEnergy(stack) < getMaxEnergy(stack)){
-            double interestRate = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.BRAIN_JAR_INTEREST_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.KNOWLEDGE_BANK));
+            double interestRate = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.BRAIN_JAR_INTEREST_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.KNOWLEDGE_BANK));
             int beforeEnergy = getEnergy(stack);
-            addEnergy(stack, (int) (interestRate*beforeEnergy));
+            addEnergy(stack, (int) (interestRate * beforeEnergy));
             if(beforeEnergy < getMaxEnergy(stack) && getEnergy(stack) >= getMaxEnergy(stack)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK);
+               ArcanaAchievements.grant(player, ArcanaAchievements.BREAK_BANK);
             }
-            buildItemLore(stack,player.level().getServer());
+            buildItemLore(stack, player.level().getServer());
          }
       }
       
@@ -433,14 +434,14 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction{
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          if(playerEntity.isShiftKeyDown()){
-            boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
-            putProperty(stack,ACTIVE_TAG,active);
+            boolean active = !getBooleanProperty(stack, ACTIVE_TAG);
+            putProperty(stack, ACTIVE_TAG, active);
             if(active){
-               playerEntity.displayClientMessage(Component.literal("The Jar's Experience Mends").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.EXPERIENCE_ORB_PICKUP, .5f,1.3f);
+               playerEntity.displayClientMessage(Component.literal("The Jar's Experience Mends").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.EXPERIENCE_ORB_PICKUP, .5f, 1.3f);
             }else{
-               playerEntity.displayClientMessage(Component.literal("The Jar's Experience Withdraws").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.EXPERIENCE_ORB_PICKUP, .5f,0.7f);
+               playerEntity.displayClientMessage(Component.literal("The Jar's Experience Withdraws").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.EXPERIENCE_ORB_PICKUP, .5f, 0.7f);
             }
          }else{
             openGui(playerEntity, stack);

@@ -22,7 +22,7 @@ public class TreeNode<T> {
       if(parent == null){
          return 0;
       }else{
-         return parent.getDepth()+1;
+         return parent.getDepth() + 1;
       }
    }
    

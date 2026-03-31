@@ -55,11 +55,11 @@ public class DragonPhantomEntity extends Phantom implements PolymerEntity {
          setPersistenceRequired();
          
          if(level() instanceof ServerLevel serverWorld && serverWorld.getServer().getTickCount() % 2 == 0){
-            serverWorld.sendParticles(new DustParticleOptions(0xFF00D4,3f),getX(),getY(),getZ(),1,1.5,1,1.5,0);
+            serverWorld.sendParticles(new DustParticleOptions(0xFF00D4, 3f), getX(), getY(), getZ(), 1, 1.5, 1, 1.5, 0);
             
             
             if(serverWorld.dimension().equals(Level.END) && this.anchorPoint.getY() > 120){
-               this.anchorPoint = new BlockPos(this.anchorPoint.getX(),110,this.anchorPoint.getZ());
+               this.anchorPoint = new BlockPos(this.anchorPoint.getX(), 110, this.anchorPoint.getZ());
             }
          }
       }catch(Exception e){
@@ -69,10 +69,11 @@ public class DragonPhantomEntity extends Phantom implements PolymerEntity {
    
    @Override
    protected float getDamageAfterMagicAbsorb(DamageSource source, float amount){
-      float scale = numPlayers > 0 ? 2f/numPlayers : 1;
-      scale = Math.max(scale,0.1f);
+      float scale = numPlayers > 0 ? 2f / numPlayers : 1;
+      scale = Math.max(scale, 0.1f);
       if(source.getEntity() instanceof EnderDragon) amount = 0;
-      if(source.is(DamageTypeTags.BYPASSES_ARMOR)) amount *= 0.25f; // Reduce damage from magic sources and immune to the dragon
+      if(source.is(DamageTypeTags.BYPASSES_ARMOR))
+         amount *= 0.25f; // Reduce damage from magic sources and immune to the dragon
       if(amount > getMaxHealth() / 0.1) amount = getMaxHealth() / 0.1f;
       amount *= scale;
       return amount;
@@ -81,7 +82,7 @@ public class DragonPhantomEntity extends Phantom implements PolymerEntity {
    @Override
    protected void addAdditionalSaveData(ValueOutput view){
       super.addAdditionalSaveData(view);
-      view.putInt("numPlayers",numPlayers);
+      view.putInt("numPlayers", numPlayers);
    }
    
    @Override

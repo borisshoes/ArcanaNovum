@@ -16,7 +16,7 @@ public class SmithingTransformRecipeMixin {
       ItemStack stack = original;
       if(EnhancedStatUtils.isEnhanced(original)){
          stack = original.copy();
-         EnhancedStatUtils.stripEnhancements(stack,false);
+         EnhancedStatUtils.stripEnhancements(stack, false);
       }
       return stack;
    }
@@ -24,7 +24,7 @@ public class SmithingTransformRecipeMixin {
    @ModifyReturnValue(method = "assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At("RETURN"))
    private ItemStack arcananovum$modifyReturnItem(ItemStack original){
       if(EnhancedStatUtils.isEnhanced(original)){
-         EnhancedStatUtils.enhanceItem(original,EnhancedStatUtils.getPercentile(original));
+         EnhancedStatUtils.enhanceItem(original, EnhancedStatUtils.getPercentile(original));
       }
       return original;
    }

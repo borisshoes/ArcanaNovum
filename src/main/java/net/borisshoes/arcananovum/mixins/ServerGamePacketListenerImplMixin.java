@@ -58,7 +58,7 @@ public class ServerGamePacketListenerImplMixin {
    private int arcananovum$greavesPickblock(int original, ItemStack stack){
       if(original == -1){
          ItemStack pants = player.getItemBySlot(EquipmentSlot.LEGS);
-         if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || !ArcanaItem.getBooleanProperty(pants,ArcanaItem.ACTIVE_TAG))
+         if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || !ArcanaItem.getBooleanProperty(pants, ArcanaItem.ACTIVE_TAG))
             return original;
          ItemStack refillStack = greaves.getStackOf(pants, stack);
          Inventory inv = player.getInventory();
@@ -66,7 +66,7 @@ public class ServerGamePacketListenerImplMixin {
          if(!refillStack.isEmpty() && emptySlot != -1){
             int amtToRefill = Math.min((int) (stack.getMaxStackSize() * 0.67), refillStack.getCount());
             ItemStack insertStack = refillStack.split(amtToRefill);
-            inv.add(emptySlot,insertStack);
+            inv.add(emptySlot, insertStack);
             player.inventoryMenu.broadcastChanges();
             greaves.buildItemLore(pants, BorisLib.SERVER);
             return emptySlot;
@@ -88,7 +88,7 @@ public class ServerGamePacketListenerImplMixin {
    private void arcananovum$onPlayerLoad(ServerboundPlayerLoadedPacket packet, CallbackInfo ci){
       for(UUID uuid : ArcanaNovum.TOTEM_KILL_LIST){
          if(uuid.equals(player.getUUID())){
-            player.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(),ArcanaDamageTypes.VENGEANCE_TOTEM,player), player.getMaxHealth()*10);
+            player.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(), ArcanaDamageTypes.VENGEANCE_TOTEM, player), player.getMaxHealth() * 10);
             break;
          }
       }
@@ -105,25 +105,26 @@ public class ServerGamePacketListenerImplMixin {
       Vec3 view = player.getForward();
       Vec3 rayEnd = startPos.add(view.scale(range));
       AABB box = player.getBoundingBox().expandTowards(view.scale(range)).inflate(1.0, 1.0, 1.0);
-      EntityHitResult hitEntity = ProjectileUtil.getEntityHitResult(player,startPos,rayEnd,box, e -> e instanceof LivingEntity living && !e.isSpectator() && living.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT),range);
+      EntityHitResult hitEntity = ProjectileUtil.getEntityHitResult(player, startPos, rayEnd, box, e -> e instanceof LivingEntity living && !e.isSpectator() && living.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT), range);
       
       if(hitEntity != null && hitEntity.getEntity() != null){
-         networkHandler.handleInteract(ServerboundInteractPacket.createAttackPacket(hitEntity.getEntity(),player.isShiftKeyDown()));
+         networkHandler.handleInteract(ServerboundInteractPacket.createAttackPacket(hitEntity.getEntity(), player.isShiftKeyDown()));
       }
       
       ItemStack hand = player.getItemInHand(InteractionHand.MAIN_HAND);
-      quiver: {
+      quiver:
+      {
          // Quiver arrow swap
          boolean arbalest = (ArcanaItemUtils.identifyItem(hand) instanceof AlchemicalArbalest);
          boolean crossbow = (hand.getItem() instanceof CrossbowItem) || arbalest;
-         boolean runic = (ArcanaItemUtils.identifyItem(hand) instanceof RunicBow) || (arbalest && ArcanaAugments.getAugmentOnItem(hand,ArcanaAugments.RUNIC_ARBALEST) >= 1);
+         boolean runic = (ArcanaItemUtils.identifyItem(hand) instanceof RunicBow) || (arbalest && ArcanaAugments.getAugmentOnItem(hand, ArcanaAugments.RUNIC_ARBALEST) >= 1);
          if(!(hand.getItem() instanceof BowItem) && !runic && !crossbow) break quiver;
          
          // Check for and rotate arrow types in quivers
          Inventory inv = player.getInventory();
          
          // Switch to next arrow slot if quiver is found
-         for(int i = 0; i<inv.getContainerSize(); i++){
+         for(int i = 0; i < inv.getContainerSize(); i++){
             ItemStack item = inv.getItem(i);
             if(item.isEmpty()){
                continue;
@@ -134,9 +135,9 @@ public class ServerGamePacketListenerImplMixin {
                // Quiver found allow switching
                ArcanaPlayerData profile = ArcanaNovum.data(player);
                
-               int cooldown = ((IntTag)profile.getMiscData(QuiverItem.QUIVER_CD_TAG)).intValue();
+               int cooldown = ((IntTag) profile.getMiscData(QuiverItem.QUIVER_CD_TAG)).intValue();
                if(cooldown <= 0){
-                  QuiverItem.switchArrowOption(player,runic,true);
+                  QuiverItem.switchArrowOption(player, runic, true);
                   profile.addMiscData(QuiverItem.QUIVER_CD_TAG, IntTag.valueOf(3));
                }
                
@@ -145,7 +146,8 @@ public class ServerGamePacketListenerImplMixin {
          }
       }
       
-      if(hand.is(ArcanaRegistry.CLOCKWORK_MULTITOOL.getItem())) ClockworkMultitool.ClockworkMultitoolItem.cycleMode(player,hand,player.isShiftKeyDown());
+      if(hand.is(ArcanaRegistry.CLOCKWORK_MULTITOOL.getItem()))
+         ClockworkMultitool.ClockworkMultitoolItem.cycleMode(player, hand, player.isShiftKeyDown());
    }
    
    @Inject(method = "teleport(Lnet/minecraft/world/entity/PositionMoveRotation;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
@@ -153,25 +155,25 @@ public class ServerGamePacketListenerImplMixin {
       MobEffectInstance effect = player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null && effect.getAmplifier() > 0){
          player.displayClientMessage(Component.literal("Your teleport has been ensnared!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC), true);
-         SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL,2,.1f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL, 2, .1f);
          ci.cancel();
       }
    }
    
-   @Inject(method = "handleMovePlayer", at = @At(value = "INVOKE",target = "Lnet/minecraft/server/level/ServerPlayer;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V"))
-   private void arcananovum$ensnarementPlayerOnMove(ServerboundMovePlayerPacket packet, CallbackInfo ci){
+   @Inject(method = "handleMovePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V"))
+   private void arcananovum$ensnarementAndGreavesPlayerOnMove(ServerboundMovePlayerPacket packet, CallbackInfo ci){
       MobEffectInstance effect = player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null){
-         if (++awaitingTeleport == Integer.MAX_VALUE) {
+         if(++awaitingTeleport == Integer.MAX_VALUE){
             awaitingTeleport = 0;
          }
          awaitingPositionFromClient = player.position();
-         player.connection.send(new ClientboundPlayerPositionPacket(awaitingTeleport,new PositionMoveRotation(player.position(), Vec3.ZERO,0,0), Relative.unpack(0b11000)));
+         player.connection.send(new ClientboundPlayerPositionPacket(awaitingTeleport, new PositionMoveRotation(player.position(), Vec3.ZERO, 0, 0), Relative.unpack(0b11000)));
       }else{
          ItemStack pants = player.getItemBySlot(EquipmentSlot.LEGS);
-         if(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus && ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.EARTHEN_ASCENT) >= 1){
+         if(!pants.isEmpty() && pants.is(ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()) && ArcanaAugments.getAugmentOnItem(pants, ArcanaAugments.EARTHEN_ASCENT) >= 1){
             if(packet.horizontalCollision() && !player.getAbilities().flying && player.isShiftKeyDown()){
-               player.setDeltaMovement(new Vec3(player.getDeltaMovement().x(),0.2,player.getDeltaMovement().z()));
+               player.setDeltaMovement(new Vec3(player.getDeltaMovement().x(), 0.2, player.getDeltaMovement().z()));
                player.connection.send(new ClientboundSetEntityMotionPacket(player));
                player.connection.aboveGroundTickCount = 0;
             }
@@ -179,7 +181,7 @@ public class ServerGamePacketListenerImplMixin {
       }
    }
    
-   @ModifyVariable(method= "handleMovePlayer",at=@At("STORE"), ordinal = 0)
+   @ModifyVariable(method = "handleMovePlayer", at = @At("STORE"), ordinal = 0)
    private double arcananovum$ensnarementPlayerX(double x){
       if(player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getX();
@@ -189,7 +191,7 @@ public class ServerGamePacketListenerImplMixin {
       
    }
    
-   @ModifyVariable(method= "handleMovePlayer",at=@At("STORE"), ordinal = 1)
+   @ModifyVariable(method = "handleMovePlayer", at = @At("STORE"), ordinal = 1)
    private double arcananovum$ensnarementPlayerY(double y){
       if(player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getY();
@@ -198,7 +200,7 @@ public class ServerGamePacketListenerImplMixin {
       }
    }
    
-   @ModifyVariable(method= "handleMovePlayer",at=@At("STORE"), ordinal = 2)
+   @ModifyVariable(method = "handleMovePlayer", at = @At("STORE"), ordinal = 2)
    private double arcananovum$ensnarementPlayerZ(double z){
       if(player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getZ();

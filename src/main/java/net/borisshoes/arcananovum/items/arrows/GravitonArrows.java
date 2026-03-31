@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class GravitonArrows extends RunicArrow {
-	public static final String ID = "graviton_arrows";
+   public static final String ID = "graviton_arrows";
    
    public GravitonArrows(){
       id = ID;
@@ -57,8 +57,8 @@ public class GravitonArrows extends RunicArrow {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new GravitonArrowsItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_SLOWNESS};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_SLOWNESS};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -85,7 +85,7 @@ public class GravitonArrows extends RunicArrow {
             .append(Component.literal(" is ").withStyle(ChatFormatting.BLUE))
             .append(Component.literal("not affected").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal(".").withStyle(ChatFormatting.BLUE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -96,9 +96,9 @@ public class GravitonArrows extends RunicArrow {
          int maxDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MAX);
          int minDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MIN);
          float percentage = ArcanaUtils.getArrowPercentage(arrow);
-         int duration = (int) Mth.clamp(percentage*maxDur,minDur,maxDur);
+         int duration = (int) Mth.clamp(percentage * maxDur, minDur, maxDur);
          double range = baseRange + addedRange;
-         gravitonPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
+         gravitonPulse(arrow, serverWorld, null, entityHitResult.getEntity(), duration, range, 0);
       }
    }
    
@@ -110,9 +110,9 @@ public class GravitonArrows extends RunicArrow {
          int maxDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MAX);
          int minDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MIN);
          float percentage = ArcanaUtils.getArrowPercentage(arrow);
-         int duration = (int) Mth.clamp(percentage*maxDur,minDur,maxDur);
+         int duration = (int) Mth.clamp(percentage * maxDur, minDur, maxDur);
          double range = baseRange + addedRange;
-         gravitonPulse(arrow, serverWorld,blockHitResult.getLocation(),null,duration,range,0);
+         gravitonPulse(arrow, serverWorld, blockHitResult.getLocation(), null, duration, range, 0);
       }
    }
    
@@ -121,13 +121,13 @@ public class GravitonArrows extends RunicArrow {
       Vec3 pos = entity == null ? start : entity.position();
       int mobsHit = 0;
       
-      AABB rangeBox = new AABB(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
-      List<Entity> entities = world.getEntities(entity,rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 2*range*range && !(e instanceof AbstractArrow));
+      AABB rangeBox = new AABB(pos.x + 8, pos.y + 8, pos.z + 8, pos.x - 8, pos.y - 8, pos.z - 8);
+      List<Entity> entities = world.getEntities(entity, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 2 * range * range && !(e instanceof AbstractArrow));
       for(Entity entity1 : entities){
          Vec3 diff = entity1.position().subtract(pos);
-         double multiplier = Mth.clamp(diff.length()*.2,.03,2);
-         Vec3 motion = diff.add(0,0,0).normalize().scale(-multiplier);
-         entity1.setDeltaMovement(motion.x,motion.y,motion.z);
+         double multiplier = Mth.clamp(diff.length() * .2, .03, 2);
+         Vec3 motion = diff.add(0, 0, 0).normalize().scale(-multiplier);
+         entity1.setDeltaMovement(motion.x, motion.y, motion.z);
          if(entity1 instanceof ServerPlayer player){
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
          }
@@ -135,33 +135,34 @@ public class GravitonArrows extends RunicArrow {
          if(entity1 instanceof LivingEntity e){
             if(e instanceof Mob) mobsHit++;
             
-            int amp = (int) (5-diff.length());
+            int amp = (int) (5 - diff.length());
             MobEffectInstance slowness = new MobEffectInstance(MobEffects.SLOWNESS, 20, amp, false, false, true);
             e.addEffect(slowness);
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.BRING_TOGETHER);
+      if(arrow.getOwner() instanceof ServerPlayer player && mobsHit >= 10)
+         ArcanaAchievements.grant(player, ArcanaAchievements.BRING_TOGETHER);
       
-      ArcanaEffectUtils.gravitonArrowEmit(world,pos,entities);
+      ArcanaEffectUtils.gravitonArrowEmit(world, pos, entities);
       if(calls % 10 == 1){
-         SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.PORTAL_AMBIENT, SoundSource.PLAYERS,.5f,1.6f);
+         SoundUtils.playSound(world, BlockPos.containing(pos), SoundEvents.PORTAL_AMBIENT, SoundSource.PLAYERS, .5f, 1.6f);
       }
       
       if(calls < duration){
-         BorisLib.addTickTimerCallback(world, new GenericTimer(5, () -> gravitonPulse(arrow, world, pos, entity,duration,range,calls + 1)));
+         BorisLib.addTickTimerCallback(world, new GenericTimer(5, () -> gravitonPulse(arrow, world, pos, entity, duration, range, calls + 1)));
       }
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Graviton Arrows").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Graviton Arrows").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class GravitonArrowsItem extends ArcanaPolymerArrowItem {
       public GravitonArrowsItem(){
-         super(getThis(),getArcanaArrowItemComponents(869887));
+         super(getThis(), getArcanaArrowItemComponents(869887));
       }
       
       @Override

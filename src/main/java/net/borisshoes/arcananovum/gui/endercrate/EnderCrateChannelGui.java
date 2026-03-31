@@ -77,22 +77,22 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
                curInd = 0;
             }else if(type.isRight){
                curInd = (curInd - 1) % options.size();
-               if(curInd < 0) curInd = options.size()-1;
+               if(curInd < 0) curInd = options.size() - 1;
             }else{
                curInd = (curInd + 1) % options.size();
             }
             colors[finalI] = options.get(curInd);
-            this.channel = EnderCrateChannels.getChannel(this.channel.getIdLock(),colors);
+            this.channel = EnderCrateChannels.getChannel(this.channel.getIdLock(), colors);
             build();
          };
          
-         setSlot(i,top.setCallback(click));
-         setSlot(i+18,bottom.setCallback(click));
+         setSlot(i, top.setCallback(click));
+         setSlot(i + 18, bottom.setCallback(click));
          
          GuiElementBuilder dye = GuiElementBuilder.from(GraphicalItem.with(EnderCrateChannel.colorToGraphicElement(color))).hideDefaultTooltip();
          MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(DyeItem.byColor(color));
          dye.setName(Component.literal("")
-               .append(Component.literal("Frequency "+(i+1)+": ").withStyle(ChatFormatting.DARK_PURPLE))
+               .append(Component.literal("Frequency " + (i + 1) + ": ").withStyle(ChatFormatting.DARK_PURPLE))
                .append(dyeComp));
          dye.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Click").withStyle(ChatFormatting.GREEN))
@@ -103,17 +103,17 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
          dye.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Shift Click").withStyle(ChatFormatting.DARK_AQUA))
                .append(Component.literal(" to reset the frequency").withStyle(ChatFormatting.LIGHT_PURPLE)))));
-         setSlot(i+9,dye.setCallback(click));
+         setSlot(i + 9, dye.setCallback(click));
       }
       
       GuiElementBuilder channelType = new GuiElementBuilder(channel.isLocked() ? Items.IRON_BARS : Items.ENDER_EYE).hideDefaultTooltip();
       if(channel.isLocked()){
-         DefaultPlayerData playerData = DataAccess.getPlayer(channel.getIdLock(),BorisLib.PLAYER_DATA_KEY);
+         DefaultPlayerData playerData = DataAccess.getPlayer(channel.getIdLock(), BorisLib.PLAYER_DATA_KEY);
          if(playerData.getUsername().isEmpty()) playerData.tryResolve(BorisLib.SERVER);
          channelType.setName(Component.literal("\uD83D\uDD12 Private Channel \uD83D\uDD12").withStyle(ChatFormatting.LIGHT_PURPLE));
          channelType.addLoreLine(Component.literal("")
                .append(playerData.getFaceTextComponent())
-               .append(Component.literal(" "+playerData.getUsername()+"'s Channel").withStyle(ChatFormatting.GREEN)));
+               .append(Component.literal(" " + playerData.getUsername() + "'s Channel").withStyle(ChatFormatting.GREEN)));
          if(canLock && player.getUUID().equals(channel.getIdLock())){
             channelType.addLoreLine(Component.literal(""));
             channelType.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -138,7 +138,7 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
             build();
          });
       }
-      setSlot(4,channelType);
+      setSlot(4, channelType);
       
       GuiElementBuilder confirm = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).setName(Component.literal("Confirm Channel").withStyle(ChatFormatting.GREEN)).hideDefaultTooltip();
       confirm.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -147,7 +147,7 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
       confirm.setCallback((type) -> {
          close();
       });
-      setSlot(22,confirm);
+      setSlot(22, confirm);
    }
    
    @Override
@@ -172,7 +172,7 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
             if(color != null) colors.add(color);
          }
          if(colors.size() == 9){
-            ArcanaAchievements.grant(player,ArcanaAchievements.SECURITY_RAINBOW);
+            ArcanaAchievements.grant(player, ArcanaAchievements.SECURITY_RAINBOW);
          }
       }
       super.onClose();

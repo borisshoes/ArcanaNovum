@@ -66,7 +66,7 @@ public class InterdictionZones implements StorableData {
       int cellY = Math.floorDiv(y, CELL_SIZE);
       int cellZ = Math.floorDiv(z, CELL_SIZE);
       // Pack into a long: 21 bits each for x, y, z (supports +-1M blocks)
-      return ((long)(cellX & 0x1FFFFF) << 42) | ((long)(cellY & 0x1FFFFF) << 21) | (cellZ & 0x1FFFFF);
+      return ((long) (cellX & 0x1FFFFF) << 42) | ((long) (cellY & 0x1FFFFF) << 21) | (cellZ & 0x1FFFFF);
    }
    
    private static long getCellKey(BlockPos pos){
@@ -88,7 +88,7 @@ public class InterdictionZones implements StorableData {
       for(int x = minCellX; x <= maxCellX; x++){
          for(int y = minCellY; y <= maxCellY; y++){
             for(int z = minCellZ; z <= maxCellZ; z++){
-               long key = ((long)(x & 0x1FFFFF) << 42) | ((long)(y & 0x1FFFFF) << 21) | (z & 0x1FFFFF);
+               long key = ((long) (x & 0x1FFFFF) << 42) | ((long) (y & 0x1FFFFF) << 21) | (z & 0x1FFFFF);
                cells.add(key);
             }
          }

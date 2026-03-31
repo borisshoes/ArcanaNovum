@@ -29,12 +29,12 @@ public class LevitationHarnessGui extends SimpleGui {
    public void onClose(){
       // Return invalid items
       Container inv = getSlotRedirect(1).container;
-      for(int i = 0; i<inv.getContainerSize(); i++){
+      for(int i = 0; i < inv.getContainerSize(); i++){
          if(validStone && i == 0)
             continue;
          ItemStack stack = inv.getItem(i);
          if(!stack.isEmpty()){
-         
+            
             ItemEntity itemEntity;
             boolean bl = player.getInventory().add(stack);
             if(!bl || !stack.isEmpty()){
@@ -57,11 +57,11 @@ public class LevitationHarnessGui extends SimpleGui {
    
    public void validStone(ItemStack newStone){
       validStone = true;
-      harness.setStone(item,newStone);
+      harness.setStone(item, newStone);
    }
    
    public void notValidStone(){
       validStone = false;
-      harness.setStone(item,null);
+      harness.setStone(item, null);
    }
 }

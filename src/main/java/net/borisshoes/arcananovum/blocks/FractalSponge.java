@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.blocks;
 
 import com.google.common.collect.Lists;
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -17,6 +16,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.BorisLib;
@@ -67,10 +67,10 @@ public class FractalSponge extends ArcanaBlock {
       rarity = ArcanaRarity.EMPOWERED;
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.SPONGE;
-      block = new FractalSpongeBlock(BlockBehaviour.Properties.of().noOcclusion().strength(.6f,1200.0f).sound(SoundType.GRASS));
+      block = new FractalSpongeBlock(BlockBehaviour.Properties.of().noOcclusion().strength(.6f, 1200.0f).sound(SoundType.GRASS));
       item = new FractalSpongeItem(this.block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SPONGE,ResearchTasks.OBTAIN_END_CRYSTAL};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SPONGE, ResearchTasks.OBTAIN_END_CRYSTAL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -113,11 +113,11 @@ public class FractalSponge extends ArcanaBlock {
             .append(Component.literal("It even works on ").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_AQUA))
             .append(Component.literal("lava").withStyle(ChatFormatting.GOLD))
             .append(Component.literal("!").withStyle(ChatFormatting.DARK_AQUA)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    private int absorb(ItemStack item, Level world, BlockPos pos){
-      int depthLevel = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MANDELBROT);
+      int depthLevel = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.MANDELBROT);
       int absorbLevel = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.SIERPINSKI);
       int baseDepth = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FRACTAL_SPONGE_RANGE);
       int extraDepth = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FRACTAL_SPONGE_RANGE_PER_LVL).get(depthLevel);
@@ -144,18 +144,18 @@ public class FractalSponge extends ArcanaBlock {
             BlockState blockState = world.getBlockState(blockPos2);
             FluidState fluidState = world.getFluidState(blockPos2);
             if(fluidState.is(FluidTags.WATER)){
-               if(blockState.getBlock() instanceof BucketPickup && !((BucketPickup)blockState.getBlock()).pickupBlock(null,world, blockPos2, blockState).isEmpty()){
+               if(blockState.getBlock() instanceof BucketPickup && !((BucketPickup) blockState.getBlock()).pickupBlock(null, world, blockPos2, blockState).isEmpty()){
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
                      queue.add(new Tuple<>(blockPos2, depth + 1));
                   }
-               } else if(blockState.getBlock() instanceof LiquidBlock){
+               }else if(blockState.getBlock() instanceof LiquidBlock){
                   world.setBlock(blockPos2, Blocks.AIR.defaultBlockState(), 3);
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
                      queue.add(new Tuple<>(blockPos2, depth + 1));
                   }
-               } else if(blockState.is(Blocks.KELP) || blockState.is(Blocks.KELP_PLANT) || blockState.is(Blocks.SEAGRASS) || blockState.is(Blocks.TALL_SEAGRASS)){
+               }else if(blockState.is(Blocks.KELP) || blockState.is(Blocks.KELP_PLANT) || blockState.is(Blocks.SEAGRASS) || blockState.is(Blocks.TALL_SEAGRASS)){
                   BlockEntity blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockPos2) : null;
                   dropResources(blockState, world, blockPos2, blockEntity);
                   world.setBlock(blockPos2, Blocks.AIR.defaultBlockState(), 3);
@@ -165,12 +165,12 @@ public class FractalSponge extends ArcanaBlock {
                   }
                }
             }else if(fluidState.is(FluidTags.LAVA)){
-               if(blockState.getBlock() instanceof BucketPickup && !((BucketPickup)blockState.getBlock()).pickupBlock(null,world, blockPos2, blockState).isEmpty()){
+               if(blockState.getBlock() instanceof BucketPickup && !((BucketPickup) blockState.getBlock()).pickupBlock(null, world, blockPos2, blockState).isEmpty()){
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
                      queue.add(new Tuple<>(blockPos2, depth + 1));
                   }
-               } else if(blockState.getBlock() instanceof LiquidBlock){
+               }else if(blockState.getBlock() instanceof LiquidBlock){
                   world.setBlock(blockPos2, Blocks.AIR.defaultBlockState(), 3);
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
@@ -192,7 +192,7 @@ public class FractalSponge extends ArcanaBlock {
       if(doCheck && !(world.getBlockState(pos).is(getBlock()))) return 0;
       int absorbed = absorb(item, world, pos);
       if(absorbed > 0){
-         SoundUtils.playSound(world,pos, SoundEvents.ELDER_GUARDIAN_HURT, SoundSource.BLOCKS,1,.8f);
+         SoundUtils.playSound(world, pos, SoundEvents.ELDER_GUARDIAN_HURT, SoundSource.BLOCKS, 1, .8f);
          if(placer instanceof ServerPlayer player){
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
             ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_CLEANUP, absorbed);
@@ -204,14 +204,14 @@ public class FractalSponge extends ArcanaBlock {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("  Fractal Sponge").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nHave you ever heard of the coastline paradox? I thought about it while staring at an ocean monument offshore, and now I’m off to shove as many sponges into a fractal as I can.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Fractal Sponge").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nHave you ever heard of the coastline paradox? I thought about it while staring at an ocean monument offshore, and now I’m off to shove as many sponges into a fractal as I can.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Fractal Sponge").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nThe Fractal Sponge in practice is only 8 times better than a regular sponge due to it taking time for fluid to soak into the fractal. But, it never gets fully soaked and the reinforced frame lets it contain hotter fluids like lava.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class FractalSpongeItem extends ArcanaPolymerBlockItem {
       public FractalSpongeItem(Block block){
-         super(getThis(),block, getArcanaItemComponents());
+         super(getThis(), block, getArcanaItemComponents());
       }
       
       @Override
@@ -249,16 +249,16 @@ public class FractalSponge extends ArcanaBlock {
       public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(world instanceof ServerLevel serverWorld && entity instanceof FractalSpongeBlockEntity sponge){
-            initializeArcanaBlock(stack,sponge);
+            initializeArcanaBlock(stack, sponge);
             
             try{
-               int absorbed = absorbHelper(placer,world,stack,pos,false);
-               boolean cantor = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CANTOR) >= 1;
+               int absorbed = absorbHelper(placer, world, stack, pos, false);
+               boolean cantor = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.CANTOR) >= 1;
                if(cantor && absorbed > 0){
                   int times = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FRACTAL_SPONGE_PULSES);
                   int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FRACTAL_SPONGE_PULSE_DURATION);
                   for(int i = 1; i <= times; i++){
-                     BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(duration*i, () -> absorbHelper(placer,world,stack,pos,true)));
+                     BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(duration * i, () -> absorbHelper(placer, world, stack, pos, true)));
                   }
                }
             }catch(Exception e){
@@ -268,12 +268,12 @@ public class FractalSponge extends ArcanaBlock {
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack SPONGE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/fractal_sponge"));
       public static final ItemStack SPONGE_WET = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/fractal_sponge_wet"));
       

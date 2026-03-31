@@ -26,7 +26,7 @@ public class RegistryDataLoaderMixin {
    @Inject(method = "loadContentsFromManager(Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;Lnet/minecraft/core/WritableRegistry;Lcom/mojang/serialization/Decoder;Ljava/util/Map;)V", at = @At("TAIL"))
    private static <E> void load(ResourceManager resourceManager, RegistryOps.RegistryInfoLookup infoGetter, WritableRegistry<E> registry, Decoder<E> elementDecoder, Map<ResourceKey<?>, Exception> errors, CallbackInfo ci){
       if(registry.key().equals(Registries.TEMPLATE_POOL)){
-         for (E registryEntry : registry.stream().toList()){
+         for(E registryEntry : registry.stream().toList()){
             if(!(registryEntry instanceof StructureTemplatePool pool)){
                continue;
             }

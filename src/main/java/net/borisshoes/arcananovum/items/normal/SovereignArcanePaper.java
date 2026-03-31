@@ -21,6 +21,6 @@ public class SovereignArcanePaper extends NormalPolymerItem {
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER,8), ArcanaRegistry.SOVEREIGN_ARCANE_PAPER);
+      return new IngredientCompendiumEntry(Component.translatable(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER.getDescriptionId()), new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER, 8), ArcanaRegistry.SOVEREIGN_ARCANE_PAPER);
    }
 }

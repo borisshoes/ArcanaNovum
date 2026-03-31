@@ -57,8 +57,8 @@ public class DataFixer {
       }
       
       if(anyDataMoved){
-         ArcanaNovum.log(0,"Migrated world data for dimensions: " + movedWorlds);
-         ArcanaNovum.log(0,"This migration should not happen again...");
+         ArcanaNovum.log(0, "Migrated world data for dimensions: " + movedWorlds);
+         ArcanaNovum.log(0, "This migration should not happen again...");
       }
    }
    
@@ -90,10 +90,10 @@ public class DataFixer {
       if(oldData.getXP() < 0){
          return;
       }
-      ArcanaPlayerData newData = DataAccess.getPlayer(player.getUUID(),ArcanaPlayerData.KEY);
+      ArcanaPlayerData newData = DataAccess.getPlayer(player.getUUID(), ArcanaPlayerData.KEY);
       migratePlayerData(oldData, newData);
       clearOldData(oldData);
-      ArcanaNovum.log(0,"Migrated data for "+player.getScoreboardName()+"...");
+      ArcanaNovum.log(0, "Migrated data for " + player.getScoreboardName() + "...");
    }
    
    private static void migratePlayerData(IArcanaProfileComponent oldData, ArcanaPlayerData newData){

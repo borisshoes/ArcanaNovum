@@ -23,15 +23,15 @@ public class ArcanaRecipe {
    private final Identifier itemId;
    
    public ArcanaRecipe(Identifier item, ArcanaIngredient[][] ingredients){
-      this(item, ingredients,new ForgeRequirement());
+      this(item, ingredients, new ForgeRequirement());
    }
    
    public ArcanaRecipe(ArcanaItem item, ArcanaIngredient[][] ingredients){
-      this(item, ingredients,new ForgeRequirement());
+      this(item, ingredients, new ForgeRequirement());
    }
    
    public ArcanaRecipe(Item item, ArcanaIngredient[][] ingredients){
-      this(BuiltInRegistries.ITEM.getKey(item), ingredients,new ForgeRequirement());
+      this(BuiltInRegistries.ITEM.getKey(item), ingredients, new ForgeRequirement());
    }
    
    public ArcanaRecipe(ArcanaItem item, ArcanaIngredient[][] ingredients, ForgeRequirement forgeRequirement){
@@ -68,13 +68,13 @@ public class ArcanaRecipe {
    }
    
    public ItemStack[][] getRemainders(ItemStack[][] items, StarlightForgeBlockEntity forge, int resourceLvl){
-      if(!satisfiesRecipe(items,forge))
+      if(!satisfiesRecipe(items, forge))
          return null;
       ItemStack[][] remainders = new ItemStack[items.length][items[0].length];
       ArcanaIngredient[][] ingredients = getAlteredIngredients();
       for(int i = 0; i < ingredients.length; i++){
          for(int j = 0; j < ingredients[0].length; j++){
-            remainders[i][j] = ingredients[i][j].getRemainder(items[i][j],resourceLvl);
+            remainders[i][j] = ingredients[i][j].getRemainder(items[i][j], resourceLvl);
          }
       }
       return remainders;
@@ -114,11 +114,11 @@ public class ArcanaRecipe {
                Tuple<Integer, ItemStack> pair;
                if(map.containsKey(ingred)){
                   int oldCount = map.get(ingred).getA();
-                  pair = new Tuple<>(ingredients[i][j].count+oldCount,stack);
+                  pair = new Tuple<>(ingredients[i][j].count + oldCount, stack);
                }else{
-                  pair = new Tuple<>(ingredients[i][j].count,stack);
+                  pair = new Tuple<>(ingredients[i][j].count, stack);
                }
-               map.put(ingred,pair);
+               map.put(ingred, pair);
             }
          }
       }

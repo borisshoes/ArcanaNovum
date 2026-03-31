@@ -26,7 +26,7 @@ public abstract class NormalPolymerItem extends Item implements PolymerItem {
       if(PolymerResourcePackUtils.hasMainPack(context)){
          return ArcanaRegistry.arcanaId(this.id);
       }else{
-         return BuiltInRegistries.ITEM.getResourceKey(getPolymerItem(stack,context)).get().identifier();
+         return BuiltInRegistries.ITEM.getResourceKey(getPolymerItem(stack, context)).get().identifier();
       }
    }
    

@@ -9,7 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 public class DeathWardEffect extends MobEffect implements PolymerStatusEffect {
    public DeathWardEffect(){
-      super(MobEffectCategory.BENEFICIAL,0x270000, ParticleTypes.TRIAL_OMEN);
+      super(MobEffectCategory.BENEFICIAL, 0x270000, ParticleTypes.TRIAL_OMEN);
    }
    
    @Override

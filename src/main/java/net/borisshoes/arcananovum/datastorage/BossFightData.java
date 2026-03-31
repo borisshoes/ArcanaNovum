@@ -24,7 +24,7 @@ public class BossFightData implements StorableData {
    
    @Override
    public void read(ValueInput view){
-      if(view.getBooleanOr("hasBossFight",false)){
+      if(view.getBooleanOr("hasBossFight", false)){
          view.read("bossFight", CompoundTag.CODEC).ifPresent(bossFightTag -> {
             String bossLabel = bossFightTag.getStringOr("boss", "");
             BossFights boss = BossFights.fromLabel(bossLabel);

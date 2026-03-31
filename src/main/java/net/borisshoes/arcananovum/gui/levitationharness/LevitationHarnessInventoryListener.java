@@ -30,15 +30,15 @@ public class LevitationHarnessInventoryListener implements ContainerListener {
          validSoulstone(inv);
          ItemStack glowSlot = inv.getItem(1);
          if(glowSlot.is(Items.GLOWSTONE)){
-            harness.addGlow(item,glowSlot.getCount()*4);
+            harness.addGlow(item, glowSlot.getCount() * 4);
             inv.setItem(1, ItemStack.EMPTY);
          }else if(glowSlot.is(Items.GLOWSTONE_DUST)){
-            harness.addGlow(item,glowSlot.getCount());
+            harness.addGlow(item, glowSlot.getCount());
             inv.setItem(1, ItemStack.EMPTY);
          }
          
          harness.recalculateEnergy(item);
-         harness.buildGui(item,gui);
+         harness.buildGui(item, gui);
          
          finishUpdate();
       }
@@ -47,6 +47,7 @@ public class LevitationHarnessInventoryListener implements ContainerListener {
    public void finishUpdate(){
       updating = false;
    }
+   
    public void setUpdating(){
       updating = true;
    }

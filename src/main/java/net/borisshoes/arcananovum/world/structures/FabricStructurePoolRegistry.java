@@ -31,7 +31,7 @@ public class FabricStructurePoolRegistry {
    private static final Multimap<String, ListPoolElement> listStructures = LinkedHashMultimap.create();
    public static HolderGetter<StructureProcessorList> registryEntryLookup;
    
-   static {
+   static{
       StructurePoolAddCallback.EVENT.register(FabricStructurePoolRegistry::processRegistry);
    }
    
@@ -66,7 +66,7 @@ public class FabricStructurePoolRegistry {
    
    public static @Nullable Triple<String, String, String> getPoolStructureElementInfo(String id){
       String poolId = structuresKeyRef.get(id);
-      for (Quintuple<String, String, ResourceKey<StructureProcessorList>, String, Integer> quint : structuresInfo.get(poolId)){
+      for(Quintuple<String, String, ResourceKey<StructureProcessorList>, String, Integer> quint : structuresInfo.get(poolId)){
          if(quint.a.equals(id)){
             return Triple.of(quint.b, quint.c.identifier().toString(), quint.d);
          }
@@ -76,7 +76,7 @@ public class FabricStructurePoolRegistry {
    
    public static void processRegistry(FabricStructurePool structurePool){
       String poolId = structurePool.getId().toString();
-      for (String key : structuresInfo.keys()){
+      for(String key : structuresInfo.keys()){
          if(Objects.equals(key, poolId)){
             structuresInfo.get(key).forEach(value -> addToPool(structurePool, value, key, registryEntryLookup));
          }
@@ -89,12 +89,12 @@ public class FabricStructurePoolRegistry {
       if(type == StructurePoolElementType.SINGLE){
          Holder<StructureProcessorList> entry = registryEntryLookup.getOrThrow(quint.c);
          spe.add(StructurePoolElement.single(quint.a, entry).apply(StructureTemplatePool.Projection.byName(quint.d)));
-      } else if(type == StructurePoolElementType.LEGACY){
+      }else if(type == StructurePoolElementType.LEGACY){
          Holder<StructureProcessorList> entry = registryEntryLookup.getOrThrow(quint.c);
          spe.add(StructurePoolElement.legacy(quint.a, entry).apply(StructureTemplatePool.Projection.byName(quint.d)));
-      } else if(type == StructurePoolElementType.LIST){
+      }else if(type == StructurePoolElementType.LIST){
          spe.addAll(listStructures.get(key));
-      } else if(type == StructurePoolElementType.FEATURE){
+      }else if(type == StructurePoolElementType.FEATURE){
          List<StructurePoolElement> finalSpe = new LinkedList<>();
          featureStructures.get(key).forEach(
                value -> {
@@ -110,5 +110,6 @@ public class FabricStructurePoolRegistry {
       spe.forEach(value -> structurePool.addStructurePoolElement(value, quint.e));
    }
    
-   private record Quintuple<A, B, C, D, E>(A a, B b, C c, D d, E e){}
+   private record Quintuple<A, B, C, D, E>(A a, B b, C c, D d, E e) {
+   }
 }

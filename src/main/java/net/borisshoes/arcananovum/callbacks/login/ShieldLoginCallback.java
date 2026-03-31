@@ -32,16 +32,16 @@ public class ShieldLoginCallback extends LoginCallback {
       // Double check that this is the correct player before running timer
       ServerPlayer player = netHandler.player;
       if(player.getStringUUID().equals(playerUUID)){
-   
-         float removed = Math.max(0,player.getAbsorptionAmount()-hearts);
+         
+         float removed = Math.max(0, player.getAbsorptionAmount() - hearts);
          float diff = hearts - player.getAbsorptionAmount() + removed;
          if(diff != 0){
-            ArcanaNovum.data(player).addXP((int) (ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SHIELD_OF_FORTITUDE_ABSORB_DAMAGE)*diff)); // Give XP
+            ArcanaNovum.data(player).addXP((int) (ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SHIELD_OF_FORTITUDE_ABSORB_DAMAGE) * diff)); // Give XP
          }
          if(player.getAbsorptionAmount() != 0){
             SoundUtils.playSongToPlayer(player, SoundEvents.AMETHYST_CLUSTER_FALL, .3f, .3f);
          }
-         MinecraftUtils.removeMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID,hearts);
+         MinecraftUtils.removeMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID, hearts);
          player.setAbsorptionAmount(removed);
       }
    }
@@ -56,7 +56,7 @@ public class ShieldLoginCallback extends LoginCallback {
    @Override
    public CompoundTag getData(){
       CompoundTag data = new CompoundTag();
-      data.putFloat("hearts",hearts);
+      data.putFloat("hearts", hearts);
       this.data = data;
       return this.data;
    }

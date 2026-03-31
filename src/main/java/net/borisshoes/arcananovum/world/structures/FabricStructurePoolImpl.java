@@ -35,7 +35,7 @@ public class FabricStructurePoolImpl implements FabricStructurePool {
          pool.setRawTemplates(list);
       }
       
-      for (int i = 0; i < weight; i++){
+      for(int i = 0; i < weight; i++){
          pool.getTemplates().add(element);
       }
    }

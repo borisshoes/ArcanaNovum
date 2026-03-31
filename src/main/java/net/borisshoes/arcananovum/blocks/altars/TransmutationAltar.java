@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -16,6 +15,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
-	public static final String ID = "transmutation_altar";
+   public static final String ID = "transmutation_altar";
    
    private Multiblock multiblock;
    
@@ -72,12 +72,12 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Transmutation Altar";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),ArcaneTomeGui.TomeFilter.BLOCKS,ArcaneTomeGui.TomeFilter.ALTARS};
+      categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.BLOCKS, ArcaneTomeGui.TomeFilter.ALTARS};
       vanillaItem = Items.DIAMOND_BLOCK;
-      block = new TransmutationAltarBlock(BlockBehaviour.Properties.of().noOcclusion().mapColor(MapColor.DIAMOND).strength(5.0f,1200.0f).requiresCorrectToolForDrops().sound(SoundType.AMETHYST));
+      block = new TransmutationAltarBlock(BlockBehaviour.Properties.of().noOcclusion().mapColor(MapColor.DIAMOND).strength(5.0f, 1200.0f).requiresCorrectToolForDrops().sound(SoundType.AMETHYST));
       item = new TransmutationAltarItem(this.block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TRADE,ResearchTasks.OBTAIN_AMETHYST_SHARD,ResearchTasks.OBTAIN_DIAMOND,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TRADE, ResearchTasks.OBTAIN_AMETHYST_SHARD, ResearchTasks.OBTAIN_DIAMOND, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -112,7 +112,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
             .append(Component.literal("barter").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal(" comes with its own ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("price.").withStyle(ChatFormatting.BLUE)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    public static List<TransmutationRecipe> getUnlockedRecipes(ServerPlayer player){
@@ -148,14 +148,14 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public Vec3i getCheckOffset(){
-      return new Vec3i(-5,0,-5);
+      return new Vec3i(-5, 0, -5);
    }
    
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThrough my research into leylines, I have discovered the essence of a living entity entwined within the leylines of the Overworld. From what I can tell, the entity is old, very old, and most ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThrough my research into leylines, I have discovered the essence of a living entity entwined within the leylines of the Overworld. From what I can tell, the entity is old, very old, and most ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nlikely of divine nature.\nIt is both singular and plural, like raindrops that become an ocean.\nI believe I can construct an altar that taps into the energy of this entity that rides the leylines. I wonder what capabilities this ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nstructure could yield.\n\nThe Altar I have created seems to mutate items when I drop them in specific configurations. The mutations are mostly consistent and follow some rule of conservation, but ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Transmutation\n        Altar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nconsumes reagents in the process.\nI will catalog all of the mutations I can find and document them in my Tome.\n\nThe points of interest are that there are 5 placement locations for items: \n").withStyle(ChatFormatting.BLACK)));
@@ -167,7 +167,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    
    public class TransmutationAltarItem extends ArcanaPolymerBlockItem {
       public TransmutationAltarItem(Block block){
-         super(getThis(),block,getArcanaItemComponents());
+         super(getThis(), block, getArcanaItemComponents());
       }
       
       @Override
@@ -197,7 +197,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       @Nullable
       @Override
       public BlockState getStateForPlacement(BlockPlaceContext ctx){
-         return this.defaultBlockState().setValue(HORIZONTAL_FACING,ctx.getHorizontalDirection().getOpposite()).setValue(ACTIVATABLE,false);
+         return this.defaultBlockState().setValue(HORIZONTAL_FACING, ctx.getHorizontalDirection().getOpposite()).setValue(ACTIVATABLE, false);
       }
       
       @Override
@@ -233,11 +233,11 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
             if(playerEntity instanceof ServerPlayer player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getCooldowns().addCooldown(playerEntity.getMainHandItem(),1);
-                  player.getCooldowns().addCooldown(playerEntity.getOffhandItem(),1);
+                  player.getCooldowns().addCooldown(playerEntity.getMainHandItem(), 1);
+                  player.getCooldowns().addCooldown(playerEntity.getOffhandItem(), 1);
                }else{
                   player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(altar.getMultiblockCheck(),player);
+                  multiblock.displayStructure(altar.getMultiblockCheck(), player);
                }
             }
          }
@@ -249,28 +249,28 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
          if(entity instanceof TransmutationAltarBlockEntity altar){
             boolean started = altar.startTransmute(null);
             if(!started){
-               SoundUtils.playSound(world, pos, SoundEvents.ALLAY_HURT, SoundSource.BLOCKS,0.5f,0.7f);
+               SoundUtils.playSound(world, pos, SoundEvents.ALLAY_HURT, SoundSource.BLOCKS, 0.5f, 0.7f);
             }
          }
       }
       
       @Override
-      protected void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify) {
+      protected void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify){
          boolean bl = world.hasNeighborSignal(pos);
          boolean bl2 = state.getOptionalValue(ACTIVATABLE).orElse(false);
-         if (bl && bl2) {
+         if(bl && bl2){
             this.tryActivate(state, world, pos);
             world.setBlock(pos, state.setValue(ACTIVATABLE, false), Block.UPDATE_CLIENTS);
          }
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack TRANSMUTATION_ALTAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/transmutation_altar"));
       
       private final ServerLevel world;

@@ -44,11 +44,11 @@ public class ExplainRecipe extends ArcanaRecipe {
                Tuple<Integer, ItemStack> pair;
                if(map.containsKey(ingred)){
                   int oldCount = map.get(ingred).getA();
-                  pair = new Tuple<>(explainIngredients[i][j].count+oldCount,stack);
+                  pair = new Tuple<>(explainIngredients[i][j].count + oldCount, stack);
                }else{
-                  pair = new Tuple<>(explainIngredients[i][j].count,stack);
+                  pair = new Tuple<>(explainIngredients[i][j].count, stack);
                }
-               map.put(ingred,pair);
+               map.put(ingred, pair);
             }
          }
       }

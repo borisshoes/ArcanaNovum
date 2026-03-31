@@ -128,8 +128,8 @@ public class FeastingCharm extends ArcanaItem {
          int enzymesCDReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FEASTING_CHARM_ENZYMES_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.ENZYMES));
          
          int mode = getIntProperty(stack, MODE_TAG);
-         int activeTime = Math.max(0, activeCD - enzymesCDReduction);
-         int passiveTime = Math.max(0, passiveCD - enzymesCDReduction);
+         int activeTime = Math.max(1, activeCD - enzymesCDReduction);
+         int passiveTime = Math.max(1, passiveCD - enzymesCDReduction);
          int gluttony = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.GLUTTONY);
          
          if(world.getServer().getTickCount() % activeTime == 0){ // Consume food
@@ -201,7 +201,7 @@ public class FeastingCharm extends ArcanaItem {
             float extraSat = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_SATURATION_PER_LVL).get(gluttony);
             int baseHunger = ArcanaNovum.CONFIG.getInt(ArcanaConfig.FEASTING_CHARM_PASSIVE_HUNGER);
             int extraHunger = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_FOOD_PER_LVL).get(gluttony);
-            player.getFoodData().eat(baseHunger+extraHunger,baseSat+extraSat);
+            player.getFoodData().eat(baseHunger + extraHunger, baseSat + extraSat);
          }
       }
       

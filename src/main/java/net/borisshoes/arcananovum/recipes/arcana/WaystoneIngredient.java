@@ -60,14 +60,15 @@ public class WaystoneIngredient extends ArcanaIngredient {
          return Waystone.isUnattuned(stack);
       }else if(requireAttuned){
          if(Waystone.isUnattuned(stack) || Waystone.getTarget(stack) == null) return false;
-         if(this.worldKey != null && !Waystone.getTarget(stack).world().identifier().equals(this.worldKey.identifier())) return false;
+         if(this.worldKey != null && !Waystone.getTarget(stack).world().identifier().equals(this.worldKey.identifier()))
+            return false;
       }
       return true;
    }
    
    @Override
    public ArcanaIngredient copyWithCount(int newCount){
-      return new WaystoneIngredient(newCount,this.consumed,this.requireUnattuned,this.requireAttuned,this.worldKey);
+      return new WaystoneIngredient(newCount, this.consumed, this.requireUnattuned, this.requireAttuned, this.worldKey);
    }
    
    @Override
@@ -95,7 +96,7 @@ public class WaystoneIngredient extends ArcanaIngredient {
          name += " (Not Consumed)";
       }
       if(worldKey != null){
-         name += " Attuned ["+ MinecraftUtils.getFormattedDimName(worldKey).getString()+"]";
+         name += " Attuned [" + MinecraftUtils.getFormattedDimName(worldKey).getString() + "]";
       }else if(requireAttuned){
          name += " Attuned";
       }else if(requireUnattuned){
@@ -108,7 +109,7 @@ public class WaystoneIngredient extends ArcanaIngredient {
    public ItemStack ingredientAsStack(){
       if(requireAttuned){
          ItemStack waystone = ArcanaRegistry.WAYSTONE.getPrefItem().copy();
-         Waystone.saveTarget(waystone,new Waystone.WaystoneTarget(worldKey != null ? worldKey : ServerLevel.OVERWORLD,new Vec3(0,0,0),0,0));
+         Waystone.saveTarget(waystone, new Waystone.WaystoneTarget(worldKey != null ? worldKey : ServerLevel.OVERWORLD, new Vec3(0, 0, 0), 0, 0));
          return waystone;
       }else{
          return ArcanaRegistry.WAYSTONE.getPrefItem().copy();

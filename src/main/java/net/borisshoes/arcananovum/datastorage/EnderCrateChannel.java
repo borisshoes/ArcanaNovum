@@ -133,8 +133,8 @@ public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContaine
       }
       
       return new ArcanaItemContainer(
-            ArcanaRegistry.arcanaId( ArcanaRegistry.ENDER_CRATE.getId()),
-            inv, 54,101,
+            ArcanaRegistry.arcanaId(ArcanaRegistry.ENDER_CRATE.getId()),
+            inv, 54, 101,
             Component.literal("ECr"),
             name,
             0.5);

@@ -50,8 +50,8 @@ public class AlchemicalArbalest extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.CROSSBOW;
       item = new AlchemicalArbalestItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.ADVANCEMENT_OL_BETSY,ResearchTasks.ADVANCEMENT_WHOS_THE_PILLAGER_NOW,ResearchTasks.ADVANCEMENT_ARBALISTIC,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OL_BETSY, ResearchTasks.ADVANCEMENT_WHOS_THE_PILLAGER_NOW, ResearchTasks.ADVANCEMENT_ARBALISTIC, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_TIPPED_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION, ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("Sethzilla42"))};
       
       ItemStack stack = new ItemStack(item);
@@ -64,7 +64,7 @@ public class AlchemicalArbalest extends ArcanaItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.MULTISHOT),1)));
+      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.MULTISHOT), 1)));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
@@ -100,13 +100,13 @@ public class AlchemicalArbalest extends ArcanaItem {
             .append(Component.literal("and comes with ").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal("Multishot").withStyle(ChatFormatting.LIGHT_PURPLE))
             .append(Component.literal(".").withStyle(ChatFormatting.YELLOW)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      ItemStack newStack = super.updateItem(stack,server);
-      return buildItemLore(newStack,server);
+      ItemStack newStack = super.updateItem(stack, server);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -115,14 +115,14 @@ public class AlchemicalArbalest extends ArcanaItem {
          ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
          ItemEnchantments comp = stack.getEnchantments();
          Object2IntOpenHashMap<Holder<Enchantment>> enchants = new Object2IntOpenHashMap<>();
-         comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
+         comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(), entry.getIntValue()));
          
-         enchants.forEach((e,num) -> {
+         enchants.forEach((e, num) -> {
             if(!e.value().effects().has(EnchantmentEffectComponents.PROJECTILE_COUNT)){
-               enchantBuilder.upgrade(e,num);
+               enchantBuilder.upgrade(e, num);
             }
          });
-         EnchantmentHelper.setEnchantments(stack,enchantBuilder.toImmutable());
+         EnchantmentHelper.setEnchantments(stack, enchantBuilder.toImmutable());
       }
       return stack;
    }
@@ -136,23 +136,23 @@ public class AlchemicalArbalest extends ArcanaItem {
          ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
          ItemEnchantments comp = bowStack.getEnchantments();
          Object2IntOpenHashMap<Holder<Enchantment>> enchants = new Object2IntOpenHashMap<>();
-         comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
+         comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(), entry.getIntValue()));
          
-         enchants.forEach((e,num) -> {
+         enchants.forEach((e, num) -> {
             if(!e.value().effects().has(EnchantmentEffectComponents.PROJECTILE_PIERCING)){
-               enchantBuilder.upgrade(e,num);
+               enchantBuilder.upgrade(e, num);
             }
          });
-         EnchantmentHelper.setEnchantments(newArcanaItem,enchantBuilder.toImmutable());
+         EnchantmentHelper.setEnchantments(newArcanaItem, enchantBuilder.toImmutable());
       }
-      newArcanaItem.enchant(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT),1);
+      newArcanaItem.enchant(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT), 1);
       return newArcanaItem;
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("     Alchemical\n      Arbalest").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nWhile bows are excellent for sustained damage, crossbows have always been good at bursts of damage and area suppression. I believe I can enhance this niche further…").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Alchemical\n      Arbalest").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nWhile bows are excellent for sustained damage, crossbows have always been good at bursts of damage and area suppression. I believe I can enhance this niche further…").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("     Alchemical\n      Arbalest").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nThe Arbalest overcharges Tipped Arrows so that their effects cover a wide space and linger. It also comes with the multishot enchantment.\n\nSpectral Arrows are where things get interesting.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("     Alchemical\n      Arbalest").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\nThey carry no discrete effect but cause creatures to glow. Tweaking that ability a bit when used in the Arbalest, Spectral Arrows now create a cloud that makes weak spots on enemies easier to see, ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("     Alchemical\n      Arbalest").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD), Component.literal("\ncausing them to take increased damage from all sources.").withStyle(ChatFormatting.BLACK)));
@@ -162,7 +162,7 @@ public class AlchemicalArbalest extends ArcanaItem {
    public class AlchemicalArbalestItem extends ArcanaPolymerCrossbowItem {
       
       public AlchemicalArbalestItem(){
-         super(getThis(),getEquipmentArcanaItemComponents());
+         super(getThis(), getEquipmentArcanaItemComponents());
       }
       
       @Override
@@ -171,10 +171,10 @@ public class AlchemicalArbalest extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.RUNIC_ARBALEST) > 0){
+         if(ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.RUNIC_ARBALEST) > 0){
             stringList.add("runic");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -186,36 +186,36 @@ public class AlchemicalArbalest extends ArcanaItem {
       public void verifyEnchantments(ItemStack stack){
          boolean hasMulti = EnchantmentHelper.has(stack, EnchantmentEffectComponents.PROJECTILE_COUNT);
          boolean hasPierce = EnchantmentHelper.has(stack, EnchantmentEffectComponents.PROJECTILE_PIERCING);
-         boolean hasScatter = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SCATTERSHOT) > 0;
-         boolean hasRunic = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RUNIC_ARBALEST) > 0;
+         boolean hasScatter = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SCATTERSHOT) > 0;
+         boolean hasRunic = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RUNIC_ARBALEST) > 0;
          
          ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
          ItemEnchantments comp = stack.getEnchantments();
          Object2IntOpenHashMap<Holder<Enchantment>> enchants = new Object2IntOpenHashMap<>();
-         comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
+         comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(), entry.getIntValue()));
          
          if(hasRunic && hasMulti){ // Remove multishot
-            enchants.forEach((e,num) -> {
+            enchants.forEach((e, num) -> {
                if(!e.value().effects().has(EnchantmentEffectComponents.PROJECTILE_COUNT)){
-                  enchantBuilder.upgrade(e,num);
+                  enchantBuilder.upgrade(e, num);
                }
             });
-            EnchantmentHelper.setEnchantments(stack,enchantBuilder.toImmutable());
-
+            EnchantmentHelper.setEnchantments(stack, enchantBuilder.toImmutable());
+            
             verifyEnchantments(stack);
          }
          if(hasScatter && hasPierce){ // Remove pierce
-            enchants.forEach((e,num) -> {
+            enchants.forEach((e, num) -> {
                if(!e.value().effects().has(EnchantmentEffectComponents.PROJECTILE_PIERCING)){
-                  enchantBuilder.upgrade(e,num);
+                  enchantBuilder.upgrade(e, num);
                }
             });
-            EnchantmentHelper.setEnchantments(stack,enchantBuilder.toImmutable());
+            EnchantmentHelper.setEnchantments(stack, enchantBuilder.toImmutable());
             
             verifyEnchantments(stack);
          }
          if(hasScatter && !hasMulti){ // Re-add multishot
-            stack.enchant(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT),1);
+            stack.enchant(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT), 1);
             verifyEnchantments(stack);
          }
       }
@@ -224,7 +224,7 @@ public class AlchemicalArbalest extends ArcanaItem {
       public InteractionResult use(Level world, Player user, InteractionHand hand){
          ItemStack itemStack = user.getItemInHand(hand);
          verifyEnchantments(itemStack);
-         return super.use(world,user,hand);
+         return super.use(world, user, hand);
       }
       
       

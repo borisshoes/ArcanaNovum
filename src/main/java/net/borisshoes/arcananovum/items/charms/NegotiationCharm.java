@@ -51,8 +51,8 @@ public class NegotiationCharm extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.YELLOW_DYE;
       item = new NegotiationCharmItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_BARTER_PIGLIN,ResearchTasks.ADVANCEMENT_FIND_BASTION,ResearchTasks.ADVANCEMENT_TRADE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_BARTER_PIGLIN, ResearchTasks.ADVANCEMENT_FIND_BASTION, ResearchTasks.ADVANCEMENT_TRADE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -90,21 +90,21 @@ public class NegotiationCharm extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal("\nVillagers and Piglins have one thing in common, they strike a hard bargain. This gilded emerald lapel should soften that bargain. They will be so enamoured with its ").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\ndisplay of wealth that they won't notice the subtle Arcana warping their minds.\n\nVillagers under the Charm's influence will give me high discounts and will 'forgive' a transgression or two. ").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD,ChatFormatting.BOLD),Component.literal("\nPiglins that barter near the influence of the Charm will see my gold as more valuable and give more items in return, in addition to being neutral to my presence.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nVillagers and Piglins have one thing in common, they strike a hard bargain. This gilded emerald lapel should soften that bargain. They will be so enamoured with its ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\ndisplay of wealth that they won't notice the subtle Arcana warping their minds.\n\nVillagers under the Charm's influence will give me high discounts and will 'forgive' a transgression or two. ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Charm of\n     Negotiation").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nPiglins that barter near the influence of the Charm will see my gold as more valuable and give more items in return, in addition to being neutral to my presence.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    // Normal override in item class doesn't work because tamed animals consume the item interaction
    public InteractionResult useOnEntity(Player user, LivingEntity entity, InteractionHand hand){
       ItemStack stack = user.getItemInHand(hand);
-      boolean canForceRestock = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.EXTORTION) > 0;
+      boolean canForceRestock = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.EXTORTION) > 0;
       if(canForceRestock && entity instanceof Villager villager && villager.level() instanceof ServerLevel serverLevel){
          villager.restock();
          double villagerWidth = villager.getBbWidth();
          double villagerHeight = villager.getBbHeight();
-         serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,villager.getX(),villager.getY()+villagerHeight/2.0,villager.getZ(),25,villagerWidth/2,villagerHeight/4,villagerWidth/2,1);
+         serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, villager.getX(), villager.getY() + villagerHeight / 2.0, villager.getZ(), 25, villagerWidth / 2, villagerHeight / 4, villagerWidth / 2, 1);
          return InteractionResult.SUCCESS_SERVER;
       }
       return InteractionResult.PASS;
@@ -121,10 +121,10 @@ public class NegotiationCharm extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.EXTORTION) >= 1){
+         if(ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.EXTORTION) >= 1){
             stringList.add("extortion");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       

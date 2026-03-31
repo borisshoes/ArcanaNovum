@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interaction{
+public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interaction {
    public static final String ID = "cetacea_charm";
    
    public CetaceaCharm(){
@@ -59,23 +59,23 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
       itemVersion = 0;
       vanillaItem = Items.COD;
       item = new CetaceaCharmItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CONDUIT, ResearchTasks.CATCH_FISH, ResearchTasks.EFFECT_DOLPHINS_GRACE, ResearchTasks.DROWNING_DAMAGE};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Rookodzol"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,ACTIVE_TAG, true);
+      putProperty(stack, ACTIVE_TAG, true);
       setPrefStack(stack);
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,ACTIVE_TAG,active);
-      return buildItemLore(newStack,server);
+      boolean active = getBooleanProperty(stack, ACTIVE_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, ACTIVE_TAG, active);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -113,7 +113,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal(" Charm of Cetacea").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nDolphins are such graceful creatures, and this conduit that I have reconstructed opens up some possibilities. I believe I can miniaturize the conduit such that it gives me similar aquatic  ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal(" Charm of Cetacea").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nDolphins are such graceful creatures, and this conduit that I have reconstructed opens up some possibilities. I believe I can miniaturize the conduit such that it gives me similar aquatic  ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal(" Charm of Cetacea").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD), Component.literal("\nmaneuverability as dolphins.\n\nSneak Using the Charm toggles the aquatic buffs.\n").withStyle(ChatFormatting.BLACK)));
       
       return list;
@@ -121,11 +121,11 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range),stele.getBlockPos().getCenter().add(range));
-      List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class,box);
+      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
+      List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class, box);
       boolean delphinidae = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.DELPHINIDAE) > 0;
       boolean gills = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.GILLS) > 0;
-      for(LivingEntity living: inRangeEntities){
+      for(LivingEntity living : inRangeEntities){
          if(living.isSpectator()) continue;
          if(living.isInWater()){
             MobEffectInstance grace = new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 110, delphinidae ? 1 : 0, false, false, true);
@@ -144,14 +144,14 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
       
       if(world.random.nextFloat() < 0.15){
          Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
-         world.sendParticles(ParticleTypes.NAUTILUS,stackPos.x(),stackPos.y()+1,stackPos.z(),5,0.25,0.25,0.25,1);
-         world.sendParticles(ParticleTypes.DRIPPING_WATER,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,1);
+         world.sendParticles(ParticleTypes.NAUTILUS, stackPos.x(), stackPos.y() + 1, stackPos.z(), 5, 0.25, 0.25, 0.25, 1);
+         world.sendParticles(ParticleTypes.DRIPPING_WATER, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, 1);
       }
    }
    
    @Override
    public Vec3 getBaseRange(){
-      return new Vec3(20,20,20);
+      return new Vec3(20, 20, 20);
    }
    
    public class CetaceaCharmItem extends ArcanaPolymerItem {
@@ -163,7 +163,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
-         boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
+         boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          boolean delphinidae = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.DELPHINIDAE) > 0;
          
          List<String> stringList = new ArrayList<>();
@@ -180,7 +180,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
                stringList.add("off");
             }
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -194,7 +194,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
          
-         boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+         boolean active = getBooleanProperty(stack, ACTIVE_TAG);
          boolean delphinidae = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.DELPHINIDAE) > 0;
          boolean gills = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.GILLS) > 0;
          
@@ -220,15 +220,15 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          
          if(player.isShiftKeyDown()){
-            boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
-            putProperty(stack,ACTIVE_TAG,active);
+            boolean active = !getBooleanProperty(stack, ACTIVE_TAG);
+            putProperty(stack, ACTIVE_TAG, active);
             
             if(active){
-               player.displayClientMessage(Component.literal("The Charm moistens").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.PUFFER_FISH_DEATH, 0.5f,0.8f);
+               player.displayClientMessage(Component.literal("The Charm moistens").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.PUFFER_FISH_DEATH, 0.5f, 0.8f);
             }else{
-               player.displayClientMessage(Component.literal("The Charm dries out").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.PUFFER_FISH_BLOW_OUT, 0.5f,0.7f);
+               player.displayClientMessage(Component.literal("The Charm dries out").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.PUFFER_FISH_BLOW_OUT, 0.5f, 0.7f);
             }
             
             return InteractionResult.SUCCESS_SERVER;

@@ -53,7 +53,7 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
       boolean hasEversource = false;
       boolean hasFillable = false;
       
-      for (int i = 0; i < input.size(); ++i){
+      for(int i = 0; i < input.size(); ++i){
          ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
@@ -72,7 +72,7 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
    
    @Override
    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries){
-      for (int i = 0; i < input.size(); ++i){
+      for(int i = 0; i < input.size(); ++i){
          ItemStack rStack = input.getItem(i);
          if(FILLABLE.containsKey(rStack.getItem())){
             return FILLABLE.get(rStack.getItem()).copyWithCount(1);
@@ -85,7 +85,7 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
    @Override
    public NonNullList<ItemStack> getRemainingItems(CraftingInput input){
       NonNullList<ItemStack> stacks = NonNullList.withSize(input.size(), ItemStack.EMPTY);
-      for (int i = 0; i < input.size(); ++i){
+      for(int i = 0; i < input.size(); ++i){
          ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          

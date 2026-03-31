@@ -8,6 +8,8 @@ import java.util.List;
 
 public abstract class AreaEffectSource {
    public abstract List<BlockPos> getAffectedBlocks(ServerLevel world);
+   
    public abstract List<Entity> getAffectedEntities(ServerLevel world);
+   
    public abstract int getDuration();
 }

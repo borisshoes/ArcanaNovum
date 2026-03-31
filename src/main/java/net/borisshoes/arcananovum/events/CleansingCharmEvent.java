@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
-import net.borisshoes.borislib.conditions.Condition;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.events.Event;
 import net.minecraft.core.Holder;

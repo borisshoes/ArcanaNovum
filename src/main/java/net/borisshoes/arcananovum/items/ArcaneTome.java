@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ArcaneTome extends ArcanaItem {
-	public static final String ID = "arcane_tome";
+   public static final String ID = "arcane_tome";
    
    public static final String DISPLAY_TAG = "arcanaItemId";
    public static final String FORGE_TAG = "forgeCraftTick";
@@ -44,8 +44,8 @@ public class ArcaneTome extends ArcanaItem {
       itemVersion = 1;
       vanillaItem = Items.KNOWLEDGE_BOOK;
       item = new ArcaneTomeItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -67,7 +67,7 @@ public class ArcaneTome extends ArcanaItem {
       lore.add(Component.literal("")
             .append(Component.literal("Right click").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal(" to open the tome.").withStyle(ChatFormatting.GREEN)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -78,7 +78,7 @@ public class ArcaneTome extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("  Tome of Arcana           Novum").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis new type of paper has quite a few interesting properties.\n\nIt allows the inscription of active arcane elements. It makes an excellent parchment for this ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Tome of Arcana           Novum").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThis new type of paper has quite a few interesting properties.\n\nIt allows the inscription of active arcane elements. It makes an excellent parchment for this ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Tome of Arcana           Novum").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nnew notebook.\n\nEnchanting the pages together with an additional Eye of Ender should bind the whole Tome together nicely.\n\nIt is here that I shall \nscribe all the secrets ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Tome of Arcana           Novum").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), Component.literal("\nof this Arcana Novum that I seek to uncover.").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -106,7 +106,7 @@ public class ArcaneTome extends ArcanaItem {
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          
-         removeProperty(stack,FORGE_TAG);
+         removeProperty(stack, FORGE_TAG);
       }
    }
 }

@@ -18,7 +18,7 @@ public class DragonRespawnTimerCallback extends TickTimerCallback {
    private MinecraftServer server;
    
    public DragonRespawnTimerCallback(MinecraftServer server){
-      super(900,null,null);
+      super(900, null, null);
       this.server = server;
    }
    
@@ -33,7 +33,7 @@ public class DragonRespawnTimerCallback extends TickTimerCallback {
             if(DragonBossFight.States.valueOf(state) == DragonBossFight.States.WAITING_RESPAWN){
                //Check for alive Dragon
                if(!server.getLevel(Level.END).getDragons().isEmpty()){
-                  bossFight.getB().putString("State",DragonBossFight.States.WAITING_START.name());
+                  bossFight.getB().putString("State", DragonBossFight.States.WAITING_START.name());
                   // Confirm message
                   if(gm != null){
                      gm.sendSystemMessage(Component.literal("Dragon Respawned Successfully"));

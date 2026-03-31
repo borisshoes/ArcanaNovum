@@ -12,7 +12,6 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -225,7 +224,7 @@ public class EssenceEgg extends ArcanaItem {
                         player.displayClientMessage(Component.literal("The Spawner Assumes the Essence of " + EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                         SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
                         int xp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ESSENCE_EGG_CONVERT);
-                        ArcanaNovum.data(playerEntity).addXP(Math.min(0, xp * cost / Math.max(1,baseConvertCost))); // Add xp
+                        ArcanaNovum.data(playerEntity).addXP(Math.min(0, xp * cost / Math.max(1, baseConvertCost))); // Add xp
                         ArcanaAchievements.grant(player, ArcanaAchievements.SOUL_CONVERSION);
                      }
                      addUses(stack, -cost);

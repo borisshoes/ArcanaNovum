@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -33,10 +34,11 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
@@ -47,11 +49,12 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       this.multiblock = ((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
       this.assembled = false;
    }
@@ -65,32 +68,32 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public void openMainGui(ServerPlayer player, ArcaneTomeGui tomeGui){
-      StarlightForgeGui gui = new StarlightForgeGui(MenuType.HOPPER,player,this,level,0,tomeGui);
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.HOPPER, player, this, level, 0, tomeGui);
       gui.buildMenuGui();
       gui.open();
    }
    
    public void openCraftingGui(ServerPlayer player, ArcanaRecipe recipe, ArcaneTomeGui tomeGui){
-      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,1,tomeGui);
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5, player, this, level, 1, tomeGui);
       gui.buildCraftingGui(recipe);
       gui.open();
    }
    
    public void openForgeGui(ServerPlayer player, ArcaneTomeGui tomeGui){
-      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x3,player,this,level,2,tomeGui);
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x3, player, this, level, 2, tomeGui);
       gui.buildForgeGui();
       gui.open();
    }
    
    public void openRecipeGui(ServerPlayer player, ArcanaRecipe recipe, ArcaneTomeGui tomeGui){
-      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,3,tomeGui);
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5, player, this, level, 3, tomeGui);
       gui.buildRecipeGui(recipe);
       gui.open();
    }
    
    public void openSkilledGui(ServerPlayer player, ArcanaItem item, ArcanaRecipe recipe, ArcaneTomeGui tomeGui){
-      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5,player,this,level,5,tomeGui);
-      gui.buildSkilledGui(item,recipe);
+      StarlightForgeGui gui = new StarlightForgeGui(MenuType.GENERIC_9x5, player, this, level, 5, tomeGui);
+      gui.buildSkilledGui(item, recipe);
       gui.open();
    }
    
@@ -120,27 +123,27 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
             if(crafterId != null && !crafterId.isEmpty()){
                ServerPlayer player = serverWorld.getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player != null){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.NIDAVELLIR);
+                  ArcanaAchievements.grant(player, ArcanaAchievements.NIDAVELLIR);
                }
             }
          }
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
    }
    
    public BlockPos getForgeRange(){
       int vertBonus = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STARLIGHT_FORGE_STELLAR_RANGE_VERTICAL);
       int horizBonus = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STARLIGHT_FORGE_STELLAR_RANGE_HORIZONTAL);
-      return ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STELLAR_RANGE) >= 1 ? new BlockPos(8 + horizBonus, 5 + vertBonus, 8 + horizBonus) : new BlockPos(8, 5, 8);
+      return ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.STELLAR_RANGE) >= 1 ? new BlockPos(8 + horizBonus, 5 + vertBonus, 8 + horizBonus) : new BlockPos(8, 5, 8);
    }
    
    public ArcanaBlockEntity getForgeAddition(ServerLevel world, BlockEntityType<? extends BlockEntity> additionBlockEntity){
       BlockPos range = this.getForgeRange();
       for(BlockPos blockPos : BlockPos.betweenClosed(worldPosition.offset(range), worldPosition.subtract(range))){
-         BlockEntity be = additionBlockEntity.getBlockEntity(world,blockPos);
+         BlockEntity be = additionBlockEntity.getBlockEntity(world, blockPos);
          if(be instanceof ArcanaBlockEntity arcanaBlock && arcanaBlock.isAssembled()){
             return arcanaBlock;
          }
@@ -184,7 +187,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getCheckOffset()), null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -203,6 +206,10 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -217,11 +224,11 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    
    public int getPlanetCount(){
       int planetCount = 2;
-      if(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOONLIT_FORGE) >= 1){
+      if(ArcanaAugments.getAugmentFromMap(getAugments(), ArcanaAugments.MOONLIT_FORGE) >= 1){
          long timeOfDay = level.getDayTime();
-         int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
+         int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
-         int influence = Math.abs(-curPhase+4);
+         int influence = Math.abs(-curPhase + 4);
          
          if(influence == 0){
             planetCount = 3;
@@ -240,11 +247,11 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    
    public int getStarCount(){
       int starCount = 2;
-      if(ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOONLIT_FORGE) >= 1){
+      if(ArcanaAugments.getAugmentFromMap(getAugments(), ArcanaAugments.MOONLIT_FORGE) >= 1){
          long timeOfDay = level.getDayTime();
-         int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
+         int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
-         int influence = Math.abs(-curPhase+4);
+         int influence = Math.abs(-curPhase + 4);
          
          if(influence == 0){
             starCount = 0;
@@ -262,7 +269,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public long getSeed(){
-      return WorldOptions.parseSeed(uuid+this.seedUses).orElse(WorldOptions.randomSeed());
+      return WorldOptions.parseSeed(uuid + this.seedUses).orElse(WorldOptions.randomSeed());
    }
    
    public void addSeedUse(){
@@ -275,10 +282,11 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.seedUses = view.getIntOr("seedUses", 0);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -286,11 +294,12 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      view.putInt("seedUses",this.seedUses);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      view.putInt("seedUses", this.seedUses);
    }
 }

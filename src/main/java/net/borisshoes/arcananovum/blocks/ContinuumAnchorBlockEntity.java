@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.ExoticMatter;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -43,10 +44,11 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, WorldlyContainer, ContainerListener {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private int fuel;
    private boolean active;
@@ -57,11 +59,12 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       this.inventory.addListener(this);
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
       this.fuel = 0;
       this.active = false;
@@ -81,6 +84,10 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
    
    public int getOrigin(){
       return origin;
+   }
+   
+   public ArcanaSkin getSkin(){
+      return skin;
    }
    
    public String getCustomArcanaName(){
@@ -146,7 +153,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
          }
          
          if(active && serverWorld.getServer().getTickCount() % 20 == 0){
-            int lvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.TEMPORAL_RELATIVITY);
+            int lvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.TEMPORAL_RELATIVITY);
             double efficiency = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.CONTINUUM_ANCHOR_EFFICIENCY_PER_LVL).get(lvl);
             if(Math.random() >= efficiency){
                fuel = Math.max(0, fuel - 1);
@@ -160,29 +167,30 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
             if(crafterId != null && !crafterId.isEmpty()){
                UUID parsedId = AlgoUtils.getUUID(crafterId);
                ArcanaPlayerData profile = ArcanaNovum.data(parsedId);
-               ArcanaAchievements.progress(parsedId,ArcanaAchievements.TIMEY_WIMEY, 1);
-               if(serverWorld.getServer().getTickCount() % 1200 == 0) profile.addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CONTINUUM_ANCHOR_PER_MINUTE));
+               ArcanaAchievements.progress(parsedId, ArcanaAchievements.TIMEY_WIMEY, 1);
+               if(serverWorld.getServer().getTickCount() % 1200 == 0)
+                  profile.addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CONTINUUM_ANCHOR_PER_MINUTE));
             }
          }
-         int fuelMarks = (int)Math.min(Math.ceil(4.0*fuel/600000.0),4);
-         BlockState blockState = level.getBlockState(worldPosition).setValue(ContinuumAnchor.ContinuumAnchorBlock.ACTIVE,active).setValue(ContinuumAnchor.ContinuumAnchorBlock.CHARGES,fuelMarks);
+         int fuelMarks = (int) Math.min(Math.ceil(4.0 * fuel / 600000.0), 4);
+         BlockState blockState = level.getBlockState(worldPosition).setValue(ContinuumAnchor.ContinuumAnchorBlock.ACTIVE, active).setValue(ContinuumAnchor.ContinuumAnchorBlock.CHARGES, fuelMarks);
          level.setBlock(worldPosition, blockState, Block.UPDATE_ALL);
          
          if(prevActive && !active){ // Power Down
             ArcanaNovum.removeActiveAnchor(serverWorld, worldPosition);
-            SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS,1,1.5f);
+            SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, 1, 1.5f);
          }else if(!prevActive && active){ // Power Up
             ArcanaNovum.addActiveAnchor(serverWorld, worldPosition);
-            SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS,1,0.7f);
-            ContinuumAnchor.loadChunks(serverWorld,new ChunkPos(worldPosition));
+            SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1, 0.7f);
+            ContinuumAnchor.loadChunks(serverWorld, new ChunkPos(worldPosition));
          }
          
          this.setChanged();
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.active){
-         ContinuumAnchor.loadChunks(serverWorld,new ChunkPos(worldPosition));
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ContinuumAnchor.loadChunks(serverWorld, new ChunkPos(worldPosition));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
    }
    
@@ -200,16 +208,17 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.fuel = view.getIntOr("fuel", 0);
       this.active = view.getBooleanOr("active", false);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
       this.inventory = new SimpleContainer(getContainerSize());
       this.inventory.addListener(this);
-      if (!this.tryLoadLootTable(view)) {
+      if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
    }
@@ -217,14 +226,15 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      view.putInt("fuel",this.fuel);
-      view.putBoolean("active",this.active);
-      if (!this.trySaveLootTable(view)) {
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      view.putInt("fuel", this.fuel);
+      view.putBoolean("active", this.active);
+      if(!this.trySaveLootTable(view)){
          ContainerHelper.saveAllItems(view, this.inventory.getItems());
       }
    }
@@ -246,7 +256,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
    @Override
    protected void setItems(NonNullList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
-         this.inventory.setItem(i,list.get(i));
+         this.inventory.setItem(i, list.get(i));
       }
    }
    

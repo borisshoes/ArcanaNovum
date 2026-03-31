@@ -7,6 +7,8 @@ import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
@@ -19,14 +21,32 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ArcanaUtils {
    
+   public static Set<Block> getSimilarBlocks(Block baseBlock){
+      Set<Block> allowedBlocks = new HashSet<>();
+      allowedBlocks.add(baseBlock);
+      Identifier baseId = BuiltInRegistries.BLOCK.getKey(baseBlock);
+      for(Identifier similarId : BuiltInRegistries.BLOCK.keySet()){
+         if(similarId.getPath().equals(baseId.getPath()))
+            allowedBlocks.add(BuiltInRegistries.BLOCK.getValue(similarId));
+      }
+      return allowedBlocks;
+   }
+   
    public static float getArrowPercentage(AbstractArrow arrow){ // 0.5 is usually smallest natural value and 2.5-3 is usually largest natural value
-      return ((float)Mth.clamp(arrow.getDeltaMovement().length(),0.5,10) - 0.5f) / 2.5f;
+      return getArrowPercentage(arrow, 0f);
+   }
+   
+   public static float getArrowPercentage(AbstractArrow arrow, float minPercent){ // 0.5 is usually smallest natural value and 2.5-3 is usually largest natural value
+      return Math.max(minPercent, ((float) Mth.clamp(arrow.getDeltaMovement().length(), 0.5, 10) - 0.5f) / 2.5f);
    }
    
    public static void blockWithShield(LivingEntity entity, float damage){

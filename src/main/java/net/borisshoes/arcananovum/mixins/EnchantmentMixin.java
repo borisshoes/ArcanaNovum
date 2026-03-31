@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Enchantment.class)
 public class EnchantmentMixin {
    
-   @Inject(method= "canEnchant",at=@At("HEAD"), cancellable = true)
+   @Inject(method = "canEnchant", at = @At("HEAD"), cancellable = true)
    private void arcananovum$makeUnenchantable1(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       Enchantment enchant = (Enchantment) (Object) this;
       boolean isFateAnchor = enchant.description().toString().contains(Util.makeDescriptionId("enchantment", ArcanaRegistry.FATE_ANCHOR.identifier()));
@@ -35,7 +35,7 @@ public class EnchantmentMixin {
       }
    }
    
-   @Inject(method= "isSupportedItem",at=@At("HEAD"), cancellable = true)
+   @Inject(method = "isSupportedItem", at = @At("HEAD"), cancellable = true)
    private void arcananovum$makeUnenchantable2(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       Enchantment enchant = (Enchantment) (Object) this;
       boolean isFateAnchor = enchant.description().toString().contains(Util.makeDescriptionId("enchantment", ArcanaRegistry.FATE_ANCHOR.identifier()));
@@ -46,7 +46,7 @@ public class EnchantmentMixin {
       }
    }
    
-   @Inject(method= "runLocationChangedEffects", at= @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/effects/EnchantmentLocationBasedEffect;onChangedBlock(Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/enchantment/EnchantedItemInUse;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Z)V"))
+   @Inject(method = "runLocationChangedEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/effects/EnchantmentLocationBasedEffect;onChangedBlock(Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/enchantment/EnchantedItemInUse;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Z)V"))
    private void arcananovum$applyLocationEffects(ServerLevel world, int level, EnchantedItemInUse context, LivingEntity user, CallbackInfo ci){
       if(user instanceof ServerPlayer player){
          Enchantment enchant = (Enchantment) (Object) this;
@@ -56,7 +56,7 @@ public class EnchantmentMixin {
       }
    }
    
-   @Inject(method= "modifyDamageProtection", at= @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableFloat;setValue(F)V"))
+   @Inject(method = "modifyDamageProtection", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableFloat;setValue(F)V"))
    private void arcananovum$modifyDamageProtection(ServerLevel world, int level, ItemStack stack, Entity user, DamageSource damageSource, MutableFloat damageProtection, CallbackInfo ci){
       if(user instanceof ServerPlayer player){
          Enchantment enchant = (Enchantment) (Object) this;

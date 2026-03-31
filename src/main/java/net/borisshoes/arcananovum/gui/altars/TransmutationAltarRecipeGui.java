@@ -12,7 +12,6 @@ import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.gui.*;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -43,7 +42,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
       super(MenuType.GENERIC_9x6, player);
       this.blockEntity = altarOpt.orElse(null);
       this.returnGui = returnGui;
-      this.costMode = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN);
+      this.costMode = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       setTitle(Component.literal("Transmutation Altar"));
       
       action1TextColor(ChatFormatting.LIGHT_PURPLE.getColor().intValue());
@@ -52,15 +51,15 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
       primaryTextColor(ChatFormatting.AQUA.getColor().intValue());
       secondaryTextColor(ChatFormatting.DARK_PURPLE.getColor().intValue());
       
-      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,0x9af7ff)).hideTooltip());
+      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, 0x9af7ff)).hideTooltip());
       
       addMode(TransmutationAltar.getUnlockedRecipes(player),
             (recipe, index) -> {
                GuiElementBuilder viewItem = GuiElementBuilder.from(recipe.getViewStack()).hideDefaultTooltip();
                viewItem.setName(recipe.getName().withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
                
-               ItemStack reagent1 = recipe.getComputedReagent1(recipe.getExampleReagent1(),this.costMode);
-               ItemStack reagent2 = recipe.getComputedReagent2(recipe.getExampleReagent2(),this.costMode);
+               ItemStack reagent1 = recipe.getComputedReagent1(recipe.getExampleReagent1(), this.costMode);
+               ItemStack reagent2 = recipe.getComputedReagent2(recipe.getExampleReagent2(), this.costMode);
                int reagent1Count = reagent1.getCount();
                int reagent2Count = reagent2.getCount();
                
@@ -69,11 +68,11 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent1Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent2Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -84,37 +83,37 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Input: ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(infusion.getInputCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(infusion.getInputCount() + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(infusion.getInputName().withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Output: ").withStyle(ChatFormatting.DARK_GRAY))
-                        .append(Component.literal(infusion.getOutputCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(infusion.getOutputCount() + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(infusion.getOutput().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent1Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent2Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof PermutationTransmutationRecipe permutation){
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Permutation Transmutation").withStyle(ChatFormatting.DARK_AQUA)));
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Input: ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(permutation.getInput().getCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(permutation.getInput().getCount() + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(permutation.getInput().getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Output: ").withStyle(ChatFormatting.DARK_GRAY))
                         .append(permutation.getOutputDescription()).withStyle(ChatFormatting.AQUA))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent1Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent2Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof AequalisUnattuneTransmutationRecipe){
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Aequalis Transmutation").withStyle(ChatFormatting.AQUA)));
@@ -127,11 +126,11 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                         .append(Component.literal("An Unattuned Aequalis Scientia").withStyle(ChatFormatting.DARK_PURPLE)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent1Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent2Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof AequalisSkillTransmutationRecipe){
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Aequalis Transmutation").withStyle(ChatFormatting.AQUA)));
@@ -147,11 +146,11 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                         .append(Component.literal("Your Aequalis Scientia").withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent1Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent2Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof AequalisCatalystTransmutationRecipe){
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Aequalis Transmutation").withStyle(ChatFormatting.AQUA)));
@@ -168,11 +167,11 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                         .append(Component.literal("Your Aequalis Scientia").withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent1Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent2Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }else if(recipe instanceof TransmogrificationTransmutationRecipe){
                   viewItem.addLoreLine(TextUtils.removeItalics(Component.literal("Item Transmogrification").withStyle(ChatFormatting.AQUA)));
@@ -185,21 +184,22 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                         .append(Component.literal("A Transmogrification Catalyst").withStyle(ChatFormatting.YELLOW)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent1Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent1Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                         .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-                        .append(Component.literal(reagent2Count+" ").withStyle(ChatFormatting.DARK_AQUA))
+                        .append(Component.literal(reagent2Count + " ").withStyle(ChatFormatting.DARK_AQUA))
                         .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
                }
                return viewItem;
             },
             (recipe, index, clickType) -> {
                if(selectionModeStack != null && ArcanaItemUtils.identifyItem(selectionModeStack) instanceof AequalisScientia aq){
-                  if(recipe.getId().equals("aequalis_reconfiguration")) ArcanaAchievements.grant(player,ArcanaAchievements.FRACTAL_ATTUNEMENT);
-                  ArcanaItem.putProperty(selectionModeStack, AequalisScientia.TRANSMUTATION_TAG,recipe.getId());
-                  aq.buildItemLore(selectionModeStack,player.level().getServer());
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ALLAY_AMBIENT_WITH_ITEM,1,0.8f);
+                  if(recipe.getId().equals("aequalis_reconfiguration"))
+                     ArcanaAchievements.grant(player, ArcanaAchievements.FRACTAL_ATTUNEMENT);
+                  ArcanaItem.putProperty(selectionModeStack, AequalisScientia.TRANSMUTATION_TAG, recipe.getId());
+                  aq.buildItemLore(selectionModeStack, player.level().getServer());
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ALLAY_AMBIENT_WITH_ITEM, 1, 0.8f);
                   close();
                   return;
                }
@@ -222,7 +222,8 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                      .append(Component.literal("Focus").withStyle(ChatFormatting.DARK_GRAY)))));
                return viewItem;
             },
-            (item, index, clickType) -> {},
+            (item, index, clickType) -> {
+            },
             ItemSort.ALPHABETICAL, null
       );
       
@@ -258,10 +259,10 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
          costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Normal").withStyle(ChatFormatting.GREEN)))));
       }else{
-         costItem = GuiElementBuilder.from(new ItemStack(Items.AMETHYST_SHARD,this.costMode)).hideDefaultTooltip();
+         costItem = GuiElementBuilder.from(new ItemStack(Items.AMETHYST_SHARD, this.costMode)).hideDefaultTooltip();
          costItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.translatable(ArcanaAugments.HASTY_BARGAIN.getTranslationKey()).withStyle(ChatFormatting.LIGHT_PURPLE))
-               .append(Component.literal(" "+ TextUtils.intToRoman(this.costMode)).withStyle(ChatFormatting.LIGHT_PURPLE)))));
+               .append(Component.literal(" " + TextUtils.intToRoman(this.costMode)).withStyle(ChatFormatting.LIGHT_PURPLE)))));
       }
       costItem.setName(Component.literal("Cost Calculation Mode").withStyle(ChatFormatting.DARK_AQUA));
       costItem.addLoreLine(Component.literal(""));
@@ -271,35 +272,35 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
       costItem.setCallback((clickType) -> {
          int bargainTiers = ArcanaAugments.HASTY_BARGAIN.getTiers().length;
          this.costMode += clickType.isRight ? 0 : 2;
-         if(this.costMode >= (bargainTiers+2)) this.costMode = 0;
-         if(this.costMode < 0) this.costMode = (bargainTiers+1);
+         if(this.costMode >= (bargainTiers + 2)) this.costMode = 0;
+         if(this.costMode < 0) this.costMode = (bargainTiers + 1);
          this.costMode--;
          buildPage();
       });
-      setSlot(4,costItem);
+      setSlot(4, costItem);
       
       if(getCurrentModeInd() == 0){
          setTitle(Component.literal("Transmutation Recipes"));
       }else if(getCurrentModeInd() == 1){
          
-         ItemStack reagent1 = this.curRecipe.getComputedReagent1(this.curRecipe.getExampleReagent1(),this.costMode);
-         ItemStack reagent2 = this.curRecipe.getComputedReagent2(this.curRecipe.getExampleReagent2(),this.costMode);
+         ItemStack reagent1 = this.curRecipe.getComputedReagent1(this.curRecipe.getExampleReagent1(), this.costMode);
+         ItemStack reagent2 = this.curRecipe.getComputedReagent2(this.curRecipe.getExampleReagent2(), this.costMode);
          
          GuiElementBuilder reagent1Item = GuiElementBuilder.from(reagent1).hideDefaultTooltip();
          reagent1Item.setName((Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN)));
          reagent1Item.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-               .append(Component.literal(reagent1.getCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+               .append(Component.literal(reagent1.getCount() + " ").withStyle(ChatFormatting.DARK_AQUA))
                .append(Component.translatable(reagent1.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
-         setSlot(48,reagent1Item);
+         setSlot(48, reagent1Item);
          
          GuiElementBuilder reagent2Item = GuiElementBuilder.from(reagent2).hideDefaultTooltip();
          reagent2Item.setName((Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN)));
          reagent2Item.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Reagent: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-               .append(Component.literal(reagent2.getCount()+" ").withStyle(ChatFormatting.DARK_AQUA))
+               .append(Component.literal(reagent2.getCount() + " ").withStyle(ChatFormatting.DARK_AQUA))
                .append(Component.translatable(reagent2.getItem().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
-         setSlot(50,reagent2Item);
+         setSlot(50, reagent2Item);
          
          GuiElementBuilder recipeItem = new GuiElementBuilder(GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK)).hideDefaultTooltip();
          recipeItem.setName((Component.literal("")
@@ -312,7 +313,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
             getMode(1).setPageNum(1);
             switchMode(0);
          });
-         setSlot(49,recipeItem);
+         setSlot(49, recipeItem);
          
          setTitle(curRecipe.getName().append(Component.literal(" Transmutation")));
       }

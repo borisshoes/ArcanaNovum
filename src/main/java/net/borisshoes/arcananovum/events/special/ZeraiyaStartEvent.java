@@ -26,10 +26,10 @@ public class ZeraiyaStartEvent extends Event {
    @Override
    public void onExpiry(){
       Component.literal("")
-            .append(Component.literal("The presence fades and ").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC))
-            .append(Component.literal("Enderia's Egg").withStyle(ChatFormatting.DARK_PURPLE,ChatFormatting.ITALIC))
-            .append(Component.literal(" stirs...").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
-      SoundUtils.playSongToPlayer(player, SoundEvents.ENDER_DRAGON_GROWL,0.05f,1.4f);
+            .append(Component.literal("The presence fades and ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
+            .append(Component.literal("Enderia's Egg").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC))
+            .append(Component.literal(" stirs...").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+      SoundUtils.playSongToPlayer(player, SoundEvents.ENDER_DRAGON_GROWL, 0.05f, 1.4f);
    }
    
    public void refresh(){

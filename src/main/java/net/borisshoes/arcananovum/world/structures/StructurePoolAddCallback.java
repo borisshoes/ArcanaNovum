@@ -24,7 +24,7 @@ public interface StructurePoolAddCallback {
     */
    Event<StructurePoolAddCallback> EVENT = EventFactory.createArrayBacked(StructurePoolAddCallback.class,
          listeners -> initialPool -> {
-            for (StructurePoolAddCallback listener : listeners){
+            for(StructurePoolAddCallback listener : listeners){
                listener.onAdd(initialPool);
             }
          }

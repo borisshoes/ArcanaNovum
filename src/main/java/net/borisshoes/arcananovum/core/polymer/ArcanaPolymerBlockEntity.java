@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -34,6 +35,7 @@ import java.util.UUID;
 
 public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implements PolymerBlock {
    protected final ArcanaItem arcanaItem;
+   
    protected ArcanaPolymerBlockEntity(ArcanaItem arcanaItem, Properties settings){
       super(settings.setId(ResourceKey.create(Registries.BLOCK, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
@@ -42,10 +44,11 @@ public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implement
    public static void initializeArcanaBlock(ItemStack stack, ArcanaBlockEntity arcanaBlock){
       ArcanaItem arcanaItem = arcanaBlock.getArcanaItem();
       
-      TreeMap<ArcanaAugment,Integer> augments = ArcanaAugments.getAugmentsOnItem(stack);
+      TreeMap<ArcanaAugment, Integer> augments = ArcanaAugments.getAugmentsOnItem(stack);
       String crafterId = arcanaItem.getCrafter(stack);
       String uuid = ArcanaItem.getUUID(stack);
       int origin = arcanaItem.getOrigin(stack);
+      ArcanaSkin skin = ArcanaItem.getSkin(stack);
       String customName = null;
       if(stack.has(DataComponents.CUSTOM_NAME)){
          customName = stack.get(DataComponents.CUSTOM_NAME).getString();
@@ -54,7 +57,7 @@ public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implement
       if(uuid == null || uuid.isEmpty()){
          uuid = UUID.randomUUID().toString();
       }
-      arcanaBlock.initialize(augments,crafterId,uuid,origin,customName);
+      arcanaBlock.initialize(augments, crafterId, uuid, origin, skin, customName);
    }
    
    @Override

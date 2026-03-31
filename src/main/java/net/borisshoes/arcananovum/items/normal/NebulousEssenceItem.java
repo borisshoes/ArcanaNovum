@@ -33,13 +33,13 @@ public class NebulousEssenceItem extends NormalPolymerItem {
    @Override
    public ItemStack getDefaultInstance(){
       ItemStack defStack = super.getDefaultInstance();
-      defStack.set(DataComponents.ITEM_NAME, Component.translatable("item."+MOD_ID+".nebulous_essence").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
+      defStack.set(DataComponents.ITEM_NAME, Component.translatable("item." + MOD_ID + ".nebulous_essence").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
       return defStack;
    }
    
    @Override
-   public Component getName(ItemStack stack) {
-      return Component.translatable("item."+MOD_ID+".nebulous_essence").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD);
+   public Component getName(ItemStack stack){
+      return Component.translatable("item." + MOD_ID + ".nebulous_essence").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD);
    }
    
    public static ItemLore getDefaultLore(){

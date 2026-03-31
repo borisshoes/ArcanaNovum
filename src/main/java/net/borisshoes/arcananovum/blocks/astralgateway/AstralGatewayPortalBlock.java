@@ -31,7 +31,7 @@ public class AstralGatewayPortalBlock extends BaseEntityBlock implements Polymer
       return null;
    }
    
-
+   
    @Override
    public BlockState getPolymerBlockState(BlockState blockState, PacketContext packetContext){
       return Blocks.END_GATEWAY.defaultBlockState();
@@ -50,7 +50,7 @@ public class AstralGatewayPortalBlock extends BaseEntityBlock implements Polymer
       main.putInt("y", pos.getY());
       main.putInt("z", pos.getZ());
       main.putLong("Age", Long.MIN_VALUE);
-      contexts.getPlayer().connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(),BlockEntityType.END_GATEWAY,main));
+      contexts.getPlayer().connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityType.END_GATEWAY, main));
    }
    
    @Nullable

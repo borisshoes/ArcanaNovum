@@ -54,8 +54,8 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
-public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Interaction{
-	public static final String ID = "wild_growth_charm";
+public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Interaction {
+   public static final String ID = "wild_growth_charm";
    
    public static final String HARVEST_TAG = "harvest";
    
@@ -67,14 +67,14 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
       itemVersion = 0;
       vanillaItem = Items.DARK_OAK_SAPLING;
       item = new WildGrowthCharmItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_BREED_AN_ANIMAL,ResearchTasks.ADVANCEMENT_PLANT_ANY_SNIFFER_SEED,ResearchTasks.ADVANCEMENT_PLANT_SEED,ResearchTasks.ADVANCEMENT_OBTAIN_NETHERITE_HOE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.ADVANCEMENT_BREED_AN_ANIMAL, ResearchTasks.ADVANCEMENT_PLANT_ANY_SNIFFER_SEED, ResearchTasks.ADVANCEMENT_PLANT_SEED, ResearchTasks.ADVANCEMENT_OBTAIN_NETHERITE_HOE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,ACTIVE_TAG,false);
-      putProperty(stack,HARVEST_TAG,false);
+      putProperty(stack, ACTIVE_TAG, false);
+      putProperty(stack, HARVEST_TAG, false);
       setPrefStack(stack);
    }
    
@@ -106,47 +106,47 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
             .append(Component.literal("its ").withStyle(ChatFormatting.DARK_GREEN))
             .append(Component.literal("effect").withStyle(ChatFormatting.GREEN))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("      Charm of\n     Wild Growth").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nLiving things constantly grow and change with time. It should be possible to accelerate this process in all organisms as long as adequate nutrients are supplied with a \n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("      Charm of\n     Wild Growth").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nLiving things constantly grow and change with time. It should be possible to accelerate this process in all organisms as long as adequate nutrients are supplied with a \n").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("      Charm of\n     Wild Growth").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), Component.literal("\nfew temporal tricks.\n\nThe Charm causes nearby animals and plants to grow faster.\nThe Charm also causes animals to breed periodically.\n\nSneak Using toggles the Charm’s effect.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    @Override
    public Vec3 getBaseRange(){
-      return new Vec3(12,6,12);
+      return new Vec3(12, 6, 12);
    }
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
       AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
       Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
-      int fertLvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION);
+      int fertLvl = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.FERTILIZATION);
       int tickTime = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.WILD_GROWTH_CHARM_FERTILIZER_INTERVALS).get(fertLvl);
       
       if(world.getServer().getTickCount() % tickTime == 0){
-         passiveTick(stack,world,stele.getBlockPos(),box,null,stele);
+         passiveTick(stack, world, stele.getBlockPos(), box, null, stele);
       }
       
       if(world.random.nextFloat() < 0.15){
-         world.sendParticles(ParticleTypes.HAPPY_VILLAGER,stackPos.x(),stackPos.y(),stackPos.z(),5,0.25,0.25,0.25,1);
+         world.sendParticles(ParticleTypes.HAPPY_VILLAGER, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, 1);
       }
    }
    
    private void passiveTick(ItemStack stack, ServerLevel world, BlockPos pos, AABB range, @Nullable ServerPlayer player, @Nullable GeomanticSteleBlockEntity stele){
       try{
-         boolean harvest = getBooleanProperty(stack,HARVEST_TAG);
-         boolean bloom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CHARM_OF_BLOOMING) >= 1;
-         int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING);
+         boolean harvest = getBooleanProperty(stack, HARVEST_TAG);
+         boolean bloom = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.CHARM_OF_BLOOMING) >= 1;
+         int reaping = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.REAPING);
          int limit = ArcanaNovum.CONFIG.getInt(ArcanaConfig.WILD_GROWTH_CHARM_BLOCKS_PER_TICK);
          
          int count = 0;
-         for(BlockPos blockPos : BlockPos.randomBetweenClosed(world.getRandom(),450, (int) range.minX, (int) range.minY, (int) range.minZ, (int) range.maxX, (int) range.maxY, (int) range.maxZ)){
+         for(BlockPos blockPos : BlockPos.randomBetweenClosed(world.getRandom(), 450, (int) range.minX, (int) range.minY, (int) range.minZ, (int) range.maxX, (int) range.maxY, (int) range.maxZ)){
             BlockState state = world.getBlockState(blockPos);
             Block block = state.getBlock();
             if(count >= limit) break;
@@ -160,67 +160,67 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
                   block instanceof CactusBlock ||
                   block instanceof ChorusFlowerBlock ||
                   block instanceof StemBlock){
-               state.randomTick(world,blockPos,world.getRandom());
+               state.randomTick(world, blockPos, world.getRandom());
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
-               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 5, 0.5, 0.5, 0.5, 1);
                boolean grown = state.getBlock() instanceof NetherWartBlock && state.getValue(NetherWartBlock.AGE) >= 3;
                state = world.getBlockState(blockPos);
                if(!grown && state.getBlock() instanceof NetherWartBlock && state.getValue(NetherWartBlock.AGE) >= 3){
-                  if(player != null) ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST,1);
+                  if(player != null) ArcanaAchievements.progress(player, ArcanaAchievements.BOUNTIFUL_HARVEST, 1);
                   int xp = reaping >= 2 && harvest ? ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_MATURE_CROP);
                   if(player != null) ArcanaNovum.data(player).addXP(xp); // Add xp
                   if(stele != null) stele.giveXP(xp);
                }
             }else if(block instanceof WeatheringCopper){
-               state.randomTick(world,blockPos,world.getRandom());
-               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+               state.randomTick(world, blockPos, world.getRandom());
+               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 5, 0.5, 0.5, 0.5, 1);
             }else if(block instanceof BuddingAmethystBlock){
                for(int i = 0; i < 10; i++){
-                  state.randomTick(world,blockPos,world.getRandom());
+                  state.randomTick(world, blockPos, world.getRandom());
                }
-               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 5, 0.5, 0.5, 0.5, 1);
             }else if((block instanceof GrowingPlantHeadBlock ||
                   block instanceof CropBlock ||
                   block instanceof CocoaBlock ||
                   block instanceof StemBlock ||
-                  block instanceof SweetBerryBushBlock) && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+                  block instanceof SweetBerryBushBlock) && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL, 64), world, blockPos)){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
-               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 5, 0.5, 0.5, 0.5, 1);
                state = world.getBlockState(blockPos);
                if((state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state))){
-                  if(player != null) ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST,1);
+                  if(player != null) ArcanaAchievements.progress(player, ArcanaAchievements.BOUNTIFUL_HARVEST, 1);
                   int xp = reaping >= 2 && harvest ? ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_MATURE_CROP);
                   if(player != null) ArcanaNovum.data(player).addXP(xp); // Add xp
                   if(stele != null) stele.giveXP(xp);
                }
-            }else if(bloom && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+            }else if(bloom && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL, 64), world, blockPos)){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
-               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,2,0.5,0.5,0.5,1);
-            }else if(bloom && BoneMealItem.growWaterPlant(new ItemStack(Items.BONE_MEAL,64), world, blockPos, Direction.getRandom(player.getRandom()))){
+               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 2, 0.5, 0.5, 0.5, 1);
+            }else if(bloom && BoneMealItem.growWaterPlant(new ItemStack(Items.BONE_MEAL, 64), world, blockPos, Direction.getRandom(player.getRandom()))){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
-               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,2,0.5,0.5,0.5,1);
+               world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 2, 0.5, 0.5, 0.5, 1);
             }else{
                count--;
             }
             
             if(reaping >= 1 && harvest){
                if(block instanceof CropBlock crop && crop.isMaxAge(world.getBlockState(blockPos))){
-                  world.destroyBlock(blockPos,true,player);
-                  if(reaping >= 2 && crop.canSurvive(world.getBlockState(blockPos.below()),world,blockPos)){
-                     world.setBlockAndUpdate(blockPos,block.defaultBlockState());
+                  world.destroyBlock(blockPos, true, player);
+                  if(reaping >= 2 && crop.canSurvive(world.getBlockState(blockPos.below()), world, blockPos)){
+                     world.setBlockAndUpdate(blockPos, block.defaultBlockState());
                   }
-                  world.sendParticles(ParticleTypes.POOF, blockCenter.x,blockCenter.y,blockCenter.z,3,0.5,0.5,0.5,0.05);
+                  world.sendParticles(ParticleTypes.POOF, blockCenter.x, blockCenter.y, blockCenter.z, 3, 0.5, 0.5, 0.5, 0.05);
                }else if(block instanceof NetherWartBlock wart && world.getBlockState(blockPos).getValue(NetherWartBlock.AGE) == 3){
-                  world.destroyBlock(blockPos,true,player);
-                  if(reaping >= 2 && wart.canSurvive(world.getBlockState(blockPos.below()),world,blockPos)){
-                     world.setBlockAndUpdate(blockPos,block.defaultBlockState());
+                  world.destroyBlock(blockPos, true, player);
+                  if(reaping >= 2 && wart.canSurvive(world.getBlockState(blockPos.below()), world, blockPos)){
+                     world.setBlockAndUpdate(blockPos, block.defaultBlockState());
                   }
-                  world.sendParticles(ParticleTypes.POOF, blockCenter.x,blockCenter.y,blockCenter.z,3,0.5,0.5,0.5,0.05);
+                  world.sendParticles(ParticleTypes.POOF, blockCenter.x, blockCenter.y, blockCenter.z, 3, 0.5, 0.5, 0.5, 0.05);
                }
             }
          }
          
-         List<Entity> animals = world.getEntities(player,range, e -> e instanceof Animal || e instanceof Tadpole);
+         List<Entity> animals = world.getEntities(player, range, e -> e instanceof Animal || e instanceof Tadpole);
          Collections.shuffle(animals);
          for(Entity a : animals){
             
@@ -232,18 +232,18 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
                }
                if(animal.isBaby()){
                   animal.ageUp(Animal.getSpeedUpSecondsWhenFeeding(-i), true);
-                  world.sendParticles(ParticleTypes.COMPOSTER,animal.getX(),animal.getY()+animal.getBbHeight()*0.5,animal.getZ(),3,0.2,0.2,0.2,1);
+                  world.sendParticles(ParticleTypes.COMPOSTER, animal.getX(), animal.getY() + animal.getBbHeight() * 0.5, animal.getZ(), 3, 0.2, 0.2, 0.2, 1);
                   break;
                }
             }else if(a instanceof Tadpole tadpole){
                tadpole.ageUp(AgeableMob.getSpeedUpSecondsWhenFeeding(tadpole.getTicksLeftUntilAdult()));
-               world.sendParticles(ParticleTypes.COMPOSTER,tadpole.getX(),tadpole.getY()+tadpole.getBbHeight()*0.5,tadpole.getZ(),3,0.2,0.2,0.2,1);
+               world.sendParticles(ParticleTypes.COMPOSTER, tadpole.getX(), tadpole.getY() + tadpole.getBbHeight() * 0.5, tadpole.getZ(), 3, 0.2, 0.2, 0.2, 1);
                break;
             }
          }
          
          if(player != null && animals.stream().filter(e -> (e instanceof Animal animal && animal.isBaby())).count() >= 5){
-            ArcanaAchievements.grant(player,ArcanaAchievements.THEY_GROW_UP_SO_FAST);
+            ArcanaAchievements.grant(player, ArcanaAchievements.THEY_GROW_UP_SO_FAST);
          }
          
          if(count >= 2){
@@ -266,7 +266,7 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
-         boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
+         boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          
          List<String> stringList = new ArrayList<>();
          if(active){
@@ -274,7 +274,7 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
          }else{
             stringList.add("off");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -288,14 +288,14 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerLevel serverWorld && entity instanceof ServerPlayer player)) return;
          
-         boolean active = getBooleanProperty(stack,ACTIVE_TAG);
-         int fertLvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION);
+         boolean active = getBooleanProperty(stack, ACTIVE_TAG);
+         int fertLvl = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.FERTILIZATION);
          int tickTime = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.WILD_GROWTH_CHARM_FERTILIZER_INTERVALS).get(fertLvl);
          double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.WILD_GROWTH_CHARM_RANGE);
          
          if(active && !world.isClientSide() && world.getServer().getTickCount() % tickTime == 0){
             AABB range = player.getBoundingBox().inflate(baseRange);
-            passiveTick(stack,world,player.blockPosition(),range,player,null);
+            passiveTick(stack, world, player.blockPosition(), range, player, null);
          }
       }
       
@@ -303,30 +303,30 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
-         boolean active = getBooleanProperty(stack,ACTIVE_TAG);
-         boolean harvest = getBooleanProperty(stack,HARVEST_TAG);
-         int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING);
+         boolean active = getBooleanProperty(stack, ACTIVE_TAG);
+         boolean harvest = getBooleanProperty(stack, HARVEST_TAG);
+         int reaping = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.REAPING);
          
          if(playerEntity.isShiftKeyDown()){
             if(reaping > 0 && hand == InteractionHand.OFF_HAND){
                harvest = !harvest;
-               putProperty(stack,HARVEST_TAG,harvest);
+               putProperty(stack, HARVEST_TAG, harvest);
                if(harvest){
-                  player.displayClientMessage(Component.literal("The Charm Begins to Reap").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f,.7f);
+                  player.displayClientMessage(Component.literal("The Charm Begins to Reap").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f, .7f);
                }else{
-                  player.displayClientMessage(Component.literal("The Charm Ceases Reaping").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f,.5f);
+                  player.displayClientMessage(Component.literal("The Charm Ceases Reaping").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f, .5f);
                }
             }else{
                active = !active;
-               putProperty(stack,ACTIVE_TAG,active);
+               putProperty(stack, ACTIVE_TAG, active);
                if(active){
-                  player.displayClientMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f,.7f);
+                  player.displayClientMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f, .7f);
                }else{
-                  player.displayClientMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f,.5f);
+                  player.displayClientMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f, .5f);
                }
             }
             return InteractionResult.SUCCESS_SERVER;
@@ -343,25 +343,25 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
          ItemStack stack = context.getItemInHand();
          
          if(playerEntity != null && playerEntity.isShiftKeyDown() && playerEntity instanceof ServerPlayer player){
-            boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+            boolean active = getBooleanProperty(stack, ACTIVE_TAG);
             
             active = !active;
-            putProperty(stack,ACTIVE_TAG,active);
+            putProperty(stack, ACTIVE_TAG, active);
             if(active){
-               playerEntity.displayClientMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f,.7f);
+               playerEntity.displayClientMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f, .7f);
             }else{
-               playerEntity.displayClientMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f,.5f);
+               playerEntity.displayClientMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f, .5f);
             }
             return InteractionResult.SUCCESS_SERVER;
          }
          
-         if(ArcanaAugments.getAugmentOnItem(context.getItemInHand(),ArcanaAugments.CHARM_OF_BLOOMING) < 1){
+         if(ArcanaAugments.getAugmentOnItem(context.getItemInHand(), ArcanaAugments.CHARM_OF_BLOOMING) < 1){
             return InteractionResult.PASS;
          }
          
-         if(BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+         if(BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL, 64), world, blockPos)){
             if(!world.isClientSide()){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
             }
@@ -369,7 +369,7 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
          }
          BlockState blockState = world.getBlockState(blockPos);
          boolean bl = blockState.isFaceSturdy(world, blockPos, context.getClickedFace());
-         if(bl && BoneMealItem.growWaterPlant(new ItemStack(Items.BONE_MEAL,64), world, blockPos2, context.getClickedFace())){
+         if(bl && BoneMealItem.growWaterPlant(new ItemStack(Items.BONE_MEAL, 64), world, blockPos2, context.getClickedFace())){
             if(!world.isClientSide()){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos2, 15);
             }

@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.twilightanvil.RenameGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -40,10 +41,11 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
@@ -54,11 +56,12 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       this.multiblock = ((MultiblockCore) ArcanaRegistry.TWILIGHT_ANVIL).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
    }
    
@@ -79,24 +82,24 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
    }
    
    public void openGui(int screen, ServerPlayer player, String data){  // 0 - Menu (hopper), 1 - Anvil (9x3), 2 - Augmenting (9x4), 3 - Rename (anvil), 4 - Item View (9x6)
       SimpleGui gui = null;
       if(screen == 0){
-         gui = new TwilightAnvilGui(MenuType.HOPPER,player,this,screen);
-         ((TwilightAnvilGui)gui).buildMenuGui();
+         gui = new TwilightAnvilGui(MenuType.HOPPER, player, this, screen);
+         ((TwilightAnvilGui) gui).buildMenuGui();
       }else if(screen == 1){
-         gui = new TwilightAnvilGui(MenuType.GENERIC_9x3,player,this,screen);
-         ((TwilightAnvilGui)gui).buildAnvilGui();
+         gui = new TwilightAnvilGui(MenuType.GENERIC_9x3, player, this, screen);
+         ((TwilightAnvilGui) gui).buildAnvilGui();
       }else if(screen == 2){
-         gui = new TwilightAnvilGui(MenuType.GENERIC_9x4,player,this,screen);
-         ((TwilightAnvilGui)gui).buildTinkerGui();
+         gui = new TwilightAnvilGui(MenuType.GENERIC_9x4, player, this, screen);
+         ((TwilightAnvilGui) gui).buildTinkerGui();
       }else if(screen == 3){
          gui = new RenameGui(player, this);
-         ((RenameGui)gui).build();
+         ((RenameGui) gui).build();
       }
       if(gui != null){
          gui.open();
@@ -110,7 +113,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       int repairedDamage;
       long combinedRepairCost = 0L;
       if(input1.isEmpty() || !EnchantmentHelper.canStoreEnchantments(input1)){
-         return new AnvilOutputSet(input1,input2, ItemStack.EMPTY,0,0);
+         return new AnvilOutputSet(input1, input2, ItemStack.EMPTY, 0, 0);
       }
       ItemEnchantments.Mutable builder = new ItemEnchantments.Mutable(EnchantmentHelper.getEnchantmentsForCrafting(output));
       combinedRepairCost += (long) input1.getOrDefault(DataComponents.REPAIR_COST, 0) + (long) input2.getOrDefault(DataComponents.REPAIR_COST, 0);
@@ -120,9 +123,9 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
             int repairCount;
             repairedDamage = Math.min(output.getDamageValue(), output.getMaxDamage() / 4);
             if(repairedDamage <= 0){
-               return new AnvilOutputSet(input1,input2, ItemStack.EMPTY,0,0);
+               return new AnvilOutputSet(input1, input2, ItemStack.EMPTY, 0, 0);
             }
-            for (repairCount = 0; repairedDamage > 0 && repairCount < input2.getCount(); ++repairCount){
+            for(repairCount = 0; repairedDamage > 0 && repairCount < input2.getCount(); ++repairCount){
                int newDamage = output.getDamageValue() - repairedDamage;
                output.setDamageValue(newDamage);
                ++runningLevelCost;
@@ -131,7 +134,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
             repairItemUsage = repairCount;
          }else{
             if(!(input2Enchanted || output.is(input2.getItem()) && output.isDamageableItem())){
-               return new AnvilOutputSet(input1,input2, ItemStack.EMPTY,0,0);
+               return new AnvilOutputSet(input1, input2, ItemStack.EMPTY, 0, 0);
             }
             if(output.isDamageableItem() && !input2Enchanted){
                int input1Durability = input1.getMaxDamage() - input1.getDamageValue();
@@ -150,18 +153,19 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
             ItemEnchantments itemEnchantmentsComponent = EnchantmentHelper.getEnchantmentsForCrafting(input2);
             boolean hasCompatibleEnchant = false;
             boolean hasIncompatibleEnchant = false;
-            for (Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantmentsComponent.entrySet()){
+            for(Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantmentsComponent.entrySet()){
                int newLevel;
                Holder<Enchantment> enchantmentEntry = entry.getKey();
-               Enchantment enchantment = (Enchantment)enchantmentEntry.value();
+               Enchantment enchantment = (Enchantment) enchantmentEntry.value();
                int level = builder.getLevel(enchantmentEntry);
                newLevel = level == (newLevel = entry.getIntValue()) ? newLevel + 1 : Math.max(newLevel, level);
                boolean canCombine = enchantment.canEnchant(input1);
                if(input1.is(Items.ENCHANTED_BOOK)){
                   canCombine = true;
                }
-               for (Holder<Enchantment> enchantmentEntry2 : builder.keySet()){
-                  if(enchantmentEntry2.equals(enchantmentEntry) || Enchantment.areCompatible(enchantmentEntry,enchantmentEntry2)) continue;
+               for(Holder<Enchantment> enchantmentEntry2 : builder.keySet()){
+                  if(enchantmentEntry2.equals(enchantmentEntry) || Enchantment.areCompatible(enchantmentEntry, enchantmentEntry2))
+                     continue;
                   canCombine = false;
                   ++runningLevelCost;
                }
@@ -189,25 +193,25 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
                boolean enhanced2 = EnhancedStatUtils.isEnhanced(input2);
                enhancingStats = enhanced2;
                if(enhanced1 && enhanced2){ // Perform combination calculation
-                  double stat1 = ArcanaItem.getDoubleProperty(input1,EnhancedStatUtils.ENHANCED_STAT_TAG);
-                  double stat2 = ArcanaItem.getDoubleProperty(input2,EnhancedStatUtils.ENHANCED_STAT_TAG);
-                  double buff = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.TWILIGHT_ANVIL_INFUSION_BUFF_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ENHANCED_ENHANCEMENTS));
-                  double combined = Math.min(1,EnhancedStatUtils.combineStats(stat1,stat2) + buff);
-                  EnhancedStatUtils.enhanceItem(output,combined);
-                  runningLevelCost += (int) (40*combined);
+                  double stat1 = ArcanaItem.getDoubleProperty(input1, EnhancedStatUtils.ENHANCED_STAT_TAG);
+                  double stat2 = ArcanaItem.getDoubleProperty(input2, EnhancedStatUtils.ENHANCED_STAT_TAG);
+                  double buff = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.TWILIGHT_ANVIL_INFUSION_BUFF_PER_LVL).get(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.ENHANCED_ENHANCEMENTS));
+                  double combined = Math.min(1, EnhancedStatUtils.combineStats(stat1, stat2) + buff);
+                  EnhancedStatUtils.enhanceItem(output, combined);
+                  runningLevelCost += (int) (40 * combined);
                }else if(enhanced2){ // Enhance output with stats of 2nd slot
-                  double stat2 = ArcanaItem.getDoubleProperty(input2,EnhancedStatUtils.ENHANCED_STAT_TAG);
-                  EnhancedStatUtils.enhanceItem(output,stat2);
-                  runningLevelCost += (int) (20*stat2);
+                  double stat2 = ArcanaItem.getDoubleProperty(input2, EnhancedStatUtils.ENHANCED_STAT_TAG);
+                  EnhancedStatUtils.enhanceItem(output, stat2);
+                  runningLevelCost += (int) (20 * stat2);
                }
             }
             
             if(hasIncompatibleEnchant && !hasCompatibleEnchant && !enhancingStats){
-               return new AnvilOutputSet(input1,input2, ItemStack.EMPTY,0,0);
+               return new AnvilOutputSet(input1, input2, ItemStack.EMPTY, 0, 0);
             }
          }
       }
-      int levelCost = (int) Mth.clamp(combinedRepairCost + (long)runningLevelCost, 0L, Integer.MAX_VALUE);
+      int levelCost = (int) Mth.clamp(combinedRepairCost + (long) runningLevelCost, 0L, Integer.MAX_VALUE);
       if(runningLevelCost <= 0){
          output = ItemStack.EMPTY;
       }
@@ -220,7 +224,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
          output.set(DataComponents.REPAIR_COST, repairedDamage);
          EnchantmentHelper.setEnchantments(output, builder.toImmutable());
       }
-      return new AnvilOutputSet(input1,input2,output,levelCost,repairItemUsage);
+      return new AnvilOutputSet(input1, input2, output, levelCost, repairItemUsage);
    }
    
    public boolean isAssembled(){
@@ -231,7 +235,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.TWILIGHT_ANVIL).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.TWILIGHT_ANVIL).getCheckOffset()), null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -250,6 +254,10 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -264,9 +272,10 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -274,15 +283,17 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
    }
    
-   public record AnvilOutputSet(ItemStack input1, ItemStack input2, ItemStack output, int levelCost, int itemRepairUsage){
-      public AnvilOutputSet {
+   public record AnvilOutputSet(ItemStack input1, ItemStack input2, ItemStack output, int levelCost,
+                                int itemRepairUsage) {
+      public AnvilOutputSet{
          Objects.requireNonNull(input1);
          Objects.requireNonNull(input2);
          Objects.requireNonNull(output);

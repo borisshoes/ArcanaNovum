@@ -13,13 +13,11 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.timers.TickTimerCallback;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -49,19 +47,20 @@ public class PlayerMixin {
    
    @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getKnockback(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)F"))
    private void arcananovum$postDamageEntity(Entity target, CallbackInfo ci, @Local(ordinal = 1) float atkPercentage){
-      Player player = (Player)(Object) this;
+      Player player = (Player) (Object) this;
       ItemStack handStack = player.getMainHandItem();
       if(ArcanaItemUtils.identifyItem(handStack) instanceof BinaryBlades blades){
          if(atkPercentage > 0.5){
             int delay = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BINARY_BLADES_ENERGY_GRACE_PERIOD);
-            ArcanaItem.putProperty(handStack,BinaryBlades.LAST_HIT_TAG,delay);
+            ArcanaItem.putProperty(handStack, BinaryBlades.LAST_HIT_TAG, delay);
          }
          if(atkPercentage > 0.85){
             int perHit = ArcanaNovum.CONFIG.getInt(ArcanaConfig.BINARY_BLADES_ENERGY_PER_HIT);
-            blades.addEnergy(handStack,perHit);
-            if(player instanceof ServerPlayer serverPlayer) BorisLib.addTickTimerCallback(serverPlayer.level(), new GenericTimer(4, () -> {
-               serverPlayer.level().getChunkSource().sendToTrackingPlayersAndSelf(serverPlayer, new ClientboundAnimatePacket(serverPlayer, ClientboundAnimatePacket.SWING_OFF_HAND));
-            }));
+            blades.addEnergy(handStack, perHit);
+            if(player instanceof ServerPlayer serverPlayer)
+               BorisLib.addTickTimerCallback(serverPlayer.level(), new GenericTimer(4, () -> {
+                  serverPlayer.level().getChunkSource().sendToTrackingPlayersAndSelf(serverPlayer, new ClientboundAnimatePacket(serverPlayer, ClientboundAnimatePacket.SWING_OFF_HAND));
+               }));
          }
       }
       if(ArcanaItemUtils.identifyItem(handStack) instanceof ShadowStalkersGlaive glaive){
@@ -70,17 +69,18 @@ public class PlayerMixin {
             int oldEnergy = EnergyItem.getEnergy(handStack);
             glaive.addEnergy(handStack, toAdd);
             int newEnergy = EnergyItem.getEnergy(handStack);
-            glaive.sendEnergyMessage(player,oldEnergy,newEnergy,false);
+            glaive.sendEnergyMessage(player, oldEnergy, newEnergy, false);
          }
       }
    }
    
    @ModifyReturnValue(method = "onClimbable", at = @At("RETURN"))
    private boolean arcananovum$greavesClimbing(boolean original){
-      Player player = (Player)(Object) this;
+      Player player = (Player) (Object) this;
       if(original) return true;
       ItemStack pants = player.getItemBySlot(EquipmentSlot.LEGS);
-      if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.EARTHEN_ASCENT) < 1) return original;
+      if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || ArcanaAugments.getAugmentOnItem(pants, ArcanaAugments.EARTHEN_ASCENT) < 1)
+         return original;
       if(player.horizontalCollision){
          return true;
       }
@@ -93,9 +93,9 @@ public class PlayerMixin {
       List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
       int level = 0;
       for(ItemStack stack : stacks){
-         boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);
+         boolean isActive = ArcanaItem.getBooleanProperty(stack, ArcanaItem.ACTIVE_TAG);
          if(!isActive) continue;
-         int lvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MARINERS_GRACE);
+         int lvl = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.MARINERS_GRACE);
          if(lvl > level) level = lvl;
       }
       float marinerBuff = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.CETACEA_CHARM_SWIM_PENALTY_PER_LVL).get(level);
@@ -107,23 +107,23 @@ public class PlayerMixin {
       Player player = (Player) (Object) this;
       int level = 0;
       if(player instanceof ServerPlayer serverPlayer){
-         for(int i = ArcanaAugments.MARINERS_GRACE.getTiers().length-1; i >= 0; i--){
+         for(int i = ArcanaAugments.MARINERS_GRACE.getTiers().length - 1; i >= 0; i--){
             int finalI = i;
-            if(GeomanticSteleBlockEntity.isEntityInZone(serverPlayer,(item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARINERS_GRACE) > finalI)){
-               level = i+1;
+            if(GeomanticSteleBlockEntity.isEntityInZone(serverPlayer, (item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.MARINERS_GRACE) > finalI)){
+               level = i + 1;
                break;
             }
          }
       }
       List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
       for(ItemStack stack : stacks){
-         boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);
+         boolean isActive = ArcanaItem.getBooleanProperty(stack, ArcanaItem.ACTIVE_TAG);
          if(!isActive) continue;
-         int lvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MARINERS_GRACE);
+         int lvl = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.MARINERS_GRACE);
          if(lvl > level) level = lvl;
       }
       double marinerBuff = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.CETACEA_CHARM_SWIM_PENALTY_PER_LVL).get(level);
-      return level == 0 ? original : Math.max(original, Math.min(1,original + marinerBuff)); // Don't buff beyond 1, unless it is already above 1
+      return level == 0 ? original : Math.max(original, Math.min(1, original + marinerBuff)); // Don't buff beyond 1, unless it is already above 1
    }
    
    // Remove all absorption callbacks when shield gets disabled
@@ -142,27 +142,29 @@ public class PlayerMixin {
       SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
    }
    
-   @Inject(method = "getProjectile", at = @At(value="INVOKE",target= "Lnet/minecraft/world/item/ProjectileWeaponItem;getAllSupportedProjectiles()Ljava/util/function/Predicate;", shift = At.Shift.BEFORE), cancellable = true)
+   @Inject(method = "getProjectile", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ProjectileWeaponItem;getAllSupportedProjectiles()Ljava/util/function/Predicate;", shift = At.Shift.BEFORE), cancellable = true)
    private void arcananovum$quiverCheck(ItemStack bow, CallbackInfoReturnable<ItemStack> cir){
       Player player = (Player) (Object) this;
       boolean runicBow = (ArcanaItemUtils.identifyItem(bow) instanceof RunicBow);
-      boolean runicArbalest = bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST) >= 1;
-      if(!bow.is(Items.BOW) && !runicBow && !bow.is(Items.CROSSBOW) && !bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem())) return;
+      boolean runicArbalest = bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow, ArcanaAugments.RUNIC_ARBALEST) >= 1;
+      if(!bow.is(Items.BOW) && !runicBow && !bow.is(Items.CROSSBOW) && !bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()))
+         return;
       boolean runic = runicBow || runicArbalest;
       
       if(player instanceof ServerPlayer serverPlayer){
-         ItemStack arrowStack = QuiverItem.getArrowStack(serverPlayer,runic,false);
-         Tuple<String,Integer> option = QuiverItem.getArrowOption(serverPlayer,runic,false);
+         ItemStack arrowStack = QuiverItem.getArrowStack(serverPlayer, runic, false);
+         Tuple<String, Integer> option = QuiverItem.getArrowOption(serverPlayer, runic, false);
          if(arrowStack != null && option != null){
             ItemStack returnStack = arrowStack.copy();
             ArcanaItem.putProperty(returnStack, QuiverItem.QUIVER_SLOT_TAG, option.getB());
             ArcanaItem.putProperty(returnStack, QuiverItem.QUIVER_ID_TAG, option.getA());
             cir.setReturnValue(returnStack);
          }else if(runicArbalest){
-            Predicate<ItemStack> predicate = ((ProjectileWeaponItem)bow.getItem()).getAllSupportedProjectiles();
-            for (int i = 0; i < player.getInventory().getContainerSize(); ++i){
+            Predicate<ItemStack> predicate = ((ProjectileWeaponItem) bow.getItem()).getAllSupportedProjectiles();
+            for(int i = 0; i < player.getInventory().getContainerSize(); ++i){
                ItemStack itemStack2 = player.getInventory().getItem(i);
-               if(predicate.test(itemStack2) || ArcanaItemUtils.isRunicArrow(itemStack2)) cir.setReturnValue(itemStack2);
+               if(predicate.test(itemStack2) || ArcanaItemUtils.isRunicArrow(itemStack2))
+                  cir.setReturnValue(itemStack2);
             }
          }
       }
@@ -182,18 +184,18 @@ public class PlayerMixin {
       }
    }
    
-   @Inject(method = "getProjectile", at = @At(value="RETURN"), cancellable = true)
+   @Inject(method = "getProjectile", at = @At(value = "RETURN"), cancellable = true)
    private void arcananovum$stopRunicUsage(ItemStack bow, CallbackInfoReturnable<ItemStack> cir){
       Player player = (Player) (Object) this;
       if(!bow.is(Items.BOW) || bow.is(Items.CROSSBOW) || bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem())) return;
-      boolean runicArbalest = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST) >= 1;
+      boolean runicArbalest = ArcanaAugments.getAugmentOnItem(bow, ArcanaAugments.RUNIC_ARBALEST) >= 1;
       ItemStack curReturn = cir.getReturnValue();
       if(ArcanaItemUtils.isRunicArrow(curReturn) && !runicArbalest){
          cir.setReturnValue(player.isCreative() ? new ItemStack(Items.ARROW) : ItemStack.EMPTY);
       }
    }
    
-   @Inject(method = "giveExperiencePoints", at = @At(value= "RETURN"))
+   @Inject(method = "giveExperiencePoints", at = @At(value = "RETURN"))
    private void arcananovum$addExperience(CallbackInfo ci){
       Player player = (Player) (Object) this;
       if(player instanceof ServerPlayer serverPlayer && player.experienceLevel >= 100){
@@ -201,7 +203,7 @@ public class PlayerMixin {
       }
    }
    
-   @Inject(method = "startAutoSpinAttack", at = @At(value= "HEAD"))
+   @Inject(method = "startAutoSpinAttack", at = @At(value = "HEAD"))
    private void arcananovum$useRiptide(int riptideTicks, float riptideAttackDamage, ItemStack stack, CallbackInfo ci){
       Player player = (Player) (Object) this;
       if(player instanceof ServerPlayer serverPlayer && stack.is(Items.TRIDENT)){

@@ -26,7 +26,7 @@ public class AvoidEntityGoalMixin<T extends LivingEntity> {
    @Shadow
    protected T toAvoid;
    
-   @Inject(method = "start", at=@At("RETURN"))
+   @Inject(method = "start", at = @At("RETURN"))
    private void arcananovum$fleeEntityStart(CallbackInfo ci){
       if(mob instanceof Creeper && toAvoid instanceof Cat cat){
          if(cat.level() instanceof ServerLevel serverWorld){

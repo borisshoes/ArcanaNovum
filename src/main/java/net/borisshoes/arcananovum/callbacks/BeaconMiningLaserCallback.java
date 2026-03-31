@@ -25,10 +25,10 @@ public class BeaconMiningLaserCallback extends TickTimerCallback {
       if(world.getBlockState(beaconPos).is(Blocks.BEACON)){
          BlockState breakState = world.getBlockState(breakPos);
          if(!(breakState.getLightBlock() < 15 || breakState.is(Blocks.BEDROCK))){
-            world.destroyBlock(breakPos,true);
+            world.destroyBlock(breakPos, true);
          }
          if(world.isInWorldBounds(breakPos.above())){
-            BorisLib.addTickTimerCallback(world,new BeaconMiningLaserCallback(world,beaconPos,breakPos.above()));
+            BorisLib.addTickTimerCallback(world, new BeaconMiningLaserCallback(world, beaconPos, breakPos.above()));
          }
       }
    }

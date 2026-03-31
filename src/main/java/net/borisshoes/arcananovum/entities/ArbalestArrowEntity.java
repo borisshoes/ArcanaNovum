@@ -54,7 +54,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
    public ArbalestArrowEntity(Level world, LivingEntity owner, int ampLvl, int rangeLvl, ItemStack arrowStack, @Nullable ItemStack weaponStack){
       this(ArcanaRegistry.ARBALEST_ARROW_ENTITY, world);
       this.setOwner(owner);
-      this.setPos(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
+      this.setPos(owner.getX(), owner.getEyeY() - (double) 0.1f, owner.getZ());
       this.lvl = ampLvl;
       this.range = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.ALCHEMICAL_ARBALEST_FIELD_RANGE_PER_LVL).get(rangeLvl);
       initFromStack(arrowStack, weaponStack);
@@ -85,7 +85,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
          if(level() instanceof ServerLevel serverWorld){
             int i = EnchantmentHelper.getPiercingCount(serverWorld, firedFromWeapon, this.pickupItemStack);
             if(i > 0){
-               this.setPierceLevel((byte)i);
+               this.setPierceLevel((byte) i);
             }
             
             EnchantmentHelper.onProjectileSpawned(serverWorld, firedFromWeapon, this, item -> this.firedFromWeapon = null);
@@ -112,7 +112,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
       
       if(entityHitResult.getEntity().getType() == EntityType.PHANTOM && !entityHitResult.getEntity().isAlive()){
          if(getOwner() instanceof ServerPlayer player){
-            ArcanaAchievements.progress(player,ArcanaAchievements.MANY_BIRDS_MANY_ARROWS, 1);
+            ArcanaAchievements.progress(player, ArcanaAchievements.MANY_BIRDS_MANY_ARROWS, 1);
          }
       }
    }
@@ -135,20 +135,20 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
       if(effects.isEmpty()){
          int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ALCHEMICAL_ARBALEST_VULNERABILITY_DURATION);
          float vulnStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.ALCHEMICAL_ARBALEST_VULNERABILITY_PER_LVL).get(lvl);
-         ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY,arcanaId(ArcanaRegistry.ALCHEMICAL_ARBALEST.getId()+"_"+lvl),duration,vulnStr,true,true,true, AttributeModifier.Operation.ADD_VALUE,getOwner() != null ? getOwner().getUUID() : null);
+         ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.ALCHEMICAL_ARBALEST.getId() + "_" + lvl), duration, vulnStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, getOwner() != null ? getOwner().getUUID() : null);
          effects.add(Either.right(vulnerability));
-         effects.add(Either.left(new MobEffectInstance(MobEffects.GLOWING,duration,0,false,true,true)));
+         effects.add(Either.left(new MobEffectInstance(MobEffects.GLOWING, duration, 0, false, true, true)));
       }
       
-      ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), BlockPos.containing(pos),serverWorld,range,lvl,effects));
+      ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), BlockPos.containing(pos), serverWorld, range, lvl, effects));
    }
    
    
    @Override
    protected void addAdditionalSaveData(ValueOutput view){
       super.addAdditionalSaveData(view);
-      view.putInt("ampLvl",lvl);
-      view.putDouble("range",range);
+      view.putInt("ampLvl", lvl);
+      view.putDouble("range", range);
    }
    
    @Override

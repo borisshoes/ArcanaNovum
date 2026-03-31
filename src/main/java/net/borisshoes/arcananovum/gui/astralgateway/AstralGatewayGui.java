@@ -38,27 +38,27 @@ public class AstralGatewayGui extends SimpleGui {
       
       GuiElementBuilder arrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW));
       arrow.setName(Component.literal("Insert Stardust here or via hopper").withStyle(ChatFormatting.GOLD));
-      setSlot(6,arrow);
+      setSlot(6, arrow);
       
       for(int i = 0; i < gateway.getContainerSize(); i++){
          if(i == 0){
             continue;
          }else if(i == 1){
-            setSlotRedirect(7, new StardustSlot(gateway.getInventory(),i,i,0));
+            setSlotRedirect(7, new StardustSlot(gateway.getInventory(), i, i, 0));
          }else{
-            int adjustedI = i-2;
-            int guiIndex = 19+(adjustedI%7)+9*(adjustedI/7);
-            WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(),i,i,0).withForGateway(gateway.getBlockPos()).withAttunement(true);
+            int adjustedI = i - 2;
+            int guiIndex = 19 + (adjustedI % 7) + 9 * (adjustedI / 7);
+            WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(), i, i, 0).withForGateway(gateway.getBlockPos()).withAttunement(true);
             if(!this.gateway.isAstralStargate()){
                slot = slot.withMatchedWorld(this.gateway.getLevel().dimension());
             }
-            setSlotRedirect(guiIndex,slot);
+            setSlotRedirect(guiIndex, slot);
          }
       }
    }
    
    private void rebuildFrame(){
-      Tuple<Component,Integer> info = getStateInfo();
+      Tuple<Component, Integer> info = getStateInfo();
       this.setSlot(9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
       this.setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
       this.setSlot(11, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
@@ -86,23 +86,23 @@ public class AstralGatewayGui extends SimpleGui {
       
       GuiElementBuilder receptacleLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT_LIGHT, info.getB()));
       receptacleLeft.setName(Component.literal("Insert a Gateway-targeting Waystone").withStyle(ChatFormatting.AQUA));
-      setSlot(3,receptacleLeft);
+      setSlot(3, receptacleLeft);
       
       GuiElementBuilder receptacleRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT_LIGHT, info.getB()));
       receptacleRight.setName(Component.literal("Insert a Gateway-targeting Waystone").withStyle(ChatFormatting.AQUA));
-      setSlot(5,receptacleRight);
+      setSlot(5, receptacleRight);
       
       GuiElementBuilder modeLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT_LIGHT, info.getB()));
       modeLeft.setName(Component.literal("Gateway Mode Controls").withStyle(ChatFormatting.DARK_PURPLE));
-      setSlot(0,modeLeft);
+      setSlot(0, modeLeft);
       
       GuiElementBuilder modeRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT_LIGHT, info.getB()));
       modeRight.setName(Component.literal("Gateway Mode Controls").withStyle(ChatFormatting.DARK_PURPLE));
-      setSlot(2,modeRight);
+      setSlot(2, modeRight);
       
       GatewayState state = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
       if(state == GatewayState.OPEN){
-         GuiElementBuilder forceClose = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.CANCEL_COLOR,ArcanaColors.ARCANA_COLOR));
+         GuiElementBuilder forceClose = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.CANCEL_COLOR, ArcanaColors.ARCANA_COLOR));
          forceClose.setName(Component.literal("Close Gateway").withStyle(ChatFormatting.RED));
          forceClose.addLoreLine(Component.literal("Click ").withStyle(ChatFormatting.DARK_RED).append(Component.literal("to close the gateway").withStyle(ChatFormatting.RED)));
          forceClose.setCallback((type) -> {
@@ -116,7 +116,7 @@ public class AstralGatewayGui extends SimpleGui {
             if(synced != null) synced.setState(GatewayState.COOLDOWN);
             build();
          });
-         setSlot(1,forceClose);
+         setSlot(1, forceClose);
       }else{
          GatewayMode mode = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.MODE);
          GuiElementBuilder modeSwitch = new GuiElementBuilder();
@@ -136,27 +136,27 @@ public class AstralGatewayGui extends SimpleGui {
          }
          modeSwitch.setCallback((type) -> {
             if(mode == GatewayMode.BOTH){
-               gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.SEND_ONLY : GatewayMode.RECEIVE_ONLY), Block.UPDATE_ALL);
+               gateway.getLevel().setBlock(gateway.getBlockPos(), gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE, type.shift ? GatewayMode.SEND_ONLY : GatewayMode.RECEIVE_ONLY), Block.UPDATE_ALL);
             }else if(mode == GatewayMode.RECEIVE_ONLY){
-               gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.BOTH : GatewayMode.SEND_ONLY), Block.UPDATE_ALL);
+               gateway.getLevel().setBlock(gateway.getBlockPos(), gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE, type.shift ? GatewayMode.BOTH : GatewayMode.SEND_ONLY), Block.UPDATE_ALL);
             }else{
-               gateway.getLevel().setBlock(gateway.getBlockPos(),gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE,type.shift ? GatewayMode.RECEIVE_ONLY : GatewayMode.BOTH), Block.UPDATE_ALL);
+               gateway.getLevel().setBlock(gateway.getBlockPos(), gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE, type.shift ? GatewayMode.RECEIVE_ONLY : GatewayMode.BOTH), Block.UPDATE_ALL);
             }
             build();
          });
-         setSlot(1,modeSwitch);
+         setSlot(1, modeSwitch);
       }
       
       long stardust = gateway.getStardust();
       int stardustPerMin = gateway.getStardustPerMinute();
       int openingStardust = gateway.getOpeningStardust();
       GuiElementBuilder stardustCount = GuiElementBuilder.from(MinecraftUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultInstance()));
-      stardustCount.setName(Component.literal("Stored Stardust: "+TextUtils.readableInt((int) stardust)).withStyle(ChatFormatting.GOLD));
+      stardustCount.setName(Component.literal("Stored Stardust: " + TextUtils.readableInt((int) stardust)).withStyle(ChatFormatting.GOLD));
       stardustCount.addLoreLine(Component.literal("Maintaining the Gateway takes ").withStyle(ChatFormatting.YELLOW)
-            .append(Component.literal(""+stardustPerMin).withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("" + stardustPerMin).withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" Stardust per minute").withStyle(ChatFormatting.YELLOW)));
       stardustCount.addLoreLine(Component.literal("Opening the Gateway requires at least ").withStyle(ChatFormatting.YELLOW)
-            .append(Component.literal(""+openingStardust).withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("" + openingStardust).withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" stored Stardust").withStyle(ChatFormatting.YELLOW)));
       if(stardust == 0){
          stardustCount.setItem(Items.GUNPOWDER);
@@ -167,16 +167,16 @@ public class AstralGatewayGui extends SimpleGui {
          stardustCount.addLoreLine(Component.literal(""));
          stardustCount.addLoreLine(Component.literal("There is not enough stored Stardust to open the Gateway!").withStyle(ChatFormatting.RED));
       }
-      setSlot(8,stardustCount);
+      setSlot(8, stardustCount);
       
       boolean hasFrame = gateway.getFrame() != null && gateway.getFrame().finishedAndValid();
       if(hasFrame && !(getSlotRedirect(4) instanceof WaystoneSlot)){
          clearSlot(4);
-         WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(),0,0,0).withForGateway(gateway.getBlockPos()).withAttunement(true);
+         WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(), 0, 0, 0).withForGateway(gateway.getBlockPos()).withAttunement(true);
          if(!this.gateway.isAstralStargate()){
             slot = slot.withMatchedWorld(this.gateway.getLevel().dimension());
          }
-         setSlotRedirect(4,slot);
+         setSlotRedirect(4, slot);
       }else if(!hasFrame){
          clearSlot(4);
          GuiElementBuilder frameFind = new GuiElementBuilder(Items.SPYGLASS).hideDefaultTooltip();
@@ -185,11 +185,11 @@ public class AstralGatewayGui extends SimpleGui {
          frameFind.setCallback((type) -> {
             gateway.tryFind();
          });
-         setSlot(4,frameFind);
+         setSlot(4, frameFind);
       }
    }
    
-   private Tuple<Component,Integer> getStateInfo(){
+   private Tuple<Component, Integer> getStateInfo(){
       boolean hasStardust = gateway.getStardust() >= gateway.getOpeningStardust();
       boolean hasFrame = gateway.getFrame() != null && gateway.getFrame().finishedAndValid();
       boolean hasWaystone = !gateway.getInventory().getItem(0).isEmpty();

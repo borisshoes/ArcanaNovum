@@ -29,13 +29,13 @@ import java.util.Set;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
 
-public class CommutativeTransmutationRecipe extends TransmutationRecipe{
+public class CommutativeTransmutationRecipe extends TransmutationRecipe {
    
    private final List<Either<Item, TagKey<Item>>> communalInputs = new ArrayList<>();
    private ItemStack viewStack = new ItemStack(Items.BARRIER);
    
    public CommutativeTransmutationRecipe(String id, ItemStack reagent1, ItemStack reagent2){
-      super(id,reagent1,reagent2);
+      super(id, reagent1, reagent2);
    }
    
    private CommutativeTransmutationRecipe(String id, List<Either<Item, TagKey<Item>>> communalInputs, ItemStack viewStack, List<Either<Item, TagKey<Item>>> reagent1, int reagent1Count, List<Either<Item, TagKey<Item>>> reagent2, int reagent2Count){
@@ -63,7 +63,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
                   }
                }
             }catch(Exception e){
-               log(2,"Error getting tags for "+itemEntry.getRegisteredName());
+               log(2, "Error getting tags for " + itemEntry.getRegisteredName());
             }
          }
       }
@@ -77,29 +77,30 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayer player){
-      return List.of(negativeInput.copyWithCount(positiveInput.getCount()),negativeInput,aequalisInput);
+      return List.of(negativeInput.copyWithCount(positiveInput.getCount()), negativeInput, aequalisInput);
    }
    
    @Override
-   public List<Tuple<ItemStack,String>> doTransmutation(ItemEntity sourceEntity, ItemEntity focusEntity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
-      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN);
+   public List<Tuple<ItemStack, String>> doTransmutation(ItemEntity sourceEntity, ItemEntity focusEntity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
+      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       ItemStack sourceStack = sourceEntity != null ? sourceEntity.getItem() : ItemStack.EMPTY;
       ItemStack focusStack = focusEntity != null ? focusEntity.getItem() : ItemStack.EMPTY;
       ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
       ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getItem() : ItemStack.EMPTY;
-      if(!canTransmute(sourceStack,focusStack,reagent1Stack,reagent2Stack, ItemStack.EMPTY,altar)) return new ArrayList<>();
+      if(!canTransmute(sourceStack, focusStack, reagent1Stack, reagent2Stack, ItemStack.EMPTY, altar))
+         return new ArrayList<>();
       
       ItemStack outputStack = focusStack.copyWithCount(sourceStack.getCount());
       if(sourceEntity != null) sourceEntity.discard();
-      boolean m11 = validReagent1(reagent1Stack,bargainLvl), m22 = validReagent2(reagent2Stack,bargainLvl), m12 = validReagent1(reagent2Stack,bargainLvl), m21 = validReagent2(reagent1Stack,bargainLvl);
+      boolean m11 = validReagent1(reagent1Stack, bargainLvl), m22 = validReagent2(reagent2Stack, bargainLvl), m12 = validReagent1(reagent2Stack, bargainLvl), m21 = validReagent2(reagent1Stack, bargainLvl);
       boolean straight = m11 && m22;
       boolean cross = !straight && m12 && m21;
-      if (!straight && !cross) return new ArrayList<>(); // should be impossible
+      if(!straight && !cross) return new ArrayList<>(); // should be impossible
       
-      ItemStack reagent1 = straight ? getComputedReagent1(reagent1Stack,bargainLvl) : getComputedReagent2(reagent1Stack,bargainLvl);
-      ItemStack reagent2 = straight ? getComputedReagent2(reagent2Stack,bargainLvl) : getComputedReagent1(reagent2Stack,bargainLvl);
+      ItemStack reagent1 = straight ? getComputedReagent1(reagent1Stack, bargainLvl) : getComputedReagent2(reagent1Stack, bargainLvl);
+      ItemStack reagent2 = straight ? getComputedReagent2(reagent2Stack, bargainLvl) : getComputedReagent1(reagent2Stack, bargainLvl);
       
-      if (reagent1Entity != null) {
+      if(reagent1Entity != null){
          int take = reagent1.isEmpty() ? 0 : reagent1.getCount();
          if(take > 0){
             if(reagent1Stack.getCount() == take){
@@ -111,7 +112,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      if (reagent2Entity != null) {
+      if(reagent2Entity != null){
          int take = reagent2.isEmpty() ? 0 : reagent2.getCount();
          if(take > 0){
             if(reagent2Stack.getCount() == take){
@@ -123,17 +124,17 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      List<Tuple<ItemStack,String>> outputs = new ArrayList<>();
-      outputs.add(new Tuple<>(outputStack,"negative"));
+      List<Tuple<ItemStack, String>> outputs = new ArrayList<>();
+      outputs.add(new Tuple<>(outputStack, "negative"));
       return outputs;
    }
    
    @Override
    public boolean canTransmute(ItemStack sourceInput, ItemStack focusInput, ItemStack reagent1Input, ItemStack reagent2Input, ItemStack aequalisInput, TransmutationAltarBlockEntity altar){
-      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN);
-      boolean reagentCheck1 = validReagent1(reagent1Input,bargainLvl) && validReagent2(reagent2Input,bargainLvl);
-      boolean reagentCheck2 = validReagent1(reagent2Input,bargainLvl) && validReagent2(reagent1Input,bargainLvl);
-      if (!(reagentCheck1 || reagentCheck2)) return false;
+      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
+      boolean reagentCheck1 = validReagent1(reagent1Input, bargainLvl) && validReagent2(reagent2Input, bargainLvl);
+      boolean reagentCheck2 = validReagent1(reagent2Input, bargainLvl) && validReagent2(reagent1Input, bargainLvl);
+      if(!(reagentCheck1 || reagentCheck2)) return false;
       if(!validCommunalInput(sourceInput)) return false;
       if(!validCommunalInput(focusInput)) return false;
       if(sourceInput.is(focusInput.getItem())) return false;
@@ -154,7 +155,6 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
       }
       return items.stream().map(ItemStack::new).toList();
    }
-   
    
    
    public List<Either<Item, TagKey<Item>>> getCommunalInputs(){
@@ -218,7 +218,8 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    }
    
    public static CommutativeTransmutationRecipe fromJson(JsonObject json){
-      if(!json.has("type") || !json.get("type").getAsString().equals("arcananovum:commutative_transmutation")) return null;
+      if(!json.has("type") || !json.get("type").getAsString().equals("arcananovum:commutative_transmutation"))
+         return null;
       
       String id = json.get("id").getAsString();
       

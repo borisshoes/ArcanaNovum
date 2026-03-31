@@ -21,14 +21,14 @@ public class BlockBreakCallback {
       if(ArcanaItemUtils.identifyItem(tool) instanceof PickaxeOfCeptyus pick){
          ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_MINE_BLOCK));
          if(!playerEntity.isShiftKeyDown()){
-            pick.veinMine(world,playerEntity,tool,blockPos);
+            pick.veinMine(world, playerEntity, tool, blockPos);
          }
          if(playerEntity instanceof ServerPlayer player && blockState.is(BlockTags.BASE_STONE_OVERWORLD)){
-            ArcanaAchievements.progress(player,ArcanaAchievements.DIGGY_HOLE, 1);
+            ArcanaAchievements.progress(player, ArcanaAchievements.DIGGY_HOLE, 1);
          }
       }else if(ArcanaItemUtils.identifyItem(tool) instanceof GravitonMaul maul){
          if(!playerEntity.isShiftKeyDown()){
-            maul.treeFell(world,playerEntity,tool,blockPos);
+            maul.treeFell(world, playerEntity, tool, blockPos);
          }
       }
       return true;

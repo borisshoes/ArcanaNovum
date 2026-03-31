@@ -62,7 +62,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
 
 public class TelescopingBeacon extends ArcanaItem {
-	public static final String ID = "telescoping_beacon";
+   public static final String ID = "telescoping_beacon";
    
    public static final String BLOCKS_TAG = "blocks";
    public static final String BEACON_TAG = "beacon";
@@ -75,20 +75,20 @@ public class TelescopingBeacon extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS, ArcaneTomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.BEACON;
       item = new TelescopingBeaconItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON,ResearchTasks.OBTAIN_PISTON};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON, ResearchTasks.OBTAIN_PISTON};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
       CompoundTag initBlocks = new CompoundTag();
       initBlocks.putString("id", BuiltInRegistries.BLOCK.getKey(Blocks.IRON_BLOCK).toString());
-      initBlocks.putInt("count",0);
+      initBlocks.putInt("count", 0);
       ListTag blocks = new ListTag();
       blocks.add(initBlocks);
-      putProperty(stack,BLOCKS_TAG,blocks);
-      putProperty(stack,BEACON_TAG,true);
-      putProperty(stack,DATA_TAG,new CompoundTag());
+      putProperty(stack, BLOCKS_TAG, blocks);
+      putProperty(stack, BEACON_TAG, true);
+      putProperty(stack, DATA_TAG, new CompoundTag());
       setPrefStack(stack);
    }
    
@@ -118,24 +118,24 @@ public class TelescopingBeacon extends ArcanaItem {
             .append(Component.literal("beacon").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_AQUA)));
       lore.add(Component.literal(""));
-      if(itemStack != null && getBooleanProperty(itemStack,BEACON_TAG)){
-         ListTag blocks = getListProperty(itemStack,BLOCKS_TAG);
+      if(itemStack != null && getBooleanProperty(itemStack, BEACON_TAG)){
+         ListTag blocks = getListProperty(itemStack, BLOCKS_TAG);
          int blockCount = 0;
          for(int i = 0; i < blocks.size(); i++){
             CompoundTag blockType = blocks.getCompoundOrEmpty(i);
             int count = blockType.getIntOr("count", 0);
-            blockCount+=count;
+            blockCount += count;
          }
          int tier = blocksToTier(blockCount);
          lore.add(Component.literal("")
                .append(Component.literal("Construct Status - ").withStyle(ChatFormatting.BLUE))
-               .append(Component.literal("Ready - Tier "+tier).withStyle(ChatFormatting.AQUA)));
+               .append(Component.literal("Ready - Tier " + tier).withStyle(ChatFormatting.AQUA)));
       }else{
          lore.add(Component.literal("")
                .append(Component.literal("Construct Status - ").withStyle(ChatFormatting.BLUE))
                .append(Component.literal("Empty").withStyle(ChatFormatting.GRAY)));
       }
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -145,14 +145,14 @@ public class TelescopingBeacon extends ArcanaItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      ListTag blocksNbt = getListProperty(stack,BLOCKS_TAG).copy();
-      boolean ready = getBooleanProperty(stack,BEACON_TAG);
-      CompoundTag data = getCompoundProperty(stack,DATA_TAG).copy();
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(stack,DATA_TAG,data);
-      putProperty(newStack,BLOCKS_TAG,blocksNbt);
-      putProperty(newStack,BEACON_TAG,ready);
-      return buildItemLore(newStack,server);
+      ListTag blocksNbt = getListProperty(stack, BLOCKS_TAG).copy();
+      boolean ready = getBooleanProperty(stack, BEACON_TAG);
+      CompoundTag data = getCompoundProperty(stack, DATA_TAG).copy();
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(stack, DATA_TAG, data);
+      putProperty(newStack, BLOCKS_TAG, blocksNbt);
+      putProperty(newStack, BEACON_TAG, ready);
+      return buildItemLore(newStack, server);
    }
    
    private static List<Tuple<BlockPos, BlockState>> getBaseBlocks(Level world, BlockPos pos){
@@ -173,7 +173,7 @@ public class TelescopingBeacon extends ArcanaItem {
                BlockPos blockPos = new BlockPos(curX, curY, curZ);
                BlockState blockState = world.getBlockState(blockPos);
                if(blockState.is(BlockTags.BEACON_BASE_BLOCKS)){
-                  blocks.add(index,new Tuple<>(blockPos,blockState));
+                  blocks.add(index, new Tuple<>(blockPos, blockState));
                   index++;
                }
             }
@@ -215,7 +215,7 @@ public class TelescopingBeacon extends ArcanaItem {
    private void placeBeacon(ServerPlayer player, Level world, BlockPos pos, int tier, ListTag blockTypes, CompoundTag data, boolean mining){
       try{
          ArrayList<BlockState> blocks = new ArrayList<>();
-         HashMap<Block,Integer> blockTotals = new HashMap<>();
+         HashMap<Block, Integer> blockTotals = new HashMap<>();
          Block blockKey = null;
          
          for(int i = 0; i < blockTypes.size(); i++){
@@ -224,17 +224,17 @@ public class TelescopingBeacon extends ArcanaItem {
             String id = blockType.getStringOr("id", "");
             Block block = BuiltInRegistries.BLOCK.getOptional(Identifier.parse(id)).orElse(null);
             if(block == null){
-               log(1,"Unknown Block Type Stored In Telescoping Beacon: "+id);
+               log(1, "Unknown Block Type Stored In Telescoping Beacon: " + id);
                return;
             }
             for(int j = 0; j < count; j++){
                blocks.add(block.defaultBlockState());
             }
             if(blockTotals.containsKey(block)){
-               blockTotals.put(block,blockTotals.get(block)+count);
+               blockTotals.put(block, blockTotals.get(block) + count);
             }else{
                blockKey = block;
-               blockTotals.put(block,count);
+               blockTotals.put(block, count);
             }
          }
          
@@ -252,43 +252,43 @@ public class TelescopingBeacon extends ArcanaItem {
             for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX){
                for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ){
                   BlockState blockState = blocks.get(index);
-                  world.setBlock(new BlockPos(curX,curY,curZ),blockState,3);
+                  world.setBlock(new BlockPos(curX, curY, curZ), blockState, 3);
                   index++;
                }
             }
          }
-         world.setBlock(pos, Blocks.BEACON.defaultBlockState(),3);
+         world.setBlock(pos, Blocks.BEACON.defaultBlockState(), 3);
          if(data != null){
             BlockState placeState = world.getBlockState(pos);
-            BlockEntity blockEntity = BlockEntity.loadStatic(pos,placeState,data,world.registryAccess());
+            BlockEntity blockEntity = BlockEntity.loadStatic(pos, placeState, data, world.registryAccess());
             if(blockEntity != null){
                world.setBlockEntity(blockEntity);
             }
          }
          if(mining){
-            BorisLib.addTickTimerCallback(player.level(),new BeaconMiningLaserCallback(player.level(),pos,pos.above()));
+            BorisLib.addTickTimerCallback(player.level(), new BeaconMiningLaserCallback(player.level(), pos, pos.above()));
          }
          
          
-         player.teleportTo(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TELESCOPING_BEACON_PER_BLOCK)*index); // Add xp
+         player.teleportTo(pos.getX() + .5, pos.getY() + 2, pos.getZ() + .5);
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TELESCOPING_BEACON_PER_BLOCK) * index); // Add xp
          
          
          for(int i = 0; i <= tier; i++){
             int j = i;
-            BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos, SoundEvents.IRON_GOLEM_REPAIR, SoundSource.PLAYERS,1,.8f+(.2f*j))));
+            BorisLib.addTickTimerCallback(player.level(), new GenericTimer(2 * (i + 1), () -> SoundUtils.playSound(world, pos, SoundEvents.IRON_GOLEM_REPAIR, SoundSource.PLAYERS, 1, .8f + (.2f * j))));
          }
          
          if(blockTotals.size() == 1 && blockTotals.get(blockKey) >= 164){
             BlockState blockType = blocks.get(0);
             if(blockType.is(Blocks.DIAMOND_BLOCK)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.BEJEWELED);
+               ArcanaAchievements.grant(player, ArcanaAchievements.BEJEWELED);
             }else if(blockType.is(Blocks.EMERALD_BLOCK)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.ART_OF_THE_DEAL);
+               ArcanaAchievements.grant(player, ArcanaAchievements.ART_OF_THE_DEAL);
             }else if(blockType.is(Blocks.GOLD_BLOCK)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.ACQUISITION_RULES);
+               ArcanaAchievements.grant(player, ArcanaAchievements.ACQUISITION_RULES);
             }else if(blockType.is(Blocks.NETHERITE_BLOCK)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.CLINICALLY_INSANE);
+               ArcanaAchievements.grant(player, ArcanaAchievements.CLINICALLY_INSANE);
             }
          }
       }catch(Exception e){
@@ -296,9 +296,10 @@ public class TelescopingBeacon extends ArcanaItem {
       }
    }
    
-   public static int[] tiers = {9,34,83,164};
+   public static int[] tiers = {9, 34, 83, 164};
+   
    public static int blocksToTier(int blocks){
-      for(int i=0; i<tiers.length; i++){
+      for(int i = 0; i < tiers.length; i++){
          if(blocks < tiers[i]){
             return i;
          }
@@ -309,7 +310,7 @@ public class TelescopingBeacon extends ArcanaItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Telescoping\n       Beacon").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nA fully empowered beacon is a rather large construct. Their setup and breakdown is a great deal of effort. Through a combination of pistons and a reinforced chassis, the beacon   ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Telescoping\n       Beacon").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nA fully empowered beacon is a rather large construct. Their setup and breakdown is a great deal of effort. Through a combination of pistons and a reinforced chassis, the beacon   ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Telescoping\n       Beacon").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\ncan expand and retract with the press of a button.\n\nCollecting it will store enough base blocks to redeploy at the highest possible tier without collecting extra.\n ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Telescoping\n       Beacon").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nThere must be enough room for the beacon and its base to deploy in order to activate.\n\nThe beacon expands upwards from the location of placement.\n").withStyle(ChatFormatting.BLACK)));
       return list;
@@ -326,10 +327,10 @@ public class TelescopingBeacon extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         if(!getBooleanProperty(itemStack,BEACON_TAG)){
+         if(!getBooleanProperty(itemStack, BEACON_TAG)){
             stringList.add("empty");
          }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -344,8 +345,8 @@ public class TelescopingBeacon extends ArcanaItem {
          InteractionHand hand = context.getHand();
          Level world = context.getLevel();
          ItemStack stack = context.getItemInHand();
-         ListTag blocks = getListProperty(stack,BLOCKS_TAG);
-         boolean hasBeacon = getBooleanProperty(stack,BEACON_TAG);
+         ListTag blocks = getListProperty(stack, BLOCKS_TAG);
+         boolean hasBeacon = getBooleanProperty(stack, BEACON_TAG);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.SUCCESS_SERVER;
          
          Direction side = context.getClickedFace();
@@ -356,53 +357,53 @@ public class TelescopingBeacon extends ArcanaItem {
             for(int i = 0; i < blocks.size(); i++){
                CompoundTag blockType = blocks.getCompoundOrEmpty(i);
                int count = blockType.getIntOr("count", 0);
-               blockCount+=count;
+               blockCount += count;
             }
             int tier = blocksToTier(blockCount);
-            placePos = placePos.offset(0,tier,0);
+            placePos = placePos.offset(0, tier, 0);
             
-            if(hasSpace(world, placePos, tier) && world.getBlockState(placePos).canBeReplaced(new BlockPlaceContext(playerEntity, hand, stack, new BlockHitResult(context.getClickLocation(),context.getClickedFace(),context.getClickedPos(),context.isInside())))){
-               boolean careful = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION) >= 1;
-               boolean mining = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MINING_LASER) >= 1;
-               if(careful && !getCompoundProperty(stack,DATA_TAG).isEmpty()){
-                  placeBeacon(player, world, placePos, tier, blocks,getCompoundProperty(stack,DATA_TAG),mining);
+            if(hasSpace(world, placePos, tier) && world.getBlockState(placePos).canBeReplaced(new BlockPlaceContext(playerEntity, hand, stack, new BlockHitResult(context.getClickLocation(), context.getClickedFace(), context.getClickedPos(), context.isInside())))){
+               boolean careful = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.CAREFUL_RECONSTRUCTION) >= 1;
+               boolean mining = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.MINING_LASER) >= 1;
+               if(careful && !getCompoundProperty(stack, DATA_TAG).isEmpty()){
+                  placeBeacon(player, world, placePos, tier, blocks, getCompoundProperty(stack, DATA_TAG), mining);
                }else{
-                  placeBeacon(player, world, placePos, tier, blocks,null,mining);
+                  placeBeacon(player, world, placePos, tier, blocks, null, mining);
                }
                
-               putProperty(stack,BLOCKS_TAG,new ListTag());
-               putProperty(stack,BEACON_TAG,false);
-               buildItemLore(stack,player.level().getServer());
-               player.getCooldowns().addCooldown(stack,20);
+               putProperty(stack, BLOCKS_TAG, new ListTag());
+               putProperty(stack, BEACON_TAG, false);
+               buildItemLore(stack, player.level().getServer());
+               player.getCooldowns().addCooldown(stack, 20);
             }else{
-               playerEntity.displayClientMessage(Component.literal("The Beacon cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               playerEntity.displayClientMessage(Component.literal("The Beacon cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }
          }else{ // Capture beacon
             BlockState placeState = world.getBlockState(placePos);
             BlockEntity blockEntity = world.getBlockEntity(placePos);
             if(!placeState.is(Blocks.BEACON) || !(blockEntity instanceof BeaconBlockEntity beaconBlock)){
-               playerEntity.displayClientMessage(Component.literal("No Beacon Present").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC),true);
-               SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1,1);
+               playerEntity.displayClientMessage(Component.literal("No Beacon Present").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                return InteractionResult.SUCCESS_SERVER;
             }
             
             // Scan for support blocks
-            List<Tuple<BlockPos, BlockState>> baseBlocks = getBaseBlocks(world,placePos);
+            List<Tuple<BlockPos, BlockState>> baseBlocks = getBaseBlocks(world, placePos);
             int tier = blocksToTier(baseBlocks.size());
-            boolean careful = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION) >= 1;
+            boolean careful = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.CAREFUL_RECONSTRUCTION) >= 1;
             // Remove support blocks and add them to NBT
             blocks = new ListTag();
             if(tier != 0){
-               HashMap<Block,Integer> blockTypes = new HashMap<>();
+               HashMap<Block, Integer> blockTypes = new HashMap<>();
                ArrayList<Block> orderedBlocks = new ArrayList<>();
-               for(int i = 0; i < tiers[tier-1]; i++){
+               for(int i = 0; i < tiers[tier - 1]; i++){
                   BlockState blockState = baseBlocks.get(i).getB();
                   Block blockType = blockState.getBlock();
                   if(blockTypes.containsKey(blockType)){
-                     blockTypes.put(blockType,blockTypes.get(blockType)+1);
+                     blockTypes.put(blockType, blockTypes.get(blockType) + 1);
                   }else{
-                     blockTypes.put(blockType,1);
+                     blockTypes.put(blockType, 1);
                   }
                   orderedBlocks.add(blockType);
                   world.setBlock(baseBlocks.get(i).getA(), Blocks.AIR.defaultBlockState(), 3);
@@ -412,25 +413,25 @@ public class TelescopingBeacon extends ArcanaItem {
                   for(Block orderedBlock : orderedBlocks){
                      CompoundTag blockType = new CompoundTag();
                      blockType.putString("id", BuiltInRegistries.BLOCK.getKey(orderedBlock).toString());
-                     blockType.putInt("count",1);
+                     blockType.putInt("count", 1);
                      blocks.add(blockType);
                   }
                }else{
                   for(Map.Entry<Block, Integer> entry : blockTypes.entrySet()){
                      CompoundTag blockType = new CompoundTag();
                      blockType.putString("id", BuiltInRegistries.BLOCK.getKey(entry.getKey()).toString());
-                     blockType.putInt("count",entry.getValue());
+                     blockType.putInt("count", entry.getValue());
                      blocks.add(blockType);
                   }
                }
             }
-            putProperty(stack,BLOCKS_TAG,blocks);
-            putProperty(stack,BEACON_TAG,true);
+            putProperty(stack, BLOCKS_TAG, blocks);
+            putProperty(stack, BEACON_TAG, true);
             
             if(careful){
-               putProperty(stack,DATA_TAG,beaconBlock.saveWithFullMetadata(player.level().getServer().registryAccess()));
+               putProperty(stack, DATA_TAG, beaconBlock.saveWithFullMetadata(player.level().getServer().registryAccess()));
             }else{
-               putProperty(stack,DATA_TAG,new CompoundTag());
+               putProperty(stack, DATA_TAG, new CompoundTag());
             }
             
             world.setBlock(placePos, Blocks.AIR.defaultBlockState(), 3);
@@ -440,12 +441,12 @@ public class TelescopingBeacon extends ArcanaItem {
                for(int i = 0; i <= tier; i++){
                   int j = i;
                   BlockPos finalPlacePos = placePos;
-                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world, finalPlacePos, SoundEvents.IRON_GOLEM_DAMAGE, SoundSource.PLAYERS,1,2f-(.3f*j))));
+                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(2 * (i + 1), () -> SoundUtils.playSound(world, finalPlacePos, SoundEvents.IRON_GOLEM_DAMAGE, SoundSource.PLAYERS, 1, 2f - (.3f * j))));
                }
             }
             
-            buildItemLore(stack,player.level().getServer());
-            player.getCooldowns().addCooldown(stack,20);
+            buildItemLore(stack, player.level().getServer());
+            player.getCooldowns().addCooldown(stack, 20);
          }
          
          return InteractionResult.SUCCESS_SERVER;

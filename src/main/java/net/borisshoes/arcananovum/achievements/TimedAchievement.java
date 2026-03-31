@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
-public class TimedAchievement extends ArcanaAchievement{
+public class TimedAchievement extends ArcanaAchievement {
    
    private int goal;
    private int progress;
@@ -58,7 +58,7 @@ public class TimedAchievement extends ArcanaAchievement{
    // Bypasses timer restriction
    private boolean setProgress(int progress){
       boolean had = isAcquired();
-      this.progress = Mth.clamp(progress,0,goal);
+      this.progress = Mth.clamp(progress, 0, goal);
       setAcquired(this.progress >= goal);
       return isAcquired() && !had;
    }
@@ -72,7 +72,7 @@ public class TimedAchievement extends ArcanaAchievement{
       }
       
       if(active){
-         this.progress = Mth.clamp(this.progress+progress,0,goal);
+         this.progress = Mth.clamp(this.progress + progress, 0, goal);
          setAcquired(this.progress >= goal);
       }
       return isAcquired() && !had;
@@ -93,14 +93,14 @@ public class TimedAchievement extends ArcanaAchievement{
    @Override
    public CompoundTag toNbt(){
       CompoundTag nbt = new CompoundTag();
-      nbt.putBoolean("acquired",isAcquired());
-      nbt.putString("id",id);
-      nbt.putInt("type",type);
+      nbt.putBoolean("acquired", isAcquired());
+      nbt.putString("id", id);
+      nbt.putInt("type", type);
       nbt.putInt("progress", progress);
       nbt.putInt("goal", goal);
-      nbt.putBoolean("active",active);
+      nbt.putBoolean("active", active);
       nbt.putInt("timeFrame", timeFrame);
-      nbt.put("data",data);
+      nbt.put("data", data);
       return nbt;
    }
    
@@ -119,7 +119,7 @@ public class TimedAchievement extends ArcanaAchievement{
       ArcanaPlayerData profile = ArcanaNovum.data(player);
       TimedAchievement achievement = (TimedAchievement) profile.getAchievement(this);
       if(achievement == null) return null;
-   
+      
       if(achievement.isAcquired()){
          return new MutableComponent[]{Component.literal("")
                .append(Component.literal("Achieved!").withStyle(ChatFormatting.AQUA))};

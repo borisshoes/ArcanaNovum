@@ -43,9 +43,9 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    private static final Logger LOGGER = LogManager.getLogger("Arcana Novum");
    public static final String MOD_ID = "arcananovum";
-   public static final ConfigManager CONFIG = new ConfigManager(MOD_ID,"Arcana Novum",ArcanaConfig.CONFIG_NAME,ArcanaConfig.CONFIG_SETTINGS);
+   public static final ConfigManager CONFIG = new ConfigManager(MOD_ID, "Arcana Novum", ArcanaConfig.CONFIG_NAME, ArcanaConfig.CONFIG_SETTINGS);
    public static final HashMap<ServerLevel, Long2IntOpenHashMap> ANCHOR_CHUNKS = new HashMap<>();
-   public static final HashMap<Tuple<BlockEntity, ArcanaBlockEntity>,Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
+   public static final HashMap<Tuple<BlockEntity, ArcanaBlockEntity>, Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
    public static final HashMap<ServerPlayer, ItineranteurBlockEntity> ITINERANTEUR_USERS = new HashMap<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
@@ -92,11 +92,11 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       return DataAccess.getWorld(world.dimension(), AnchorData.KEY).removeAnchor(pos);
    }
    
-   public static boolean addActiveBlock(Tuple<BlockEntity,ArcanaBlockEntity> pair){
+   public static boolean addActiveBlock(Tuple<BlockEntity, ArcanaBlockEntity> pair){
       if(pair.getB().getUuid() == null) return false;
-      List<Tuple<BlockEntity,ArcanaBlockEntity>> existing = ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(p -> p.getB().getUuid().equals(pair.getB().getUuid())).toList();
+      List<Tuple<BlockEntity, ArcanaBlockEntity>> existing = ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(p -> p.getB().getUuid().equals(pair.getB().getUuid())).toList();
       existing.forEach(ACTIVE_ARCANA_BLOCKS::remove);
-      ACTIVE_ARCANA_BLOCKS.put(pair,30);
+      ACTIVE_ARCANA_BLOCKS.put(pair, 30);
       return existing.isEmpty();
    }
    
@@ -105,12 +105,12 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
          return null;
       }
       try{
-         return DataAccess.getPlayer(player,ArcanaPlayerData.KEY);
+         return DataAccess.getPlayer(player, ArcanaPlayerData.KEY);
       }catch(Exception e){
          DefaultPlayerData defaultPlayerData = DataAccess.getPlayer(player, BorisLib.PLAYER_DATA_KEY);
          String username = defaultPlayerData != null ? defaultPlayerData.getUsername() : "<???>";
-         log(3,"Failed to get Arcane Profile for "+username + " ("+player+")");
-         log(3,e.getMessage());
+         log(3, "Failed to get Arcane Profile for " + username + " (" + player + ")");
+         log(3, e.getMessage());
          e.printStackTrace();
       }
       return null;
@@ -131,8 +131,9 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    /**
     * Uses built in logger to log a message
+    *
     * @param level 0 - Info | 1 - Warn | 2 - Error | 3 - Fatal | Else - Debug
-    * @param msg  The {@code String} to be printed.
+    * @param msg   The {@code String} to be printed.
     */
    public static void log(int level, String msg){
       switch(level){

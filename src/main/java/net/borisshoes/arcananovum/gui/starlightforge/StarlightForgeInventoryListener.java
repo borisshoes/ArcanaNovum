@@ -72,10 +72,10 @@ public class StarlightForgeInventoryListener implements ContainerListener {
       }
       
       if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.DISABLE_STARDUST_INFUSION)){
-         CraftingInput input = CraftingInput.of(3,3,craftingStacks);
-         Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING,input,world);
-         if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input,world.registryAccess()))){
-            return optional.get().value().assemble(input,world.registryAccess()).copy();
+         CraftingInput input = CraftingInput.of(3, 3, craftingStacks);
+         Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, world);
+         if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input, world.registryAccess()))){
+            return optional.get().value().assemble(input, world.registryAccess()).copy();
          }
       }
       
@@ -89,9 +89,9 @@ public class StarlightForgeInventoryListener implements ContainerListener {
       for(int i = 0; i < 9; i++){
          craftingStacks.add(inv.getItem(i));
       }
-      CraftingInput input = CraftingInput.of(3,3,craftingStacks);
-      Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING,input,world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input,world.registryAccess()))){
+      CraftingInput input = CraftingInput.of(3, 3, craftingStacks);
+      Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, world);
+      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input, world.registryAccess()))){
          return optional.get().value().getRemainingItems(input);
       }
       return remainders;
@@ -99,7 +99,7 @@ public class StarlightForgeInventoryListener implements ContainerListener {
    
    public void validRecipe(Container inv){
       if(gui.getMode() == 1){
-         ArcanaRecipe recipe = RecipeManager.getMatchingRecipe(inv,blockEntity);
+         ArcanaRecipe recipe = RecipeManager.getMatchingRecipe(inv, blockEntity);
          
          if(recipe == null){
             GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
@@ -127,7 +127,7 @@ public class StarlightForgeInventoryListener implements ContainerListener {
                   .append(Component.literal("to begin forging this ").withStyle(ChatFormatting.DARK_AQUA))
                   .append(Component.translatable(output.getItem().getDescriptionId()).withStyle(ChatFormatting.YELLOW))
                   .append(Component.literal("!").withStyle(ChatFormatting.DARK_AQUA)))));
-            gui.setSlot(15,craftingItem);
+            gui.setSlot(15, craftingItem);
          }else{
             GuiElementBuilder craftingItem = new GuiElementBuilder(Items.CRAFTING_TABLE);
             craftingItem.setName((Component.literal("")
@@ -142,7 +142,7 @@ public class StarlightForgeInventoryListener implements ContainerListener {
             craftingItem.addLoreLine(Component.literal(""));
             craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                   .append(Component.literal("This slot will show an item once a valid recipe is loaded.").withStyle(ChatFormatting.LIGHT_PURPLE)))));
-            gui.setSlot(15,craftingItem);
+            gui.setSlot(15, craftingItem);
          }
       }
    }

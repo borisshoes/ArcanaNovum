@@ -43,22 +43,22 @@ public class FleeSteleGoal extends Goal {
    }
    
    @Override
-   public boolean canUse() {
-      List<GeomanticSteleBlockEntity.SteleZone> zones = GeomanticSteleBlockEntity.getZonesAtEntity(this.mob,avoidPredicate);
-      if (zones.isEmpty()) {
+   public boolean canUse(){
+      List<GeomanticSteleBlockEntity.SteleZone> zones = GeomanticSteleBlockEntity.getZonesAtEntity(this.mob, avoidPredicate);
+      if(zones.isEmpty()){
          return false;
-      } else {
+      }else{
          zones.sort(Comparator.comparingDouble(stele -> stele.getBlockEntity().getBlockPos().distSqr(this.mob.blockPosition())));
          GeomanticSteleBlockEntity.SteleZone zone = zones.getFirst();
          this.toFlee = zone.getBlockEntity().getBlockPos();
          Vec3 vec3 = DefaultRandomPos.getPosAway(this.mob, 16, 7, this.toFlee.getCenter());
-         if (vec3 == null) {
+         if(vec3 == null){
             this.toFlee = null;
             return false;
-         } else if (this.toFlee.distToCenterSqr(vec3.x, vec3.y, vec3.z) < this.toFlee.distToCenterSqr(this.mob.position())) {
+         }else if(this.toFlee.distToCenterSqr(vec3.x, vec3.y, vec3.z) < this.toFlee.distToCenterSqr(this.mob.position())){
             this.toFlee = null;
             return false;
-         } else {
+         }else{
             this.zone = zone;
             this.path = this.pathNav.createPath(vec3.x, vec3.y, vec3.z, 0);
             return this.path != null;
@@ -67,28 +67,28 @@ public class FleeSteleGoal extends Goal {
    }
    
    @Override
-   public boolean canContinueToUse() {
+   public boolean canContinueToUse(){
       return !this.pathNav.isDone();
    }
    
    @Override
-   public void start() {
+   public void start(){
       this.pathNav.moveTo(this.path, this.walkSpeedModifier);
       this.mob.playSound(SoundEvents.CREEPER_HURT, 1, 1);
       this.zone.getBlockEntity().giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_CREEPER));
    }
    
    @Override
-   public void stop() {
+   public void stop(){
       this.toFlee = null;
       this.zone = null;
    }
    
    @Override
-   public void tick() {
-      if (this.mob.distanceToSqr(this.toFlee.getCenter()) < 49.0) {
+   public void tick(){
+      if(this.mob.distanceToSqr(this.toFlee.getCenter()) < 49.0){
          this.mob.getNavigation().setSpeedModifier(this.sprintSpeedModifier);
-      } else {
+      }else{
          this.mob.getNavigation().setSpeedModifier(this.walkSpeedModifier);
       }
    }

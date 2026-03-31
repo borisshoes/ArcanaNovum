@@ -1242,7 +1242,7 @@ public class ArcanaAugments {
    }
    
    public static int getAugmentOnItem(ItemStack stack, String id){
-      if(!validAugmentAndItem(stack,id)) return 0;
+      if(!validAugmentAndItem(stack, id)) return 0;
       CompoundTag augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
       if(augmentTag.contains(id)){
          return augmentTag.getIntOr(id, 0);
@@ -1277,7 +1277,7 @@ public class ArcanaAugments {
    
    // Applies Augment to Item, cannot down-level existing augments
    public static boolean applyAugment(ItemStack stack, ArcanaAugment augment, int level, boolean withCatalyst){
-      if(!validAugmentAndItem(stack,augment.id)) return false;
+      if(!validAugmentAndItem(stack, augment.id)) return false;
       int curLevel = getAugmentOnItem(stack, augment);
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(arcanaItem == null) return false;

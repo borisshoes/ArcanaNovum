@@ -38,8 +38,8 @@ public class StardustItem extends NormalPolymerItem {
    }
    
    @Override
-   public Component getName(ItemStack stack) {
-      return Component.translatable("item."+MOD_ID+".stardust").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD);
+   public Component getName(ItemStack stack){
+      return Component.translatable("item." + MOD_ID + ".stardust").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD);
    }
    
    public static ItemLore getDefaultLore(){

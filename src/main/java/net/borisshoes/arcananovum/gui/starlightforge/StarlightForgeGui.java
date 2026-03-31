@@ -29,7 +29,6 @@ import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
@@ -63,8 +62,8 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    private final StarlightForgeBlockEntity blockEntity;
    private final Level world;
    private final StarlightForgeInventoryListener listener;
-   private static final int[] FORGE_SLOTS = new int[]{1,2,3,10,11,12,19,20,21};
-   private static final int[] CRAFTING_SLOTS = new int[]{1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
+   private static final int[] FORGE_SLOTS = new int[]{1, 2, 3, 10, 11, 12, 19, 20, 21};
+   private static final int[] CRAFTING_SLOTS = new int[]{1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 19, 20, 21, 22, 23, 28, 29, 30, 31, 32, 37, 38, 39, 40, 41};
    private int mode; // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - Deprecated, 5 - Skilled Selection (9x2)
    private final SimpleContainer inventory;
    private final int skillLvl;
@@ -79,15 +78,15 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       this.blockEntity = blockEntity;
       this.world = world;
       this.mode = mode;
-      this.skillLvl = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SKILLED);
-      this.resourceLvl =  ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.RESOURCEFUL);
+      this.skillLvl = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.SKILLED);
+      this.resourceLvl = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.RESOURCEFUL);
       this.inventory = new SimpleContainer(25);
-      this.listener = new StarlightForgeInventoryListener(this,blockEntity,world,mode);
+      this.listener = new StarlightForgeInventoryListener(this, blockEntity, world, mode);
       inventory.addListener(listener);
       resetClickCooldown();
       
       if(tomeGui == null){
-         this.tomeGui = new ArcaneTomeGui(player, ArcaneTomeGui.TomeMode.COMPENDIUM,null);
+         this.tomeGui = new ArcaneTomeGui(player, ArcaneTomeGui.TomeMode.COMPENDIUM, null);
          TriConsumer<CompendiumEntry, Integer, ClickType> consumer = (entry, index, clickType) -> {
             if(!(entry instanceof ArcanaItemCompendiumEntry arcanaEntry)) return;
             ArcanaItem arcanaItem = arcanaEntry.getArcanaItem();
@@ -96,15 +95,18 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(arcanaItem.getItem());
                if(!recipes.isEmpty()){
                   this.tomeGui.setReturnGui(null);
-                  blockEntity.openRecipeGui(player, recipes.getFirst(),this.tomeGui);
+                  blockEntity.openRecipeGui(player, recipes.getFirst(), this.tomeGui);
                }else{
-                  player.displayClientMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED),false);
+                  player.displayClientMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED), false);
                }
             }else{
-               player.displayClientMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED),false);
+               player.displayClientMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED), false);
             }
          };
-         this.tomeGui.addModes(consumer,(a,b,c)->{},(a,b,c)->{},(a,b,c)->{});
+         this.tomeGui.addModes(consumer, (a, b, c) -> {
+         }, (a, b, c) -> {
+         }, (a, b, c) -> {
+         });
       }else{
          this.tomeGui = tomeGui;
       }
@@ -116,7 +118,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    
    public void openRecipeSelectionGui(){
       tomeGui.setMode(ArcaneTomeGui.TomeMode.COMPENDIUM);
-      this.tomeGui.setGuiFlags(false,false,false,true);
+      this.tomeGui.setGuiFlags(false, false, false, true);
       if(this.mode != 3 && this.mode != 5){
          tomeGui.setReturnGui(this);
       }
@@ -130,22 +132,22 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       }
       if(mode == 0){ // Menu
          if(index == 1){
-            blockEntity.openForgeGui(player,tomeGui);
+            blockEntity.openForgeGui(player, tomeGui);
          }else if(index == 3){
             if(ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.DISABLE_ARCANA_CRAFTING)){
-               player.displayClientMessage(Component.literal("Arcana Crafting has been disabled!").withStyle(ChatFormatting.RED),false);
+               player.displayClientMessage(Component.literal("Arcana Crafting has been disabled!").withStyle(ChatFormatting.RED), false);
             }else{
-               blockEntity.openCraftingGui(player,null,tomeGui);
+               blockEntity.openCraftingGui(player, null, tomeGui);
             }
          }
       }else if(mode == 1){ // Arcana Crafting
          if(index == 7){
             // Go to compendium
-            MinecraftUtils.returnItems(inventory,player);
+            MinecraftUtils.returnItems(inventory, player);
             this.inventory.clearContent();
             openRecipeSelectionGui();
          }else if(index == 25){
-            ArcanaRecipe recipe = RecipeManager.getMatchingRecipe(inventory,blockEntity);
+            ArcanaRecipe recipe = RecipeManager.getMatchingRecipe(inventory, blockEntity);
             if(recipe == null) return false;
             ItemStack showStack = recipe.getDisplayStack();
             
@@ -153,21 +155,21 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(showStack);
                
                if(!ArcanaNovum.data(player).hasResearched(arcanaItem)){
-                  player.displayClientMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED),false);
+                  player.displayClientMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED), false);
                   return false;
                }
                
-               boolean canApplySkilled = getSkilledOptions(arcanaItem,player).entrySet().stream().anyMatch(entry -> entry.getValue() > 0);
+               boolean canApplySkilled = getSkilledOptions(arcanaItem, player).entrySet().stream().anyMatch(entry -> entry.getValue() > 0);
                if(canApplySkilled){
                   resetClickCooldown();
                   buildSkilledGui(arcanaItem, recipe);
                }else{
                   resetClickCooldown();
-                  forgeItem(arcanaItem, recipe, null,type == ClickType.MOUSE_LEFT_SHIFT);
+                  forgeItem(arcanaItem, recipe, null, type == ClickType.MOUSE_LEFT_SHIFT);
                }
             }else{
                resetClickCooldown();
-               forgeItem(showStack.copy(),recipe,type == ClickType.MOUSE_LEFT_SHIFT);
+               forgeItem(showStack.copy(), recipe, type == ClickType.MOUSE_LEFT_SHIFT);
             }
          }
       }else if(mode == 2){ // Equipment Forging
@@ -179,38 +181,38 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                NonNullList<ItemStack> ingredients = NonNullList.create();
                for(int i = 0; i < inventory.getContainerSize(); i++){
                   if(i < 9){
-                     ingredients.add(inventory.removeItem(i,1)); // Remove 1 from ingredients
+                     ingredients.add(inventory.removeItem(i, 1)); // Remove 1 from ingredients
                   }else{
                      inventory.setItem(i, ItemStack.EMPTY); // Clear other slots
                   }
                }
                
-               MinecraftUtils.returnItems(inventory,player);
+               MinecraftUtils.returnItems(inventory, player);
                this.inventory.clearContent();
-               EnhancedForgingGui efg = new EnhancedForgingGui(player,this.blockEntity,stack,ingredients,remainders);
+               EnhancedForgingGui efg = new EnhancedForgingGui(player, this.blockEntity, stack, ingredients, remainders);
                efg.buildGui();
                efg.open();
             }
          }else if(index == 17){
             // Guide gui
             BookElementBuilder bookBuilder = getGuideBook();
-            LoreGui loreGui = new LoreGui(player,bookBuilder,this);
+            LoreGui loreGui = new LoreGui(player, bookBuilder, this);
             loreGui.open();
-            MinecraftUtils.returnItems(inventory,player);
+            MinecraftUtils.returnItems(inventory, player);
             this.inventory.clearContent();
          }
       }else if(mode == 3){ // Recipe
          if(index == 7){
             openRecipeSelectionGui();
-         }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
+         }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 || index % 9 == 5)){
             ItemStack ingredStack = this.getSlot(index).getItemStack();
             List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(ingredStack.getItem());
             if(!recipes.isEmpty()){
-               blockEntity.openRecipeGui(player, recipes.getFirst(),tomeGui);
+               blockEntity.openRecipeGui(player, recipes.getFirst(), tomeGui);
             }
          }
       }
-   
+      
       return true;
    }
    
@@ -218,20 +220,20 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       if(!(blockEntity.getLevel() instanceof ServerLevel world)) return;
       
       ItemStack newItem = item.copy();
-      ArcanaEffectUtils.arcanaCraftingAnim(world,blockEntity.getBlockPos(),newItem,0,fastAnim ? 1.75 : 1);
+      ArcanaEffectUtils.arcanaCraftingAnim(world, blockEntity.getBlockPos(), newItem, 0, fastAnim ? 1.75 : 1);
       
       ItemStack[][] ingredients = new ItemStack[5][5];
       for(int i = 0; i < inventory.getContainerSize(); i++){
-         ingredients[i/5][i%5] = inventory.getItem(i);
+         ingredients[i / 5][i % 5] = inventory.getItem(i);
       }
       ItemStack[][] remainders = recipe.getRemainders(ingredients, blockEntity, resourceLvl);
       for(int i = 0; i < inventory.getContainerSize(); i++){
-         inventory.setItem(i,remainders[i/5][i%5]);
+         inventory.setItem(i, remainders[i / 5][i % 5]);
       }
       
       BorisLib.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {
-         Vec3 pos = blockEntity.getBlockPos().getCenter().add(0,2,0);
-         Containers.dropItemStack(world,pos.x,pos.y,pos.z,newItem);
+         Vec3 pos = blockEntity.getBlockPos().getCenter().add(0, 2, 0);
+         Containers.dropItemStack(world, pos.x, pos.y, pos.z, newItem);
       }));
       
       if(fastAnim){
@@ -244,28 +246,28 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    
    private void forgeItem(ArcanaItem arcanaItem, ArcanaRecipe recipe, @Nullable Tuple<ArcanaAugment, Integer> skillPair, boolean fastAnim){
       if(!(blockEntity.getLevel() instanceof ServerLevel world)) return;
-      ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, recipe.getCenterpieces(), blockEntity),player.getStringUUID(),0,world.getServer());
+      ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, recipe.getCenterpieces(), blockEntity), player.getStringUUID(), 0, world.getServer());
       if(selectedSkin != null){
-         ArcanaItem.putProperty(newArcanaItem,ArcanaItem.SKIN_TAG,selectedSkin.getSerializedName());
-         ArcanaAchievements.grant(player,ArcanaAchievements.ANOTHER_TOUCH_OF_PERSONALITY);
+         ArcanaItem.putProperty(newArcanaItem, ArcanaItem.SKIN_TAG, selectedSkin.getSerializedName());
+         ArcanaAchievements.grant(player, ArcanaAchievements.ANOTHER_TOUCH_OF_PERSONALITY);
       }
       
       if(skillPair != null && skillPair.getB() > 0){
-         ArcanaAugments.applyAugment(newArcanaItem, skillPair.getA(), skillPair.getB(),false);
+         ArcanaAugments.applyAugment(newArcanaItem, skillPair.getA(), skillPair.getB(), false);
       }
       
-      arcanaItem.buildItemLore(newArcanaItem,player.level().getServer());
+      arcanaItem.buildItemLore(newArcanaItem, player.level().getServer());
       
       ItemStack[][] ingredients = new ItemStack[5][5];
       for(int i = 0; i < inventory.getContainerSize(); i++){
-         ingredients[i/5][i%5] = inventory.getItem(i);
+         ingredients[i / 5][i % 5] = inventory.getItem(i);
       }
       ItemStack[][] remainders = recipe.getRemainders(ingredients, blockEntity, resourceLvl);
       for(int i = 0; i < inventory.getContainerSize(); i++){
-         inventory.setItem(i,remainders[i/5][i%5]);
+         inventory.setItem(i, remainders[i / 5][i % 5]);
       }
       
-      ArcanaEffectUtils.arcanaCraftingAnim(world,blockEntity.getBlockPos(),newArcanaItem,0,fastAnim ? 1.75 : 1);
+      ArcanaEffectUtils.arcanaCraftingAnim(world, blockEntity.getBlockPos(), newArcanaItem, 0, fastAnim ? 1.75 : 1);
       
       BorisLib.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {
          if(!ArcanaNovum.data(player).addCrafted(newArcanaItem) && !(arcanaItem instanceof ArcaneTome)){
@@ -273,16 +275,17 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          }
          
          if(arcanaItem.getRarity() != ArcanaRarity.MUNDANE){
-            ArcanaAchievements.grant(player,ArcanaAchievements.INTRO_ARCANA);
-            ArcanaAchievements.progress(player,ArcanaAchievements.INTERMEDIATE_ARTIFICE,1);
+            ArcanaAchievements.grant(player, ArcanaAchievements.INTRO_ARCANA);
+            ArcanaAchievements.progress(player, ArcanaAchievements.INTERMEDIATE_ARTIFICE, 1);
          }
-         if(arcanaItem.getRarity() == ArcanaRarity.SOVEREIGN) ArcanaAchievements.grant(player,ArcanaAchievements.ARTIFICIAL_DIVINITY);
+         if(arcanaItem.getRarity() == ArcanaRarity.SOVEREIGN)
+            ArcanaAchievements.grant(player, ArcanaAchievements.ARTIFICIAL_DIVINITY);
          if(recipe.getForgeRequirement().needsFletchery()){
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.OVERLY_EQUIPPED_ARCHER, arcanaItem.getNameString(),true);
+            ArcanaAchievements.setCondition(player, ArcanaAchievements.OVERLY_EQUIPPED_ARCHER, arcanaItem.getNameString(), true);
          }
          
-         Vec3 pos = blockEntity.getBlockPos().getCenter().add(0,2,0);
-         Containers.dropItemStack(world,pos.x,pos.y,pos.z,newArcanaItem);
+         Vec3 pos = blockEntity.getBlockPos().getCenter().add(0, 2, 0);
+         Containers.dropItemStack(world, pos.x, pos.y, pos.z, newArcanaItem);
       }));
       
       if(fastAnim){
@@ -293,11 +296,11 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       }
    }
    
-   private HashMap<ArcanaAugment,Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayer player){
+   private HashMap<ArcanaAugment, Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayer player){
       List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
-      HashMap<ArcanaAugment,Integer> options = new HashMap<>();
+      HashMap<ArcanaAugment, Integer> options = new HashMap<>();
       if(skillLvl == 0) return options;
-      ArcanaRarity maxRarity = ArcanaAugments.SKILLED.getTiers()[skillLvl-1];
+      ArcanaRarity maxRarity = ArcanaAugments.SKILLED.getTiers()[skillLvl - 1];
       
       for(ArcanaAugment augment : augments){
          ArcanaRarity[] tiers = augment.getTiers();
@@ -307,13 +310,13 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          int unlockedLevel = ArcanaNovum.data(player).getAugmentLevel(augment);
          for(ArcanaRarity tier : tiers){
             sumCost += tier.rarity + 1;
-            if(sumCost > skillPoints || applicableLevel+1 > unlockedLevel || tier.rarity > maxRarity.rarity){
+            if(sumCost > skillPoints || applicableLevel + 1 > unlockedLevel || tier.rarity > maxRarity.rarity){
                break;
             }else{
                applicableLevel++;
             }
          }
-         options.put(augment,applicableLevel);
+         options.put(augment, applicableLevel);
       }
       return options;
    }
@@ -322,18 +325,18 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          if(i % 9 < 4){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).setName(Component.literal("Place Recipe Here >").withStyle(ChatFormatting.DARK_PURPLE)));
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.ARCANA_COLOR)).setName(Component.literal("Place Recipe Here >").withStyle(ChatFormatting.DARK_PURPLE)));
          }else if(i % 9 == 4){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).setName(Component.literal("< Place Recipe Here").withStyle(ChatFormatting.DARK_PURPLE)));
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, ArcanaColors.ARCANA_COLOR)).setName(Component.literal("< Place Recipe Here").withStyle(ChatFormatting.DARK_PURPLE)));
          }else{
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.DARK_COLOR)).setName(Component.empty()).hideTooltip());
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)).setName(Component.empty()).hideTooltip());
          }
       }
       
       GuiElementBuilder bookItem = new GuiElementBuilder(Items.KNOWLEDGE_BOOK);
       bookItem.setName((Component.literal("")
             .append(Component.literal("Read About Stardust Infusion").withStyle(ChatFormatting.GREEN))));
-      setSlot(17,bookItem);
+      setSlot(17, bookItem);
       
       GuiElementBuilder craftingItem = new GuiElementBuilder(Items.CRAFTING_TABLE);
       craftingItem.setName((Component.literal("")
@@ -345,14 +348,14 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
             .append(Component.literal("").withStyle(ChatFormatting.DARK_AQUA)))));
       craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("This slot will show an item once a valid recipe is loaded.").withStyle(ChatFormatting.LIGHT_PURPLE)))));
-      setSlot(15,craftingItem);
+      setSlot(15, craftingItem);
       
       for(int i = 0; i < FORGE_SLOTS.length; i++){
          setSlot(FORGE_SLOTS[i], new GuiElementBuilder(Items.AIR));
       }
       
-      for(int i = 0; i< FORGE_SLOTS.length; i++){
-         setSlotRedirect(FORGE_SLOTS[i], new Slot(inventory,i,0,0));
+      for(int i = 0; i < FORGE_SLOTS.length; i++){
+         setSlotRedirect(FORGE_SLOTS[i], new Slot(inventory, i, 0, 0));
       }
       
       setTitle(Component.literal("Forge Equipment"));
@@ -361,45 +364,45 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    public void buildMenuGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.ARCANA_COLOR)).setName(Component.literal("Starlight Forge").withStyle(ChatFormatting.DARK_PURPLE)));
+         setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.ARCANA_COLOR)).setName(Component.literal("Starlight Forge").withStyle(ChatFormatting.DARK_PURPLE)));
       }
       
       GuiElementBuilder equipmentItem = new GuiElementBuilder(Items.DIAMOND_CHESTPLATE).hideDefaultTooltip();
       equipmentItem.setName((Component.literal("")
             .append(Component.literal("Forge Equipment").withStyle(ChatFormatting.AQUA))));
-      setSlot(1,equipmentItem);
+      setSlot(1, equipmentItem);
       
       GuiElementBuilder arcanaItem = new GuiElementBuilder(Items.END_CRYSTAL);
       arcanaItem.setName((Component.literal("")
             .append(Component.literal("Forge Arcana Items").withStyle(ChatFormatting.LIGHT_PURPLE))));
-      setSlot(3,arcanaItem);
+      setSlot(3, arcanaItem);
       
       setTitle(Component.literal("Starlight Forge"));
    }
    
    public void buildCraftingGui(ArcanaRecipe recipe){
       for(int i = 0; i < getSize(); i++){
-         if(i%9 == 0 || i%9 == 6){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }else if(i%9 == 8){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }else if(i%9 == 7){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         if(i % 9 == 0 || i % 9 == 6){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i % 9 == 8){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i % 9 == 7){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }
       }
-      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(33, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(7, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(43, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GuiElementBuilder book = new GuiElementBuilder(ArcanaRegistry.ARCANE_TOME.getPrefItemNoLore()).hideDefaultTooltip();
       book.setName(Component.literal("Arcana Items").withStyle(ChatFormatting.DARK_PURPLE));
       book.addLoreLine(TextUtils.removeItalics(Component.literal("")
             .append(Component.literal("Click ").withStyle(ChatFormatting.YELLOW))
             .append(Component.literal("to view the Item Compendium to load a recipe").withStyle(ChatFormatting.LIGHT_PURPLE))));
-      setSlot(7,book);
+      setSlot(7, book);
       
       GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
       table.setName(Component.literal("Forge Item").withStyle(ChatFormatting.DARK_PURPLE));
@@ -408,16 +411,16 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
             .append(Component.literal(" to forge an Arcana Item once a recipe is loaded!").withStyle(ChatFormatting.LIGHT_PURPLE))));
       table.addLoreLine(TextUtils.removeItalics(Component.literal("")));
       table.addLoreLine(TextUtils.removeItalics(Component.literal("This slot will show an Arcana Item once a valid recipe is loaded.").withStyle(ChatFormatting.ITALIC, ChatFormatting.AQUA)));
-      setSlot(25,table);
+      setSlot(25, table);
       
       for(int i = 0; i < 25; i++){
          setSlot(CRAFTING_SLOTS[i], new GuiElementBuilder(Items.AIR));
       }
       
-      boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION) >= 1;
+      boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.MYSTIC_COLLECTION) >= 1;
       ArrayList<Container> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
-      for(int i = 0; i<25;i++){
-         setSlotRedirect(CRAFTING_SLOTS[i], new Slot(inventory,i,0,0));
+      for(int i = 0; i < 25; i++){
+         setSlotRedirect(CRAFTING_SLOTS[i], new Slot(inventory, i, 0, 0));
       }
       
       if(recipe != null){
@@ -425,7 +428,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          Container playerInventory = player.getInventory();
          
          for(int i = 0; i < 25; i++){
-            ArcanaIngredient ingredient = ingredients[i/5][i%5];
+            ArcanaIngredient ingredient = ingredients[i / 5][i % 5];
             if(ingredient.ingredientAsStack().isEmpty()) continue;
             List<ItemStack> matchingStacks = new ArrayList<>(); // Build a list of matching stacks
             
@@ -488,11 +491,11 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                      totalStack.grow(removed.getCount());
                   }
                }
-               inventory.setItem(i,totalStack);
+               inventory.setItem(i, totalStack);
             }
          }
          
-         recipe.getForgeRequirement().forgeMeetsRequirement(blockEntity,true,player);
+         recipe.getForgeRequirement().forgeMeetsRequirement(blockEntity, true, player);
          
          HashMap<String, Tuple<Integer, ItemStack>> ingredList = recipe.getIngredientList();
          GuiElementBuilder recipeList = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
@@ -512,12 +515,13 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                   .append(item.getTranslatedName().withStyle(ChatFormatting.AQUA));
             recipeList.addLoreLine(TextUtils.removeItalics(req));
             reqItem.setName(req);
-            setSlot(slotCount,reqItem);
+            setSlot(slotCount, reqItem);
             slotCount += 9;
          }
-         if(!recipe.getForgeRequirementList().isEmpty()) recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+         if(!recipe.getForgeRequirementList().isEmpty())
+            recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("")));
          recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("Does not include item data").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_PURPLE)));
-         setSlot(43,recipeList);
+         setSlot(43, recipeList);
          
       }
       
@@ -530,17 +534,18 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          if(arcanaItem != null){
             ArcanaPlayerData data = ArcanaNovum.data(player);
             List<ArcanaSkin> skins = new ArrayList<>(data.getSkinsForItem(arcanaItem));
+            boolean hasSkins = !skins.isEmpty();
             skins.addFirst(null);
-            if(!skins.isEmpty()){
+            if(hasSkins){
                GuiElementBuilder skinSelector;
                if(selectedSkin == null){
                   skinSelector = GuiElementBuilder.from(arcanaItem.getPrefItemNoLore());
                   skinSelector.setName(Component.translatable("text.arcananovum.item_skin", Component.translatable("text.arcananovum.default")));
                }else{
                   ItemStack skinStack = arcanaItem.getPrefItemNoLore();
-                  ArcanaItem.putProperty(skinStack,ArcanaItem.SKIN_TAG,selectedSkin.getSerializedName());
+                  ArcanaItem.putProperty(skinStack, ArcanaItem.SKIN_TAG, selectedSkin.getSerializedName());
                   skinSelector = GuiElementBuilder.from(skinStack).hideDefaultTooltip();
-                  skinSelector.setName(Component.translatable("text.arcananovum.item_skin",selectedSkin.getName().withStyle(ChatFormatting.BOLD)).withColor(selectedSkin.getPrimaryColor()));
+                  skinSelector.setName(Component.translatable("text.arcananovum.item_skin", selectedSkin.getName().withStyle(ChatFormatting.BOLD)).withColor(selectedSkin.getPrimaryColor()));
                   List<MutableComponent> descLines = selectedSkin.getDescription();
                   for(MutableComponent descLine : descLines){
                      skinSelector.addLoreLine(descLine.withStyle(ChatFormatting.ITALIC).withColor(selectedSkin.getSecondaryColor()));
@@ -567,18 +572,18 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                      curInd = 0;
                   }else if(clickType == ClickType.MOUSE_LEFT){
                      curInd = (curInd - 1) % skins.size();
-                     if(curInd < 0) curInd = skins.size()-1;
+                     if(curInd < 0) curInd = skins.size() - 1;
                   }else if(clickType == ClickType.MOUSE_RIGHT){
                      curInd = (curInd + 1) % skins.size();
                   }
                   this.selectedSkin = skins.get(curInd);
                   loadSkinSelector();
                });
-               setSlot(26,skinSelector);
+               setSlot(26, skinSelector);
             }
          }
       }else{
-         setSlot(26,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         setSlot(26, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       }
    }
    
@@ -589,20 +594,20 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       }
       
       for(int i = 0; i < getSize(); i++){
-         if(i%9 == 0 || i%9 == 6){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }else if(i%9 == 8){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }else if(i%9 == 7){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         if(i % 9 == 0 || i % 9 == 6){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i % 9 == 8){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i % 9 == 7){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }
       }
-      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(33, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(7, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(43, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GuiElementBuilder returnBook = new GuiElementBuilder(ArcanaRegistry.ARCANE_TOME.getPrefItemNoLore());
       returnBook.setName((Component.literal("")
@@ -610,13 +615,13 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       returnBook.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Click ").withStyle(ChatFormatting.GREEN))
             .append(Component.literal("to return to the Arcana Items page").withStyle(ChatFormatting.LIGHT_PURPLE)))));
-      setSlot(7,returnBook);
+      setSlot(7, returnBook);
       
-      setSlot(25,GuiElementBuilder.from(recipe.getDisplayStack()).glow());
+      setSlot(25, GuiElementBuilder.from(recipe.getDisplayStack()).glow());
       
       ArcanaIngredient[][] ingredients = recipe.getIngredients();
       for(int i = 0; i < 25; i++){
-         ItemStack ingredient = ingredients[i/5][i%5].ingredientAsStack();
+         ItemStack ingredient = ingredients[i / 5][i % 5].ingredientAsStack();
          GuiElementBuilder craftingElement = GuiElementBuilder.from(ingredient);
          if(ArcanaItemUtils.isArcane(ingredient)) craftingElement.glow();
          setSlot(CRAFTING_SLOTS[i], craftingElement);
@@ -624,10 +629,10 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       
       HashMap<String, Tuple<Integer, ItemStack>> ingredList = recipe.getIngredientList();
       if(!(recipe instanceof ExplainRecipe)){
-         boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION) >= 1;
+         boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.MYSTIC_COLLECTION) >= 1;
          ArrayList<Container> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
          Container playerInventory = player.getInventory();
-         HashMap<String,Integer> ingredCounts = new HashMap<>();
+         HashMap<String, Integer> ingredCounts = new HashMap<>();
          
          for(int i = 0; i < 25; i++){
             ArcanaIngredient ingredient = ingredients[i / 5][i % 5];
@@ -660,7 +665,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
             for(ItemStack matchingStack : matchingStacks){
                totalCount += matchingStack.getCount();
             }
-            ingredCounts.put(ingredient.getName(),totalCount);
+            ingredCounts.put(ingredient.getName(), totalCount);
          }
          
          
@@ -699,10 +704,10 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          
          table.setCallback((type) -> {
             if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.DISABLE_ARCANA_CRAFTING))
-               blockEntity.openCraftingGui(player,recipe,tomeGui);
+               blockEntity.openCraftingGui(player, recipe, tomeGui);
          });
          
-         setSlot(43,table);
+         setSlot(43, table);
       }
       
       GuiElementBuilder recipeList = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
@@ -725,7 +730,8 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          //setSlot(slotCount,reqItem);
          slotCount += 9;
       }
-      if(!recipe.getForgeRequirementList().isEmpty()) recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("")));
+      if(!recipe.getForgeRequirementList().isEmpty())
+         recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("")));
       recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("Does not include item data").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_PURPLE)));
       //setSlot(26,recipeList);
       
@@ -735,22 +741,22 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          int curInd = otherRecipes.indexOf(recipe);
          
          GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW));
-         nextPage.setName(Component.translatable("gui.arcananovum.next_recipe", curInd+1, size).withStyle(ChatFormatting.DARK_PURPLE));
+         nextPage.setName(Component.translatable("gui.arcananovum.next_recipe", curInd + 1, size).withStyle(ChatFormatting.DARK_PURPLE));
          nextPage.addLoreLine(Component.translatable("text.borislib.two_elements", Component.translatable("gui.borislib.click").withStyle(ChatFormatting.GREEN), Component.translatable("gui.arcananovum.next_recipe_sub").withStyle(ChatFormatting.LIGHT_PURPLE)));
          nextPage.setCallback((type) -> {
-            buildRecipeGui(otherRecipes.get((curInd+1) % size));
+            buildRecipeGui(otherRecipes.get((curInd + 1) % size));
          });
-         setSlot(53,nextPage);
+         setSlot(53, nextPage);
          
          GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW));
-         prevPage.setName(Component.translatable("gui.arcananovum.prev_recipe", curInd+1, size).withStyle(ChatFormatting.DARK_PURPLE));
+         prevPage.setName(Component.translatable("gui.arcananovum.prev_recipe", curInd + 1, size).withStyle(ChatFormatting.DARK_PURPLE));
          prevPage.addLoreLine(Component.translatable("text.borislib.two_elements", Component.translatable("gui.borislib.click").withStyle(ChatFormatting.GREEN), Component.translatable("gui.arcananovum.prev_recipe_sub").withStyle(ChatFormatting.LIGHT_PURPLE)));
          prevPage.setCallback((type) -> {
             int newInd = (curInd - 1) % size;
-            if(curInd < 0) newInd = size-1;
+            if(curInd < 0) newInd = size - 1;
             buildRecipeGui(otherRecipes.get(newInd));
          });
-         setSlot(51,prevPage);
+         setSlot(51, prevPage);
       }
       
       
@@ -768,14 +774,14 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          if(i >= 19 && i <= 25){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.LIGHT_COLOR)).setName(Component.literal("")).hideTooltip());
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.LIGHT_COLOR)).setName(Component.literal("")).hideTooltip());
          }else{
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).setName(Component.literal("Select an Augment to apply it").withStyle(ChatFormatting.DARK_PURPLE)));
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ARCANA_COLOR)).setName(Component.literal("Select an Augment to apply it").withStyle(ChatFormatting.DARK_PURPLE)));
          }
       }
-      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR, Component.empty());
+      GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
       
-      setSlot(4,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
+      setSlot(4, GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
       
       List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
       int[] augmentSlots = DYNAMIC_SLOTS[augments.size()];
@@ -789,7 +795,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          if(augmentLvl > 0){
             name.append(Component.literal("")
                   .append(Component.literal(" (Level ")).withStyle(ChatFormatting.BLUE)
-                  .append(Component.literal(""+augmentLvl)).withStyle(ChatFormatting.DARK_AQUA)
+                  .append(Component.literal("" + augmentLvl)).withStyle(ChatFormatting.DARK_AQUA)
                   .append(Component.literal(")")).withStyle(ChatFormatting.BLUE));
          }else{
             name.append(Component.literal("")
@@ -800,7 +806,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          
          augmentItem1.hideDefaultTooltip().setName(name).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
          
-         int applicableLevel = getSkilledOptions(arcanaItem,player).getOrDefault(augment,0);
+         int applicableLevel = getSkilledOptions(arcanaItem, player).getOrDefault(augment, 0);
          
          List<Component> descLines = augment.getDescription();
          for(Component descLine : descLines){
@@ -814,12 +820,12 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                   .append(Component.literal(" to apply ").withStyle(ChatFormatting.DARK_PURPLE))
                   .append(augment.getTranslatedName().withStyle(ChatFormatting.DARK_AQUA))
                   .append(Component.literal(" at Level ").withStyle(ChatFormatting.DARK_PURPLE))
-                  .append(Component.literal(applicableLevel+"").withStyle(ChatFormatting.LIGHT_PURPLE))));
+                  .append(Component.literal(applicableLevel + "").withStyle(ChatFormatting.LIGHT_PURPLE))));
             augmentItem1.setCallback((clickType) -> {
                if(isOnClickCooldown() || clickType == ClickType.MOUSE_DOUBLE_CLICK){
                   return;
                }
-               forgeItem(arcanaItem, recipe, new Tuple<>(augment,applicableLevel), clickType == ClickType.MOUSE_LEFT_SHIFT);
+               forgeItem(arcanaItem, recipe, new Tuple<>(augment, applicableLevel), clickType == ClickType.MOUSE_LEFT_SHIFT);
                resetClickCooldown();
                close();
             });
@@ -829,12 +835,12 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                if(isOnClickCooldown()){
                   return;
                }
-               player.displayClientMessage(Component.literal("You cannot apply this Augment!").withStyle(ChatFormatting.RED),false);
+               player.displayClientMessage(Component.literal("You cannot apply this Augment!").withStyle(ChatFormatting.RED), false);
             });
          }
          if(augmentLvl > 0) augmentItem1.glow();
          
-         setSlot(19+augmentSlots[i], augmentItem1);
+         setSlot(19 + augmentSlots[i], augmentItem1);
       }
       
       GuiElementBuilder cancel = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).hideDefaultTooltip();
@@ -845,7 +851,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       cancel.setCallback((clickType) -> {
          forgeItem(arcanaItem, recipe, null, clickType == ClickType.MOUSE_LEFT_SHIFT);
       });
-      setSlot(40,cancel);
+      setSlot(40, cancel);
       
       setTitle(Component.literal("Skilled Augmentation Selection"));
    }
@@ -885,11 +891,11 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       if(mode == 3){
          openRecipeSelectionGui();
       }else if(mode == 4 && !ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.DISABLE_ARCANA_CRAFTING)){
-         blockEntity.openCraftingGui(player,null,tomeGui);
+         blockEntity.openCraftingGui(player, null, tomeGui);
       }
       
       if(!player.isDeadOrDying() && !player.isSpectator()){
-         MinecraftUtils.returnItems(inventory,player);
+         MinecraftUtils.returnItems(inventory, player);
       }else if(blockEntity.getLevel() != null){
          Containers.dropContents(blockEntity.getLevel(), blockEntity.getBlockPos().above(1), inventory);
       }
@@ -899,7 +905,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    }
    
    @Override
-   public void onOpen() {
+   public void onOpen(){
       onVirtualInventoryOpen();
       super.onOpen();
    }
@@ -910,10 +916,14 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    }
    
    @Override
-   public SimpleContainer getInventory() { return inventory; }
+   public SimpleContainer getInventory(){
+      return inventory;
+   }
    
    @Override
-   public ServerPlayer getPlayer() { return player; }
+   public ServerPlayer getPlayer(){
+      return player;
+   }
    
    @Override
    public int getClickCooldown(){

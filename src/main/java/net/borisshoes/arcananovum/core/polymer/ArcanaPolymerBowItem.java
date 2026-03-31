@@ -29,13 +29,14 @@ import java.util.List;
 
 public abstract class ArcanaPolymerBowItem extends BowItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
+   
    public ArcanaPolymerBowItem(ArcanaItem arcanaItem, net.minecraft.world.item.Item.Properties settings){
       super(settings.setId(ResourceKey.create(Registries.ITEM, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    
    @Override
-   public Component getName(ItemStack stack) {
+   public Component getName(ItemStack stack){
       return arcanaItem.getDisplayName() != null ? arcanaItem.getDisplayName() : super.getName(stack);
    }
    

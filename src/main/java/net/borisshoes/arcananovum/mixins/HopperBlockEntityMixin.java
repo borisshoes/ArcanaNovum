@@ -19,8 +19,8 @@ public class HopperBlockEntityMixin {
    private static void arcananovum$enderCrateTake(Hopper hopper, Container container, int i, Direction direction, CallbackInfoReturnable<Boolean> cir){
       if(container instanceof EnderCrateBlockEntity crate){
          if(crate.getCrafterId() != null && !crate.getCrafterId().isBlank()){
-            ArcanaAchievements.progress(AlgoUtils.getUUID(crate.getCrafterId()),ArcanaAchievements.ENDERON_PRIME,1);
-            ArcanaAchievements.grant(AlgoUtils.getUUID(crate.getCrafterId()),ArcanaAchievements.OUT_OF_THE_BOX);
+            ArcanaAchievements.progress(AlgoUtils.getUUID(crate.getCrafterId()), ArcanaAchievements.ENDERON_PRIME, 1);
+            ArcanaAchievements.grant(AlgoUtils.getUUID(crate.getCrafterId()), ArcanaAchievements.OUT_OF_THE_BOX);
          }
       }
    }

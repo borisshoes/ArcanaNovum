@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -17,6 +16,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.datastorage.AnchorData;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
@@ -88,8 +88,8 @@ public class ContinuumAnchor extends ArcanaBlock {
       vanillaItem = Items.RESPAWN_ANCHOR;
       block = new ContinuumAnchorBlock(BlockBehaviour.Properties.of().noOcclusion().mapColor(MapColor.COLOR_BLACK).requiresCorrectToolForDrops().strength(50.0f, 1200.0f).lightLevel(state -> ContinuumAnchorBlock.getLightLevel(state, 15)));
       item = new ContinuumAnchorItem(block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.UNLOCK_EXOTIC_MATTER,ResearchTasks.ADVANCEMENT_CHARGE_RESPAWN_ANCHOR,ResearchTasks.UNLOCK_STELLAR_CORE};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.UNLOCK_EXOTIC_MATTER, ResearchTasks.ADVANCEMENT_CHARGE_RESPAWN_ANCHOR, ResearchTasks.UNLOCK_STELLAR_CORE};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("SnivyXXY")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("SnivyXXY"))};
       
       ItemStack stack = new ItemStack(item);
@@ -132,13 +132,13 @@ public class ContinuumAnchor extends ArcanaBlock {
             .append(Component.literal("mobs ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("loaded").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    public static void loadChunks(ServerLevel serverWorld, ChunkPos pos){
       for(int i = -RANGE; i <= RANGE; i++){
          for(int j = -RANGE; j <= RANGE; j++){
-            ContinuumAnchor.addChunk(serverWorld,new ChunkPos(pos.x+i,pos.z+j));
+            ContinuumAnchor.addChunk(serverWorld, new ChunkPos(pos.x + i, pos.z + j));
          }
       }
    }
@@ -150,26 +150,26 @@ public class ContinuumAnchor extends ArcanaBlock {
    }
    
    public static boolean isChunkLoaded(ServerLevel serverWorld, ChunkPos chunk){
-      return ANCHOR_CHUNKS.getOrDefault(serverWorld,new Long2IntOpenHashMap()).containsKey(chunk.toLong());
+      return ANCHOR_CHUNKS.getOrDefault(serverWorld, new Long2IntOpenHashMap()).containsKey(chunk.toLong());
    }
    
    public static void updateLoadedChunks(MinecraftServer server){
-      for (ServerLevel world : server.getAllLevels()){
+      for(ServerLevel world : server.getAllLevels()){
          Long2IntOpenHashMap chunks = ANCHOR_CHUNKS.get(world);
-         if (chunks == null || chunks.isEmpty()) continue;
+         if(chunks == null || chunks.isEmpty()) continue;
          boolean nonEmpty = false;
          ObjectIterator<Long2IntMap.Entry> it = chunks.long2IntEntrySet().fastIterator();
-         while (it.hasNext()){
+         while(it.hasNext()){
             Long2IntMap.Entry e = it.next();
             int t = e.getIntValue();
-            if (t <= 1){
+            if(t <= 1){
                it.remove();
             }else{
                e.setValue(t - 1);
                nonEmpty = true;
             }
          }
-         if (nonEmpty) world.resetEmptyTime();
+         if(nonEmpty) world.resetEmptyTime();
       }
    }
    
@@ -177,7 +177,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       for(ServerLevel serverWorld : minecraftServer.getAllLevels()){
          for(BlockPos anchorPos : DataAccess.getWorld(serverWorld.dimension(), AnchorData.KEY).getAnchors()){
             ChunkPos chunkPos = new ChunkPos(anchorPos);
-            loadChunks(serverWorld,chunkPos);
+            loadChunks(serverWorld, chunkPos);
          }
       }
    }
@@ -185,7 +185,7 @@ public class ContinuumAnchor extends ArcanaBlock {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing study casing that can channel Arcana, I have made additional efforts to reinforce").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing study casing that can channel Arcana, I have made additional efforts to reinforce").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nthis chassis against dimensional shear. By combining all known techniques of manipulating dimensional energy, I believe I can cause a section of space to be locked in time so that the world cannot be unloaded.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nWhen fed with Exotic Matter, the Anchor chunk loads a 5x5 chunk area and produces lazy chunks in the 7x7 ring around it. \nIt is able to stimulate mobs such that they despawn slower when a player isn’t nearby,").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("  Continuum Anchor").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE), Component.literal("\nwhile also inducing new spawns and activating spawners.\nThe Anchor can be turned off with a redstone signal and its fuel can be removed by an empty hand. Additional fuel may also be added while still in use.").withStyle(ChatFormatting.BLACK)));
@@ -217,7 +217,7 @@ public class ContinuumAnchor extends ArcanaBlock {
          if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
             return Blocks.BARRIER.defaultBlockState();
          }else{
-            return Blocks.RESPAWN_ANCHOR.defaultBlockState().setValue(CHARGES,state.getValue(CHARGES));
+            return Blocks.RESPAWN_ANCHOR.defaultBlockState().setValue(CHARGES, state.getValue(CHARGES));
          }
       }
       
@@ -235,7 +235,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       @Nullable
       @Override
       public BlockState getStateForPlacement(BlockPlaceContext ctx){
-         return this.defaultBlockState().setValue(ACTIVE,false).setValue(CHARGES,0);
+         return this.defaultBlockState().setValue(ACTIVE, false).setValue(CHARGES, 0);
       }
       
       @Override
@@ -261,7 +261,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof ContinuumAnchorBlockEntity anchor){
-            initializeArcanaBlock(stack,anchor);
+            initializeArcanaBlock(stack, anchor);
             
             if(placer instanceof ServerPlayer player){
                player.displayClientMessage(Component.literal("Placing the Continuum Anchor sends a ripple across spacetime.").withStyle(ChatFormatting.DARK_BLUE), true);
@@ -276,7 +276,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       }
       
       public static int getLightLevel(BlockState state, int maxLevel){
-         return Mth.floor((float)(state.getValue(CHARGES)) / 4.0f * (float)maxLevel);
+         return Mth.floor((float) (state.getValue(CHARGES)) / 4.0f * (float) maxLevel);
       }
       
       @Override
@@ -290,7 +290,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack ANCHOR_BASE_0 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_0"));
       public static final ItemStack ANCHOR_BASE_1 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_1"));
       public static final ItemStack ANCHOR_BASE_2 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_2"));
@@ -492,8 +492,8 @@ public class ContinuumAnchor extends ArcanaBlock {
       }
       
       @Override
-      public void notifyUpdate(HolderAttachment.UpdateType updateType) {
-         if (updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE) {
+      public void notifyUpdate(HolderAttachment.UpdateType updateType){
+         if(updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE){
             BlockState state = this.blockState();
             if(this.active != state.getValue(ACTIVE)){
                this.active = state.getValue(ACTIVE);

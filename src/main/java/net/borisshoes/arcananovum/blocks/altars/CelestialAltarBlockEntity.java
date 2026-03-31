@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.CelestialAltarGui;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
@@ -45,12 +46,13 @@ import java.util.TreeMap;
 import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING;
 
 public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
-   public static final int[] TIMES = {6000,9000,12000,14000,18000,20000,23000,2000};
+   public static final int[] TIMES = {6000, 9000, 12000, 14000, 18000, 20000, 23000, 2000};
    
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private int cooldown;
    private int mode = 0; // 0 - time, 1 - phase
@@ -63,25 +65,26 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       this.multiblock = ((MultiblockCore) ArcanaRegistry.CELESTIAL_ALTAR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
       this.mode = 0;
       this.phase = 0;
       resetCooldown();
    }
    
-   public static Tuple<Item,Integer> getCost(){
+   public static Tuple<Item, Integer> getCost(){
       try{
          String itemId = ArcanaNovum.CONFIG.getValue(ArcanaConfig.CELESTIAL_ALTAR_ITEM).toString();
          Optional<Holder.Reference<Item>> opt = BuiltInRegistries.ITEM.get(Identifier.parse(itemId));
          assert opt.isPresent();
-         return new Tuple<>(opt.get().value(),1);
+         return new Tuple<>(opt.get().value(), 1);
       }catch(Exception e){
-         return new Tuple<>(Items.NETHER_STAR,1);
+         return new Tuple<>(Items.NETHER_STAR, 1);
       }
    }
    
@@ -90,7 +93,8 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
          player.sendSystemMessage(Component.literal("You cannot access an active Altar").withStyle(ChatFormatting.RED));
          return;
       }
-      CelestialAltarGui gui = new CelestialAltarGui(player,this);;
+      CelestialAltarGui gui = new CelestialAltarGui(player, this);
+      ;
       gui.build();
       gui.open();
    }
@@ -106,15 +110,15 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
          int timeDiff = (targetTime - curTime + 24000) % 24000;
          serverWorld.setDayTime(timeOfDay + timeDiff);
          
-         if(player != null) ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OF_THE_SUN);
+         if(player != null) ArcanaAchievements.grant(player, ArcanaAchievements.POWER_OF_THE_SUN);
       }else{
-         int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
+         int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
          int phaseDiff = (phase - curPhase + 8) % 8;
          serverWorld.setDayTime(timeOfDay + phaseDiff * 24000L);
          
          if(phase == 0 && player != null){
-            ArcanaAchievements.grant(player,ArcanaAchievements.LYCANTHROPE);
+            ArcanaAchievements.grant(player, ArcanaAchievements.LYCANTHROPE);
          }
       }
       SoundUtils.playSound(serverWorld, this.getBlockPos(), SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 1, 0.5f);
@@ -133,10 +137,11 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       
       this.resetCooldown();
       this.setActive(true);
-      ArcanaEffectUtils.celestialAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0, serverWorld.getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING));
+      ArcanaEffectUtils.celestialAltarAnim(serverWorld, this.getBlockPos().getCenter(), 0, serverWorld.getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING));
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(400, () -> {
          changeTime(finalPlayer);
-         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CELESTIAL_ALTAR_ACTIVATE));
+         if(finalPlayer != null)
+            ArcanaNovum.data(finalPlayer).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CELESTIAL_ALTAR_ACTIVATE));
       }));
       return true;
    }
@@ -157,7 +162,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.CELESTIAL_ALTAR).getCheckOffset()), level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.CELESTIAL_ALTAR).getCheckOffset()), level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    private void tick(){
@@ -171,7 +176,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
       
       boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(CelestialAltar.CelestialAltarBlock.ACTIVATABLE).orElse(false);
@@ -218,7 +223,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public void resetCooldown(){
-      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ORBITAL_PERIOD);
+      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.ORBITAL_PERIOD);
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CELESTIAL_ALTAR_COOLDOWN);
       int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.CELESTIAL_ALTAR_COOLDOWN_PER_LVL).get(cooldownLevel);
       this.cooldown = Math.max(1, baseCooldown - cooldownReduction);
@@ -240,6 +245,10 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -255,12 +264,13 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.cooldown = view.getIntOr("cooldown", 0);
       this.mode = view.getIntOr("mode", 0);
       this.phase = view.getIntOr("phase", 0);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -268,14 +278,15 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      view.putInt("cooldown",this.cooldown);
-      view.putInt("mode",this.mode);
-      view.putInt("phase",this.phase);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      view.putInt("cooldown", this.cooldown);
+      view.putInt("mode", this.mode);
+      view.putInt("phase", this.phase);
    }
 }
 

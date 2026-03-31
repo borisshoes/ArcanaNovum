@@ -16,14 +16,14 @@ public class PhantomMoveControlMixin {
    @Shadow
    private float speed;
    
-   @Inject(method = "tick", at=@At("HEAD"), cancellable = true)
+   @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
    private void arcananovum$ensnarementMobPhantom(CallbackInfo ci){
-      Phantom.PhantomMoveControl moveControl = (Phantom.PhantomMoveControl)(Object)this;
+      Phantom.PhantomMoveControl moveControl = (Phantom.PhantomMoveControl) (Object) this;
       Mob entity = moveControl.mob;
       
       MobEffectInstance effect = entity.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null){
-         entity.setDeltaMovement(0,0,0);
+         entity.setDeltaMovement(0, 0, 0);
          speed = 0.0f;
          ci.cancel();
       }

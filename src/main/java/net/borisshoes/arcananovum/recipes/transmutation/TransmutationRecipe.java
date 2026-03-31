@@ -48,7 +48,7 @@ public abstract class TransmutationRecipe {
    
    public abstract List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayer player);
    
-   public abstract List<Tuple<ItemStack,String>> doTransmutation(ItemEntity positiveInput, ItemEntity negativeInput, ItemEntity reagent1, ItemEntity reagent2, ItemEntity aequalisInput, TransmutationAltarBlockEntity altar, ServerPlayer player);
+   public abstract List<Tuple<ItemStack, String>> doTransmutation(ItemEntity positiveInput, ItemEntity negativeInput, ItemEntity reagent1, ItemEntity reagent2, ItemEntity aequalisInput, TransmutationAltarBlockEntity altar, ServerPlayer player);
    
    public abstract boolean canTransmute(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, TransmutationAltarBlockEntity altar);
    
@@ -67,7 +67,7 @@ public abstract class TransmutationRecipe {
    }
    
    public MutableComponent getName(){
-      return Component.translatable("transmutation.arcananovum."+id);
+      return Component.translatable("transmutation.arcananovum." + id);
    }
    
    public boolean validStack(Predicate<ItemStack> recipePred, ItemStack input){
@@ -96,21 +96,21 @@ public abstract class TransmutationRecipe {
    }
    
    public ItemStack getComputedReagent1(ItemStack stack, int bargainLvl){
-      return getComputedReagent(stack,bargainLvl,this.reagent1,reagent1Count);
+      return getComputedReagent(stack, bargainLvl, this.reagent1, reagent1Count);
    }
    
    public ItemStack getComputedReagent2(ItemStack stack, int bargainLvl){
-      return getComputedReagent(stack,bargainLvl,this.reagent2,reagent2Count);
+      return getComputedReagent(stack, bargainLvl, this.reagent2, reagent2Count);
    }
    
    public boolean validReagent1(ItemStack stack, int bargainLvl){
-      ItemStack comp = getComputedReagent1(stack,bargainLvl);
+      ItemStack comp = getComputedReagent1(stack, bargainLvl);
       if(comp == null) return false;
       return stack.getCount() >= comp.getCount();
    }
    
    public boolean validReagent2(ItemStack stack, int bargainLvl){
-      ItemStack comp = getComputedReagent2(stack,bargainLvl);
+      ItemStack comp = getComputedReagent2(stack, bargainLvl);
       if(comp == null) return false;
       return stack.getCount() >= comp.getCount();
    }
@@ -133,18 +133,18 @@ public abstract class TransmutationRecipe {
             }
          }
       }
-      if(first != null) return new ItemStack(first,count);
-      if(second != null) return new ItemStack(second,count);
-      ArcanaNovum.log(2,"Transmutation Recipe "+this.id+" has invalid reagent item");
+      if(first != null) return new ItemStack(first, count);
+      if(second != null) return new ItemStack(second, count);
+      ArcanaNovum.log(2, "Transmutation Recipe " + this.id + " has invalid reagent item");
       return null;
    }
    
    private ItemStack getComputedReagent(ItemStack stack, int bargainLvl, List<Either<Item, TagKey<Item>>> reagent, int count){
-      final double[] bargainMod = new double[]{1.0,2.0,1.8,1.6,1.4,1.2};
+      final double[] bargainMod = new double[]{1.0, 2.0, 1.8, 1.6, 1.4, 1.2};
       final double costMod = bargainLvl < 0 ? 0.5 : bargainMod[bargainLvl];
       boolean matches = reagent.stream().anyMatch(e ->
             ((e.left().isPresent() && stack.is(e.left().get())) || (e.right().isPresent() && stack.is(e.right().get()))));
       if(!matches) return null;
-      return stack.copyWithCount(Mth.ceil(Mth.clamp(count*costMod,1,stack.getMaxStackSize())));
+      return stack.copyWithCount(Mth.ceil(Mth.clamp(count * costMod, 1, stack.getMaxStackSize())));
    }
 }

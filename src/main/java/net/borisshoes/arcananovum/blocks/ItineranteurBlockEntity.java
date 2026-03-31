@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -59,6 +60,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private int maxBlocks, maxRange;
    private float speedBoost;
@@ -73,11 +75,12 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
       super(ArcanaRegistry.ITINERANTEUR_BLOCK_ENTITY, pos, state);
    }
    
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
       this.maxRange = getMaxRange();
       this.maxBlocks = getMaxBlocks();
@@ -293,6 +296,10 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
    
    public int getOrigin(){
       return origin;
+   }
+   
+   public ArcanaSkin getSkin(){
+      return skin;
    }
    
    public String getCustomArcanaName(){
@@ -525,6 +532,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
@@ -546,6 +554,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.store(BLOCKS_TAG, BlockPos.CODEC.listOf(), new ArrayList<>(blocks));
    }
@@ -761,7 +770,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()),true);
+         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), true);
          return;
       }
       
@@ -771,7 +780,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()),true);
+         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), true);
          return;
       }
       
@@ -792,12 +801,12 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
             data.removeMiscData(CRAFTER_TAG);
          }
          data.addMiscData(FED_TAG, ByteTag.valueOf(feed));
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()),false);
+         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), false);
       }else{
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()),true);
+         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), true);
       }
    }
    

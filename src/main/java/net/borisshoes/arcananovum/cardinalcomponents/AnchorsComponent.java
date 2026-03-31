@@ -8,7 +8,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnchorsComponent implements IAnchorsComponent{
+public class AnchorsComponent implements IAnchorsComponent {
    
    public final List<BlockPos> anchors = new ArrayList<>();
    
@@ -42,7 +42,7 @@ public class AnchorsComponent implements IAnchorsComponent{
    @Override
    public void writeData(ValueOutput writeView){
       try{
-         writeView.store("Anchors",CodecUtils.BLOCKPOS_LIST,anchors);
+         writeView.store("Anchors", CodecUtils.BLOCKPOS_LIST, anchors);
       }catch(Exception e){
          e.printStackTrace();
       }

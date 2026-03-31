@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClearAllStatusEffectsConsumeEffect.class)
 public class ClearAllStatusEffectsConsumeEffectMixin {
-
+   
    @Inject(method = "apply", at = @At("RETURN"))
    private void arcananovum$drinkMilk(Level world, ItemStack stack, LivingEntity user, CallbackInfoReturnable<Boolean> cir){
       if(stack.is(Items.MILK_BUCKET) && cir.getReturnValue() && user instanceof ServerPlayer player){

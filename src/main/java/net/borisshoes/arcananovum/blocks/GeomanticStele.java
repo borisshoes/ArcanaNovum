@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
-import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -14,6 +13,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -78,8 +78,8 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       vanillaItem = Items.REINFORCED_DEEPSLATE;
       block = new GeomanticSteleBlock(BlockBehaviour.Properties.of().noOcclusion().requiresCorrectToolForDrops().strength(6.0f, 1200.0f).sound(SoundType.LODESTONE));
       item = new GeomanticSteleItem(block);
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
-      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.OBTAIN_AMETHYST_SHARD};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.OBTAIN_AMETHYST_SHARD};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -133,19 +133,19 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Component.literal("\nMany of my items provide useful passive effects, and others interact with the world around me, however I am limited in having to wield them myself. While channeling Arcana to blocks to allow them").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nindependent activation has been a solved problem via Leyline transmission, I have only now solved the problem of directing the action of these passive effects autonomously.\nThe use of a Runic Matrix along with a geolithic structure").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nprovides the necessary adaptability and support to activate a select few of my items.\n\nUsing an acceptable item on the Stele keystone will place it within the structure.\nThe Stele must then be activated by a\n").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\ndirect redstone signal to the keystone.\n\nWhen using a Charm of Felidae in the Stele, creepers and phantoms become afraid of it, and the Charm's fall reduction gets applied in a cubic range of 15 blocks.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using a Charm of Magnetism in the Stele, the Charm's passive ability is activated and extended to a cubic range of 8 blocks. Items close to the Stele are unaffected.\n\n").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using a Brain in a Jar in the Stele, XP orbs become attracted to the Stele and absorbed by it. If the Jar's mending mode is activated, its effect will be applied in a cubic range of 16 blocks horizontally and 8 blocks vertically.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using the Charm of Cinders in the Stele, the Charm's fire resistance is applied in its range, and if its smelting ability is enabled, it will smelt items on the ground in a cubic range of 20 blocks.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using the Charm of Cleansing in the Stele, the Charm's passive ability is activated and extended to a cubic range of 15 blocks.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using the Charm of Cetacea in the Stele, the Charm's passive ability is activated and extended to a cubic range of 20 blocks.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using the Charm of Wild Growth in the Stele, the Charm's passive ability is activated and extended to a cubic range of 12 blocks horizontally, and 6 blocks vertically.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using a Magmatic or Aquatic Eversource in the Stele, it will continuously generate its fluid atop the Stele construct.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using an Overflowing or Runic Quiver in the Stele, it will continue to restock its arrows.").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY,ChatFormatting.BOLD),Component.literal("\nWhen using the Charm of Leadership in the Stele, the Charm's passive ability is activated and extended to a cubic range of 12 blocks horizontally and 8 blocks vertically.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nMany of my items provide useful passive effects, and others interact with the world around me, however I am limited in having to wield them myself. While channeling Arcana to blocks to allow them").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nindependent activation has been a solved problem via Leyline transmission, I have only now solved the problem of directing the action of these passive effects autonomously.\nThe use of a Runic Matrix along with a geolithic structure").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nprovides the necessary adaptability and support to activate a select few of my items.\n\nUsing an acceptable item on the Stele keystone will place it within the structure.\nThe Stele must then be activated by a\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\ndirect redstone signal to the keystone.\n\nWhen using a Charm of Felidae in the Stele, creepers and phantoms become afraid of it, and the Charm's fall reduction gets applied in a cubic range of 15 blocks.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using a Charm of Magnetism in the Stele, the Charm's passive ability is activated and extended to a cubic range of 8 blocks. Items close to the Stele are unaffected.\n\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using a Brain in a Jar in the Stele, XP orbs become attracted to the Stele and absorbed by it. If the Jar's mending mode is activated, its effect will be applied in a cubic range of 16 blocks horizontally and 8 blocks vertically.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using the Charm of Cinders in the Stele, the Charm's fire resistance is applied in its range, and if its smelting ability is enabled, it will smelt items on the ground in a cubic range of 20 blocks.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using the Charm of Cleansing in the Stele, the Charm's passive ability is activated and extended to a cubic range of 15 blocks.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using the Charm of Cetacea in the Stele, the Charm's passive ability is activated and extended to a cubic range of 20 blocks.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using the Charm of Wild Growth in the Stele, the Charm's passive ability is activated and extended to a cubic range of 12 blocks horizontally, and 6 blocks vertically.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using a Magmatic or Aquatic Eversource in the Stele, it will continuously generate its fluid atop the Stele construct.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using an Overflowing or Runic Quiver in the Stele, it will continue to restock its arrows.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("  Geomantic Stele").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), Component.literal("\nWhen using the Charm of Leadership in the Stele, the Charm's passive ability is activated and extended to a cubic range of 12 blocks horizontally and 8 blocks vertically.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -161,7 +161,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public Vec3i getCheckOffset(){
-      return new Vec3i(-1,0,-1);
+      return new Vec3i(-1, 0, -1);
    }
    
    public class GeomanticSteleItem extends ArcanaPolymerBlockItem {
@@ -178,7 +178,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
 //         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.) >= 1){
 //            stringList.add("");
 //         }
-         baseStack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
       }
       
@@ -227,7 +227,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       
       @org.jspecify.annotations.Nullable
       @Override
-      public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
+      public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext){
          return this.defaultBlockState().setValue(ACTIVE, false);
       }
       
@@ -244,14 +244,14 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      protected void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, @org.jspecify.annotations.Nullable Orientation orientation, boolean bl) {
-         if (!level.isClientSide()) {
+      protected void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, @org.jspecify.annotations.Nullable Orientation orientation, boolean bl){
+         if(!level.isClientSide()){
             boolean currentlyActive = blockState.getValue(ACTIVE);
-            if (currentlyActive != level.hasNeighborSignal(blockPos)) {
-               if (currentlyActive) {
+            if(currentlyActive != level.hasNeighborSignal(blockPos)){
+               if(currentlyActive){
                   level.scheduleTick(blockPos, this, 4);
-               } else if (level.getBlockEntity(blockPos) instanceof GeomanticSteleBlockEntity stele && stele.isAssembled() && !stele.getItem().isEmpty()) {
-                  level.setBlock(blockPos,blockState.setValue(ACTIVE,true),Block.UPDATE_ALL);
+               }else if(level.getBlockEntity(blockPos) instanceof GeomanticSteleBlockEntity stele && stele.isAssembled() && !stele.getItem().isEmpty()){
+                  level.setBlock(blockPos, blockState.setValue(ACTIVE, true), Block.UPDATE_ALL);
                   level.gameEvent(GameEvent.BLOCK_ACTIVATE, blockPos, GameEvent.Context.of(blockState));
                }
             }
@@ -259,8 +259,8 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      protected void tick(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, RandomSource randomSource) {
-         if (blockState.getValue(ACTIVE) && !serverLevel.hasNeighborSignal(blockPos)) {
+      protected void tick(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, RandomSource randomSource){
+         if(blockState.getValue(ACTIVE) && !serverLevel.hasNeighborSignal(blockPos)){
             serverLevel.setBlock(blockPos, blockState.cycle(ACTIVE), 2);
             serverLevel.gameEvent(GameEvent.BLOCK_DEACTIVATE, blockPos, GameEvent.Context.of(blockState));
          }
@@ -269,24 +269,26 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       @Override
       protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit){
          GeomanticSteleBlockEntity stele = (GeomanticSteleBlockEntity) world.getBlockEntity(pos);
-         if(stele != null && player instanceof ServerPlayer serverPlayer && stele.interact(serverPlayer, stack)) return InteractionResult.SUCCESS_SERVER;
+         if(stele != null && player instanceof ServerPlayer serverPlayer && stele.interact(serverPlayer, stack))
+            return InteractionResult.SUCCESS_SERVER;
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       }
       
       @Override
       public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit){
          GeomanticSteleBlockEntity stele = (GeomanticSteleBlockEntity) world.getBlockEntity(pos);
-         if(stele != null && player instanceof ServerPlayer serverPlayer && stele.interact(serverPlayer, ItemStack.EMPTY)) return InteractionResult.SUCCESS_SERVER;
+         if(stele != null && player instanceof ServerPlayer serverPlayer && stele.interact(serverPlayer, ItemStack.EMPTY))
+            return InteractionResult.SUCCESS_SERVER;
          return InteractionResult.PASS;
       }
       
       @Override
-      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState) {
+      public @Nullable ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState initialBlockState){
          return new Model(world, initialBlockState);
       }
    }
    
-   public static final class Model extends BlockModel {
+   public static final class Model extends PackAwareBlockModel {
       public static final ItemStack STELE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/geomantic_stele"));
       
       private final ServerLevel world;
@@ -300,8 +302,9 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       }
    }
    
-   public interface Interaction{
+   public interface Interaction {
       void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range);
+      
       Vec3 getBaseRange();
    }
 }

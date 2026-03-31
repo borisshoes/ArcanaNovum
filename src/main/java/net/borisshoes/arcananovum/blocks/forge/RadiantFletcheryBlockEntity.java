@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.radiantfletchery.RadiantFletcheryGui;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -39,10 +40,11 @@ import java.util.Set;
 import java.util.TreeMap;
 
 public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerListener, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
@@ -57,11 +59,12 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
       this.inventory.addListener(this);
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
    }
    
@@ -81,7 +84,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
          this.seenForge = StarlightForge.findActiveForge(serverWorld, worldPosition) != null;
       }
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
       
       watchingPlayers.removeIf(player -> player.containerMenu == player.inventoryMenu);
@@ -93,7 +96,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
    }
    
    public void openGui(ServerPlayer player){
-      RadiantFletcheryGui gui = new RadiantFletcheryGui(player,this);
+      RadiantFletcheryGui gui = new RadiantFletcheryGui(player, this);
       gui.buildGui();
       gui.open();
       watchingPlayers.add(player);
@@ -111,7 +114,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getCheckOffset()), null);
    }
    
    public Container getInventory(){
@@ -134,6 +137,10 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -148,14 +155,15 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.inventory = new SimpleContainer(getContainerSize());
       this.inventory.addListener(this);
-      if (!this.tryLoadLootTable(view)) {
+      if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -163,12 +171,13 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      if (!this.trySaveLootTable(view)) {
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      if(!this.trySaveLootTable(view)){
          ContainerHelper.saveAllItems(view, this.inventory.getItems());
       }
    }
@@ -181,7 +190,7 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
    @Override
    protected void setItems(NonNullList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
-         this.inventory.setItem(i,list.get(i));
+         this.inventory.setItem(i, list.get(i));
       }
    }
    
@@ -224,25 +233,25 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
          ItemStack outputStack = inv.getItem(2);
          int potionRatio = getPotionRatio();
          ItemStack resultStack = new ItemStack(Items.TIPPED_ARROW);
-         resultStack.set(DataComponents.POTION_CONTENTS,potionStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY));
+         resultStack.set(DataComponents.POTION_CONTENTS, potionStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY));
          resultStack.setCount(potionRatio);
          
-         while(arrowStack.getCount() >= potionRatio && potionStack.getCount() >= 1 && (((outputStack.getMaxStackSize()-outputStack.getCount()) >= potionRatio && ItemStack.isSameItemSameComponents(outputStack,resultStack)) || outputStack.isEmpty())){
+         while(arrowStack.getCount() >= potionRatio && potionStack.getCount() >= 1 && (((outputStack.getMaxStackSize() - outputStack.getCount()) >= potionRatio && ItemStack.isSameItemSameComponents(outputStack, resultStack)) || outputStack.isEmpty())){
             arrowStack.shrink(potionRatio);
-            inv.setItem(0,arrowStack.isEmpty() ? ItemStack.EMPTY : arrowStack);
+            inv.setItem(0, arrowStack.isEmpty() ? ItemStack.EMPTY : arrowStack);
             
             potionStack.shrink(1);
-            inv.setItem(1,potionStack.isEmpty() ? ItemStack.EMPTY : potionStack);
+            inv.setItem(1, potionStack.isEmpty() ? ItemStack.EMPTY : potionStack);
             
             if(outputStack.isEmpty()){
                outputStack = resultStack;
-               inv.setItem(2,resultStack);
+               inv.setItem(2, resultStack);
             }else{
                outputStack.grow(potionRatio);
-               inv.setItem(2,outputStack);
+               inv.setItem(2, outputStack);
             }
             
-            watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.FINALLY_USEFUL_2));
+            watchingPlayers.forEach(player -> ArcanaAchievements.grant(player, ArcanaAchievements.FINALLY_USEFUL_2));
             watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_RADIANT_FLETCHERY_TIP_ARROWS)));
          }
          

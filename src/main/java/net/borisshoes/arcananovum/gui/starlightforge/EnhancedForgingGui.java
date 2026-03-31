@@ -61,7 +61,7 @@ public class EnhancedForgingGui extends SimpleGui {
    /**
     * Constructs a new simple container gui for the supplied player.
     *
-    * @param player                the player to server this gui to
+    * @param player the player to server this gui to
     */
    public EnhancedForgingGui(ServerPlayer player, StarlightForgeBlockEntity blockEntity, ItemStack enhancedStack, NonNullList<ItemStack> ingredients, NonNullList<ItemStack> remainders){
       super(MenuType.GENERIC_9x6, player, false);
@@ -82,10 +82,10 @@ public class EnhancedForgingGui extends SimpleGui {
          buildGui();
       }else if(index == 26){
          if(type.isRight){
-            this.selectedItem = EFItem.cycleItem(selectedItem,true);
+            this.selectedItem = EFItem.cycleItem(selectedItem, true);
             buildGui();
          }else if(type.isLeft){
-            this.selectedItem = EFItem.cycleItem(selectedItem,false);
+            this.selectedItem = EFItem.cycleItem(selectedItem, false);
             buildGui();
          }else if(type == ClickType.MOUSE_LEFT_SHIFT){
             this.selectedItem = EFItem.NOVA;
@@ -98,7 +98,7 @@ public class EnhancedForgingGui extends SimpleGui {
          }else{
             if(game.hasNextTurn()){
                if(game.getTurn() == 0 && !paid){
-                  if(MinecraftUtils.removeItems(player,ArcanaRegistry.STARDUST,game.getTotalCost())){
+                  if(MinecraftUtils.removeItems(player, ArcanaRegistry.STARDUST, game.getTotalCost())){
                      turnMode = false;
                      animated = true;
                      cinematicMode = true;
@@ -107,8 +107,8 @@ public class EnhancedForgingGui extends SimpleGui {
                      buildGui();
                   }else{
                      player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                           .append(Component.translatable(ArcanaRegistry.STARDUST.getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC)),false);
-                     SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH,1,.5f);
+                           .append(Component.translatable(ArcanaRegistry.STARDUST.getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC)), false);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                   }
                }
             }
@@ -122,15 +122,15 @@ public class EnhancedForgingGui extends SimpleGui {
          int y = index / 9;
          
          if(type == ClickType.MOUSE_LEFT_SHIFT){ // Tile change / Reset
-            if(this.selectedItem == game.getItemAt(x,y)){
-               game.removeChanges(x,y);
+            if(this.selectedItem == game.getItemAt(x, y)){
+               game.removeChanges(x, y);
             }else{
-               game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TILE_CHANGE,x,y,Optional.of(this.selectedItem)));
+               game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TILE_CHANGE, x, y, Optional.of(this.selectedItem)));
             }
          }else if(type == ClickType.MOUSE_LEFT){ // Turn Decrease
-            game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TURN_DECREASE,x,y,Optional.empty()));
+            game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TURN_DECREASE, x, y, Optional.empty()));
          }else if(type == ClickType.MOUSE_RIGHT){ // Turn Increase
-            game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TURN_INCREASE,x,y,Optional.empty()));
+            game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TURN_INCREASE, x, y, Optional.empty()));
          }
          game.applyChanges();
          buildGui();
@@ -179,7 +179,7 @@ public class EnhancedForgingGui extends SimpleGui {
                
                Collections.shuffle(slots);
                for(int i = 0; i < 3 && i < slots.size(); i++){
-                  setSlot(slots.get(i),elem);
+                  setSlot(slots.get(i), elem);
                }
                return;
             }
@@ -191,7 +191,7 @@ public class EnhancedForgingGui extends SimpleGui {
             return;
          }
          
-         endingAnim ++;
+         endingAnim++;
          return;
       }
       
@@ -211,14 +211,14 @@ public class EnhancedForgingGui extends SimpleGui {
    public void buildGui(){
       setTitle(Component.literal("Stardust Infusion"));
       
-      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
-      setSlot(16,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
-      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
-      setSlot(25,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
-      setSlot(34,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
-      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
-      setSlot(44,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
-      setSlot(52,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
+      setSlot(7, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
+      setSlot(16, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
+      setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
+      setSlot(25, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
+      setSlot(34, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
+      setSlot(43, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
+      setSlot(44, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
+      setSlot(52, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.LAPIS_COLOR)).setName(Component.empty()).hideTooltip());
       
       GuiElementBuilder orderItem = GuiElementBuilder.from(Items.CLOCK.getDefaultInstance()).hideDefaultTooltip();
       orderItem.setName(Component.literal("Show Item Order").withStyle(ChatFormatting.YELLOW));
@@ -228,21 +228,21 @@ public class EnhancedForgingGui extends SimpleGui {
       orderItem.addLoreLine(TextUtils.removeItalics(Component.literal("Newly created items activate after all queued tiles.").withStyle(ChatFormatting.GRAY)));
       orderItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
             .append(Component.literal("Changing turn order costs ").withStyle(ChatFormatting.GRAY))
-            .append(Component.literal(""+ EnhancedForgingGame.EFChange.TURN_CHANGE_COST).withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("" + EnhancedForgingGame.EFChange.TURN_CHANGE_COST).withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" stardust.").withStyle(ChatFormatting.YELLOW))));
       orderItem.setMaxCount(99);
-      orderItem.setCount(game.getTurn()+1);
-      setSlot(8,orderItem);
+      orderItem.setCount(game.getTurn() + 1);
+      setSlot(8, orderItem);
       
       GuiElementBuilder runItem = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).hideDefaultTooltip();
       runItem.setName(Component.literal("Activate Forge").withStyle(ChatFormatting.YELLOW));
       runItem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to activate the forge.").withStyle(ChatFormatting.LIGHT_PURPLE))));
       if(showCodes){
          runItem.addLoreLine(Component.literal(""));
-         runItem.addLoreLine(TextUtils.removeItalics(Component.literal("Board ID: "+game.getStartingCode()).withStyle(ChatFormatting.DARK_GRAY)));
-         runItem.addLoreLine(TextUtils.removeItalics(Component.literal("Solution ID: "+game.getGameCode()).withStyle(ChatFormatting.DARK_GRAY)));
+         runItem.addLoreLine(TextUtils.removeItalics(Component.literal("Board ID: " + game.getStartingCode()).withStyle(ChatFormatting.DARK_GRAY)));
+         runItem.addLoreLine(TextUtils.removeItalics(Component.literal("Solution ID: " + game.getGameCode()).withStyle(ChatFormatting.DARK_GRAY)));
       }
-      setSlot(53,runItem);
+      setSlot(53, runItem);
       
       int playCost = EnhancedForgingGame.PLAY_COST;
       int turnCost = game.getTurnChangeCost();
@@ -253,28 +253,28 @@ public class EnhancedForgingGui extends SimpleGui {
       stardustItem.setName(Component.literal("Requires 10 Stardust").withStyle(ChatFormatting.YELLOW));
       stardustItem.setName(Component.literal("")
             .append(Component.literal("Requires ").withStyle(ChatFormatting.YELLOW))
-            .append(Component.literal(""+totalCost).withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("" + totalCost).withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" Stardust").withStyle(ChatFormatting.YELLOW)));
       stardustItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
             .append(Component.literal("Base Cost: ").withStyle(ChatFormatting.LIGHT_PURPLE))
-            .append(Component.literal(playCost+" Stardust").withStyle(ChatFormatting.GOLD))));
+            .append(Component.literal(playCost + " Stardust").withStyle(ChatFormatting.GOLD))));
       stardustItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
             .append(Component.literal("Turn Order Cost: ").withStyle(ChatFormatting.GREEN))
-            .append(Component.literal(turnCost+" Stardust").withStyle(ChatFormatting.GOLD))));
+            .append(Component.literal(turnCost + " Stardust").withStyle(ChatFormatting.GOLD))));
       stardustItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
             .append(Component.literal("Tile Cost: ").withStyle(ChatFormatting.AQUA))
-            .append(Component.literal(tileCost+" Stardust").withStyle(ChatFormatting.GOLD))));
+            .append(Component.literal(tileCost + " Stardust").withStyle(ChatFormatting.GOLD))));
       stardustItem.addLoreLine(Component.literal(""));
       stardustItem.addLoreLine(TextUtils.removeItalics(Component.literal("Changing tiles or tile order costs stardust.").withStyle(ChatFormatting.GRAY)));
       stardustItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
             .append(Component.literal("Forging has a base cost of ").withStyle(ChatFormatting.GRAY))
-            .append(Component.literal(""+playCost).withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("" + playCost).withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" stardust.").withStyle(ChatFormatting.YELLOW))));
       stardustItem.addLoreLine(Component.literal(""));
       stardustItem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Right Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to reset the layout.").withStyle(ChatFormatting.LIGHT_PURPLE))));
       stardustItem.setMaxCount(99);
       stardustItem.setCount(totalCost);
-      setSlot(35,stardustItem);
+      setSlot(35, stardustItem);
       
       GuiElementBuilder placementItem = GuiElementBuilder.from(GraphicalItem.with(this.selectedItem.displayElement)).hideDefaultTooltip();
       placementItem.setName(Component.literal("")
@@ -282,7 +282,7 @@ public class EnhancedForgingGui extends SimpleGui {
             .append(this.selectedItem.name));
       placementItem.addLoreLine(TextUtils.removeItalics(Component.literal("")
             .append(Component.literal("This tile costs ").withStyle(ChatFormatting.GRAY))
-            .append(Component.literal(""+this.selectedItem.placementCost).withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("" + this.selectedItem.placementCost).withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" stardust.").withStyle(ChatFormatting.YELLOW))));
       placementItem.addLoreLine(Component.literal(""));
       for(Component text : this.selectedItem.description){
@@ -291,14 +291,14 @@ public class EnhancedForgingGui extends SimpleGui {
       placementItem.addLoreLine(Component.literal(""));
       placementItem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Click or Right Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to cycle tile types.").withStyle(ChatFormatting.LIGHT_PURPLE))));
       placementItem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Shift Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" a tile to convert it.").withStyle(ChatFormatting.LIGHT_PURPLE))));
-      placementItem.setCount(Math.max(1,this.selectedItem.placementCost));
-      setSlot(26,placementItem);
+      placementItem.setCount(Math.max(1, this.selectedItem.placementCost));
+      setSlot(26, placementItem);
       
-      Tuple<EFItem,Integer>[][] board = game.getBoard();
+      Tuple<EFItem, Integer>[][] board = game.getBoard();
       
       for(int x = 0; x < game.width; x++){
          for(int y = 0; y < game.height; y++){
-            Tuple<EFItem,Integer> tile = board[x][y];
+            Tuple<EFItem, Integer> tile = board[x][y];
             GuiElementBuilder elem = EFItem.getGuiElement(tile.getA());
             if(tile.getA() != EFItem.PLANET){
                elem.addLoreLine(Component.literal(""));
@@ -315,14 +315,14 @@ public class EnhancedForgingGui extends SimpleGui {
             
             if(turnMode){
                elem.setMaxCount(99);
-               elem.setCount(tile.getB()+1);
+               elem.setCount(tile.getB() + 1);
             }
             
             if(cinematicMode){
                elem.hideTooltip();
-               setSlot((x+1) + 9*y, elem);
+               setSlot((x + 1) + 9 * y, elem);
             }else{
-               setSlot(x + 9*y, elem);
+               setSlot(x + 9 * y, elem);
             }
          }
       }
@@ -330,8 +330,8 @@ public class EnhancedForgingGui extends SimpleGui {
       if(cinematicMode){
          for(int i = 0; i < 6; i++){
             GuiElementBuilder elem = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.BLACK)).hideTooltip();
-            setSlot(i*9, elem);
-            setSlot(i*9+8, elem);
+            setSlot(i * 9, elem);
+            setSlot(i * 9 + 8, elem);
          }
       }
    }
@@ -344,23 +344,23 @@ public class EnhancedForgingGui extends SimpleGui {
       double percentile = EnhancedStatUtils.generatePercentile(game.getStarCount());
       
       if(enhancedStack.is(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER)){
-         enhancedStack.setCount((int)(6*Math.pow(percentile,5) + 5*percentile + 5));
+         enhancedStack.setCount((int) (6 * Math.pow(percentile, 5) + 5 * percentile + 5));
       }else{
          EnhancedStatUtils.enhanceItem(enhancedStack, percentile);
          ArcanaNovum.data(player).setResearchTask(ResearchTasks.INFUSE_ITEM, true);
       }
       
-      ArcanaEffectUtils.enhancedForgingAnim(world,blockEntity.getBlockPos(),enhancedStack,0,fast ? 1.75 : 1);
+      ArcanaEffectUtils.enhancedForgingAnim(world, blockEntity.getBlockPos(), enhancedStack, 0, fast ? 1.75 : 1);
       
       final int finalCost = game.getTotalCost();
       
       BorisLib.addTickTimerCallback(world, new GenericTimer(fast ? (int) (350 / 1.75) : 350, () -> {
          if(percentile >= 0.99 && !enhancedStack.is(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER)){
-            ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN);
+            ArcanaAchievements.grant(player, ArcanaAchievements.MASTER_CRAFTSMAN);
          }
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STARDUST_INFUSION_PER_STARDUST)*finalCost);
-         Vec3 pos = blockEntity.getBlockPos().getCenter().add(0,2,0);
-         Containers.dropItemStack(world,pos.x,pos.y,pos.z,enhancedStack);
+         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STARDUST_INFUSION_PER_STARDUST) * finalCost);
+         Vec3 pos = blockEntity.getBlockPos().getCenter().add(0, 2, 0);
+         Containers.dropItemStack(world, pos.x, pos.y, pos.z, enhancedStack);
       }));
       
       paid = false;
@@ -376,19 +376,19 @@ public class EnhancedForgingGui extends SimpleGui {
    public void onClose(){
       NonNullList<ItemStack> list = completed ? remainders : ingredients;
       
-      SimpleContainer returnInv = new SimpleContainer(list.size()+1);
+      SimpleContainer returnInv = new SimpleContainer(list.size() + 1);
       for(ItemStack stack : list){
          returnInv.addItem(stack);
       }
       if(paid){
          int cost = game.getTotalCost();
          while(cost > 0){
-            int amnt = Math.min(cost,ArcanaRegistry.STARDUST.getDefaultMaxStackSize());
-            returnInv.addItem(new ItemStack(ArcanaRegistry.STARDUST,amnt));
+            int amnt = Math.min(cost, ArcanaRegistry.STARDUST.getDefaultMaxStackSize());
+            returnInv.addItem(new ItemStack(ArcanaRegistry.STARDUST, amnt));
             cost -= amnt;
          }
       }
-      MinecraftUtils.returnItems(returnInv,player);
+      MinecraftUtils.returnItems(returnInv, player);
    }
 }
 
@@ -404,18 +404,18 @@ enum EFItem {
                      .append(Component.literal("Plasma").withStyle(ChatFormatting.GOLD))),
                Component.literal(""),
                TextUtils.removeItalics(Component.literal("-- Increases Infusion Result --").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
-         ), 64,Integer.MAX_VALUE, ArcanaRegistry.STAR),
+         ), 64, Integer.MAX_VALUE, ArcanaRegistry.STAR),
    GAS("gas",
          Component.literal("Gas").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD),
          List.of(
                TextUtils.removeItalics(Component.literal("Does Nothing").withStyle(ChatFormatting.GRAY))
-         ), 0,Integer.MAX_VALUE, ArcanaRegistry.GAS),
+         ), 0, Integer.MAX_VALUE, ArcanaRegistry.GAS),
    PLASMA("plasma",
          Component.literal("Plasma").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD),
          List.of(
                TextUtils.removeItalics(Component.literal("")
                      .append(Component.literal("Fuel for other tiles.").withStyle(ChatFormatting.GRAY)))
-         ), 7,1, ArcanaRegistry.PLASMA),
+         ), 7, 1, ArcanaRegistry.PLASMA),
    BLACK_HOLE("black_hole",
          Component.literal("Black Hole").withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD),
          List.of(
@@ -435,7 +435,7 @@ enum EFItem {
                      .append(Component.literal("Black Hole").withStyle(ChatFormatting.BLUE))
                      .append(Component.literal(" or ").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal("Pulsar").withStyle(ChatFormatting.AQUA)))
-         ), 5,7, ArcanaRegistry.BLACK_HOLE),
+         ), 5, 7, ArcanaRegistry.BLACK_HOLE),
    NOVA("nova",
          Component.literal("Nova").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD),
          List.of(
@@ -449,7 +449,7 @@ enum EFItem {
                      .append(Component.literal("Turns into ").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal("Plasma").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal(" otherwise.").withStyle(ChatFormatting.GRAY)))
-         ), 5,5, ArcanaRegistry.NOVA),
+         ), 5, 5, ArcanaRegistry.NOVA),
    SUPERNOVA("supernova",
          Component.literal("Supernova").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD),
          List.of(
@@ -462,7 +462,7 @@ enum EFItem {
                TextUtils.removeItalics(Component.literal("")
                      .append(Component.literal("Turns into ").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal("Quasar").withStyle(ChatFormatting.DARK_AQUA)))
-         ), 24,18, ArcanaRegistry.SUPERNOVA),
+         ), 24, 18, ArcanaRegistry.SUPERNOVA),
    QUASAR("quasar",
          Component.literal("Quasar").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD),
          List.of(
@@ -476,7 +476,7 @@ enum EFItem {
                      .append(Component.literal("column").withStyle(ChatFormatting.RED))
                      .append(Component.literal(" into ").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal("Plasma").withStyle(ChatFormatting.GOLD)))
-         ), 18,12, ArcanaRegistry.QUASAR),
+         ), 18, 12, ArcanaRegistry.QUASAR),
    PULSAR("pulsar",
          Component.literal("Pulsar").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD),
          List.of(
@@ -488,7 +488,7 @@ enum EFItem {
                      .append(Component.literal("Plasma").withStyle(ChatFormatting.GOLD))),
                Component.literal(""),
                TextUtils.removeItalics(Component.literal("-- Increases Infusion Result --").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
-         ), 64,Integer.MAX_VALUE, ArcanaRegistry.PULSAR),
+         ), 64, Integer.MAX_VALUE, ArcanaRegistry.PULSAR),
    NEBULA("nebula",
          Component.literal("Nebula").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD),
          List.of(
@@ -502,7 +502,7 @@ enum EFItem {
                TextUtils.removeItalics(Component.literal("")
                      .append(Component.literal("Immune to ").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal("Black Holes").withStyle(ChatFormatting.BLUE)))
-         ), 3,3, ArcanaRegistry.NEBULA),
+         ), 3, 3, ArcanaRegistry.NEBULA),
    PLANET("planet",
          Component.literal("Planet").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD),
          List.of(
@@ -510,7 +510,7 @@ enum EFItem {
                TextUtils.removeItalics(Component.literal("")
                      .append(Component.literal("Can only be destroyed by a ").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal("Black Hole").withStyle(ChatFormatting.BLUE)))
-         ), 1,Integer.MAX_VALUE, ArcanaRegistry.PLANET);
+         ), 1, Integer.MAX_VALUE, ArcanaRegistry.PLANET);
    
    public final String id;
    public final Component name;
@@ -561,19 +561,19 @@ enum EFItem {
       }
       ind += backwards ? -1 : 1;
       if(ind >= sorts.length) ind = 0;
-      if(ind < 0) ind = sorts.length-1;
+      if(ind < 0) ind = sorts.length - 1;
       return sorts[ind] == PLANET ? cycleItem(PLANET, backwards) : sorts[ind];
    }
 }
 
 
-class EnhancedForgingGame{
+class EnhancedForgingGame {
    
    public static final int PLAY_COST = 10;
    public final int width = 7;
    public final int height = 6;
-   private final Tuple<EFItem,Integer>[][] board = new Tuple[width][height];
-   private final Tuple<EFItem,Integer>[][] originalBoard;
+   private final Tuple<EFItem, Integer>[][] board = new Tuple[width][height];
+   private final Tuple<EFItem, Integer>[][] originalBoard;
    private final List<EFChange> changes;
    private int turn;
    private final RandomSource random = RandomSource.create();
@@ -588,30 +588,30 @@ class EnhancedForgingGame{
    private void createNewBoard(int startingValue, int planetCount, int starCount){
       turn = 0;
       
-      ArrayList<Tuple<Integer,Integer>> eligible = new ArrayList<>();
+      ArrayList<Tuple<Integer, Integer>> eligible = new ArrayList<>();
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            board[x][y] = new Tuple<>(EFItem.GAS,0);
-            eligible.add(new Tuple<>(x,y));
+            board[x][y] = new Tuple<>(EFItem.GAS, 0);
+            eligible.add(new Tuple<>(x, y));
          }
       }
       
       for(int i = 0; i < planetCount && !eligible.isEmpty(); i++){
-         Tuple<Integer,Integer> tile = eligible.get(random.nextInt(eligible.size()));
-         board[tile.getA()][tile.getB()] = new Tuple<>(EFItem.PLANET,0);
+         Tuple<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
+         board[tile.getA()][tile.getB()] = new Tuple<>(EFItem.PLANET, 0);
          eligible.remove(tile);
       }
       
       for(int i = 0; i < starCount && !eligible.isEmpty(); i++){
-         Tuple<Integer,Integer> tile = eligible.get(random.nextInt(eligible.size()));
-         board[tile.getA()][tile.getB()] = new Tuple<>(random.nextFloat() < 0.66 ? EFItem.STAR : EFItem.PULSAR,0);
+         Tuple<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
+         board[tile.getA()][tile.getB()] = new Tuple<>(random.nextFloat() < 0.66 ? EFItem.STAR : EFItem.PULSAR, 0);
          eligible.remove(tile);
       }
       
       EFItem placeItem = EFItem.randomPlacementItem(startingValue, random);
       while(placeItem != null && !eligible.isEmpty()){
-         Tuple<Integer,Integer> tile = eligible.get(random.nextInt(eligible.size()));
-         board[tile.getA()][tile.getB()] = new Tuple<>(placeItem,0);
+         Tuple<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
+         board[tile.getA()][tile.getB()] = new Tuple<>(placeItem, 0);
          eligible.remove(tile);
          startingValue -= placeItem.startingValue;
          placeItem = EFItem.randomPlacementItem(startingValue, random);
@@ -621,7 +621,7 @@ class EnhancedForgingGame{
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
             if(EFItem.hasTurn(board[x][y].getA())){
-               eligible.add(new Tuple<>(x,y));
+               eligible.add(new Tuple<>(x, y));
             }
          }
       }
@@ -629,14 +629,14 @@ class EnhancedForgingGame{
       int itemTurn = 1;
       while(!eligible.isEmpty()){
          int index = random.nextInt(eligible.size());
-         Tuple<Integer,Integer> tile = eligible.get(index);
+         Tuple<Integer, Integer> tile = eligible.get(index);
          board[tile.getA()][tile.getB()].setB(itemTurn);
          itemTurn++;
          eligible.remove(tile);
       }
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            originalBoard[x][y] = new Tuple<>(board[x][y].getA(),board[x][y].getB());
+            originalBoard[x][y] = new Tuple<>(board[x][y].getA(), board[x][y].getB());
          }
       }
    }
@@ -682,7 +682,7 @@ class EnhancedForgingGame{
                count++;
             }
          }
-         board[itemX][itemY] = new Tuple<>(count >= 3 ? EFItem.STAR : EFItem.PLASMA,count >= 3 ? ++highestTurn : 0);
+         board[itemX][itemY] = new Tuple<>(count >= 3 ? EFItem.STAR : EFItem.PLASMA, count >= 3 ? ++highestTurn : 0);
          tileChanged = true;
       }else if(turnItem == EFItem.QUASAR || turnItem == EFItem.PULSAR || turnItem == EFItem.STAR){
          for(Tuple<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
@@ -700,7 +700,7 @@ class EnhancedForgingGame{
                board[slot.getA()][slot.getB()] = new Tuple<>(EFItem.PLASMA, 0);
             }
          }
-         board[itemX][itemY] = new Tuple<>(EFItem.QUASAR,++highestTurn);
+         board[itemX][itemY] = new Tuple<>(EFItem.QUASAR, ++highestTurn);
          tileChanged = true;
       }else if(turnItem == EFItem.NEBULA){
          int count = 0;
@@ -711,7 +711,7 @@ class EnhancedForgingGame{
             }
          }
          if(count >= 4){
-            board[itemX][itemY] = new Tuple<>(EFItem.NOVA,++highestTurn);
+            board[itemX][itemY] = new Tuple<>(EFItem.NOVA, ++highestTurn);
             tileChanged = true;
          }
       }else if(turnItem == EFItem.BLACK_HOLE){
@@ -728,27 +728,27 @@ class EnhancedForgingGame{
             }
          }
          if(convert){
-            board[itemX][itemY] = new Tuple<>(EFItem.QUASAR,++highestTurn);
+            board[itemX][itemY] = new Tuple<>(EFItem.QUASAR, ++highestTurn);
             tileChanged = true;
          }
       }
       return tileChanged;
    }
    
-   private List<Tuple<Integer,Integer>> getValidEffectedSlots(int x, int y, EFItem item){
-      List<Tuple<Integer,Integer>> list = new ArrayList<>();
+   private List<Tuple<Integer, Integer>> getValidEffectedSlots(int x, int y, EFItem item){
+      List<Tuple<Integer, Integer>> list = new ArrayList<>();
       
-      List<Tuple<Integer,Integer>> touching = new ArrayList<>();
-      List<Tuple<Integer,Integer>> diagonal = new ArrayList<>();
-      List<Tuple<Integer,Integer>> surrounding = new ArrayList<>();
-      addIfValid(touching,x-1,y);
-      addIfValid(touching,x+1,y);
-      addIfValid(touching,x,y-1);
-      addIfValid(touching,x,y+1);
-      addIfValid(diagonal,x-1,y-1);
-      addIfValid(diagonal,x+1,y+1);
-      addIfValid(diagonal,x+1,y-1);
-      addIfValid(diagonal,x-1,y+1);
+      List<Tuple<Integer, Integer>> touching = new ArrayList<>();
+      List<Tuple<Integer, Integer>> diagonal = new ArrayList<>();
+      List<Tuple<Integer, Integer>> surrounding = new ArrayList<>();
+      addIfValid(touching, x - 1, y);
+      addIfValid(touching, x + 1, y);
+      addIfValid(touching, x, y - 1);
+      addIfValid(touching, x, y + 1);
+      addIfValid(diagonal, x - 1, y - 1);
+      addIfValid(diagonal, x + 1, y + 1);
+      addIfValid(diagonal, x + 1, y - 1);
+      addIfValid(diagonal, x - 1, y + 1);
       surrounding.addAll(touching);
       surrounding.addAll(diagonal);
       
@@ -756,10 +756,10 @@ class EnhancedForgingGame{
          list.addAll(surrounding);
       }else if(item == EFItem.SUPERNOVA){
          list.addAll(surrounding);
-         addIfValid(list,x-2,y);
-         addIfValid(list,x+2,y);
-         addIfValid(list,x,y-2);
-         addIfValid(list,x,y+2);
+         addIfValid(list, x - 2, y);
+         addIfValid(list, x + 2, y);
+         addIfValid(list, x, y - 2);
+         addIfValid(list, x, y + 2);
       }else if(item == EFItem.NOVA || item == EFItem.STAR){
          list.addAll(touching);
       }else if(item == EFItem.PULSAR){
@@ -767,8 +767,8 @@ class EnhancedForgingGame{
       }else if(item == EFItem.QUASAR){
          list.addAll(surrounding);
          for(int i = 1; i < height; i++){
-            addIfValid(list,x,y+i);
-            addIfValid(list,x,y-i);
+            addIfValid(list, x, y + i);
+            addIfValid(list, x, y - i);
          }
       }
       
@@ -779,9 +779,9 @@ class EnhancedForgingGame{
       return x >= 0 && y >= 0 && x < width && y < height;
    }
    
-   private boolean addIfValid(List<Tuple<Integer,Integer>> list, int x, int y){
-      if(validSlot(x,y)){
-         list.add(new Tuple<>(x,y));
+   private boolean addIfValid(List<Tuple<Integer, Integer>> list, int x, int y){
+      if(validSlot(x, y)){
+         list.add(new Tuple<>(x, y));
          return true;
       }
       return false;
@@ -834,8 +834,8 @@ class EnhancedForgingGame{
    public void applyChanges(){
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            Tuple<EFItem,Integer> pair = originalBoard[x][y];
-            board[x][y] = new Tuple<>(pair.getA(),pair.getB());
+            Tuple<EFItem, Integer> pair = originalBoard[x][y];
+            board[x][y] = new Tuple<>(pair.getA(), pair.getB());
          }
       }
       
@@ -845,27 +845,27 @@ class EnhancedForgingGame{
             EFItem newTile = change.newTile.get();
             if(EFItem.hasTurn(newTile)){
                if(turn == 0){
-                  board[change.x][change.y] = new Tuple<>(newTile,getHighestTurn()+1);
+                  board[change.x][change.y] = new Tuple<>(newTile, getHighestTurn() + 1);
                }else{
-                  board[change.x][change.y] = new Tuple<>(newTile,turn);
+                  board[change.x][change.y] = new Tuple<>(newTile, turn);
                }
             }else{
-               board[change.x][change.y] = new Tuple<>(newTile,0);
+               board[change.x][change.y] = new Tuple<>(newTile, 0);
             }
          }
       }
-      ArrayList<Tuple<Integer, Tuple<Integer,Integer>>> turnArray = new ArrayList<>(); // Build turn order array
+      ArrayList<Tuple<Integer, Tuple<Integer, Integer>>> turnArray = new ArrayList<>(); // Build turn order array
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
             if(EFItem.hasTurn(board[x][y].getA())){
                int turn = board[x][y].getB();
-               turnArray.add(new Tuple<>(turn,new Tuple<>(x,y)));
+               turnArray.add(new Tuple<>(turn, new Tuple<>(x, y)));
             }
          }
       }
-      Comparator<Tuple<Integer, Tuple<Integer,Integer>>> turnComparator = Comparator.comparingInt(Tuple::getA);
+      Comparator<Tuple<Integer, Tuple<Integer, Integer>>> turnComparator = Comparator.comparingInt(Tuple::getA);
       turnArray.sort(turnComparator); // Sort turn order array and then build into ordered list
-      ArrayList<Tuple<Integer,Integer>> turnlessArray = new ArrayList<>();
+      ArrayList<Tuple<Integer, Integer>> turnlessArray = new ArrayList<>();
       for(Tuple<Integer, Tuple<Integer, Integer>> majorPair : turnArray){
          turnlessArray.add(majorPair.getB());
       }
@@ -883,12 +883,12 @@ class EnhancedForgingGame{
             int y = turnlessArray.get(i).getB();
             if(change.x != x || change.y != y) continue;
             if(!increase && i == 0) continue;
-            if(increase && i == turnlessArray.size()-1) continue;
+            if(increase && i == turnlessArray.size() - 1) continue;
             
             if(increase){
-               Collections.swap(turnlessArray,i,i+1);
+               Collections.swap(turnlessArray, i, i + 1);
             }else{
-               Collections.swap(turnlessArray,i,i-1);
+               Collections.swap(turnlessArray, i, i - 1);
             }
             break;
          }
@@ -897,14 +897,16 @@ class EnhancedForgingGame{
       for(int i = 0; i < turnlessArray.size(); i++){ // Rebuild turn numbers
          int x = turnlessArray.get(i).getA();
          int y = turnlessArray.get(i).getB();
-         board[x][y] = new Tuple<>(board[x][y].getA(),i+1);
+         board[x][y] = new Tuple<>(board[x][y].getA(), i + 1);
       }
    }
    
    public void addChange(EFChange change){
       Iterator<EFChange> iter = changes.iterator();
-      if(change.type == EFChangeType.TILE_CHANGE && board[change.x][change.y].getA() == EFItem.PLANET) return; // Planets are unchangeable
-      if((change.type == EFChangeType.TURN_INCREASE || change.type == EFChangeType.TURN_DECREASE) && !EFItem.hasTurn(board[change.x][change.y].getA())) return; // Cant change turn of tile of different type
+      if(change.type == EFChangeType.TILE_CHANGE && board[change.x][change.y].getA() == EFItem.PLANET)
+         return; // Planets are unchangeable
+      if((change.type == EFChangeType.TURN_INCREASE || change.type == EFChangeType.TURN_DECREASE) && !EFItem.hasTurn(board[change.x][change.y].getA()))
+         return; // Cant change turn of tile of different type
       
       while(iter.hasNext()){
          EFChange c = iter.next();
@@ -927,7 +929,8 @@ class EnhancedForgingGame{
       }
       
       // Cases with no change from original (set tile to original, move lowest turn lower, move highest turn higher)
-      if(change.type == EFChangeType.TILE_CHANGE && originalBoard[change.x][change.y].getA() == change.newTile.get()) return;
+      if(change.type == EFChangeType.TILE_CHANGE && originalBoard[change.x][change.y].getA() == change.newTile.get())
+         return;
       if(change.type == EFChangeType.TURN_INCREASE && board[change.x][change.y].getB() == getHighestTurn()) return;
       if(change.type == EFChangeType.TURN_DECREASE && board[change.x][change.y].getB() == getLowestTurn()) return;
       
@@ -935,12 +938,12 @@ class EnhancedForgingGame{
    }
    
    public void removeChanges(int x, int y){
-      if(!validSlot(x,y)) return;
+      if(!validSlot(x, y)) return;
       changes.removeIf(c -> c.y == y && c.x == x);
    }
    
    public EFItem getItemAt(int x, int y){
-      if(!validSlot(x,y)) return null;
+      if(!validSlot(x, y)) return null;
       return board[x][y].getA();
    }
    
@@ -972,7 +975,7 @@ class EnhancedForgingGame{
       return getTurnChangeCost() + getTileChangeCost() + PLAY_COST;
    }
    
-   private static String boardToCode(Tuple<EFItem,Integer>[][] board){
+   private static String boardToCode(Tuple<EFItem, Integer>[][] board){
       StringBuilder binaryString = new StringBuilder();
       binaryString.append("0001"); // Version #
       
@@ -1017,7 +1020,7 @@ class EnhancedForgingGame{
       return boardToCode(this.board);
    }
    
-   public record EFChange(EFChangeType type, int x, int y, Optional<EFItem> newTile){
+   public record EFChange(EFChangeType type, int x, int y, Optional<EFItem> newTile) {
       static final int TURN_CHANGE_COST = 1;
       
       public int getCost(){
@@ -1029,7 +1032,7 @@ class EnhancedForgingGame{
       }
    }
    
-   public enum EFChangeType{
+   public enum EFChangeType {
       TURN_INCREASE,
       TURN_DECREASE,
       TILE_CHANGE

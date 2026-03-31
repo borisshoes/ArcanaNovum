@@ -23,7 +23,8 @@ public class EnderCrateChannels implements StorableData {
    
    private final Map<ChannelKey, EnderCrateChannel> channels = new HashMap<>();
    
-   public EnderCrateChannels(){}
+   public EnderCrateChannels(){
+   }
    
    @Override
    public void read(ValueInput view){
@@ -63,11 +64,11 @@ public class EnderCrateChannels implements StorableData {
    }
    
    public static EnderCrateChannel getChannel(@Nullable UUID lock, DyeColor... colors){
-      return DataAccess.getGlobal(KEY).getCrateChannel(lock,colors);
+      return DataAccess.getGlobal(KEY).getCrateChannel(lock, colors);
    }
    
    public static EnderCrateChannel getChannel(DyeColor... colors){
-      return DataAccess.getGlobal(KEY).getCrateChannel(null,colors);
+      return DataAccess.getGlobal(KEY).getCrateChannel(null, colors);
    }
    
    private record ChannelKey(@Nullable UUID idLock, DyeColor[] colors) {

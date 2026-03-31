@@ -22,13 +22,13 @@ public class PolymerBlockUtilsMixin {
    @ModifyReturnValue(method = "shouldMineServerSide", at = @At("RETURN"))
    private static boolean arcananovum$overrideServerMining(boolean original, ServerPlayer player, BlockPos pos, BlockState state){
       if(!original){
-         boolean cetaceaStele = GeomanticSteleBlockEntity.isEntityInZone(player,(item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARINERS_GRACE) > 0);
+         boolean cetaceaStele = GeomanticSteleBlockEntity.isEntityInZone(player, (item) -> item.is(ArcanaRegistry.CETACEA_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.MARINERS_GRACE) > 0);
          if(cetaceaStele){
             return true;
          }
          List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
          for(ItemStack stack : stacks){
-            boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);
+            boolean isActive = ArcanaItem.getBooleanProperty(stack, ArcanaItem.ACTIVE_TAG);
             if(!isActive) continue;
             return true;
          }

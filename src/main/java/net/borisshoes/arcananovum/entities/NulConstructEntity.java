@@ -108,7 +108,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    private static final EntityDataAccessor<Integer> INVUL_TIMER = SynchedEntityData.defineId(NulConstructEntity.class, EntityDataSerializers.INT);
    private final int[] skullCooldowns = new int[2];
    private final int[] chargedSkullCooldowns = new int[2];
-   private final ServerBossEvent bossBar = (ServerBossEvent)new ServerBossEvent(this.getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.PROGRESS).setDarkenScreen(true);
+   private final ServerBossEvent bossBar = (ServerBossEvent) new ServerBossEvent(this.getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.PROGRESS).setDarkenScreen(true);
    
    public static final double FIGHT_RANGE = 64.0;
    private static final double DECAY_RANGE = 32.0;
@@ -129,11 +129,11 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    private int spellCooldown;
    private float adaptiveResistance;
    private long chunkTicketExpiryTicks = 0L;
-   private HashMap<ConstructSpellType,ConstructSpell> spells;
-   private HashMap<ConstructAdaptations,Boolean> adaptations;
-   private HashMap<BlockPos,Integer> blockDamage;
+   private HashMap<ConstructSpellType, ConstructSpell> spells;
+   private HashMap<ConstructAdaptations, Boolean> adaptations;
+   private HashMap<BlockPos, Integer> blockDamage;
    private List<ServerPlayer> players;
-   private List<Tuple<BlockPos,Integer>> blockPacketQueue;
+   private List<Tuple<BlockPos, Integer>> blockPacketQueue;
    
    private ConstructMovementType movementType = ConstructMovementType.WAIT;
    public Vec3 targetPosition;
@@ -151,7 +151,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       this.setHealth(this.getMaxHealth());
       this.xpReward = 1000;
       this.blockDamage = new HashMap<>();
-      this.movementChangeTime = this.tickCount + this.random.nextIntBetweenInclusive(200,500);
+      this.movementChangeTime = this.tickCount + this.random.nextIntBetweenInclusive(200, 500);
       this.targetPosition = this.position();
       this.circlingCenter = this.blockPosition();
       this.adaptiveResistance = 0.0f;
@@ -159,7 +159,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       players = new ArrayList<>();
       blockPacketQueue = new ArrayList<>();
       for(ConstructAdaptations value : ConstructAdaptations.values()){
-         adaptations.put(value,false);
+         adaptations.put(value, false);
       }
       createSpells();
    }
@@ -171,7 +171,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       spellCooldown = 220;
       spells = new HashMap<>();
       for(ConstructSpellType value : ConstructSpellType.values()){
-         spells.put(value,new ConstructSpell(value));
+         spells.put(value, new ConstructSpell(value));
       }
    }
    
@@ -194,7 +194,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             .add(Attributes.FOLLOW_RANGE, 128)
             .add(Attributes.ARMOR, 10.0)
             .add(Attributes.ARMOR_TOUGHNESS, 10.0)
-            .add(Attributes.ATTACK_DAMAGE,10.0);
+            .add(Attributes.ATTACK_DAMAGE, 10.0);
    }
    
    @Override
@@ -224,9 +224,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    
    private float getTrackedHealth(){
       if(this.isShieldActive()){
-         return Math.min(this.getHealth(), this.getMaxHealth()/2 - 1);
+         return Math.min(this.getHealth(), this.getMaxHealth() / 2 - 1);
       }else{
-         return Math.max(this.getHealth(), this.getMaxHealth()/2 + 1);
+         return Math.max(this.getHealth(), this.getMaxHealth() / 2 + 1);
       }
    }
    
@@ -262,24 +262,24 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       if(headIndex <= 0){
          return this.getX();
       }else{
-         float f = (this.yBodyRot + (float)(180 * (headIndex - 1))) * (float) (Math.PI / 180.0);
+         float f = (this.yBodyRot + (float) (180 * (headIndex - 1))) * (float) (Math.PI / 180.0);
          float g = Mth.cos(f);
-         return this.getX() + (double)g * 1.3 * (double)this.getScale();
+         return this.getX() + (double) g * 1.3 * (double) this.getScale();
       }
    }
    
    private double getHeadY(int headIndex){
       float f = headIndex <= 0 ? 3.0F : 2.2F;
-      return this.getY() + (double)(f * this.getScale());
+      return this.getY() + (double) (f * this.getScale());
    }
    
    private double getHeadZ(int headIndex){
       if(headIndex <= 0){
          return this.getZ();
       }else{
-         float f = (this.yBodyRot + (float)(180 * (headIndex - 1))) * (float) (Math.PI / 180.0);
+         float f = (this.yBodyRot + (float) (180 * (headIndex - 1))) * (float) (Math.PI / 180.0);
          float g = Mth.sin(f);
-         return this.getZ() + (double)g * 1.3 * (double)this.getScale();
+         return this.getZ() + (double) g * 1.3 * (double) this.getScale();
       }
    }
    
@@ -316,7 +316,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    }
    
    @Override
-   public void makeStuckInBlock(BlockState state, Vec3 multiplier){}
+   public void makeStuckInBlock(BlockState state, Vec3 multiplier){
+   }
    
    @Override
    public boolean canBeAffected(MobEffectInstance effect){
@@ -336,41 +337,41 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    @Override
    protected void addAdditionalSaveData(ValueOutput view){
       super.addAdditionalSaveData(view);
-      view.putInt("numPlayers",numPlayers);
-      view.putInt("spellCooldown",spellCooldown);
-      view.putBoolean("shouldHaveSummoner",shouldHaveSummoner);
+      view.putInt("numPlayers", numPlayers);
+      view.putInt("spellCooldown", spellCooldown);
+      view.putBoolean("shouldHaveSummoner", shouldHaveSummoner);
       view.putBoolean("summonerHasDivine", summonerHasDivine);
-      view.putBoolean("summonerHasWings",summonerHasWings);
+      view.putBoolean("summonerHasWings", summonerHasWings);
       view.putBoolean("isExalted", isExalted);
-      view.putFloat("prevHP",prevHP);
-      view.putFloat("adaptiveResistance",adaptiveResistance);
+      view.putFloat("prevHP", prevHP);
+      view.putFloat("adaptiveResistance", adaptiveResistance);
       view.putInt("invulnerableTimer", this.getInvulnerableTimer());
       
       if(summoner != null){
-         view.putString("summoner",summoner.getStringUUID());
+         view.putString("summoner", summoner.getStringUUID());
       }
       
       CompoundTag spellsTag = new CompoundTag();
       for(Map.Entry<ConstructSpellType, ConstructSpell> entry : spells.entrySet()){
-         spellsTag.put(entry.getKey().id,entry.getValue().toNbt());
+         spellsTag.put(entry.getKey().id, entry.getValue().toNbt());
       }
-      view.store("spells", CompoundTag.CODEC,spellsTag);
+      view.store("spells", CompoundTag.CODEC, spellsTag);
       
       CompoundTag adaptationsTag = new CompoundTag();
-      adaptations.forEach((adaptation, bool) -> adaptationsTag.putBoolean(adaptation.id,bool));
-      view.store("adaptations", CompoundTag.CODEC,adaptationsTag);
+      adaptations.forEach((adaptation, bool) -> adaptationsTag.putBoolean(adaptation.id, bool));
+      view.store("adaptations", CompoundTag.CODEC, adaptationsTag);
       
       CompoundTag blockDamageTag = new CompoundTag();
       blockDamage.forEach((block, damage) -> {
          CompoundTag blockTag = new CompoundTag();
-         blockTag.putInt("x",block.getX());
-         blockTag.putInt("y",block.getY());
-         blockTag.putInt("z",block.getZ());
-         blockTag.putInt("damage",damage);
+         blockTag.putInt("x", block.getX());
+         blockTag.putInt("y", block.getY());
+         blockTag.putInt("z", block.getZ());
+         blockTag.putInt("damage", damage);
       });
-      view.store("blockDamage", CompoundTag.CODEC,blockDamageTag);
+      view.store("blockDamage", CompoundTag.CODEC, blockDamageTag);
       
-      view.store("players", CodecUtils.STRING_LIST,players.stream().map(ServerPlayer::getStringUUID).toList());
+      view.store("players", CodecUtils.STRING_LIST, players.stream().map(ServerPlayer::getStringUUID).toList());
    }
    
    @Override
@@ -398,7 +399,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       spells = new HashMap<>();
       CompoundTag spellsTag = view.read("spells", CompoundTag.CODEC).orElse(new CompoundTag());
       for(String key : spellsTag.keySet()){
-         spells.put(ConstructSpellType.fromString(key),ConstructSpell.fromNbt(spellsTag.getCompoundOrEmpty(key)));
+         spells.put(ConstructSpellType.fromString(key), ConstructSpell.fromNbt(spellsTag.getCompoundOrEmpty(key)));
       }
       
       adaptations = new HashMap<>();
@@ -432,7 +433,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    // ========== Summoning / Death ==========
    
    public void onSummoned(Player summoner){
-      this.onSummoned(summoner,false);
+      this.onSummoned(summoner, false);
    }
    
    public void onSummoned(Player summoner, boolean mythic){
@@ -458,11 +459,12 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                .append(Component.literal("❖").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                .append(Component.literal("▓").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD, ChatFormatting.OBFUSCATED))
                .append(Component.literal("❖").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD));
-         ArcanaEffectUtils.exaltedConstructSummon(serverWorld, position().add(0,0,0),0);
+         ArcanaEffectUtils.exaltedConstructSummon(serverWorld, position().add(0, 0, 0), 0);
          
          AttributeInstance entityAttributeInstance = getAttribute(Attributes.ATTACK_DAMAGE);
          AttributeModifier entityAttributeModifier = new AttributeModifier(arcanaId("exalted"), 15.0f, AttributeModifier.Operation.ADD_VALUE);
-         if(entityAttributeInstance != null && !entityAttributeInstance.hasModifier(arcanaId("exalted"))) entityAttributeInstance.addPermanentModifier(entityAttributeModifier);
+         if(entityAttributeInstance != null && !entityAttributeInstance.hasModifier(arcanaId("exalted")))
+            entityAttributeInstance.addPermanentModifier(entityAttributeModifier);
       }else{
          witherName = Component.literal("")
                .append(Component.literal("-").withStyle(ChatFormatting.DARK_GRAY))
@@ -474,7 +476,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                .append(Component.literal("-").withStyle(ChatFormatting.DARK_GRAY))
                .append(Component.literal("=").withStyle(ChatFormatting.DARK_GRAY))
                .append(Component.literal("-").withStyle(ChatFormatting.DARK_GRAY));
-         ArcanaEffectUtils.nulConstructSummon(serverWorld, position().add(0,0,0),0);
+         ArcanaEffectUtils.nulConstructSummon(serverWorld, position().add(0, 0, 0), 0);
       }
       
       setCustomName(witherName);
@@ -493,10 +495,10 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       prevHP = getHealth();
       
-      NulConstructDialog.announce(summoner.level().getServer(),summoner,this, Announcements.SUMMON_TEXT);
+      NulConstructDialog.announce(summoner.level().getServer(), summoner, this, Announcements.SUMMON_TEXT);
       NulConstructEntity construct = this;
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), () -> {
-         NulConstructDialog.announce(summoner.level().getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
+         NulConstructDialog.announce(summoner.level().getServer(), summoner, construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasDivine, summonerHasWings, !summonerHasWings, false, true, isExalted, !isExalted});
          setHealth(getMaxHealth());
       }));
    }
@@ -510,14 +512,14 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       if(isExalted){ // TODO proper loot table?
          dropItem(level(), Items.NETHER_STAR.getDefaultInstance().copyWithCount(24), position());
-         dropItem(level(), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextIntBetweenInclusive(8,16)), position());
+         dropItem(level(), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER, this.random.nextIntBetweenInclusive(8, 16)), position());
       }else{
-         for(int i = 0; i < this.random.nextIntBetweenInclusive(4,16); i++){
+         for(int i = 0; i < this.random.nextIntBetweenInclusive(4, 16); i++){
             ItemStack stack = Items.NETHER_STAR.getDefaultInstance().copy();
-            dropItem(level(),stack, position());
-            dropItem(level(),stack.copyWithCount(1), position());
+            dropItem(level(), stack, position());
+            dropItem(level(), stack.copyWithCount(1), position());
          }
-         dropItem(level(),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextIntBetweenInclusive(4,12)), position());
+         dropItem(level(), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER, this.random.nextIntBetweenInclusive(4, 12)), position());
       }
       
       if(summoner == null) return;
@@ -525,33 +527,33 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       boolean dropped = isExalted || this.random.nextFloat() < 0.01;
       
       if(dropped){
-         ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getStringUUID(),0,server);
+         ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(), summoner.getStringUUID(), 0, server);
          ArcanaNovum.data(summoner).addCraftedSilent(stack);
          dropItem(level(), stack.copyWithCount(1), position());
       }
       
       if(!isExalted){
-         ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafter(ArcanaRegistry.DIVINE_CATALYST.getNewItem(),summoner.getStringUUID(),0,server);
+         ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafter(ArcanaRegistry.DIVINE_CATALYST.getNewItem(), summoner.getStringUUID(), 0, server);
          ArcanaNovum.data(summoner).addCraftedSilent(stack);
          dropItem(level(), stack.copyWithCount(1), position());
       }
       
-      NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, dropped, !dropped, isExalted, !isExalted});
+      NulConstructDialog.announce(server, summoner, this, Announcements.SUCCESS, new boolean[]{summonerHasDivine, summonerHasWings, !summonerHasWings, dropped, !dropped, isExalted, !isExalted});
       
       if(summoner instanceof ServerPlayer player){
-         ArcanaAchievements.grant(player,ArcanaAchievements.CONSTRUCT_DECONSTRUCTED);
+         ArcanaAchievements.grant(player, ArcanaAchievements.CONSTRUCT_DECONSTRUCTED);
          if(dropped){
-            ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_FAVOR);
+            ArcanaAchievements.grant(player, ArcanaAchievements.DIVINE_FAVOR);
          }
       }
    }
    
    public void deconstruct(){
       if(summoner != null){
-         NulConstructDialog.announce(level().getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
+         NulConstructDialog.announce(level().getServer(), summoner, this, Announcements.FAILURE, new boolean[]{summonerHasDivine, summonerHasWings, !summonerHasWings, false, true, isExalted, !isExalted});
       }
       
-      if(isExalted) dropItem(level(),(new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1), position());
+      if(isExalted) dropItem(level(), (new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1), position());
       discard();
    }
    
@@ -562,7 +564,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       float f = world.random.nextFloat() * 0.1F;
       float g = world.random.nextFloat() * 6.2831855F;
-      itemEntity.setDeltaMovement((double)(-Mth.sin(g) * f), 0.20000000298023224, (double)(Mth.cos(g) * f));
+      itemEntity.setDeltaMovement((double) (-Mth.sin(g) * f), 0.20000000298023224, (double) (Mth.cos(g) * f));
       world.addFreshEntity(itemEntity);
    }
    
@@ -591,9 +593,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    public boolean hurtServer(ServerLevel world, DamageSource source, float amount){
       if(this.isInvulnerableTo(world, source)){
          return false;
-      } else if(source.is(ArcanaRegistry.NUL_CONSTRUCT_IMMUNE_TO) || source.getEntity() instanceof NulConstructEntity){
+      }else if(source.is(ArcanaRegistry.NUL_CONSTRUCT_IMMUNE_TO) || source.getEntity() instanceof NulConstructEntity){
          return false;
-      } else if(this.getInvulnerableTimer() > 0 && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)){
+      }else if(this.getInvulnerableTimer() > 0 && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)){
          return false;
       }else{
          if(this.isShieldActive()){
@@ -614,7 +616,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                this.adaptiveResistance += 0.05f;
             }
             
-            for (int i = 0; i < this.chargedSkullCooldowns.length; i++){
+            for(int i = 0; i < this.chargedSkullCooldowns.length; i++){
                this.chargedSkullCooldowns[i] = this.chargedSkullCooldowns[i] + 3;
             }
             
@@ -630,7 +632,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       double healthPercent = getHealth() / getMaxHealth();
       
       modified *= isExalted ? 0.6f : 0.75f;
-      modified *= 1.0f - Math.min(0.5f,adaptiveResistance);
+      modified *= 1.0f - Math.min(0.5f, adaptiveResistance);
       
       if(modified > 100){
          modified = 100;
@@ -650,10 +652,10 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       if(this.isReflectionActive()){
          Entity attacker = source.getEntity();
          if(attacker instanceof LivingEntity){
-            if (this.level() instanceof ServerLevel serverWorld) {
+            if(this.level() instanceof ServerLevel serverWorld){
                attacker.hurtServer(serverWorld, damageSources().thorns(this), amount * 0.5f);
             }
-            conversionHeal(amount*0.25f);
+            conversionHeal(amount * 0.25f);
          }
       }
       
@@ -665,20 +667,22 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    
    public void triggerAdaptation(ConstructAdaptations adaptation){
       if(!hasActivatedAdaptation(adaptation) || adaptation.repeatable){
-         NulConstructDialog.abilityText(summoner,this,adaptation.abilityTexts[(int) (Math.random()*adaptation.abilityTexts.length)]);
+         NulConstructDialog.abilityText(summoner, this, adaptation.abilityTexts[(int) (Math.random() * adaptation.abilityTexts.length)]);
       }
-      adaptations.put(adaptation,true);
+      adaptations.put(adaptation, true);
    }
    
    public boolean hasActivatedAdaptation(ConstructAdaptations adaptation){
-      return adaptations.getOrDefault(adaptation,false);
+      return adaptations.getOrDefault(adaptation, false);
    }
    
    private boolean shouldChangeMovementType(){
       if(movementType == ConstructMovementType.WAIT && getTarget() != null) return true;
       if(movementType == ConstructMovementType.SPAWNING && this.getInvulnerableTimer() <= 0) return true;
-      if(movementType == ConstructMovementType.LASER && !spells.get(ConstructSpellType.WITHERING_RAY).isActive()) return true;
-      if(movementType == ConstructMovementType.CHARGE && !spells.get(ConstructSpellType.RELENTLESS_ONSLAUGHT).isActive()) return true;
+      if(movementType == ConstructMovementType.LASER && !spells.get(ConstructSpellType.WITHERING_RAY).isActive())
+         return true;
+      if(movementType == ConstructMovementType.CHARGE && !spells.get(ConstructSpellType.RELENTLESS_ONSLAUGHT).isActive())
+         return true;
       return this.tickCount > this.movementChangeTime;
    }
    
@@ -689,7 +693,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          ChunkPos chunkPos = this.chunkPosition();
          int chunkX = SectionPos.blockToSectionCoord(this.position().x());
          int chunkZ = SectionPos.blockToSectionCoord(this.position().z());
-         if ((--this.chunkTicketExpiryTicks <= 0L || chunkX != SectionPos.blockToSectionCoord(blockPos.getX()) || chunkZ != SectionPos.blockToSectionCoord(blockPos.getZ())) && level() instanceof ServerLevel serverWorld) {
+         if((--this.chunkTicketExpiryTicks <= 0L || chunkX != SectionPos.blockToSectionCoord(blockPos.getX()) || chunkZ != SectionPos.blockToSectionCoord(blockPos.getZ())) && level() instanceof ServerLevel serverWorld){
             serverWorld.resetEmptyTime();
             serverWorld.getChunkSource().addTicketWithRadius(ArcanaRegistry.CONSTRUCT_TICKET_TYPE, chunkPos, 4);
             this.chunkTicketExpiryTicks = ArcanaRegistry.CONSTRUCT_TICKET_TYPE.timeout() - 1L;
@@ -700,7 +704,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          
          if(this.getInvulnerableTimer() > 0){
             int i = this.getInvulnerableTimer() - 1;
-            this.bossBar.setProgress(1.0F - (float)i / 220.0F);
+            this.bossBar.setProgress(1.0F - (float) i / 220.0F);
             if(i <= 0){
                world.explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, Level.ExplosionInteraction.MOB);
                if(!this.isSilent()){
@@ -715,7 +719,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          }else{
             super.customServerAiStep(world);
             
-            for (int ix = 1; ix < 3; ix++){
+            for(int ix = 1; ix < 3; ix++){
                if(this.tickCount >= this.skullCooldowns[ix - 1]){
                   this.skullCooldowns[ix - 1] = this.tickCount + 10 + this.random.nextInt(10);
                   if((world.getDifficulty() == Difficulty.NORMAL || world.getDifficulty() == Difficulty.HARD)
@@ -731,7 +735,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                   
                   int j = this.getTrackedEntityId(ix);
                   if(j > 0){
-                     LivingEntity livingEntity = (LivingEntity)this.level().getEntity(j);
+                     LivingEntity livingEntity = (LivingEntity) this.level().getEntity(j);
                      if(livingEntity != null && this.canAttack(livingEntity) && !(this.distanceToSqr(livingEntity) > 900.0) && this.hasLineOfSight(livingEntity)){
                         this.shootSkullAt(ix + 1, livingEntity);
                         this.skullCooldowns[ix - 1] = this.tickCount + 40 + this.random.nextInt(20);
@@ -742,7 +746,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                   }else{
                      List<LivingEntity> list = world.getNearbyEntities(LivingEntity.class, HEAD_TARGET_PREDICATE, this, this.getBoundingBox().inflate(20.0, 8.0, 20.0));
                      if(!list.isEmpty()){
-                        LivingEntity livingEntity2 = (LivingEntity)list.get(this.random.nextInt(list.size()));
+                        LivingEntity livingEntity2 = (LivingEntity) list.get(this.random.nextInt(list.size()));
                         this.setTrackedEntityId(ix, livingEntity2.getId());
                      }
                   }
@@ -776,8 +780,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             }
             if(summoner.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
                triggerAdaptation(ConstructAdaptations.TRUE_INVISIBILITY);
-               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId("nul_construct_invis_rebuke"),110,4.0f,false,true,false, AttributeModifier.Operation.ADD_VALUE,getUUID());
-               Conditions.addCondition(world.getServer(),summoner,nearsight);
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_invis_rebuke"), 110, 4.0f, false, true, false, AttributeModifier.Operation.ADD_VALUE, getUUID());
+               Conditions.addCondition(world.getServer(), summoner, nearsight);
                summoner.removeEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT);
             }
          }else if(this.getTarget() != null && this.getTarget() instanceof ServerPlayer player){
@@ -788,7 +792,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          
          if(hasActivatedAdaptation(ConstructAdaptations.DAMAGED_BY_MACE)){
             for(ServerPlayer player : players){
-               if(player.level().dimension().equals(level().dimension()) && player.getY() > getY()+10){
+               if(player.level().dimension().equals(level().dimension()) && player.getY() > getY() + 10){
                   ItemStack weapon = player.getWeaponItem();
                   if(weapon.is(Items.MACE) || weapon.is(ArcanaRegistry.GRAVITON_MAUL.getItem())){
                      castSpell(spells.get(ConstructSpellType.SHADOW_SHROUD));
@@ -804,11 +808,11 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                destructiveAura();
             }
             if(isExalted){
-               List<Player> players = level().getEntities(EntityType.PLAYER,getBoundingBox().inflate(FIGHT_RANGE),(e) -> true);
+               List<Player> players = level().getEntities(EntityType.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
                
                for(Player player : players){
-                  ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY,arcanaId("nul_construct"),100,0.50f,true,true,true, AttributeModifier.Operation.ADD_VALUE, getUUID());
-                  Conditions.addCondition(level().getServer(),player,vulnerability);
+                  ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId("nul_construct"), 100, 0.50f, true, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
+                  Conditions.addCondition(level().getServer(), player, vulnerability);
                }
             }
          }
@@ -824,7 +828,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          
          if(recentDamage != null && recentDamage.is(DamageTypes.IN_WALL) && spells.get(ConstructSpellType.SHADOW_SHROUD).getCooldown() <= 0){
             castSpell(spells.get(ConstructSpellType.SHADOW_SHROUD));
-         }else if((int)(curHP*4/(getMaxHealth())) < (int)(prevHP*4/(getMaxHealth())) && spells.get(ConstructSpellType.REFLEXIVE_BLAST).getCooldown() <= 0){
+         }else if((int) (curHP * 4 / (getMaxHealth())) < (int) (prevHP * 4 / (getMaxHealth())) && spells.get(ConstructSpellType.REFLEXIVE_BLAST).getCooldown() <= 0){
             castSpell(spells.get(ConstructSpellType.REFLEXIVE_BLAST));
          }else if(getInvulnerableTimer() <= 0 && spellCooldown <= 0){
             castSpell(spells.get(getWeightedResult(buildWeightedSpellList())));
@@ -851,7 +855,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       }else if(spells.get(ConstructSpellType.RELENTLESS_ONSLAUGHT).isActive()){
          movementType = ConstructMovementType.CHARGE;
       }else if(shouldChangeMovementType()){
-         this.movementChangeTime = this.tickCount + this.random.nextIntBetweenInclusive(200,500);
+         this.movementChangeTime = this.tickCount + this.random.nextIntBetweenInclusive(200, 500);
          
          float healthThreshold = (getHealth() / getMaxHealth()) * 0.6f + 0.2f;
          float random = this.random.nextFloat();
@@ -865,23 +869,23 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       boolean shieldActive = this.isShieldActive();
       
-      for (int jx = 0; jx < 3; jx++){
+      for(int jx = 0; jx < 3; jx++){
          double p = this.getHeadX(jx);
          double q = this.getHeadY(jx);
          double r = this.getHeadZ(jx);
          float s = 0.3F * this.getScale();
-         this.level().addParticle(ParticleTypes.SMOKE,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
+         this.level().addParticle(ParticleTypes.SMOKE, p + this.random.nextGaussian() * (double) s, q + this.random.nextGaussian() * (double) s, r + this.random.nextGaussian() * (double) s, 0.0, 0.0, 0.0);
          if(shieldActive && this.level().random.nextInt(4) == 0){
             ColorParticleOption particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.5F);
-            this.level().addParticle(particle,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
+            this.level().addParticle(particle, p + this.random.nextGaussian() * (double) s, q + this.random.nextGaussian() * (double) s, r + this.random.nextGaussian() * (double) s, 0.0, 0.0, 0.0);
          }
       }
       
       if(this.getInvulnerableTimer() > 0){
          float t = 3.3F * this.getScale();
-         for (int u = 0; u < 3; u++){
+         for(int u = 0; u < 3; u++){
             ColorParticleOption particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.9F);
-            this.level().addParticle(particle,this.getX() + this.random.nextGaussian(),this.getY() + (double)(this.random.nextFloat() * t),this.getZ() + this.random.nextGaussian(), 0.0, 0.0, 0.0);
+            this.level().addParticle(particle, this.getX() + this.random.nextGaussian(), this.getY() + (double) (this.random.nextFloat() * t), this.getZ() + this.random.nextGaussian(), 0.0, 0.0, 0.0);
          }
       }
    }
@@ -893,9 +897,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       if(this.movementType == ConstructMovementType.SPAWNING){ // Do nothing, stay still
          if(this.summoner != null){
-            this.lookAt(this.summoner,30f,30f);
+            this.lookAt(this.summoner, 30f, 30f);
          }
-         setDeltaMovement(0,0,0);
+         setDeltaMovement(0, 0, 0);
          return;
       }else if(this.movementType == ConstructMovementType.WAIT){
          this.acquireTargetCooldown = 0;
@@ -912,9 +916,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             if(headIndex > 2) break;
             if(!initSet){
                this.setTarget(target);
-               this.setTrackedEntityId(0,target.getId());
-               this.setTrackedEntityId(1,target.getId());
-               this.setTrackedEntityId(2,target.getId());
+               this.setTrackedEntityId(0, target.getId());
+               this.setTrackedEntityId(1, target.getId());
+               this.setTrackedEntityId(2, target.getId());
                initSet = true;
             }
             if(distanceTo(target) <= RAY_RANGE){
@@ -929,17 +933,17 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       if(this.getTarget() == null){
          this.movementType = ConstructMovementType.WAIT;
       }else{
-         this.lookAt(this.getTarget(),30.0f,30.0f);
+         this.lookAt(this.getTarget(), 30.0f, 30.0f);
       }
       
       if(this.movementType == ConstructMovementType.CHARGE || this.movementType == ConstructMovementType.MELEE_PURSUIT){
          double sqrDistToTarget = this.distanceToSqr(this.getTarget().getX(), this.getTarget().getY(), this.getTarget().getZ());
-         double attackRange = (double)(this.getBbWidth() * 2.0F * this.getBbWidth() * 2.0F);
+         double attackRange = (double) (this.getBbWidth() * 2.0F * this.getBbWidth() * 2.0F);
          
          if(this.isExalted){
-            List<Player> players = level().getEntities(EntityType.PLAYER,getBoundingBox().inflate(FIGHT_RANGE),(e) -> true);
-            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId("nul_construct_exalted"),30,32.0f,false,true,true, AttributeModifier.Operation.ADD_VALUE,getUUID());
-            players.forEach(p -> Conditions.addCondition(level().getServer(),p,nearsight));
+            List<Player> players = level().getEntities(EntityType.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_exalted"), 30, 32.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
+            players.forEach(p -> Conditions.addCondition(level().getServer(), p, nearsight));
          }
          
          this.attackCooldown = Math.max(this.attackCooldown - 1, 0);
@@ -965,9 +969,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          }
          
          Vec3 targetDiff = this.getTarget().position().subtract(this.position());
-         double lengthDiff = targetDiff.length() - RAY_RANGE*0.5;
+         double lengthDiff = targetDiff.length() - RAY_RANGE * 0.5;
          Vec3 newTargetPos = this.position().add(targetDiff.normalize().scale(lengthDiff));
-         this.targetPosition = new Vec3(newTargetPos.x,this.getTarget().getY()+strafeHeight,newTargetPos.z);
+         this.targetPosition = new Vec3(newTargetPos.x, this.getTarget().getY() + strafeHeight, newTargetPos.z);
       }else if(this.movementType == ConstructMovementType.STRAFE){
          this.circlingCenter = this.getTarget().blockPosition();
          int up = 0;
@@ -977,8 +981,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          }
          
          if(this.tickCount % 100 == 0){
-            this.strafeRadius = this.random.nextFloat()*8 + 8f;
-            this.strafeRate = (this.random.nextFloat()*4 + 0.5f);
+            this.strafeRadius = this.random.nextFloat() * 8 + 8f;
+            this.strafeRate = (this.random.nextFloat() * 4 + 0.5f);
             this.strafeRate *= this.random.nextBoolean() ? -1 : 1;
          }
          
@@ -998,59 +1002,60 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          double sqrDistToPosition = this.distanceToSqr(this.targetPosition);
          
          if(sqrDistToPosition <= 4){
-            this.lookAt(this.getTarget(),360.0f,360.0f);
-            for (int i = 0; i < 3; i++){
+            this.lookAt(this.getTarget(), 360.0f, 360.0f);
+            for(int i = 0; i < 3; i++){
                int id = this.getTrackedEntityId(i);
                if(id <= 0) continue;
                
-               LivingEntity livingEntity = (LivingEntity)serverWorld.getEntity(id);
-               if(livingEntity != null && this.canAttack(livingEntity) && (this.distanceToSqr(livingEntity) < (RAY_RANGE*RAY_RANGE))){
-                  Vec3 headPos = new Vec3(getHeadX(i),getHeadY(i),getHeadZ(i));
+               LivingEntity livingEntity = (LivingEntity) serverWorld.getEntity(id);
+               if(livingEntity != null && this.canAttack(livingEntity) && (this.distanceToSqr(livingEntity) < (RAY_RANGE * RAY_RANGE))){
+                  Vec3 headPos = new Vec3(getHeadX(i), getHeadY(i), getHeadZ(i));
                   MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.position().subtract(headPos).normalize(), RAY_RANGE, true, this);
                   if(this.tickCount % 10 == 0){
                      float damage = this.isExalted ? 2f : 4f;
                      
                      for(Entity hit : lasercast.sortedHits()){
-                        if(!(hit instanceof LivingEntity livingHit) || hit.getType().is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS)) continue;
+                        if(!(hit instanceof LivingEntity livingHit) || hit.getType().is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS))
+                           continue;
                         if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
                            double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
                            if(dp < -0.6){
-                              ArcanaUtils.blockWithShield(hitPlayer,damage);
+                              ArcanaUtils.blockWithShield(hitPlayer, damage);
                               continue;
                            }
                         }
                         
-                        hit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(),ArcanaDamageTypes.NUL,this), damage);
-                        ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId("nul_construct_laser"),40,24.0f,false,true,true, AttributeModifier.Operation.ADD_VALUE,getUUID());
+                        hit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(), ArcanaDamageTypes.NUL, this), damage);
+                        ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_laser"), 40, 24.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
                         MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
                         MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, isExalted ? 100 : 40, 1, false, true, true);
                         MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, isExalted ? 100 : 40, 2, false, true, true);
                         MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, isExalted ? 100 : 40, 1, false, true, true);
-                        if(isExalted) Conditions.addCondition(level().getServer(),livingEntity,nearsight);
+                        if(isExalted) Conditions.addCondition(level().getServer(), livingEntity, nearsight);
                         livingHit.addEffect(slow);
                         livingHit.addEffect(fatigue);
                         livingHit.addEffect(weakness);
                         livingHit.addEffect(wither);
-                        conversionHeal(damage*0.8f);
+                        conversionHeal(damage * 0.8f);
                      }
                   }
                   
                   if(this.tickCount % 3 == 0){
-                     ParticleOptions dust = new DustParticleOptions(ArcanaColors.NUL_COLOR,1.5f);
-                     int intervals = (int)(lasercast.startPos().subtract(lasercast.endPos()).length() * 4);
-                     ArcanaEffectUtils.line(serverWorld,null,lasercast.startPos(),lasercast.endPos(),dust,intervals,1,0.08,0);
+                     ParticleOptions dust = new DustParticleOptions(ArcanaColors.NUL_COLOR, 1.5f);
+                     int intervals = (int) (lasercast.startPos().subtract(lasercast.endPos()).length() * 4);
+                     ArcanaEffectUtils.line(serverWorld, null, lasercast.startPos(), lasercast.endPos(), dust, intervals, 1, 0.08, 0);
                   }
                   
                   if(this.tickCount % 5 == 0){
-                     for (int xOff = -1; xOff <= 1; ++xOff){
-                        for (int zOff = -1; zOff <= 1; ++zOff){
-                           for (int yOff = -1; yOff <= 1; ++yOff){
+                     for(int xOff = -1; xOff <= 1; ++xOff){
+                        for(int zOff = -1; zOff <= 1; ++zOff){
+                           for(int yOff = -1; yOff <= 1; ++yOff){
                               int x = (int) (lasercast.endPos().x + xOff);
                               int y = (int) (lasercast.endPos().y + yOff);
                               int z = (int) (lasercast.endPos().z + zOff);
                               BlockPos blockPos = new BlockPos(x, y, z);
-                              int blockDamage = (int) (2.5 - (0.8 * (xOff*xOff + zOff*zOff + yOff*yOff)));
-                              damageBlock(blockPos,blockDamage);
+                              int blockDamage = (int) (2.5 - (0.8 * (xOff * xOff + zOff * zOff + yOff * yOff)));
+                              damageBlock(blockPos, blockDamage);
                            }
                         }
                      }
@@ -1063,7 +1068,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       }
       
       Vec3 delta = this.targetPosition.subtract(this.position());
-      speed *= 1 / (1 + Math.exp(-0.25*(delta.length() - 8))); // Sigmoid velocity scaling based on proximity
+      speed *= 1 / (1 + Math.exp(-0.25 * (delta.length() - 8))); // Sigmoid velocity scaling based on proximity
       setDeltaMovement(delta.normalize().scale(speed));
    }
    
@@ -1100,7 +1105,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    
    private List<LivingEntity> getPrioritizedTargets(){
       if(!(level() instanceof ServerLevel serverWorld)) return new ArrayList<>();
-      List<LivingEntity> targets = new ArrayList<>(level().getEntitiesOfClass(LivingEntity.class, this.getHitbox().inflate(FIGHT_RANGE), e -> CAN_ATTACK_PREDICATE.test(e,serverWorld)));
+      List<LivingEntity> targets = new ArrayList<>(level().getEntitiesOfClass(LivingEntity.class, this.getHitbox().inflate(FIGHT_RANGE), e -> CAN_ATTACK_PREDICATE.test(e, serverWorld)));
       HashSet<ServerPlayer> participatingPlayers = getParticipatingPlayers();
       targets.sort(Comparator.comparingDouble(entity -> {
          double distVal = entity.distanceTo(this);
@@ -1141,7 +1146,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    }
    
    private void shootSkullAt(int headIndex, LivingEntity target){
-      this.shootSkullAt(headIndex, target.getX(), target.getY() + (double)target.getEyeHeight() * 0.5, target.getZ(), headIndex == 0 && this.random.nextFloat() < 0.001F);
+      this.shootSkullAt(headIndex, target.getX(), target.getY() + (double) target.getEyeHeight() * 0.5, target.getZ(), headIndex == 0 && this.random.nextFloat() < 0.001F);
    }
    
    @Override
@@ -1155,11 +1160,10 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       if(!canDestroy(blockState)) return false;
       
       
-      
       boolean blocked = true;
-      for (Direction direction : Direction.values()){
+      for(Direction direction : Direction.values()){
          Vec3 vec3d3 = this.position().relative(direction, 1.0E-5F);
-         if(level().isBlockInLine(new ClipBlockStateContext(vec3d3,pos.getCenter(), state -> state.is(BlockTags.WITHER_IMMUNE))).getType() != HitResult.Type.BLOCK){
+         if(level().isBlockInLine(new ClipBlockStateContext(vec3d3, pos.getCenter(), state -> state.is(BlockTags.WITHER_IMMUNE))).getType() != HitResult.Type.BLOCK){
             blocked = false;
             break;
          }
@@ -1168,22 +1172,22 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          return false;
       }
       
-      int maxDmg = (int) Math.ceil(5*Math.log10(Math.max(1,blockState.getBlock().defaultDestroyTime()+1)));
-      int curDmg = blockDamage.getOrDefault(pos,0);
+      int maxDmg = (int) Math.ceil(5 * Math.log10(Math.max(1, blockState.getBlock().defaultDestroyTime() + 1)));
+      int curDmg = blockDamage.getOrDefault(pos, 0);
       
       if(curDmg + damage > maxDmg){
          // Break
          boolean broken = this.level().destroyBlock(pos, true, this);
          if(broken){
             this.level().levelEvent(null, LevelEvent.SOUND_WITHER_BLOCK_BREAK, this.blockPosition(), 0);
-            blockDamage.remove(new BlockPos(pos.getX(),pos.getY(),pos.getZ()));
-            blockPacketQueue.add(new Tuple<>(pos,0));
+            blockDamage.remove(new BlockPos(pos.getX(), pos.getY(), pos.getZ()));
+            blockPacketQueue.add(new Tuple<>(pos, 0));
             return true;
          }
       }else{
-         int dmgLvl = (int) Math.ceil(9.0 * (double) (curDmg+damage) / maxDmg); // Breaking range 0 - 9
-         blockPacketQueue.add(new Tuple<>(pos,dmgLvl));
-         blockDamage.put(new BlockPos(pos.getX(),pos.getY(),pos.getZ()),curDmg+damage);
+         int dmgLvl = (int) Math.ceil(9.0 * (double) (curDmg + damage) / maxDmg); // Breaking range 0 - 9
+         blockPacketQueue.add(new Tuple<>(pos, dmgLvl));
+         blockDamage.put(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), curDmg + damage);
       }
       
       return false;
@@ -1197,8 +1201,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       if(!(level() instanceof ServerLevel serverWorld)) return;
       
       int toSend = Math.min(4096, blockPacketQueue.size());
-      for (ServerPlayer serverPlayerEntity : serverWorld.getServer().getPlayerList().getPlayers()) {
-         if (serverPlayerEntity != null && serverPlayerEntity.level() == serverWorld && serverPlayerEntity.getId() != this.getId() && serverPlayerEntity.distanceTo(this) <= FIGHT_RANGE) {
+      for(ServerPlayer serverPlayerEntity : serverWorld.getServer().getPlayerList().getPlayers()){
+         if(serverPlayerEntity != null && serverPlayerEntity.level() == serverWorld && serverPlayerEntity.getId() != this.getId() && serverPlayerEntity.distanceTo(this) <= FIGHT_RANGE){
             List<Packet<? super ClientGamePacketListener>> list = new ArrayList<>();
             for(int i = 0; i < toSend; i++){
                BlockPos pos = blockPacketQueue.get(i).getA();
@@ -1224,16 +1228,16 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       if(spell.getType() == ConstructSpellType.CURSE_OF_DECAY){
          if(tick % 12 == 0){
-            List<Entity> entities = world.getEntities(this,getBoundingBox().inflate(DECAY_RANGE*2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity) && !e.getType().is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS));
+            List<Entity> entities = world.getEntities(this, getBoundingBox().inflate(DECAY_RANGE * 2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity) && !e.getType().is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS));
             for(Entity entity1 : entities){
                if(!(entity1 instanceof LivingEntity living)) continue;
                float dmg = living.getMaxHealth() / 15.0f;
                float mod = living instanceof ServerPlayer ? 0.35f : 0.75f;
-               living.hurtServer(world, ArcanaDamageTypes.of(this.level(),ArcanaDamageTypes.NUL,this),dmg);
+               living.hurtServer(world, ArcanaDamageTypes.of(this.level(), ArcanaDamageTypes.NUL, this), dmg);
                
-               conversionHeal(dmg*mod);
-               MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS,isExalted ? 500 : 20,1,false,true,true);
-               MobEffectInstance weak = new MobEffectInstance(MobEffects.WEAKNESS,isExalted ? 500 : 20,1,false,true,true);
+               conversionHeal(dmg * mod);
+               MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, isExalted ? 500 : 20, 1, false, true, true);
+               MobEffectInstance weak = new MobEffectInstance(MobEffects.WEAKNESS, isExalted ? 500 : 20, 1, false, true, true);
                MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, isExalted ? 250 : 40, 1, false, true, true);
                MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, isExalted ? 500 : 20, 2, false, true, true);
                living.addEffect(wither);
@@ -1241,7 +1245,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                living.addEffect(weak);
                living.addEffect(fatigue);
                
-               ArcanaEffectUtils.nulConstructCurseOfDecay(world,entity1.position());
+               ArcanaEffectUtils.nulConstructCurseOfDecay(world, entity1.position());
             }
          }
       }else if(spell.getType() == ConstructSpellType.WITHERING_RAY){
@@ -1252,7 +1256,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          ArcanaEffectUtils.nulConstructReflectiveArmor(world, position());
       }else if(spell.getType() == ConstructSpellType.RELENTLESS_ONSLAUGHT){
          if(tick % 15 == 0){
-            List<Entity> entities = world.getEntities(this,getBoundingBox().inflate(DECAY_RANGE*2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity));
+            List<Entity> entities = world.getEntities(this, getBoundingBox().inflate(DECAY_RANGE * 2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity));
             
             for(Entity entity1 : entities){
                if(!(entity1 instanceof LivingEntity living)) continue;
@@ -1264,7 +1268,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                   this.doHurtTarget(world, this.getTarget());
                }
             }
-            SoundUtils.playSound(level(), blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE,0.75f,(float)(this.random.nextFloat()*0.5 + 0.75));
+            SoundUtils.playSound(level(), blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 0.75f, (float) (this.random.nextFloat() * 0.5 + 0.75));
          }
          ArcanaEffectUtils.nulConstructChargeAttack(world, position(), getYRot());
       }
@@ -1279,43 +1283,44 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       float cooldownMod = 1f;
       float durationMod = 1f;
       if(spell.spellType == ConstructSpellType.SHADOW_SHROUD){ // Teleport
-         Vec3 tpPos = findConstructTpPos(new Vec3(0,1,0));
+         Vec3 tpPos = findConstructTpPos(new Vec3(0, 1, 0));
          ArcanaEffectUtils.nulConstructNecroticShroud(world, position());
-         teleportTo(tpPos.x(),tpPos.y(),tpPos.z());
+         teleportTo(tpPos.x(), tpPos.y(), tpPos.z());
          ArcanaEffectUtils.nulConstructNecroticShroud(world, tpPos);
          
          if(this.isExalted){
-            List<Player> players = level().getEntities(EntityType.PLAYER,getBoundingBox().inflate(FIGHT_RANGE),(e) -> true);
-            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT,arcanaId("nul_construct_blast"),60,16.0f,false,true,false, AttributeModifier.Operation.ADD_VALUE,getUUID());
-            players.forEach(p -> Conditions.addCondition(level().getServer(),p,nearsight));
+            List<Player> players = level().getEntities(EntityType.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_blast"), 60, 16.0f, false, true, false, AttributeModifier.Operation.ADD_VALUE, getUUID());
+            players.forEach(p -> Conditions.addCondition(level().getServer(), p, nearsight));
          }
       }else if(spell.spellType == ConstructSpellType.REFLEXIVE_BLAST){ // Blast
-         List<Entity> entities = world.getEntities(this,getBoundingBox().inflate(2*BLAST_RANGE), e -> !e.isSpectator() && e.distanceTo(this) <= BLAST_RANGE && (e instanceof LivingEntity));
+         List<Entity> entities = world.getEntities(this, getBoundingBox().inflate(2 * BLAST_RANGE), e -> !e.isSpectator() && e.distanceTo(this) <= BLAST_RANGE && (e instanceof LivingEntity));
          for(Entity entity1 : entities){
             Vec3 diff = entity1.position().subtract(pos);
-            double multiplier = Mth.clamp(BLAST_RANGE*.75-diff.length()*.5,.1,3);
-            Vec3 motion = diff.multiply(1,0,1).add(0,0.5,0).normalize().scale(multiplier);
-            entity1.setDeltaMovement(motion.x,motion.y,motion.z);
-            entity1.hurtServer(world, ArcanaDamageTypes.of(this.level(),ArcanaDamageTypes.NUL,this),4f);
-            if(entity1 instanceof ServerPlayer player) player.connection.send(new ClientboundSetEntityMotionPacket(player));
+            double multiplier = Mth.clamp(BLAST_RANGE * .75 - diff.length() * .5, .1, 3);
+            Vec3 motion = diff.multiply(1, 0, 1).add(0, 0.5, 0).normalize().scale(multiplier);
+            entity1.setDeltaMovement(motion.x, motion.y, motion.z);
+            entity1.hurtServer(world, ArcanaDamageTypes.of(this.level(), ArcanaDamageTypes.NUL, this), 4f);
+            if(entity1 instanceof ServerPlayer player)
+               player.connection.send(new ClientboundSetEntityMotionPacket(player));
          }
          
          for(BlockPos blockPos : BlockPos.withinManhattan(this.blockPosition(), (int) BLAST_RANGE, (int) BLAST_RANGE, (int) BLAST_RANGE)){
-            int damage = (int) (10 - 15*Math.pow((blockPos.distSqr(this.blockPosition()) / (BLAST_RANGE*BLAST_RANGE)),0.25));
-            damageBlock(blockPos,damage);
+            int damage = (int) (10 - 15 * Math.pow((blockPos.distSqr(this.blockPosition()) / (BLAST_RANGE * BLAST_RANGE)), 0.25));
+            damageBlock(blockPos, damage);
          }
-         ArcanaEffectUtils.nulConstructReflexiveBlast(world, position(),0);
+         ArcanaEffectUtils.nulConstructReflexiveBlast(world, position(), 0);
       }else if(spell.spellType == ConstructSpellType.CURSE_OF_DECAY){ // AoE Damage
          // Nothing special at cast time
       }else if(spell.spellType == ConstructSpellType.FORGOTTEN_ARMY){ // Summon Skeletons
-         List<BlockPos> poses = SpawnPile.makeSpawnLocations(32, (int) BLAST_RANGE,world, EntityType.WITHER_SKELETON, blockPosition());
-         int numWarriors = this.isExalted ? this.random.nextIntBetweenInclusive(6,10) : this.random.nextIntBetweenInclusive(3,6);
-         int numMages = this.isExalted ? this.random.nextIntBetweenInclusive(4,6) : this.random.nextIntBetweenInclusive(2,4);
-         for(int i = 0; i < numWarriors+numMages; i++){
+         List<BlockPos> poses = SpawnPile.makeSpawnLocations(32, (int) BLAST_RANGE, world, EntityType.WITHER_SKELETON, blockPosition());
+         int numWarriors = this.isExalted ? this.random.nextIntBetweenInclusive(6, 10) : this.random.nextIntBetweenInclusive(3, 6);
+         int numMages = this.isExalted ? this.random.nextIntBetweenInclusive(4, 6) : this.random.nextIntBetweenInclusive(2, 4);
+         for(int i = 0; i < numWarriors + numMages; i++){
             Vec3 spawnPos = poses.get(i).getCenter();
-            NulGuardianEntity skeleton = new NulGuardianEntity(world, this,i < numMages);
-            skeleton.finalizeSpawn(world,world.getCurrentDifficultyAt(this.blockPosition()), EntitySpawnReason.MOB_SUMMONED,null);
-            skeleton.setPosRaw(spawnPos.x(),spawnPos.y(),spawnPos.z());
+            NulGuardianEntity skeleton = new NulGuardianEntity(world, this, i < numMages);
+            skeleton.finalizeSpawn(world, world.getCurrentDifficultyAt(this.blockPosition()), EntitySpawnReason.MOB_SUMMONED, null);
+            skeleton.setPosRaw(spawnPos.x(), spawnPos.y(), spawnPos.z());
             world.tryAddFreshEntityWithPassengers(skeleton);
          }
       }else if(spell.spellType == ConstructSpellType.REFLECTIVE_ARMOR){ // Activate Armor
@@ -1331,13 +1336,13 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          while(tries < 1000){
             tries++;
             
-            double posX = getX() + this.random.nextIntBetweenInclusive(-8,8);
-            double posY = getY() + this.random.nextIntBetweenInclusive(2,7);
-            double posZ = getZ() + this.random.nextIntBetweenInclusive(-8,8);
-            Vec3 newPos = new Vec3(posX,posY,posZ);
+            double posX = getX() + this.random.nextIntBetweenInclusive(-8, 8);
+            double posY = getY() + this.random.nextIntBetweenInclusive(2, 7);
+            double posZ = getZ() + this.random.nextIntBetweenInclusive(-8, 8);
+            Vec3 newPos = new Vec3(posX, posY, posZ);
             
-            if(getTarget() != null && newPos.distanceTo(getTarget().position()) >= RAY_RANGE*0.75) continue;
-            Path path = this.getNavigation().createPath(posX,posY,posZ, (int) (RAY_RANGE*2));
+            if(getTarget() != null && newPos.distanceTo(getTarget().position()) >= RAY_RANGE * 0.75) continue;
+            Path path = this.getNavigation().createPath(posX, posY, posZ, (int) (RAY_RANGE * 2));
             if(path == null) continue;
             this.targetPosition = newPos;
             break;
@@ -1352,16 +1357,16 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       int thisX = Mth.floor(this.getX());
       int thisY = Mth.floor(this.getY());
       int thisZ = Mth.floor(this.getZ());
-      for (int xOff = -3; xOff <= 3; ++xOff){
-         for (int zOff = -3; zOff <= 3; ++zOff){
-            for (int yOff = -1; yOff <= 4; ++yOff){
+      for(int xOff = -3; xOff <= 3; ++xOff){
+         for(int zOff = -3; zOff <= 3; ++zOff){
+            for(int yOff = -1; yOff <= 4; ++yOff){
                int x = thisX + xOff;
                int y = thisY + yOff;
                int z = thisZ + zOff;
                BlockPos blockPos = new BlockPos(x, y, z);
-               double yMod = (yOff < 0 ? 1.5*Math.sqrt(-yOff)+2 : yOff);
-               int damage = (int) (10 - (0.8 * (xOff*xOff + zOff*zOff + yMod*yMod)));
-               damageBlock(blockPos,damage);
+               double yMod = (yOff < 0 ? 1.5 * Math.sqrt(-yOff) + 2 : yOff);
+               int damage = (int) (10 - (0.8 * (xOff * xOff + zOff * zOff + yMod * yMod)));
+               damageBlock(blockPos, damage);
             }
          }
       }
@@ -1370,20 +1375,24 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    private boolean isShieldActive(){
       if(getInvulnerableTimer() > 0) return true;
       if(spells == null) return false;
-      if(spells.containsKey(ConstructSpellType.REFLECTIVE_ARMOR) && spells.get(ConstructSpellType.REFLECTIVE_ARMOR).isActive()) return true;
-      if(spells.containsKey(ConstructSpellType.RELENTLESS_ONSLAUGHT) && spells.get(ConstructSpellType.RELENTLESS_ONSLAUGHT).isActive()) return true;
+      if(spells.containsKey(ConstructSpellType.REFLECTIVE_ARMOR) && spells.get(ConstructSpellType.REFLECTIVE_ARMOR).isActive())
+         return true;
+      if(spells.containsKey(ConstructSpellType.RELENTLESS_ONSLAUGHT) && spells.get(ConstructSpellType.RELENTLESS_ONSLAUGHT).isActive())
+         return true;
       return false;
    }
    
    private boolean isReflectionActive(){
       if(spells == null) return false;
-      if(spells.containsKey(ConstructSpellType.REFLECTIVE_ARMOR) && spells.get(ConstructSpellType.REFLECTIVE_ARMOR).isActive()) return true;
+      if(spells.containsKey(ConstructSpellType.REFLECTIVE_ARMOR) && spells.get(ConstructSpellType.REFLECTIVE_ARMOR).isActive())
+         return true;
       return false;
    }
    
    private boolean isConversionActive(){
       if(spells == null) return false;
-      if(spells.containsKey(ConstructSpellType.NECROTIC_CONVERSION) && spells.get(ConstructSpellType.NECROTIC_CONVERSION).isActive()) return true;
+      if(spells.containsKey(ConstructSpellType.NECROTIC_CONVERSION) && spells.get(ConstructSpellType.NECROTIC_CONVERSION).isActive())
+         return true;
       return false;
    }
    
@@ -1396,8 +1405,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       this.heal((float) (healMod * damage));
    }
    
-   private HashMap<ConstructSpellType,Integer> buildWeightedSpellList(){
-      HashMap<ConstructSpellType,Integer> availableSpells = new HashMap<>();
+   private HashMap<ConstructSpellType, Integer> buildWeightedSpellList(){
+      HashMap<ConstructSpellType, Integer> availableSpells = new HashMap<>();
       
       for(ConstructSpellType spellType : spells.keySet()){
          ConstructSpell spell = spells.get(spellType);
@@ -1406,8 +1415,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          
          int weight = spell.getWeight(); // Start with the randomly favored spell weights (1-10)
          if(spellType == ConstructSpellType.CURSE_OF_DECAY){ // Favored when more mobs are around
-            List<Entity> entities = level().getEntities(this,getBoundingBox().inflate(DECAY_RANGE*2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity));
-            weight += (int)(entities.size() * 0.5);
+            List<Entity> entities = level().getEntities(this, getBoundingBox().inflate(DECAY_RANGE * 2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity));
+            weight += (int) (entities.size() * 0.5);
          }else if(spellType == ConstructSpellType.WITHERING_RAY){ // Favored at high health, cannot be cast while onslaught is active
             double hpPercent = getHealth() / getMaxHealth();
             weight += (int) (hpPercent * 8);
@@ -1416,13 +1425,13 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             }
          }else if(spellType == ConstructSpellType.NECROTIC_CONVERSION){ // Favored at low health
             double hpPercent = getHealth() / getMaxHealth();
-            weight += (int) ((1-hpPercent) * 10);
+            weight += (int) ((1 - hpPercent) * 10);
          }else if(spellType == ConstructSpellType.REFLECTIVE_ARMOR){ // Favored at low health
             double hpPercent = getHealth() / getMaxHealth();
-            weight += (int) ((1-hpPercent) * 5);
+            weight += (int) ((1 - hpPercent) * 5);
          }else if(spellType == ConstructSpellType.RELENTLESS_ONSLAUGHT){ // Favored at low health, cannot be cast while ray is active
             double hpPercent = getHealth() / getMaxHealth();
-            weight += (int) ((1-hpPercent) * 8);
+            weight += (int) ((1 - hpPercent) * 8);
             if(spells.get(ConstructSpellType.WITHERING_RAY).isActive()){
                weight -= 100;
             }
@@ -1448,7 +1457,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       return availableSpells;
    }
    
-   private ConstructSpellType getWeightedResult(HashMap<ConstructSpellType,Integer> map){
+   private ConstructSpellType getWeightedResult(HashMap<ConstructSpellType, Integer> map){
       ArrayList<ConstructSpellType> pool = new ArrayList<>();
       
       for(Map.Entry<ConstructSpellType, Integer> entry : map.entrySet()){
@@ -1480,33 +1489,33 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    }
    
    private enum ConstructSpellType {
-      CURSE_OF_DECAY("Curse of Decay","curse_of_decay",115,550,new Component[]{
+      CURSE_OF_DECAY("Curse of Decay", "curse_of_decay", 115, 550, new Component[]{
             Component.literal("The decay takes hold...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("You feel your soul being siphoned away...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("A curse permeates your soul...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
-      REFLEXIVE_BLAST("Reflexive Blast","reflexive_blast",0,200,new Component[]{
+      REFLEXIVE_BLAST("Reflexive Blast", "reflexive_blast", 0, 200, new Component[]{
             Component.literal("The construct surges!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("A blast knocks you!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("A shockwave emanates from the construct!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
-      WITHERING_RAY("Withering Ray","withering_ray",150,275,new Component[]{
+      WITHERING_RAY("Withering Ray", "withering_ray", 150, 275, new Component[]{
             Component.literal("A necrotic ray bursts forth!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("The construct emits a withering ray!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("A withering beam emanates from the construct!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
-      NECROTIC_CONVERSION("Necrotic Conversion","necrotic_conversion",300,475,new Component[]{
+      NECROTIC_CONVERSION("Necrotic Conversion", "necrotic_conversion", 300, 475, new Component[]{
             Component.literal("The construct mends...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("The construct's bones heal...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("The construct regenerates...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
-      SHADOW_SHROUD("Shadow Shroud","shadow_shroud",0,200,new Component[]{
+      SHADOW_SHROUD("Shadow Shroud", "shadow_shroud", 0, 200, new Component[]{
             Component.literal("The construct shifts...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("The construct vanishes...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   Don't lose your mark.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
-      FORGOTTEN_ARMY("Forgotten Army","forgotten_army",0,625,new Component[]{
+      FORGOTTEN_ARMY("Forgotten Army", "forgotten_army", 0, 625, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   The forgotten army rises again!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -1518,12 +1527,12 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   Don't get surrounded.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
-      REFLECTIVE_ARMOR("Reflective Armor","reflective_armor",200,325,new Component[]{
+      REFLECTIVE_ARMOR("Reflective Armor", "reflective_armor", 200, 325, new Component[]{
             Component.literal("The construct shimmers...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("A shining field embraces the construct.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("The construct becomes reflective.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
-      RELENTLESS_ONSLAUGHT("Relentless Onslaught","relentless_onslaught",160,450,new Component[]{
+      RELENTLESS_ONSLAUGHT("Relentless Onslaught", "relentless_onslaught", 160, 450, new Component[]{
             Component.literal("The construct pursues you!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("The construct charges you!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Component.literal("The construct approaches aggressively!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
@@ -1544,7 +1553,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       }
       
       public static ConstructSpellType fromString(String id){
-         for (ConstructSpellType spell : ConstructSpellType.values()){
+         for(ConstructSpellType spell : ConstructSpellType.values()){
             if(spell.id.equalsIgnoreCase(id)){
                return spell;
             }
@@ -1553,8 +1562,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       }
    }
    
-   public enum ConstructAdaptations{
-      USED_TOTEM("used_totem",false,new Component[]{
+   public enum ConstructAdaptations {
+      USED_TOTEM("used_totem", false, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   Is that an attempt at mockery? Try that again!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -1562,7 +1571,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   Cheating death will only get you so far. Don't become reliant on it.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
-      USED_MEMENTO("used_memento",true,new Component[]{
+      USED_MEMENTO("used_memento", true, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   Now, now my champion, you have done this before. My ward is not to be used in this manner.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -1570,7 +1579,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   You are making me question my faith in you. Don't rely on my power as a crutch.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
-      USED_VENGEANCE_TOTEM("used_vengeance_totem",false,new Component[]{
+      USED_VENGEANCE_TOTEM("used_vengeance_totem", false, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   An interesting gambit! But will it pay off?").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -1578,7 +1587,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   A curious trinket. Be wary, such soul magic is a dangerous game.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
-      DAMAGED_BY_MACE("damaged_by_mace",false,new Component[]{
+      DAMAGED_BY_MACE("damaged_by_mace", false, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   A gravitic weapon? My construct will adapt accordingly.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -1586,14 +1595,14 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   An intriguing weapon, but gravity won't be your ally in this fight.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
-      MASSIVE_BLOW("massive_blow",true,new Component[]{
+      MASSIVE_BLOW("massive_blow", true, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   A solid hit! However, my construct will adapt.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   A good blow! Let's make this harder...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("The construct grows more resilient...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
-      TRUE_INVISIBILITY("true_invisibility",false,new Component[]{
+      TRUE_INVISIBILITY("true_invisibility", false, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   Can you fight without seeing your opponent? My construct can!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -1601,7 +1610,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   Hiding is a coward's game!").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
-      ADDITIONAL_PLAYERS("additional_players",false,new Component[]{
+      ADDITIONAL_PLAYERS("additional_players", false, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   You brought friends! Friends have a habit of dying on you.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -1623,7 +1632,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   If you wish to attempt my challenge together, at least try to not kill each other.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
-      SPAWNED_CONSTRUCT_FINDS_PLAYER("spawned_construct_finds_player",false,new Component[]{
+      SPAWNED_CONSTRUCT_FINDS_PLAYER("spawned_construct_finds_player", false, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   I yearn for a player to test! Are you up to the challenge?").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
@@ -1643,7 +1652,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       }
       
       public static ConstructAdaptations fromString(String id){
-         for (ConstructAdaptations adaptation : ConstructAdaptations.values()){
+         for(ConstructAdaptations adaptation : ConstructAdaptations.values()){
             if(adaptation.id.equalsIgnoreCase(id)){
                return adaptation;
             }
@@ -1652,7 +1661,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       }
    }
    
-   private static class ConstructSpell{
+   private static class ConstructSpell {
       private final ConstructSpellType spellType;
       private final int weight;
       private int cooldown;
@@ -1662,7 +1671,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       private ConstructSpell(ConstructSpellType spellType){
          this.spellType = spellType;
          this.cooldown = 0;
-         this.weight = (int)(Math.random()*10+1);
+         this.weight = (int) (Math.random() * 10 + 1);
          this.active = false;
          this.tick = 0;
       }
@@ -1677,11 +1686,11 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       public CompoundTag toNbt(){
          CompoundTag tag = new CompoundTag();
-         tag.putString("type",spellType.id);
-         tag.putInt("cooldown",cooldown);
-         tag.putInt("weight",weight);
-         tag.putInt("tick",tick);
-         tag.putBoolean("active",active);
+         tag.putString("type", spellType.id);
+         tag.putInt("cooldown", cooldown);
+         tag.putInt("weight", weight);
+         tag.putInt("tick", tick);
+         tag.putBoolean("active", active);
          return tag;
       }
       
@@ -1692,7 +1701,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       public void cast(NulConstructEntity construct, int tick){
          this.active = true;
          this.tick = tick;
-         NulConstructDialog.abilityText(construct.summoner,construct,spellType.abilityTexts[(int) (Math.random()*spellType.abilityTexts.length)]);
+         NulConstructDialog.abilityText(construct.summoner, construct, spellType.abilityTexts[(int) (Math.random() * spellType.abilityTexts.length)]);
       }
       
       public int tick(){
@@ -1728,11 +1737,11 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    // ========== Dialog ==========
    
    private static class NulConstructDialog {
-      public static HashMap<Announcements,ArrayList<Dialog>> DIALOG = new HashMap<>();
+      public static HashMap<Announcements, ArrayList<Dialog>> DIALOG = new HashMap<>();
       
       static{
          for(Announcements type : Announcements.values()){
-            DIALOG.put(type,new ArrayList<>());
+            DIALOG.put(type, new ArrayList<>());
          }
          
          DIALOG.get(Announcements.SUMMON_TEXT).add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -1746,7 +1755,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Dark Presence").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC, ChatFormatting.BOLD))
                      .append(Component.literal(" Looms...").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},1,1,0b0));
+         )), new ArrayList<>(), new int[]{}, 1, 1, 0b0));
          
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
@@ -1756,7 +1765,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Divine").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                      .append(Component.literal("? They know not what they are toying with...").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Those unworthy of ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1765,14 +1774,14 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("nothing").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal("...").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("This ").withStyle(ChatFormatting.DARK_GRAY))
                      .append(Component.literal("Player").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal(" grow bolder by the minute. Perhaps they need to be put in their place.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("A ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1781,7 +1790,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Divine Energy").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                      .append(Component.literal("? Let them try...").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Of all the ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1794,7 +1803,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Death").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("I am the ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1811,7 +1820,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("latter").withStyle(ChatFormatting.BLUE))
                      .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},1,1,0b0));
+         )), new ArrayList<>(), new int[]{}, 1, 1, 0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("So you have defeated ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1822,7 +1831,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Death").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
                      .append(Component.literal("!?").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0b10));
+         )), new ArrayList<>(), new int[]{}, 0, 10, 0b10));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("I watched as you defeated ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1833,7 +1842,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("indolent").withStyle(ChatFormatting.DARK_RED))
                      .append(Component.literal(" as her.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0b10));
+         )), new ArrayList<>(), new int[]{}, 0, 10, 0b10));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("You have tasted the ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1842,7 +1851,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("greed").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal(" is not your downfall.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0b1));
+         )), new ArrayList<>(), new int[]{}, 0, 10, 0b1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Just because you already carry the ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1851,7 +1860,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("entitled").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal(" to more.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0b1));
+         )), new ArrayList<>(), new int[]{}, 0, 10, 0b1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("So you would sacrifice my ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1860,7 +1869,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("favor").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal("? Let's see if you're worth it...").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b100000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b100000));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("You reject my ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1869,7 +1878,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("worthy").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal("!").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b100000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b100000));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("If you want my ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1878,7 +1887,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("real").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC))
                      .append(Component.literal(" challenge!").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b100000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b100000));
          
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
@@ -1888,7 +1897,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Divine").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                      .append(Component.literal(" power.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Impressive, I have imbued your ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1897,7 +1906,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Divine Energy").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                      .append(Component.literal(", I'm curious as to how you'll use it.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("You have defeated my ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1907,13 +1916,13 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal(" remains for your ").withStyle(ChatFormatting.DARK_GRAY))
                      .append(Component.literal("Catalyst").withStyle(ChatFormatting.GOLD)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Death").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal(" does not come for you today, I shall grant you what you have sought.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("This ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1922,14 +1931,14 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("true power").withStyle(ChatFormatting.LIGHT_PURPLE))
                      .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("A valiant fight! ").withStyle(ChatFormatting.DARK_GRAY))
                      .append(Component.literal("Enderia").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
                      .append(Component.literal(" must be getting nervous. Perhaps she will finally learn her lesson...").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},1,0,0b100));
+         )), new ArrayList<>(), new int[]{}, 1, 0, 0b100));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("I can see how you defeated ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1940,7 +1949,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Construct").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal(" to greet you.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0b10));
+         )), new ArrayList<>(), new int[]{}, 0, 10, 0b10));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("You helped my ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1949,7 +1958,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Boon").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                      .append(Component.literal(" and may we meet again.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0b10));
+         )), new ArrayList<>(), new int[]{}, 0, 10, 0b10));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("You have earned your ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1960,14 +1969,14 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("personally").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC))
                      .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0b1));
+         )), new ArrayList<>(), new int[]{}, 0, 10, 0b1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("It seems you are worthy enough to add another piece of the ").withStyle(ChatFormatting.DARK_GRAY))
                      .append(Component.literal("Divine").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                      .append(Component.literal(" to your collection.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0b1));
+         )), new ArrayList<>(), new int[]{}, 0, 10, 0b1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("You are unlike any I have seen before. Perhaps you are worthy of my ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1976,7 +1985,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Memento").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                      .append(Component.literal(" shall be my gift to you.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,-1,0b1001000));
+         )), new ArrayList<>(), new int[]{}, 0, -1, 0b1001000));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("You did well to survive my ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1985,7 +1994,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("impress").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal(" me.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b110000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b110000));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("You may have survived, but your performance showed ").withStyle(ChatFormatting.DARK_GRAY))
@@ -1994,7 +2003,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("tolerate").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal("!").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b110000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b110000));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("So your").withStyle(ChatFormatting.DARK_GRAY))
@@ -2007,7 +2016,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("wisdom").withStyle(ChatFormatting.BLUE))
                      .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b101000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b101000));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("A ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2020,7 +2029,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("guide").withStyle(ChatFormatting.BLUE))
                      .append(Component.literal(" you well.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b101000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b101000));
          
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
@@ -2028,7 +2037,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Player").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal(", not worthy of my time.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},5,5,0b0));
+         )), new ArrayList<>(), new int[]{}, 5, 5, 0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Such a simple ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2037,7 +2046,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Divine").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                      .append(Component.literal(".").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Such a small sample of ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2046,7 +2055,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("harnessing").withStyle(ChatFormatting.BLUE))
                      .append(Component.literal(" it in the first place?").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("An expected result from calling upon the ").withStyle(ChatFormatting.GRAY))
@@ -2054,14 +2063,14 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal(" of Death").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
                      .append(Component.literal(". Do not waste my time again.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Arrogant enough to tempt ").withStyle(ChatFormatting.DARK_GRAY))
                      .append(Component.literal("Death").withStyle(ChatFormatting.GRAY))
                      .append(Component.literal("... I can't fathom how you expected to win.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,0b0));
+         )), new ArrayList<>(), new int[]{}, 3, 3, 0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("There is ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2070,7 +2079,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("wisdom").withStyle(ChatFormatting.AQUA))
                      .append(Component.literal(" to find it.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},1,1,0b0));
+         )), new ArrayList<>(), new int[]{}, 1, 1, 0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("This ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2079,7 +2088,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("foolish").withStyle(ChatFormatting.DARK_RED))
                      .append(Component.literal(" enough to find out why.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},1,1,0b0));
+         )), new ArrayList<>(), new int[]{}, 1, 1, 0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("A ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2090,7 +2099,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("her").withStyle(ChatFormatting.DARK_PURPLE))
                      .append(Component.literal(" couldn't get any lower.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,20,0b10));
+         )), new ArrayList<>(), new int[]{}, 0, 20, 0b10));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Whatever petty tricks got you the ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2099,7 +2108,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("Knowledge").withStyle(ChatFormatting.BLUE))
                      .append(Component.literal(" must be earned!").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,20,0b1));
+         )), new ArrayList<>(), new int[]{}, 0, 20, 0b1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("I always knew you were too ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2108,7 +2117,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("power").withStyle(ChatFormatting.LIGHT_PURPLE))
                      .append(Component.literal("...").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,150,0b100000));
+         )), new ArrayList<>(), new int[]{}, 0, 150, 0b100000));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("An interesting ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2117,7 +2126,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("skilled").withStyle(ChatFormatting.BLUE))
                      .append(Component.literal(" enough to execute it.").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b100000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b100000));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Component.literal("")
                      .append(Component.literal("Your ").withStyle(ChatFormatting.DARK_GRAY))
@@ -2130,25 +2139,25 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("forfeit").withStyle(ChatFormatting.GOLD))
                      .append(Component.literal("!").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,0b100000));
+         )), new ArrayList<>(), new int[]{}, 0, 200, 0b100000));
       }
       
       public static void abilityText(Player summoner, NulConstructEntity construct, Component text){
          List<ServerPlayer> playersInRange = construct.level().getEntitiesOfClass(ServerPlayer.class, construct.getBoundingBox().inflate(50.0));
          if(summoner instanceof ServerPlayer player && !playersInRange.contains(player)) playersInRange.add(player);
          for(ServerPlayer inRange : playersInRange){
-            inRange.displayClientMessage(text,false);
+            inRange.displayClientMessage(text, false);
          }
       }
       
       public static void announce(MinecraftServer server, Player summoner, NulConstructEntity construct, Announcements type){
-         announce(server,summoner,construct,type,new boolean[]{});
+         announce(server, summoner, construct, type, new boolean[]{});
       }
       
       // hasDivine, hasWings, droppedMemento & !isExalted, isExalted, droppedMemento & isExalted, !droppedMemento & isExalted
       // hasDivine, hasWings, !hasWings, droppedMemento, !droppedMemento, isExalted, !isExalted
       public static void announce(MinecraftServer server, Player summoner, NulConstructEntity construct, Announcements type, boolean[] args){
-         DialogHelper dialogHelper = new DialogHelper(DIALOG.get(type),args);
+         DialogHelper dialogHelper = new DialogHelper(DIALOG.get(type), args);
          ArrayList<MutableComponent> message = dialogHelper.getWeightedResult().message();
          List<ServerPlayer> playersInRange = construct.level().getEntitiesOfClass(ServerPlayer.class, construct.getBoundingBox().inflate(50.0));
          if(summoner instanceof ServerPlayer player && !playersInRange.contains(player)) playersInRange.add(player);
@@ -2162,13 +2171,13 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                }
             }
             if(type == Announcements.FAILURE && summoner != null && !foundSummoner){
-               summoner.displayClientMessage(msg,false);
+               summoner.displayClientMessage(msg, false);
             }
          }
       }
    }
    
-   public enum Announcements{
+   public enum Announcements {
       SUMMON_TEXT,
       SUMMON_DIALOG,
       SUCCESS,

@@ -38,7 +38,7 @@ public class MaxHealthLoginCallback extends LoginCallback {
    @Override
    public CompoundTag getData(){
       CompoundTag data = new CompoundTag();
-      data.putFloat("hp",hp);
+      data.putFloat("hp", hp);
       this.data = data;
       return this.data;
    }

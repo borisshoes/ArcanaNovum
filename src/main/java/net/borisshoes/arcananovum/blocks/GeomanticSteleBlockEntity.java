@@ -23,6 +23,7 @@ import net.borisshoes.arcananovum.items.MagmaticEversource;
 import net.borisshoes.arcananovum.items.charms.CleansingCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.items.charms.WildGrowthCharm;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
@@ -69,6 +70,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private final Multiblock multiblock;
    private double rangeMod = 1;
@@ -85,13 +87,14 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       this.multiblock = ((MultiblockCore) ArcanaRegistry.GEOMANTIC_STELE).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
-      this.rangeMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GEOMANTIC_STELE_RANGE_MULTIPLIER_PER_LVL).get(ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.GEOLITHIC_AMPLIFICATION));
+      this.rangeMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GEOMANTIC_STELE_RANGE_MULTIPLIER_PER_LVL).get(ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.GEOLITHIC_AMPLIFICATION));
    }
    
    public static <E extends BlockEntity> void ticker(Level world, BlockPos blockPos, BlockState blockState, E e){
@@ -139,10 +142,10 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
          
          if(assembled && hasItem){
             Vec3 pos = getHologramPos();
-            Player player = serverWorld.getNearestPlayer(pos.x(),pos.y(),pos.z(), 32, entity -> true);
+            Player player = serverWorld.getNearestPlayer(pos.x(), pos.y(), pos.z(), 32, entity -> true);
             if(player != null && hologram == null){
                hologram = getNewHologram(serverWorld);
-               attachment = ChunkAttachment.ofTicking(this.hologram,serverWorld,pos);
+               attachment = ChunkAttachment.ofTicking(this.hologram, serverWorld, pos);
             }else if(player == null && hologram != null){
                hologram.destroy();
                hologram = null;
@@ -153,7 +156,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       if(active){
          ItemStack item = getItem();
          if(ArcanaItemUtils.identifyItem(item) instanceof GeomanticStele.Interaction interaction){
-            interaction.steleTick(serverWorld,this,item,getRange());
+            interaction.steleTick(serverWorld, this, item, getRange());
          }
       }
       
@@ -173,25 +176,25 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    private ElementHolder getNewHologram(ServerLevel world){
       ItemDisplayElement icon = new ItemDisplayElement(getItem());
       icon.setInterpolationDuration(3);
-      InteractionElement click = new InteractionElement(new VirtualElement.InteractionHandler(){
+      InteractionElement click = new InteractionElement(new VirtualElement.InteractionHandler() {
          public void click(ServerPlayer player, ItemStack stack){
             if(interactCooldown == 0){
-               GeomanticSteleBlockEntity.this.interact(player,stack);
+               GeomanticSteleBlockEntity.this.interact(player, stack);
                interactCooldown = 5;
             }
          }
          
          @Override
          public void interact(ServerPlayer player, InteractionHand hand){
-            click(player,player.getItemInHand(hand));
+            click(player, player.getItemInHand(hand));
          }
          
          @Override
          public void interactAt(ServerPlayer player, InteractionHand hand, Vec3 pos){
-            click(player,player.getItemInHand(hand));
+            click(player, player.getItemInHand(hand));
          }
       });
-      click.setSize(0.75f,0.75f);
+      click.setSize(0.75f, 0.75f);
       
       ElementHolder holder = new ElementHolder() {
          ServerLevel serverLevel = world;
@@ -237,13 +240,13 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
                matrix.rotateY(currentYaw);
                matrix.scale(0.75f);
                iconElem.setTransformation(matrix);
-               iconElem.setBrightness(new Brightness(5,5));
+               iconElem.setBrightness(new Brightness(5, 5));
                iconElem.startInterpolation();
             }
          }
       };
       
-      click.setOffset(new Vec3(0,0.625,0));
+      click.setOffset(new Vec3(0, 0.625, 0));
       icon.setOffset(Vec3.ZERO);
       
       // Set initial transformation before adding to prevent interpolation from default position
@@ -258,16 +261,16 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    }
    
    public boolean interact(ServerPlayer player, ItemStack stack){
-      player.getCooldowns().addCooldown(player.getMainHandItem(),1);
-      player.getCooldowns().addCooldown(player.getOffhandItem(),1);
+      player.getCooldowns().addCooldown(player.getMainHandItem(), 1);
+      player.getCooldowns().addCooldown(player.getOffhandItem(), 1);
       if(!assembled){
          player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-         multiblock.displayStructure(getMultiblockCheck(),player);
+         multiblock.displayStructure(getMultiblockCheck(), player);
          return false;
       }
       
-      if(player.isShiftKeyDown() && ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.METAMORPHIC_ALIGNMENT) > 0){
-         GeomanticSteleGui gui = new GeomanticSteleGui(player,this);
+      if(player.isShiftKeyDown() && ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.METAMORPHIC_ALIGNMENT) > 0){
+         GeomanticSteleGui gui = new GeomanticSteleGui(player, this);
          gui.open();
          return true;
       }
@@ -275,10 +278,10 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       if(!getItem().isEmpty() && stack.isEmpty()){ // Remove Item
          ItemStack returnStack = getItem().copy();
          setItem(0, ItemStack.EMPTY);
-         this.level.setBlock(getBlockPos(),getBlockState().setValue(GeomanticStele.GeomanticSteleBlock.ACTIVE,false),Block.UPDATE_ALL);
+         this.level.setBlock(getBlockPos(), getBlockState().setValue(GeomanticStele.GeomanticSteleBlock.ACTIVE, false), Block.UPDATE_ALL);
          level.gameEvent(GameEvent.BLOCK_DEACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
          setChanged();
-         BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(returnStack,player,0));
+         BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(returnStack, player, 0));
          return true;
       }
       
@@ -286,26 +289,26 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(getItem().isEmpty() && arcanaItem instanceof GeomanticStele.Interaction interaction){
          if(arcanaItem instanceof CleansingCharm){
-            ArcanaAchievements.grant(player,ArcanaAchievements.DOCTOR_STONE);
+            ArcanaAchievements.grant(player, ArcanaAchievements.DOCTOR_STONE);
          }
          if(arcanaItem instanceof AquaticEversource){
-            ArcanaAchievements.grant(player,ArcanaAchievements.ARTIFICIAL_GEYSER);
+            ArcanaAchievements.grant(player, ArcanaAchievements.ARTIFICIAL_GEYSER);
          }
          if(arcanaItem instanceof MagmaticEversource){
-            ArcanaAchievements.grant(player,ArcanaAchievements.ARTIFICIAL_VOLCANO);
+            ArcanaAchievements.grant(player, ArcanaAchievements.ARTIFICIAL_VOLCANO);
          }
          if(arcanaItem instanceof FelidaeCharm){
-            ArcanaAchievements.grant(player,ArcanaAchievements.MONOLITH_OF_FEAR);
+            ArcanaAchievements.grant(player, ArcanaAchievements.MONOLITH_OF_FEAR);
          }
          if(arcanaItem instanceof WildGrowthCharm){
-            ArcanaAchievements.grant(player,ArcanaAchievements.KOKOPELLI);
+            ArcanaAchievements.grant(player, ArcanaAchievements.KOKOPELLI);
          }
          setItem(stack.copy());
          player.getInventory().removeItem(stack);
          setChanged();
          boolean hasRedstone = this.level.hasNeighborSignal(getBlockPos());
          if(hasRedstone){
-            this.level.setBlock(getBlockPos(),getBlockState().setValue(GeomanticStele.GeomanticSteleBlock.ACTIVE,true),Block.UPDATE_ALL);
+            this.level.setBlock(getBlockPos(), getBlockState().setValue(GeomanticStele.GeomanticSteleBlock.ACTIVE, true), Block.UPDATE_ALL);
             level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
          }
          return true;
@@ -318,9 +321,9 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       Vec3 range = getRange();
       if((range.x + range.y + range.z) == 0) return blocks;
       BlockPos thisPos = getBlockPos();
-      int rangeX = (int)Math.ceil(range.x);
-      int rangeY = (int)Math.ceil(range.y);
-      int rangeZ = (int)Math.ceil(range.z);
+      int rangeX = (int) Math.ceil(range.x);
+      int rangeY = (int) Math.ceil(range.y);
+      int rangeZ = (int) Math.ceil(range.z);
       for(BlockPos blockPos : BlockPos.betweenClosed(thisPos.getX() - rangeX, thisPos.getY() - rangeY, thisPos.getZ() - rangeZ, thisPos.getX() + rangeX, thisPos.getY() + rangeY, thisPos.getZ() + rangeZ)){
          blocks.add(blockPos.immutable());
       }
@@ -329,17 +332,17 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    
    public void setRange(Vec3 range){
       Vec3 maxRange = getMaxRange();
-      this.rangeX = Mth.clamp(range.x,0,maxRange.x);
-      this.rangeY = Mth.clamp(range.y,0,maxRange.y);
-      this.rangeZ = Mth.clamp(range.z,0,maxRange.z);
+      this.rangeX = Mth.clamp(range.x, 0, maxRange.x);
+      this.rangeY = Mth.clamp(range.y, 0, maxRange.y);
+      this.rangeZ = Mth.clamp(range.z, 0, maxRange.z);
    }
    
    public Vec3 getRange(){
       Vec3 maxRange = getMaxRange();
-      this.rangeX = Mth.clamp(this.rangeX,0,maxRange.x);
-      this.rangeY = Mth.clamp(this.rangeY,0,maxRange.y);
-      this.rangeZ = Mth.clamp(this.rangeZ,0,maxRange.z);
-      return new Vec3(rangeX,rangeY,rangeZ);
+      this.rangeX = Mth.clamp(this.rangeX, 0, maxRange.x);
+      this.rangeY = Mth.clamp(this.rangeY, 0, maxRange.y);
+      this.rangeZ = Mth.clamp(this.rangeZ, 0, maxRange.z);
+      return new Vec3(rangeX, rangeY, rangeZ);
    }
    
    public Vec3 getMaxRange(){
@@ -359,11 +362,11 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.GEOMANTIC_STELE).getCheckOffset()),null);
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.GEOMANTIC_STELE).getCheckOffset()), null);
    }
    
    public void setItem(ItemStack stack){
-      this.inventory.setItem(0,stack);
+      this.inventory.setItem(0, stack);
       setChanged();
       if(!stack.isEmpty()) setRange(getMaxRange());
    }
@@ -396,7 +399,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    @Override
    protected void setItems(NonNullList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
-         this.inventory.setItem(i,list.get(i));
+         this.inventory.setItem(i, list.get(i));
       }
    }
    
@@ -441,6 +444,10 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -455,16 +462,17 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
       this.inventory = new SimpleContainer(getContainerSize());
-      if (!this.tryLoadLootTable(view)) {
+      if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
-      this.rangeMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GEOMANTIC_STELE_RANGE_MULTIPLIER_PER_LVL).get(ArcanaAugments.getAugmentFromMap(this.augments,ArcanaAugments.GEOLITHIC_AMPLIFICATION));
+      this.rangeMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GEOMANTIC_STELE_RANGE_MULTIPLIER_PER_LVL).get(ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.GEOLITHIC_AMPLIFICATION));
       Vec3 maxRange = getMaxRange();
       this.rangeX = view.getDoubleOr("rangeX", maxRange.x);
       this.rangeY = view.getDoubleOr("rangeY", maxRange.y);
@@ -478,8 +486,9 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
-      if (!this.trySaveLootTable(view)) {
+      if(!this.trySaveLootTable(view)){
          ContainerHelper.saveAllItems(view, this.inventory.getItems());
       }
       view.putDouble("rangeX", this.rangeX);

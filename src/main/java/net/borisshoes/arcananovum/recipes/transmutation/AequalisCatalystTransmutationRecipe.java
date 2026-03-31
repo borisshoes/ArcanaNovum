@@ -23,29 +23,30 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
 
-public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
+public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe {
    
    public AequalisCatalystTransmutationRecipe(){
-      super("reclaim_catalysts",new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
+      super("reclaim_catalysts", new ItemStack(ArcanaRegistry.STARDUST, 64), new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 64));
    }
    
    @Override // This transmutation cannot be done by an Aequalis
    public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayer player){
-      return List.of(positiveInput,negativeInput,reagent1,reagent2,aequalisInput);
+      return List.of(positiveInput, negativeInput, reagent1, reagent2, aequalisInput);
    }
    
    @Override
-   public List<Tuple<ItemStack,String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
-      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN);
+   public List<Tuple<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
+      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       ItemStack input1Stack = input1Entity != null ? input1Entity.getItem() : ItemStack.EMPTY;
       ItemStack input2Stack = input2Entity != null ? input2Entity.getItem() : ItemStack.EMPTY;
       ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
       ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getItem() : ItemStack.EMPTY;
       ItemStack aequalisStack = aequalisEntity != null ? aequalisEntity.getItem() : ItemStack.EMPTY;
-      if(!canTransmute(input1Stack,input2Stack,reagent1Stack,reagent2Stack,aequalisStack,altar)) return new ArrayList<>();
+      if(!canTransmute(input1Stack, input2Stack, reagent1Stack, reagent2Stack, aequalisStack, altar))
+         return new ArrayList<>();
       
-      ItemStack arcanaItemStack,catalystStack;
-      ItemEntity arcanaItemEntity,catalystEntity;
+      ItemStack arcanaItemStack, catalystStack;
+      ItemEntity arcanaItemEntity, catalystEntity;
       String outputPos;
       if(ArcanaItemUtils.isArcane(input1Stack) && !input1Stack.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem())){
          arcanaItemStack = input1Stack;
@@ -65,7 +66,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(arcanaItemStack);
       if(arcanaItem instanceof RunicArrow) return new ArrayList<>();
       
-      List<Tuple<ItemStack,String>> outputs = new ArrayList<>();
+      List<Tuple<ItemStack, String>> outputs = new ArrayList<>();
       int consumedCatas = 0;
       ListTag catas = ArcanaItem.getListProperty(arcanaItemStack, ArcanaItem.CATALYSTS_TAG);
       
@@ -73,11 +74,11 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
       if(curAugments == null) return new ArrayList<>();
       
       while(consumedCatas < catalystStack.getCount()){
-         ArrayList<Tuple<ArcanaAugment,Integer>> options = new ArrayList<>();
+         ArrayList<Tuple<ArcanaAugment, Integer>> options = new ArrayList<>();
          ArrayList<ArcanaAugment> augTypes = new ArrayList<>(curAugments.keySet().stream().toList());
          Collections.shuffle(augTypes);
          for(ArcanaAugment augType : augTypes){
-            options.add(new Tuple<>(augType,curAugments.get(augType)));
+            options.add(new Tuple<>(augType, curAugments.get(augType)));
          }
          
          boolean cataFound = false;
@@ -95,14 +96,14 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
                
                if(aug.equals(augment.id) && level == lvl){
                   ArcanaItem arcanaCata = ArcanaRarity.getAugmentCatalyst(rarity);
-                  ItemStack catalyst = arcanaCata.addCrafter(arcanaCata.getNewItem(), arcanaItem.getCrafter(arcanaItemStack),0,altar.getLevel().getServer());
-                  outputs.add(new Tuple<>(catalyst,outputPos));
+                  ItemStack catalyst = arcanaCata.addCrafter(arcanaCata.getNewItem(), arcanaItem.getCrafter(arcanaItemStack), 0, altar.getLevel().getServer());
+                  outputs.add(new Tuple<>(catalyst, outputPos));
                   consumedCatas++;
                   cataFound = true;
-                  if(lvl-1 <= 0){
+                  if(lvl - 1 <= 0){
                      curAugments.remove(augment);
                   }else{
-                     curAugments.put(augment,lvl-1);
+                     curAugments.put(augment, lvl - 1);
                   }
                   iter.remove();
                   break;
@@ -113,16 +114,16 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          if(!cataFound) break;
       }
       
-      ArcanaItem.putProperty(arcanaItemStack, ArcanaItem.CATALYSTS_TAG,catas);
-      ArcanaAugments.setAugmentsOnItem(arcanaItemStack,curAugments);
+      ArcanaItem.putProperty(arcanaItemStack, ArcanaItem.CATALYSTS_TAG, catas);
+      ArcanaAugments.setAugmentsOnItem(arcanaItemStack, curAugments);
       
       if(aequalisEntity != null){
-         boolean timeless = ArcanaAugments.getAugmentOnItem(aequalisStack,ArcanaAugments.TIMELESS_WISDOM) > 0;
-         int uses = ArcanaItem.getIntProperty(aequalisStack,AequalisScientia.USES_TAG);
+         boolean timeless = ArcanaAugments.getAugmentOnItem(aequalisStack, ArcanaAugments.TIMELESS_WISDOM) > 0;
+         int uses = ArcanaItem.getIntProperty(aequalisStack, AequalisScientia.USES_TAG);
          if(!timeless && uses <= 1){
             aequalisEntity.discard();
          }else if(!timeless){
-            ArcanaItem.putProperty(aequalisStack,AequalisScientia.USES_TAG,uses-1);
+            ArcanaItem.putProperty(aequalisStack, AequalisScientia.USES_TAG, uses - 1);
             ArcanaRegistry.AEQUALIS_SCIENTIA.buildItemLore(aequalisStack, BorisLib.SERVER);
             aequalisEntity.setItem(aequalisStack);
          }
@@ -141,15 +142,15 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      boolean m11 = validReagent1(reagent1Stack,bargainLvl), m22 = validReagent2(reagent2Stack,bargainLvl), m12 = validReagent1(reagent2Stack,bargainLvl), m21 = validReagent2(reagent1Stack,bargainLvl);
+      boolean m11 = validReagent1(reagent1Stack, bargainLvl), m22 = validReagent2(reagent2Stack, bargainLvl), m12 = validReagent1(reagent2Stack, bargainLvl), m21 = validReagent2(reagent1Stack, bargainLvl);
       boolean straight = m11 && m22;
       boolean cross = !straight && m12 && m21;
-      if (!straight && !cross) return new ArrayList<>(); // should be impossible
+      if(!straight && !cross) return new ArrayList<>(); // should be impossible
       
-      ItemStack reagent1 = straight ? getComputedReagent1(reagent1Stack,bargainLvl) : getComputedReagent2(reagent1Stack,bargainLvl);
-      ItemStack reagent2 = straight ? getComputedReagent2(reagent2Stack,bargainLvl) : getComputedReagent1(reagent2Stack,bargainLvl);
+      ItemStack reagent1 = straight ? getComputedReagent1(reagent1Stack, bargainLvl) : getComputedReagent2(reagent1Stack, bargainLvl);
+      ItemStack reagent2 = straight ? getComputedReagent2(reagent2Stack, bargainLvl) : getComputedReagent1(reagent2Stack, bargainLvl);
       
-      if (reagent1Entity != null) {
+      if(reagent1Entity != null){
          int take = reagent1.isEmpty() ? 0 : reagent1.getCount();
          if(take > 0){
             if(reagent1Stack.getCount() == take){
@@ -161,7 +162,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      if (reagent2Entity != null) {
+      if(reagent2Entity != null){
          int take = reagent2.isEmpty() ? 0 : reagent2.getCount();
          if(take > 0){
             if(reagent2Stack.getCount() == take){
@@ -180,17 +181,17 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public boolean canTransmute(ItemStack input1, ItemStack input2, ItemStack reagent1Input, ItemStack reagent2Input, ItemStack aequalisInput, TransmutationAltarBlockEntity altar){
-      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN);
-      boolean reagentCheck1 = validReagent1(reagent1Input,bargainLvl) && validReagent2(reagent2Input,bargainLvl);
-      boolean reagentCheck2 = validReagent1(reagent2Input,bargainLvl) && validReagent2(reagent1Input,bargainLvl);
-      if (!(reagentCheck1 || reagentCheck2)) return false;
+      int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
+      boolean reagentCheck1 = validReagent1(reagent1Input, bargainLvl) && validReagent2(reagent2Input, bargainLvl);
+      boolean reagentCheck2 = validReagent1(reagent2Input, bargainLvl) && validReagent2(reagent1Input, bargainLvl);
+      if(!(reagentCheck1 || reagentCheck2)) return false;
       boolean matrixCheck = (input1.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem()) || input2.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
       boolean arcanaItemCheck = (ArcanaItemUtils.isArcane(input1) && !input1.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem())) || (ArcanaItemUtils.isArcane(input2) && !input2.is(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
       boolean arrowCheck = ArcanaItemUtils.identifyItem(input1) instanceof RunicArrow || ArcanaItemUtils.identifyItem(input2) instanceof RunicArrow;
       if(!matrixCheck || !arcanaItemCheck || arrowCheck) return false;
       if(!(ArcanaItemUtils.identifyItem(aequalisInput) instanceof AequalisScientia as)) return false;
       try{
-         boolean hasAugment = ArcanaAugments.getAugmentOnItem(aequalisInput,ArcanaAugments.EQUIVALENT_EXCHANGE) > 0;
+         boolean hasAugment = ArcanaAugments.getAugmentOnItem(aequalisInput, ArcanaAugments.EQUIVALENT_EXCHANGE) > 0;
          if(!hasAugment) return false;
          ServerPlayer player = altar.getLevel().getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(as.getCrafter(aequalisInput)));
          if(player != null){

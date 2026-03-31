@@ -43,9 +43,9 @@ public class ClockworkMultitoolEnderGui extends SimpleGui {
    
    public void build(){
       GuiElementBuilder mid = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.ENDER_COLOR)).setName(Component.literal("")).hideTooltip();
-      setSlot(0,mid);
-      setSlot(2,mid);
-      setSlot(4,mid);
+      setSlot(0, mid);
+      setSlot(2, mid);
+      setSlot(4, mid);
       
       GuiElementBuilder echest = new GuiElementBuilder(Items.ENDER_CHEST).hideDefaultTooltip().setName(Items.ENDER_CHEST.getName().copy().withStyle(ChatFormatting.DARK_AQUA));
       echest.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -55,7 +55,7 @@ public class ClockworkMultitoolEnderGui extends SimpleGui {
          player.openMenu(new SimpleMenuProvider((i, inventory, p) -> ChestMenu.threeRows(i, inventory, player.getEnderChestInventory()), Component.translatable("container.enderchest")));
          close();
       });
-      setSlot(1,echest);
+      setSlot(1, echest);
       
       GuiElementBuilder crate = new GuiElementBuilder(Items.BARREL).hideDefaultTooltip().setName(ArcanaRegistry.ENDER_CRATE.getTranslatedName().withStyle(ChatFormatting.LIGHT_PURPLE));
       DyeColor[] colors = channel.getColors();
@@ -84,10 +84,10 @@ public class ClockworkMultitoolEnderGui extends SimpleGui {
             .append(Component.literal(" to change the Ender Crate channel").withStyle(ChatFormatting.DARK_AQUA)))));
       crate.setCallback((type) -> {
          if(type.isRight){
-            EnderCrateChannelGui gui = new EnderCrateChannelGui(player,channel,true);
+            EnderCrateChannelGui gui = new EnderCrateChannelGui(player, channel, true);
             gui.setOnConfirm(newChannel -> {
-               ArcanaItem.putProperty(stack,EnderCrate.CHANNEL_TAG,EnderCrate.colorsToTag(newChannel.getColors()));
-               ArcanaItem.putProperty(stack,EnderCrate.LOCK_TAG,newChannel.isLocked() ? newChannel.getIdLock().toString() : "");
+               ArcanaItem.putProperty(stack, EnderCrate.CHANNEL_TAG, EnderCrate.colorsToTag(newChannel.getColors()));
+               ArcanaItem.putProperty(stack, EnderCrate.LOCK_TAG, newChannel.isLocked() ? newChannel.getIdLock().toString() : "");
                this.channel = newChannel;
                this.build();
                this.open();
@@ -95,11 +95,11 @@ public class ClockworkMultitoolEnderGui extends SimpleGui {
             gui.build();
             gui.open();
          }else{
-            int bandwidth = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENDER_MECHANISM) - 2;
+            int bandwidth = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.ENDER_MECHANISM) - 2;
             EnderCrateGui gui = new EnderCrateGui(player, channel, bandwidth);
             gui.open();
          }
       });
-      setSlot(3,crate);
+      setSlot(3, crate);
    }
 }

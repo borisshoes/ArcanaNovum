@@ -40,7 +40,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.entities.NulConstructEntity.getBaseConstructPattern;
 
 public class SovereignCatalyst extends ArcanaItem {
-	public static final String ID = "sovereign_catalyst";
+   public static final String ID = "sovereign_catalyst";
    
    public SovereignCatalyst(){
       id = ID;
@@ -49,8 +49,8 @@ public class SovereignCatalyst extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.GOLD_INGOT;
       item = new SovereignCatalystItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_CATALYST,ResearchTasks.OBTAIN_GOLD_INGOT,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_CATALYST, ResearchTasks.OBTAIN_GOLD_INGOT, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -82,13 +82,13 @@ public class SovereignCatalyst extends ArcanaItem {
             .append(Component.literal("Tinkering Menu").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(" of a ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("Twilight Anvil").withStyle(ChatFormatting.GREEN)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("     Sovereign\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nGOLD! The gemstones already provide enough reinforcement. Gold lets the energy be more malleable to more creative applications. But, I ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("     Sovereign\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nGOLD! The gemstones already provide enough reinforcement. Gold lets the energy be more malleable to more creative applications. But, I ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("     Sovereign\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nthink there’s a little more potential here…").withStyle(ChatFormatting.BLACK)));
       return list;
    }
@@ -116,13 +116,13 @@ public class SovereignCatalyst extends ArcanaItem {
          
          if(state.is(Blocks.ANCIENT_DEBRIS) && pos.getY() >= world.getMinY() && canSpawn){ // Check construct
             BlockPattern pattern = getBaseConstructPattern();
-            BlockPattern.BlockPatternMatch patternResult = pattern.find(world, pos.offset(-1,-1,-1));
+            BlockPattern.BlockPatternMatch patternResult = pattern.find(world, pos.offset(-1, -1, -1));
             if(patternResult != null){
                NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, EntitySpawnReason.TRIGGERED);
                if(constructEntity != null && world instanceof ServerLevel serverWorld){
                   CarvedPumpkinBlock.clearPatternBlocks(world, patternResult);
                   BlockPos blockPos = patternResult.getBlock(1, 1, 0).getPos();
-                  constructEntity.snapTo((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
+                  constructEntity.snapTo((double) blockPos.getX() + 0.5, (double) blockPos.getY() + 0.55, (double) blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
                   constructEntity.yBodyRot = patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
                   constructEntity.onSummoned(playerEntity);
                   
@@ -130,7 +130,7 @@ public class SovereignCatalyst extends ArcanaItem {
                   CarvedPumpkinBlock.updatePatternBlocks(world, patternResult);
                   
                   if(playerEntity instanceof ServerPlayer player){
-                     ArcanaAchievements.grant(player,ArcanaAchievements.DOOR_OF_DIVINITY);
+                     ArcanaAchievements.grant(player, ArcanaAchievements.DOOR_OF_DIVINITY);
                   }
                   
                   context.getItemInHand().shrink(1);

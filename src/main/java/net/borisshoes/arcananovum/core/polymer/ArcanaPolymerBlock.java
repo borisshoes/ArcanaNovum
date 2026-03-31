@@ -18,6 +18,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 public abstract class ArcanaPolymerBlock extends Block implements PolymerBlock {
    protected final ArcanaItem arcanaItem;
+   
    public ArcanaPolymerBlock(ArcanaItem arcanaItem, Properties settings){
       super(settings.setId(ResourceKey.create(Registries.BLOCK, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;

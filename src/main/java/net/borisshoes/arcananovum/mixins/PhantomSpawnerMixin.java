@@ -14,11 +14,13 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(PhantomSpawner.class)
 public class PhantomSpawnerMixin {
    
-   @ModifyExpressionValue(method= "tick",at=@At(value="INVOKE",target= "Lnet/minecraft/server/level/ServerPlayer;isSpectator()Z"))
+   @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;isSpectator()Z"))
    private boolean arcananovum$fuckPhantoms(boolean original, @Local ServerPlayer player){
       if(original) return true;
-      if(!ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.FELIDAE_CHARM, ArcanaAugments.PANTHERA, 1).isEmpty()) return true;
-      if(GeomanticSteleBlockEntity.getZoneAtEntity(player,(item) -> item.is(ArcanaRegistry.FELIDAE_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PANTHERA) > 0) != null) return true;
+      if(!ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.FELIDAE_CHARM, ArcanaAugments.PANTHERA, 1).isEmpty())
+         return true;
+      if(GeomanticSteleBlockEntity.getZoneAtEntity(player, (item) -> item.is(ArcanaRegistry.FELIDAE_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.PANTHERA) > 0) != null)
+         return true;
       return false;
    }
 }

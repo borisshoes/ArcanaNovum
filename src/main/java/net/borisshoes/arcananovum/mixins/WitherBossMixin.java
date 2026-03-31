@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(WitherBoss.class)
 public class WitherBossMixin {
    
-   @Redirect(method= "customServerAiStep",at=@At(value="INVOKE",target= "Lnet/minecraft/server/level/ServerLevel;globalLevelEvent(ILnet/minecraft/core/BlockPos;I)V"))
+   @Redirect(method = "customServerAiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;globalLevelEvent(ILnet/minecraft/core/BlockPos;I)V"))
    private void arcananovum$redirectSpawnSound(ServerLevel instance, int eventId, BlockPos pos, int data){
-      SoundUtils.playSound(instance,pos, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE,1,1);
+      SoundUtils.playSound(instance, pos, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1, 1);
    }
 }

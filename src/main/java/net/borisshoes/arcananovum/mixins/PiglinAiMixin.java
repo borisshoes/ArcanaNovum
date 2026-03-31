@@ -30,7 +30,7 @@ public class PiglinAiMixin {
             int newCount = Math.toIntExact(Math.round(Math.min(itemStack.getMaxStackSize(), count * (1 + player.random.nextFloat() * modifier))));
             int diff = newCount - count;
             itemStack.setCount(newCount);
-            ArcanaAchievements.progress(player,ArcanaAchievements.WOLF_OF_BLOCK_STREET, diff);
+            ArcanaAchievements.progress(player, ArcanaAchievements.WOLF_OF_BLOCK_STREET, diff);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_NEGOTIATION_CHARM_BARTER));
          }
          return original;

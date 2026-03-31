@@ -20,8 +20,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -52,8 +50,8 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
    }
    
    public StasisPearlEntity(Level world, LivingEntity owner, String itemUuid, CompoundTag augments){
-      this(ArcanaRegistry.STASIS_PEARL_ENTITY,world);
-      setPos(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
+      this(ArcanaRegistry.STASIS_PEARL_ENTITY, world);
+      setPos(owner.getX(), owner.getEyeY() - (double) 0.1f, owner.getZ());
       setOwner(owner);
       itemStackId = itemUuid;
       this.augments = augments;
@@ -73,16 +71,16 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
    
    public void setStasis(boolean stasis){
       inStasis = stasis;
-      ArcanaItem.putProperty(pearlStack, StasisPearl.ACTIVE_TAG,stasis); // For visuals only, not related to stack in inventory
-      ArcanaItem.putProperty(pearlStack, StasisPearl.PEARL_ID_TAG,stasis ? "-" : "");
+      ArcanaItem.putProperty(pearlStack, StasisPearl.ACTIVE_TAG, stasis); // For visuals only, not related to stack in inventory
+      ArcanaItem.putProperty(pearlStack, StasisPearl.PEARL_ID_TAG, stasis ? "-" : "");
       
       if(inStasis){
          this.savedVelocity = getDeltaMovement();
-         setDeltaMovement(0,0,0);
+         setDeltaMovement(0, 0, 0);
          setNoGravity(true);
       }else{
          if(stasisTime >= 6000 && getOwner() instanceof ServerPlayer player){
-            ArcanaAchievements.grant(player,ArcanaAchievements.PEARL_HANG);
+            ArcanaAchievements.grant(player, ArcanaAchievements.PEARL_HANG);
          }
          setDeltaMovement(this.savedVelocity);
          setNoGravity(false);
@@ -91,7 +89,7 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
    }
    
    public void killNextTick(){
-      stasisTime = Integer.MAX_VALUE-1;
+      stasisTime = Integer.MAX_VALUE - 1;
    }
    
    @Override
@@ -105,7 +103,7 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
          stasisTime++;
          
          if(getDeltaMovement().length() > 0.001){
-            setDeltaMovement(0,0,0);
+            setDeltaMovement(0, 0, 0);
          }
       }
       
@@ -124,10 +122,10 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
    }
    
    public void resyncHolder(){
-      ServerPlayer holder = ArcanaItemUtils.findHolder(this.level().getServer(),itemStackId);
+      ServerPlayer holder = ArcanaItemUtils.findHolder(this.level().getServer(), itemStackId);
       if(holder != null && holder.connection.isAcceptingMessages()){
          setOwner(holder);
-         ItemStack stack = ArcanaItemUtils.getHolderStack(holder,itemStackId);
+         ItemStack stack = ArcanaItemUtils.getHolderStack(holder, itemStackId);
          ArcanaItem.putProperty(stack, StasisPearl.PEARL_ID_TAG, this.getStringUUID());
          ArcanaItem.putProperty(stack, StasisPearl.ACTIVE_TAG, this.inStasis);
       }
@@ -141,24 +139,24 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
       // Find Holder of the item
       ServerPlayer holder = null;
       if(itemStackId != null && level().getServer() != null){
-         holder = ArcanaItemUtils.findHolder(level().getServer(),itemStackId);
+         holder = ArcanaItemUtils.findHolder(level().getServer(), itemStackId);
          if(holder != null && holder.connection.isAcceptingMessages() && holder.level() == this.level() && !holder.isSleeping()){
             setOwner(holder);
             
             if(holder.position().distanceTo(position()) >= 1000){
                ArcanaAchievements.grant(holder, ArcanaAchievements.INSTANT_TRANSMISSION);
             }
-            int reconstructLvl = ArcanaAugments.getAugmentFromCompound(augments,ArcanaAugments.STASIS_RECONSTRUCTION);
+            int reconstructLvl = ArcanaAugments.getAugmentFromCompound(augments, ArcanaAugments.STASIS_RECONSTRUCTION);
             if(reconstructLvl > 0){
                int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STASIS_PEARL_RECONSTRUCT_DURATION);
                float rejuvRate = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_REGEN_PER_LVL).get(reconstructLvl);
                float fortMod = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_FORTITUDE_PER_LVL).get(reconstructLvl);
-               ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION,arcanaId(ArcanaRegistry.STASIS_PEARL.getId()),duration, rejuvRate,true,true,false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
-               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE,arcanaId(ArcanaRegistry.STASIS_PEARL.getId()),duration, -fortMod,true,true,false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
-               Conditions.addCondition(holder.level().getServer(),holder,rejuv);
-               Conditions.addCondition(holder.level().getServer(),holder,fortitude);
+               ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, rejuvRate, true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
+               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, -fortMod, true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
+               Conditions.addCondition(holder.level().getServer(), holder, rejuv);
+               Conditions.addCondition(holder.level().getServer(), holder, fortitude);
                
-               holder.level().sendParticles(ParticleTypes.HAPPY_VILLAGER,getX(),getY()+holder.getBbHeight()/2,getZ(),10*reconstructLvl, .5,.5,.5,1);
+               holder.level().sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + holder.getBbHeight() / 2, getZ(), 10 * reconstructLvl, .5, .5, .5, 1);
             }
          }
       }
@@ -169,14 +167,14 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
    protected void addAdditionalSaveData(ValueOutput view){
       super.addAdditionalSaveData(view);
       if(augments != null){
-         view.store("augments", CompoundTag.CODEC,augments);
+         view.store("augments", CompoundTag.CODEC, augments);
       }
-      view.putBoolean("inStasis",inStasis);
-      view.putInt("stasisTime",stasisTime);
-      view.putString("stackUuid",itemStackId);
-      view.putDouble("savedDX",savedVelocity.x);
-      view.putDouble("savedDY",savedVelocity.y);
-      view.putDouble("savedDZ",savedVelocity.z);
+      view.putBoolean("inStasis", inStasis);
+      view.putInt("stasisTime", stasisTime);
+      view.putString("stackUuid", itemStackId);
+      view.putDouble("savedDX", savedVelocity.x);
+      view.putDouble("savedDY", savedVelocity.y);
+      view.putDouble("savedDZ", savedVelocity.z);
    }
    
    @Override

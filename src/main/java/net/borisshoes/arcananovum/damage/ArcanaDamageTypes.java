@@ -22,10 +22,10 @@ public class ArcanaDamageTypes {
    }
    
    public static DamageSource of(Level world, ResourceKey<DamageType> key, Entity attacker){
-      return new DamageSource((world.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key)),attacker);
+      return new DamageSource((world.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key)), attacker);
    }
    
    public static DamageSource of(Level world, ResourceKey<DamageType> key, Entity source, Entity attacker){
-      return new DamageSource((world.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key)),source,attacker);
+      return new DamageSource((world.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key)), source, attacker);
    }
 }

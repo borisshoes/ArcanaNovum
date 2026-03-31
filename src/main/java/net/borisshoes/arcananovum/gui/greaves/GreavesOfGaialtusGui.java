@@ -47,14 +47,14 @@ public class GreavesOfGaialtusGui extends SimpleGui {
       inv = new SimpleContainer(54);
       for(int i = 0; i < inv.getContainerSize(); i++){
          if(i < slotCount){
-            setSlotRedirect(i, new GreavesSlot(inv,i,i,0));
+            setSlotRedirect(i, new GreavesSlot(inv, i, i, 0));
          }
       }
       
       ItemContainerContents beltItems = greavesStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
       beltItems.stream().forEachOrdered(stack -> {
-         inv.setItem(i.get(),stack);
+         inv.setItem(i.get(), stack);
          i.getAndIncrement();
       });
       
@@ -66,9 +66,9 @@ public class GreavesOfGaialtusGui extends SimpleGui {
       if(type == ClickType.OFFHAND_SWAP || action == net.minecraft.world.inventory.ClickType.SWAP){
          close();
       }else if(index > slotCount){
-         int invSlot = index >= 27+slotCount ? index - (27+slotCount) : index;
+         int invSlot = index >= 27 + slotCount ? index - (27 + slotCount) : index;
          ItemStack stack = player.getInventory().getItem(invSlot);
-         if(ItemStack.isSameItemSameComponents(greavesStack,stack)){
+         if(ItemStack.isSameItemSameComponents(greavesStack, stack)){
             close();
             return false;
          }
@@ -86,6 +86,6 @@ public class GreavesOfGaialtusGui extends SimpleGui {
          items.set(i, itemStack);
       }
       greavesStack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(items));
-      greaves.buildItemLore(greavesStack,player.level().getServer());
+      greaves.buildItemLore(greavesStack, player.level().getServer());
    }
 }

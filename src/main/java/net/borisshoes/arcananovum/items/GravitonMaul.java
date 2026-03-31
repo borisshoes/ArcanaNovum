@@ -41,8 +41,6 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -342,8 +340,8 @@ public class GravitonMaul extends ArcanaItem {
          
          
          float vortexFortitude = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_FORTITUDE);
-         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE,arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()),10, -(vortexFortitude),true,true,true, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
-         Conditions.addCondition(player.level().getServer(),player,fortitude);
+         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, -(vortexFortitude), true, true, true, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
+         Conditions.addCondition(player.level().getServer(), player, fortitude);
       }
    }
    

@@ -42,6 +42,7 @@ import java.util.List;
 
 public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
+   
    public ArcanaPolymerCrossbowItem(ArcanaItem arcanaItem, net.minecraft.world.item.Item.Properties settings){
       super(settings.setId(ResourceKey.create(Registries.ITEM, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
@@ -68,8 +69,8 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
          
          if(shooter instanceof ServerPlayer player){
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_RUNIC_ARROW_SHOOT));
-            ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER, 1);
-            shooter.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS,volume, 1.0F / (shooter.level().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
+            ArcanaAchievements.progress(player, ArcanaAchievements.JUST_LIKE_ARCHER, 1);
+            shooter.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, volume, 1.0F / (shooter.level().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
          }
       }
    }
@@ -78,7 +79,7 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
       ItemStack stack = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context);
       ChargedProjectiles projs = itemStack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
-      stack.set(DataComponents.CHARGED_PROJECTILES,projs);
+      stack.set(DataComponents.CHARGED_PROJECTILES, projs);
       return stack;
    }
    
@@ -97,7 +98,7 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    }
    
    @Override
-   public Component getName(ItemStack stack) {
+   public Component getName(ItemStack stack){
       return arcanaItem.getDisplayName() != null ? arcanaItem.getDisplayName() : super.getName(stack);
    }
    

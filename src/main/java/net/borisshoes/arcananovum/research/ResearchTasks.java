@@ -775,7 +775,7 @@ public class ResearchTasks {
       
       ResearchTasks.register(ADVANCEMENT_WHOS_THE_PILLAGER_NOW, new AdvancementResearchTask(
             ADVANCEMENT_WHOS_THE_PILLAGER_NOW.identifier().getPath(), "adventure/whos_the_pillager_now",
-            new ItemStack(Items.CROSSBOW),ADVANCEMENT_OL_BETSY
+            new ItemStack(Items.CROSSBOW), ADVANCEMENT_OL_BETSY
       ));
       
       ResearchTasks.register(ADVANCEMENT_TOTEM_OF_UNDYING, new AdvancementResearchTask(
@@ -1037,7 +1037,7 @@ public class ResearchTasks {
    }
    
    private static ResearchTask register(ResourceKey<ResearchTask> key, ResearchTask task){
-      Registry.register(RESEARCH_TASKS,key,task);
+      Registry.register(RESEARCH_TASKS, key, task);
       return task;
    }
    
@@ -1052,7 +1052,7 @@ public class ResearchTasks {
       for(ResourceKey<ResearchTask> key : tasks){
          ResearchTask task = RESEARCH_TASKS.getValue(key);
          if(task == null || addedTasks.contains(task)) continue;
-         taskTrees.add(generateTaskNode(task,null, addedTasks));
+         taskTrees.add(generateTaskNode(task, null, addedTasks));
       }
       return taskTrees;
    }
@@ -1063,7 +1063,7 @@ public class ResearchTasks {
       for(ResourceKey<ResearchTask> key : tasks){
          ResearchTask task = RESEARCH_TASKS.getValue(key);
          if(task == null || addedTasks.contains(task)) continue;
-         generateTaskNode(task,null, addedTasks);
+         generateTaskNode(task, null, addedTasks);
       }
       return addedTasks;
    }
@@ -1072,7 +1072,7 @@ public class ResearchTasks {
       TreeNode<ResearchTask> node = new TreeNode<>(task, new HashSet<>(), parent);
       trackerSet.add(task);
       for(ResearchTask preReq : task.getPreReqs()){
-         node.addChild(generateTaskNode(preReq,node,trackerSet));
+         node.addChild(generateTaskNode(preReq, node, trackerSet));
       }
       return node;
    }

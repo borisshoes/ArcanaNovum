@@ -35,14 +35,14 @@ public abstract class ResearchTask {
    }
    
    public String getTranslationKey(){
-      return "research."+MOD_ID+".name."+this.id;
+      return "research." + MOD_ID + ".name." + this.id;
    }
    
    public String getDescriptionTranslationKey(){
-      return "research."+MOD_ID+".description."+this.id;
+      return "research." + MOD_ID + ".description." + this.id;
    }
    
-   public enum Type{
+   public enum Type {
       STATISTIC,
       OBTAIN_ITEM,
       ADVANCEMENT,

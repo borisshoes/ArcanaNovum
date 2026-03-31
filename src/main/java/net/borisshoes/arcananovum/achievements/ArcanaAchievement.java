@@ -4,7 +4,6 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
-import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -205,7 +204,8 @@ public abstract class ArcanaAchievement {
       }
       if(abyssCheck){
          ArcanaAchievements.grant(playerId, ArcanaAchievements.ALL_ACHIEVEMENTS);
-      }else if(acolyteCheck){
+      }
+      if(acolyteCheck){
          ArcanaAchievements.grant(playerId, ArcanaAchievements.MOST_ACHIEVEMENTS);
       }
    }

@@ -20,7 +20,7 @@ public class ShulkerCoreIngredient extends ArcanaIngredient {
    
    @Override
    public ArcanaIngredient copyWithCount(int newCount){
-      return new ShulkerCoreIngredient(needsStone,minSouls);
+      return new ShulkerCoreIngredient(needsStone, minSouls);
    }
    
    @Override
@@ -50,7 +50,7 @@ public class ShulkerCoreIngredient extends ArcanaIngredient {
    public String getName(){
       String name = ArcanaRegistry.SHULKER_CORE.getNameString();
       if(needsStone){
-         name += " ("+minSouls+"+ Souls)";
+         name += " (" + minSouls + "+ Souls)";
       }
       return name;
    }

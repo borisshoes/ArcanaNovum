@@ -22,7 +22,7 @@ public class ServerEntityMixin {
    @Shadow
    private Entity entity;
    
-   @Inject(method = "addPairing", at= @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;send(Lnet/minecraft/network/protocol/Packet;)V", shift = At.Shift.BEFORE))
+   @Inject(method = "addPairing", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;send(Lnet/minecraft/network/protocol/Packet;)V", shift = At.Shift.BEFORE))
    private void arcananovum$stopInvisTracking(ServerPlayer player, CallbackInfo ci, @Local List<?> list){
       if(entity instanceof LivingEntity livingEntity && livingEntity.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
          list.clear();

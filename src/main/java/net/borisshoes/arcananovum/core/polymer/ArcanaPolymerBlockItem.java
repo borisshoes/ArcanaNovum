@@ -27,13 +27,14 @@ import java.util.List;
 
 public abstract class ArcanaPolymerBlockItem extends BlockItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
+   
    public ArcanaPolymerBlockItem(ArcanaItem arcanaItem, Block block, net.minecraft.world.item.Item.Properties settings){
       super(block, settings.useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, ArcanaRegistry.arcanaId(arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
    
    @Override
-   public Component getName(ItemStack stack) {
+   public Component getName(ItemStack stack){
       return arcanaItem.getDisplayName() != null ? arcanaItem.getDisplayName() : super.getName(stack);
    }
    

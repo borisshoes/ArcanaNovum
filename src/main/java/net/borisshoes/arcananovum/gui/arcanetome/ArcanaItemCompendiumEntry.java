@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.network.chat.MutableComponent;
 
-public class ArcanaItemCompendiumEntry extends CompendiumEntry{
+public class ArcanaItemCompendiumEntry extends CompendiumEntry {
    
    private final ArcanaItem arcanaItem;
    

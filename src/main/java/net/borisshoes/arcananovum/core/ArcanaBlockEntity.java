@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -31,6 +32,7 @@ public interface ArcanaBlockEntity {
    String CRAFTER_ID_TAG = "crafterId";
    String CUSTOM_NAME = "customName";
    String ORIGIN_TAG = "synthetic";
+   String SKIN_TAG = "skin";
    
    TreeMap<ArcanaAugment, Integer> getAugments();
    
@@ -42,7 +44,9 @@ public interface ArcanaBlockEntity {
    
    String getCustomArcanaName();
    
-   void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName);
+   ArcanaSkin getSkin();
+   
+   void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName);
    
    ArcanaItem getArcanaItem();
    
@@ -51,7 +55,7 @@ public interface ArcanaBlockEntity {
    }
    
    static ItemStack getBlockEntityAsItem(ArcanaBlockEntity arcanaBlockEntity, Level world){
-      return getBlockEntityAsItem(arcanaBlockEntity,world,null);
+      return getBlockEntityAsItem(arcanaBlockEntity, world, null);
    }
    
    static ItemStack getBlockEntityAsItem(ArcanaBlockEntity arcanaBlockEntity, Level world, @Nullable ItemStack stack){
@@ -69,35 +73,39 @@ public interface ArcanaBlockEntity {
       ArcanaItem arcanaItem = arcanaBlockEntity.getArcanaItem();
       
       if(stack != null){
-         arcanaItem.initializeArcanaTag(stack,false);
+         arcanaItem.initializeArcanaTag(stack, false);
       }else{
          stack = arcanaItem.getNewItem();
       }
       
-      stack = arcanaItem.addCrafter(stack, arcanaBlockEntity.getCrafterId(), arcanaBlockEntity.getOrigin(),world.getServer());
+      stack = arcanaItem.addCrafter(stack, arcanaBlockEntity.getCrafterId(), arcanaBlockEntity.getOrigin(), world.getServer());
       
       if(augmentsTag != null){
-         ArcanaItem.putProperty(stack, ArcanaItem.AUGMENTS_TAG,augmentsTag);
+         ArcanaItem.putProperty(stack, ArcanaItem.AUGMENTS_TAG, augmentsTag);
       }
       
-      ArcanaItem.putProperty(stack, ArcanaItem.UUID_TAG,uuid);
+      ArcanaItem.putProperty(stack, ArcanaItem.UUID_TAG, uuid);
+      
+      if(arcanaBlockEntity.getSkin() != null){
+         ArcanaItem.putProperty(stack, ArcanaItem.SKIN_TAG, arcanaBlockEntity.getSkin().getSerializedName());
+      }
       
       if(arcanaBlockEntity.getCustomArcanaName() != null && !arcanaBlockEntity.getCustomArcanaName().isEmpty()){
          stack.set(DataComponents.CUSTOM_NAME, Component.literal(arcanaBlockEntity.getCustomArcanaName()));
       }
       
       if(arcanaBlockEntity instanceof ArcaneSingularityBlockEntity singularity){
-         ArcanaItem.putProperty(stack, ArcaneSingularity.BOOKS_TAG,singularity.saveBooks(world.registryAccess()));
+         ArcanaItem.putProperty(stack, ArcaneSingularity.BOOKS_TAG, singularity.saveBooks(world.registryAccess()));
       }
       if(arcanaBlockEntity instanceof StarpathAltarBlockEntity altar){
-         ArcanaItem.putProperty(stack, StarpathAltar.TARGETS_TAG,altar.writeTargets());
+         ArcanaItem.putProperty(stack, StarpathAltar.TARGETS_TAG, altar.writeTargets());
       }
       if(arcanaBlockEntity instanceof StarlightForgeBlockEntity forge){
-         ArcanaItem.putProperty(stack, StarlightForge.SEED_USES_TAG,forge.getSeedUses());
+         ArcanaItem.putProperty(stack, StarlightForge.SEED_USES_TAG, forge.getSeedUses());
       }
       if(arcanaBlockEntity instanceof AstralGatewayBlockEntity gateway){
-         ArcanaItem.putProperty(stack, AstralGateway.WAYSTONES_TAG,gateway.saveStones(world.registryAccess()));
-         ArcanaItem.putProperty(stack, AstralGateway.STARDUST_TAG,gateway.getStardust());
+         ArcanaItem.putProperty(stack, AstralGateway.WAYSTONES_TAG, gateway.saveStones(world.registryAccess()));
+         ArcanaItem.putProperty(stack, AstralGateway.STARDUST_TAG, gateway.getStardust());
       }
       if(arcanaBlockEntity instanceof EnderCrateBlockEntity crate){
          EnderCrateChannel channel = crate.getChannel();
@@ -105,10 +113,10 @@ public interface ArcanaBlockEntity {
          ArcanaItem.putProperty(stack, EnderCrate.LOCK_TAG, channel.isLocked() ? channel.getIdLock().toString() : "");
       }
       if(arcanaBlockEntity instanceof ItineranteurBlockEntity itineranteur){
-         ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG,itineranteur.getBlockState().getValue(Itineranteur.ItineranteurBlock.TYPE).getId());
+         ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, itineranteur.getBlockState().getValue(Itineranteur.ItineranteurBlock.TYPE).getId());
       }
       
-      arcanaItem.buildItemLore(stack,world.getServer());
+      arcanaItem.buildItemLore(stack, world.getServer());
       
       return stack;
    }

@@ -15,14 +15,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ConditionalsAchievement extends ArcanaAchievement{
-   private final HashMap<String,Boolean> conditions;
+public class ConditionalsAchievement extends ArcanaAchievement {
+   private final HashMap<String, Boolean> conditions;
    
    public ConditionalsAchievement(String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] conditions){
       super(id, 2, displayItem, arcanaItem, xpReward, pointsReward);
       this.conditions = new HashMap<>();
       for(String cond : conditions){
-         this.conditions.put(cond,false);
+         this.conditions.put(cond, false);
       }
       setAcquired(false);
    }
@@ -30,7 +30,7 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    protected boolean setCondition(String cond, boolean set){
       boolean had = isAcquired();
       if(conditions.containsKey(cond)){
-         conditions.put(cond,set);
+         conditions.put(cond, set);
       }
       
       setAcquired(conditions.values().stream().allMatch(b -> b));
@@ -44,14 +44,14 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    @Override
    public CompoundTag toNbt(){
       CompoundTag nbt = new CompoundTag();
-      nbt.putBoolean("acquired",isAcquired());
-      nbt.putString("id",id);
-      nbt.putInt("type",type);
+      nbt.putBoolean("acquired", isAcquired());
+      nbt.putString("id", id);
+      nbt.putInt("type", type);
       CompoundTag condsTag = new CompoundTag();
       for(Map.Entry<String, Boolean> entry : conditions.entrySet()){
-         condsTag.putBoolean(entry.getKey(),entry.getValue());
+         condsTag.putBoolean(entry.getKey(), entry.getValue());
       }
-      nbt.put("conditions",condsTag);
+      nbt.put("conditions", condsTag);
       return nbt;
    }
    

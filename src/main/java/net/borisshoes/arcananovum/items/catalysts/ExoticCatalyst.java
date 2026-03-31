@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ExoticCatalyst extends ArcanaItem {
-	public static final String ID = "exotic_catalyst";
+   public static final String ID = "exotic_catalyst";
    
    public ExoticCatalyst(){
       id = ID;
@@ -30,8 +30,8 @@ public class ExoticCatalyst extends ArcanaItem {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.DIAMOND;
       item = new ExoticCatalystItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EMPOWERED_CATALYST,ResearchTasks.OBTAIN_DIAMOND,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EMPOWERED_CATALYST, ResearchTasks.OBTAIN_DIAMOND, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -63,13 +63,13 @@ public class ExoticCatalyst extends ArcanaItem {
             .append(Component.literal("Tinkering Menu").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(" of a ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("Twilight Anvil").withStyle(ChatFormatting.GREEN)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("       Exotic\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nI think I’ve cracked it. Higher and higher quality gemstones can channel more of the Matrix’s power. But now the Matrix seems less malleable in its ").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("       Exotic\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nI think I’ve cracked it. Higher and higher quality gemstones can channel more of the Matrix’s power. But now the Matrix seems less malleable in its ").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("       Exotic\n   Augmentation\n      Catalyst").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), Component.literal("\nrange of possible augments…").withStyle(ChatFormatting.BLACK)));
       return list;
    }

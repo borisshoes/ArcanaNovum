@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class SmokeArrows extends RunicArrow {
-	public static final String ID = "smoke_arrows";
+   public static final String ID = "smoke_arrows";
    
    public SmokeArrows(){
       id = ID;
@@ -40,8 +40,8 @@ public class SmokeArrows extends RunicArrow {
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new SmokeArrowsItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GRAY);
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.KILL_SQUID,ResearchTasks.USE_CAMPFIRE,ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_BLINDNESS,ResearchTasks.EFFECT_WEAKNESS};
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GRAY);
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SQUID, ResearchTasks.USE_CAMPFIRE, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.EFFECT_WEAKNESS};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -67,7 +67,7 @@ public class SmokeArrows extends RunicArrow {
             .append(Component.literal(" and ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal("weakness").withStyle(ChatFormatting.DARK_GRAY))
             .append(Component.literal(" to those inside it.").withStyle(ChatFormatting.GRAY)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -76,9 +76,9 @@ public class SmokeArrows extends RunicArrow {
          float percentage = ArcanaUtils.getArrowPercentage(arrow);
          double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MIN);
          double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MAX);
-         float range = (float) Mth.clamp(percentage*maxRange,minRange,maxRange);
+         float range = (float) Mth.clamp(percentage * maxRange, minRange, maxRange);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS);
-         ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),entityHitResult.getEntity(),null,null,range,gasLvl));
+         ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(), entityHitResult.getEntity(), null, null, range, gasLvl));
       }
    }
    
@@ -88,22 +88,22 @@ public class SmokeArrows extends RunicArrow {
          float percentage = ArcanaUtils.getArrowPercentage(arrow);
          double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MIN);
          double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MAX);
-         float range = (float) Mth.clamp(percentage*maxRange,minRange,maxRange);
+         float range = (float) Mth.clamp(percentage * maxRange, minRange, maxRange);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS);
-         ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),null,blockHitResult.getBlockPos(),serverWorld,range,gasLvl));
+         ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(), null, blockHitResult.getBlockPos(), serverWorld, range, gasLvl));
       }
    }
    
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("   Smoke Arrows").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nThis Runic Matrix has been configured to summon copious amounts of smoke. Those inside will have trouble seeing and even breathing, making it harder to land a solid blow.").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Smoke Arrows").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nThis Runic Matrix has been configured to summon copious amounts of smoke. Those inside will have trouble seeing and even breathing, making it harder to land a solid blow.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
    public class SmokeArrowsItem extends ArcanaPolymerArrowItem {
       public SmokeArrowsItem(){
-         super(getThis(),getArcanaArrowItemComponents(6908265));
+         super(getThis(), getArcanaArrowItemComponents(6908265));
       }
       
       @Override

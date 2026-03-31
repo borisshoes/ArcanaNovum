@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarGui;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipe;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
@@ -53,10 +54,11 @@ import static net.borisshoes.arcananovum.blocks.altars.TransmutationAltar.Transm
 
 public class TransmutationAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    
-   private TreeMap<ArcanaAugment,Integer> augments;
+   private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
    private int origin;
+   private ArcanaSkin skin;
    private String customName;
    private int cooldown;
    private boolean active;
@@ -67,11 +69,12 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       this.multiblock = ((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
       this.origin = origin;
+      this.skin = skin;
       this.customName = customName == null ? "" : customName;
       resetCooldown();
    }
@@ -81,15 +84,16 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
          player.sendSystemMessage(Component.literal("You cannot access an active Altar").withStyle(ChatFormatting.RED));
          return;
       }
-      TransmutationAltarGui gui = new TransmutationAltarGui(MenuType.HOPPER,player,this);
+      TransmutationAltarGui gui = new TransmutationAltarGui(MenuType.HOPPER, player, this);
       gui.buildMenuGui();
       gui.open();
    }
    
    public boolean startTransmute(@Nullable ServerPlayer player){
-      if(this.getCooldown() > 0 || this.checkTransmute() == null || !(this.getLevel() instanceof ServerLevel serverWorld)) return false;
+      if(this.getCooldown() > 0 || this.checkTransmute() == null || !(this.getLevel() instanceof ServerLevel serverWorld))
+         return false;
       this.resetCooldown();
-      boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.HASTY_BARGAIN) > 0;
+      boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(), ArcanaAugments.HASTY_BARGAIN) > 0;
       double speedMod = hastyBargain ? 2 : 1;
       int castTime = (int) (500.0 / speedMod);
       this.setActive(true);
@@ -102,8 +106,8 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       }
       @Nullable ServerPlayer finalPlayer = player;
       
-      ArcanaEffectUtils.transmutationAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING), speedMod);
-      BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> this.transmute(finalPlayer,false)));
+      ArcanaEffectUtils.transmutationAltarAnim(serverWorld, this.getBlockPos().getCenter(), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING), speedMod);
+      BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> this.transmute(finalPlayer, false)));
       return true;
    }
    
@@ -120,7 +124,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       ItemStack reagent2Stack = reagent2Entity == null ? ItemStack.EMPTY : reagent2Entity.getItem();
       ItemStack aequalisStack = aequalisEntity == null ? ItemStack.EMPTY : aequalisEntity.getItem();
       
-      return RecipeManager.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
+      return RecipeManager.findMatchingRecipe(positiveStack, negativeStack, reagent1Stack, reagent2Stack, aequalisStack, this);
    }
    
    public void transmute(@Nullable ServerPlayer player, boolean recursed){
@@ -136,48 +140,48 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       ItemStack reagent2Stack = reagent2Entity == null ? ItemStack.EMPTY : reagent2Entity.getItem();
       ItemStack aequalisStack = aequalisEntity == null ? ItemStack.EMPTY : aequalisEntity.getItem();
       
-      TransmutationRecipe recipe = RecipeManager.findMatchingRecipe(positiveStack,negativeStack,reagent1Stack,reagent2Stack,aequalisStack,this);
+      TransmutationRecipe recipe = RecipeManager.findMatchingRecipe(positiveStack, negativeStack, reagent1Stack, reagent2Stack, aequalisStack, this);
       this.setActive(false);
       if(recipe != null){
-         List<Tuple<ItemStack,String>> outputs = recipe.doTransmutation(positiveEntity,negativeEntity,reagent1Entity,reagent2Entity,aequalisEntity,this,player);
+         List<Tuple<ItemStack, String>> outputs = recipe.doTransmutation(positiveEntity, negativeEntity, reagent1Entity, reagent2Entity, aequalisEntity, this, player);
          
          int transmuteCount = 0;
-         for(Tuple<ItemStack,String> outputPair : outputs){
+         for(Tuple<ItemStack, String> outputPair : outputs){
             ItemStack output = outputPair.getA();
             Vec3 outputPos = this.getOutputPos(outputPair.getB());
             transmuteCount += output.getCount();
             if(output.is(ArcanaRegistry.DIVINE_CATALYST.getItem()) && player != null){
                ArcanaNovum.data(player).addCraftedSilent(output);
-               ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_TRANSMUTATION);
+               ArcanaAchievements.grant(player, ArcanaAchievements.DIVINE_TRANSMUTATION);
             }
             if(output.is(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()) && player != null){
                ArcanaNovum.data(player).addCraftedSilent(output);
-               ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE);
+               ArcanaAchievements.grant(player, ArcanaAchievements.PRICE_OF_KNOWLEDGE);
             }
             
-            this.getLevel().addFreshEntity(new ItemEntity(this.getLevel(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
+            this.getLevel().addFreshEntity(new ItemEntity(this.getLevel(), outputPos.x, outputPos.y + 0.25, outputPos.z, output, 0, 0, 0));
          }
          if(transmuteCount > 0 && player != null){
-            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TRANSMUTATION_ALTAR_TRANSMUTE));
-            ArcanaAchievements.progress(player,ArcanaAchievements.STATE_ALCHEMIST,transmuteCount);
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM) * transmuteCount + ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_TRANSMUTATION_ALTAR_TRANSMUTE));
+            ArcanaAchievements.progress(player, ArcanaAchievements.STATE_ALCHEMIST, transmuteCount);
          }
          
-         boolean canRecurse = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.TRADE_AGREEMENT) > 0;
+         boolean canRecurse = ArcanaAugments.getAugmentFromMap(this.getAugments(), ArcanaAugments.TRADE_AGREEMENT) > 0;
          if(canRecurse && checkTransmute() == recipe && this.getLevel() instanceof ServerLevel serverWorld){
             this.resetCooldown();
-            boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.HASTY_BARGAIN) > 0;
+            boolean hastyBargain = ArcanaAugments.getAugmentFromMap(this.getAugments(), ArcanaAugments.HASTY_BARGAIN) > 0;
             double speedMod = hastyBargain ? 2 : 1;
             int castTime = (int) (500.0 / speedMod);
             this.setActive(true);
-            ArcanaEffectUtils.transmutationAltarAnim(serverWorld,this.getBlockPos().getCenter(), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING), speedMod);
-            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> transmute(player,true)));
+            ArcanaEffectUtils.transmutationAltarAnim(serverWorld, this.getBlockPos().getCenter(), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING), speedMod);
+            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> transmute(player, true)));
          }
          
-         SoundUtils.playSound(this.getLevel(), this.getBlockPos(), SoundEvents.ALLAY_AMBIENT_WITH_ITEM, SoundSource.BLOCKS,1,0.8f);
+         SoundUtils.playSound(this.getLevel(), this.getBlockPos(), SoundEvents.ALLAY_AMBIENT_WITH_ITEM, SoundSource.BLOCKS, 1, 0.8f);
          level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
       }else{
          if(!recursed) this.refundCooldown();
-         SoundUtils.playSound(this.getLevel(), this.getBlockPos(), SoundEvents.ALLAY_HURT, SoundSource.BLOCKS,1,0.7f);
+         SoundUtils.playSound(this.getLevel(), this.getBlockPos(), SoundEvents.ALLAY_HURT, SoundSource.BLOCKS, 1, 0.7f);
          level.gameEvent(GameEvent.BLOCK_DEACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
       }
    }
@@ -187,23 +191,23 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       if(this.level == null || this.worldPosition == null) return stacks;
       Direction direction = level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING);
       Vec3 centerPos = getBlockPos().getCenter();
-      Vec3 aequalisPos = centerPos.add(new Vec3(0,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
-      Vec3 negativePos = centerPos.add(new Vec3(3,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
-      Vec3 positivePos = centerPos.add(new Vec3(-3,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
-      Vec3 reagent1Pos = centerPos.add(new Vec3(0,0.6,-3).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
-      Vec3 reagent2Pos = centerPos.add(new Vec3(0,0.6,3).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 aequalisPos = centerPos.add(new Vec3(0, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
+      Vec3 negativePos = centerPos.add(new Vec3(3, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
+      Vec3 positivePos = centerPos.add(new Vec3(-3, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
+      Vec3 reagent1Pos = centerPos.add(new Vec3(0, 0.6, -3).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
+      Vec3 reagent2Pos = centerPos.add(new Vec3(0, 0.6, 3).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       
-      ItemEntity aequalisEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(aequalisPos)), e -> true));
-      ItemEntity positiveEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(positivePos)), e -> true));
-      ItemEntity negativeEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(negativePos)), e -> true));
-      ItemEntity reagent1Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(reagent1Pos)), e -> true));
-      ItemEntity reagent2Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM,new AABB(BlockPos.containing(reagent2Pos)), e -> true));
+      ItemEntity aequalisEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(aequalisPos)), e -> true));
+      ItemEntity positiveEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(positivePos)), e -> true));
+      ItemEntity negativeEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(negativePos)), e -> true));
+      ItemEntity reagent1Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(reagent1Pos)), e -> true));
+      ItemEntity reagent2Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(reagent2Pos)), e -> true));
       
-      stacks.put("aequalis",aequalisEntity);
-      stacks.put("positive",positiveEntity);
-      stacks.put("negative",negativeEntity);
-      stacks.put("reagent1",reagent1Entity);
-      stacks.put("reagent2",reagent2Entity);
+      stacks.put("aequalis", aequalisEntity);
+      stacks.put("positive", positiveEntity);
+      stacks.put("negative", negativeEntity);
+      stacks.put("reagent1", reagent1Entity);
+      stacks.put("reagent2", reagent2Entity);
       
       return stacks;
    }
@@ -212,11 +216,11 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       if(this.level == null || this.worldPosition == null) return null;
       Direction direction = level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING);
       Vec3 centerPos = getBlockPos().getCenter();
-      Vec3 aequalisPos = centerPos.add(new Vec3(0,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
-      Vec3 negativePos = centerPos.add(new Vec3(3,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
-      Vec3 positivePos = centerPos.add(new Vec3(-3,0.6,0).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
-      Vec3 reagent1Pos = centerPos.add(new Vec3(0,0.6,-3).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
-      Vec3 reagent2Pos = centerPos.add(new Vec3(0,0.6,3).yRot((float) -(direction.get2DDataValue()*(Math.PI/2.0f))));
+      Vec3 aequalisPos = centerPos.add(new Vec3(0, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
+      Vec3 negativePos = centerPos.add(new Vec3(3, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
+      Vec3 positivePos = centerPos.add(new Vec3(-3, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
+      Vec3 reagent1Pos = centerPos.add(new Vec3(0, 0.6, -3).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
+      Vec3 reagent2Pos = centerPos.add(new Vec3(0, 0.6, 3).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       
       if(outputString.equals("positive")){
          return positivePos;
@@ -246,7 +250,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition,serverWorld.getBlockState(worldPosition),new BlockPos(((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getCheckOffset()), level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getCheckOffset()), level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    private void tick(){
@@ -260,7 +264,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this,this));
+         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
       
       boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE).orElse(false);
@@ -291,7 +295,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    public void resetCooldown(){
-      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.HASTY_BARGAIN);
+      int cooldownLevel = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.HASTY_BARGAIN);
       int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.TRANSMUTATION_ALTAR_COOLDOWN);
       int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.TRANSMUTATION_ALTAR_COOLDOWN_PER_LVL).get(cooldownLevel);
       this.cooldown = Math.max(1, baseCooldown - cooldownReduction);
@@ -317,6 +321,10 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       return origin;
    }
    
+   public ArcanaSkin getSkin(){
+      return skin;
+   }
+   
    public String getCustomArcanaName(){
       return customName;
    }
@@ -331,10 +339,11 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.cooldown = view.getIntOr("cooldown", 0);
       this.augments = new TreeMap<>();
-      view.read(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+      view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
    }
@@ -342,11 +351,12 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    @Override
    protected void saveAdditional(ValueOutput view){
       super.saveAdditional(view);
-      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
-      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
-      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
-      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
-      view.putInt("cooldown",this.cooldown);
+      view.storeNullable(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC, this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
+      view.putInt("cooldown", this.cooldown);
    }
 }

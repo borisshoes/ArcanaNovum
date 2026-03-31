@@ -12,13 +12,14 @@ import net.minecraft.world.phys.EntityHitResult;
 
 public abstract class RunicArrow extends ArcanaItem {
    public abstract void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult);
+   
    public abstract void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult);
    
    public static final String TXT = "runic_arrow";
    
    public Component getArrowName(ItemStack arrow){
       TextColor textColor = getPrefItem().getHoverName().getStyle().getColor();
-
+      
       if(arrow.has(DataComponents.CUSTOM_NAME)){
          return Component.literal(arrow.getHoverName().getString()).withStyle(ChatFormatting.BOLD).withColor(textColor.getValue());
       }else{

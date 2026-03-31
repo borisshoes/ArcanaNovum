@@ -33,8 +33,8 @@ public class FoundArcanaItemLootFunction extends LootItemConditionalFunction {
    protected ItemStack run(ItemStack stack, LootContext context){
       for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
          if(stack.is(arcanaItem.getItem())){
-            stack = arcanaItem.addCrafter(arcanaItem.getNewItem(),null,2,context.getLevel().getServer());
-            arcanaItem.buildItemLore(stack,context.getLevel().getServer());
+            stack = arcanaItem.addCrafter(arcanaItem.getNewItem(), null, 2, context.getLevel().getServer());
+            arcanaItem.buildItemLore(stack, context.getLevel().getServer());
             return stack;
          }
       }

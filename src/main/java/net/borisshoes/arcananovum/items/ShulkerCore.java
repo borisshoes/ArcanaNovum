@@ -16,7 +16,6 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -58,7 +57,7 @@ import java.util.stream.Collectors;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ShulkerCore extends EnergyItem {
-	public static final String ID = "shulker_core";
+   public static final String ID = "shulker_core";
    
    public static final String SPEED_TAG = "speed";
    public static final String SPEED_CD_TAG = "speedCD";
@@ -73,16 +72,16 @@ public class ShulkerCore extends EnergyItem {
       initEnergy = 1000;
       vanillaItem = Items.SHULKER_BOX;
       item = new ShulkerCoreItem();
-      displayName = Component.translatableWithFallback("item."+MOD_ID+"."+ID,name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.SHULKER_CORE_COLOR);
+      displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.SHULKER_CORE_COLOR);
       itemVersion = 1;
-      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.ADVANCEMENT_LEVITATE,ResearchTasks.EFFECT_SLOW_FALLING,ResearchTasks.UNLOCK_STELLAR_CORE};
+      researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.ADVANCEMENT_LEVITATE, ResearchTasks.EFFECT_SLOW_FALLING, ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack,SPEED_TAG,1);
-      putProperty(stack,SPEED_CD_TAG,0);
-      putProperty(stack,STONE_TAG,true);
+      putProperty(stack, SPEED_TAG, 1);
+      putProperty(stack, SPEED_CD_TAG, 0);
+      putProperty(stack, STONE_TAG, true);
       setPrefStack(stack);
    }
    
@@ -133,14 +132,14 @@ public class ShulkerCore extends EnergyItem {
             .append(Component.literal("Core").withStyle(ChatFormatting.DARK_PURPLE))
             .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
       lore.add(Component.literal(""));
-
+      
       int energy = itemStack != null ? getEnergy(itemStack) : 1000;
       
       lore.add(Component.literal("")
             .append(Component.literal("Shulkers Left").withStyle(ChatFormatting.LIGHT_PURPLE))
             .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
-            .append(Component.literal(""+energy).withStyle(ChatFormatting.YELLOW)));
-     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+            .append(Component.literal("" + energy).withStyle(ChatFormatting.YELLOW)));
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -150,23 +149,23 @@ public class ShulkerCore extends EnergyItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      int speed = getIntProperty(stack,SPEED_TAG);
-      int speedCD = getIntProperty(stack,SPEED_CD_TAG);
-      boolean stone = getBooleanProperty(stack,STONE_TAG);
-      CompoundTag stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
-      ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,SPEED_TAG,speed);
-      putProperty(newStack,SPEED_CD_TAG,speedCD);
-      putProperty(newStack,STONE_TAG,stone);
-      putProperty(newStack,STONE_DATA_TAG,stoneData);
-      return buildItemLore(newStack,server);
+      int speed = getIntProperty(stack, SPEED_TAG);
+      int speedCD = getIntProperty(stack, SPEED_CD_TAG);
+      boolean stone = getBooleanProperty(stack, STONE_TAG);
+      CompoundTag stoneData = getCompoundProperty(stack, STONE_DATA_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, SPEED_TAG, speed);
+      putProperty(newStack, SPEED_CD_TAG, speedCD);
+      putProperty(newStack, STONE_TAG, stone);
+      putProperty(newStack, STONE_DATA_TAG, stoneData);
+      return buildItemLore(newStack, server);
    }
    
    private void changeSpeed(Player playerEntity, Level world, InteractionHand hand){
       ItemStack stack = playerEntity.getItemInHand(hand);
-      int speed = getIntProperty(stack,SPEED_TAG);
-      int speedCD = getIntProperty(stack,SPEED_CD_TAG);
-      boolean reabsorb = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.LEVITATIVE_REABSORPTION) >= 1;
+      int speed = getIntProperty(stack, SPEED_TAG);
+      int speedCD = getIntProperty(stack, SPEED_CD_TAG);
+      boolean reabsorb = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.LEVITATIVE_REABSORPTION) >= 1;
       int maxSpeed = reabsorb ? 11 : 9;
       
       if(speedCD == 0){
@@ -179,15 +178,15 @@ public class ShulkerCore extends EnergyItem {
             speed = maxSpeed;
          }
          
-         putProperty(stack,SPEED_TAG,speed);
-         putProperty(stack,SPEED_CD_TAG,5);
+         putProperty(stack, SPEED_TAG, speed);
+         putProperty(stack, SPEED_CD_TAG, 5);
          if(playerEntity instanceof ServerPlayer player){
             if(speed == 11){
-               player.displayClientMessage(Component.literal("Shulker Core Mode: Reabsorption").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
+               player.displayClientMessage(Component.literal("Shulker Core Mode: Reabsorption").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE, 0.5f, 1);
             }else{
-               player.displayClientMessage(Component.literal("Shulker Core Speed: "+(speed/2+1)).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
-               float pitch = (float) (0.1875*speed+0.3125);
+               player.displayClientMessage(Component.literal("Shulker Core Speed: " + (speed / 2 + 1)).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
+               float pitch = (float) (0.1875 * speed + 0.3125);
                SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_XYLOPHONE, 0.5f, pitch);
             }
          }
@@ -196,7 +195,7 @@ public class ShulkerCore extends EnergyItem {
    
    private void levitate(Player playerEntity, Level world, InteractionHand hand){
       ItemStack stack = playerEntity.getItemInHand(hand);
-      int speed = getIntProperty(stack,SPEED_TAG);
+      int speed = getIntProperty(stack, SPEED_TAG);
       final int duration = 100;
       
       if(speed == 11){
@@ -209,7 +208,7 @@ public class ShulkerCore extends EnergyItem {
             MobEffectInstance effect = playerEntity.getEffect(MobEffects.LEVITATION);
             if(!(effect != null && effect.getEffect() == MobEffects.LEVITATION && effect.getAmplifier() >= speed && !(effect.getDuration() < 10 || effect.getDuration() > duration))){
                MobEffectInstance levit = new MobEffectInstance(MobEffects.LEVITATION, duration, speed, false, false, false);
-               if(Math.random() >= (new double[]{0,0.1,0.25,0.5})[ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER)])
+               if(Math.random() >= (new double[]{0, 0.1, 0.25, 0.5})[ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER)])
                   addEnergy(stack, -(speed / 2 + 1));
                playerEntity.addEffect(levit);
                SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
@@ -217,11 +216,11 @@ public class ShulkerCore extends EnergyItem {
                if(world instanceof ServerLevel serverWorld){
                   ArcanaEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }
-               buildItemLore(stack,playerEntity.level().getServer());
+               buildItemLore(stack, playerEntity.level().getServer());
             }
          }else{
             playerEntity.displayClientMessage(Component.literal("The Shulker Core is empty.").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
-            SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1,0.8f);
+            SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
          }
       }
    }
@@ -229,40 +228,40 @@ public class ShulkerCore extends EnergyItem {
    public void openGui(Player playerEntity, ItemStack stack){
       if(!(playerEntity instanceof ServerPlayer player))
          return;
-      ShulkerCoreGui gui = new ShulkerCoreGui(MenuType.HOPPER,player,this, stack);
+      ShulkerCoreGui gui = new ShulkerCoreGui(MenuType.HOPPER, player, this, stack);
       
-      boolean hasStone = getBooleanProperty(stack,STONE_TAG);
+      boolean hasStone = getBooleanProperty(stack, STONE_TAG);
       
       for(int i = 0; i < gui.getSize(); i++){
          gui.clearSlot(i);
       }
       
-      GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
+      GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
       String paneText = hasStone ? TextUtils.readableInt(getEnergy(stack)) + " Shulker Souls" : "No Soulstone Inserted";
       ChatFormatting textColor = hasStone ? ChatFormatting.YELLOW : ChatFormatting.RED;
       
-      gui.setSlot(0,pane.setName(Component.literal(paneText).withStyle(textColor)));
-      gui.setSlot(1,pane.setName(Component.literal(paneText).withStyle(textColor)));
-      gui.setSlot(3,pane.setName(Component.literal(paneText).withStyle(textColor)));
-      gui.setSlot(4,pane.setName(Component.literal(paneText).withStyle(textColor)));
+      gui.setSlot(0, pane.setName(Component.literal(paneText).withStyle(textColor)));
+      gui.setSlot(1, pane.setName(Component.literal(paneText).withStyle(textColor)));
+      gui.setSlot(3, pane.setName(Component.literal(paneText).withStyle(textColor)));
+      gui.setSlot(4, pane.setName(Component.literal(paneText).withStyle(textColor)));
       
       SimpleContainer inv = new SimpleContainer(1);
-      ShulkerCoreInventoryListener listener = new ShulkerCoreInventoryListener(this,gui,stack);
+      ShulkerCoreInventoryListener listener = new ShulkerCoreInventoryListener(this, gui, stack);
       inv.addListener(listener);
       listener.setUpdating();
       
-      gui.setSlotRedirect(2, new Slot(inv,0,0,0));
+      gui.setSlotRedirect(2, new Slot(inv, 0, 0, 0));
       if(hasStone){
-         CompoundTag stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
+         CompoundTag stoneData = getCompoundProperty(stack, STONE_DATA_TAG);
          ItemStack stone;
          if(stoneData == null || stoneData.isEmpty()){
             stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
          }else{
-            stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE,player.registryAccess()),stoneData).result().orElse(ItemStack.EMPTY);
+            stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, player.registryAccess()), stoneData).result().orElse(ItemStack.EMPTY);
          }
-         stone = Soulstone.setSouls(stone,getEnergy(stack));
+         stone = Soulstone.setSouls(stone, getEnergy(stack));
          
-         inv.setItem(0,stone);
+         inv.setItem(0, stone);
          gui.validStone(stone);
       }else{
          gui.notValid();
@@ -274,20 +273,20 @@ public class ShulkerCore extends EnergyItem {
    }
    
    public boolean hasStone(ItemStack stack){
-      return getBooleanProperty(stack,STONE_TAG);
+      return getBooleanProperty(stack, STONE_TAG);
    }
    
    public ItemStack getStone(ItemStack stack){
       if(ArcanaItemUtils.identifyItem(stack) instanceof ShulkerCore){
-         if(getBooleanProperty(stack,STONE_TAG)){
-            CompoundTag stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
+         if(getBooleanProperty(stack, STONE_TAG)){
+            CompoundTag stoneData = getCompoundProperty(stack, STONE_DATA_TAG);
             ItemStack stone;
             if(stoneData == null || stoneData.isEmpty()){
                stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
             }else{
-               stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()),stoneData).result().orElse(ItemStack.EMPTY);
+               stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), stoneData).result().orElse(ItemStack.EMPTY);
             }
-            stone = Soulstone.setSouls(stone,getEnergy(stack));
+            stone = Soulstone.setSouls(stone, getEnergy(stack));
             
             return stone;
          }
@@ -297,13 +296,13 @@ public class ShulkerCore extends EnergyItem {
    
    public void setStone(ItemStack stack, ItemStack stone){
       if(stone == null || stone.isEmpty()){
-         putProperty(stack,STONE_TAG,false);
-         putProperty(stack,STONE_DATA_TAG,new CompoundTag());
-         setEnergy(stack,0);
+         putProperty(stack, STONE_TAG, false);
+         putProperty(stack, STONE_DATA_TAG, new CompoundTag());
+         setEnergy(stack, 0);
       }else{
-         putProperty(stack,STONE_TAG,true);
-         putProperty(stack,STONE_DATA_TAG, ItemStack.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE,BorisLib.SERVER.registryAccess()),stone).getOrThrow());
-         setEnergy(stack,Soulstone.getSouls(stone));
+         putProperty(stack, STONE_TAG, true);
+         putProperty(stack, STONE_DATA_TAG, ItemStack.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), stone).getOrThrow());
+         setEnergy(stack, Soulstone.getSouls(stone));
       }
    }
    
@@ -315,8 +314,8 @@ public class ShulkerCore extends EnergyItem {
       // Souls n stuff
       if(ArcanaItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
          newArcanaItem = getNewItem();
-         setStone(newArcanaItem,soulstoneStack);
-         buildItemLore(newArcanaItem,BorisLib.SERVER);
+         setStone(newArcanaItem, soulstoneStack);
+         buildItemLore(newArcanaItem, BorisLib.SERVER);
       }
       return newArcanaItem;
    }
@@ -324,7 +323,7 @@ public class ShulkerCore extends EnergyItem {
    @Override
    public List<List<Component>> getBookLore(){
       List<List<Component>> list = new ArrayList<>();
-      list.add(List.of(Component.literal("    Shulker Core").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)), Component.literal("\nShulkers are fascinating creatures. Their unique levitation effect could be a precursor to true flight if I combined a bit of their essence… er… a lot of their essence… What’s a bit of genocide anyways?").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("    Shulker Core").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nShulkers are fascinating creatures. Their unique levitation effect could be a precursor to true flight if I combined a bit of their essence… er… a lot of their essence… What’s a bit of genocide anyways?").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("    Shulker Core").withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR), Component.literal("\nAfter a massacre that took too long to comprehend, I have enough souls to control their power.\nUse the Core to grant levitation. Sneak Use to change the speed. Sneak Use in my off-hand to access the Soulstone for refuelling.").withStyle(ChatFormatting.BLACK)));
       return list;
    }
@@ -345,12 +344,12 @@ public class ShulkerCore extends EnergyItem {
          ItemStack stack = context.getItemInHand();
          if(playerEntity != null && playerEntity.isShiftKeyDown()){
             if(context.getHand() == InteractionHand.MAIN_HAND){
-               changeSpeed(playerEntity,context.getLevel(),context.getHand());
+               changeSpeed(playerEntity, context.getLevel(), context.getHand());
             }else{
-               openGui(playerEntity,stack);
+               openGui(playerEntity, stack);
             }
          }else if(playerEntity != null){
-            levitate(playerEntity,context.getLevel(),context.getHand());
+            levitate(playerEntity, context.getLevel(), context.getHand());
          }
          return InteractionResult.SUCCESS_SERVER;
       }
@@ -359,12 +358,12 @@ public class ShulkerCore extends EnergyItem {
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          if(playerEntity.isShiftKeyDown()){
             if(hand == InteractionHand.MAIN_HAND){
-               changeSpeed(playerEntity,world,hand);
+               changeSpeed(playerEntity, world, hand);
             }else{
-               openGui(playerEntity,playerEntity.getItemInHand(hand));
+               openGui(playerEntity, playerEntity.getItemInHand(hand));
             }
          }else{
-            levitate(playerEntity,world,hand);
+            levitate(playerEntity, world, hand);
          }
          return InteractionResult.SUCCESS_SERVER;
       }
@@ -373,10 +372,10 @@ public class ShulkerCore extends EnergyItem {
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;
-         int speedCD = getIntProperty(stack,SPEED_CD_TAG);
+         int speedCD = getIntProperty(stack, SPEED_CD_TAG);
          if(speedCD > 0){
             speedCD--;
-            putProperty(stack,SPEED_CD_TAG,speedCD);
+            putProperty(stack, SPEED_CD_TAG, speedCD);
          }
       }
    }

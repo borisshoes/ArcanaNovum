@@ -86,10 +86,12 @@ public class ArcanaAchievements {
          new EventAchievement("land_on_feet", new ItemStack(Items.LEATHER_BOOTS), ArcanaRegistry.FELIDAE_CHARM, 5000, 2));
    public static final ArcanaAchievement INFILTRATION = ArcanaAchievements.register(
          new EventAchievement("infiltration", new ItemStack(Items.CREEPER_HEAD), ArcanaRegistry.FELIDAE_CHARM, 1000, 1));
+   public static final ArcanaAchievement MEOW = ArcanaAchievements.register(
+         new EventAchievement("meow", new ItemStack(Items.TROPICAL_FISH), ArcanaRegistry.FELIDAE_CHARM, 1000, 1));
    
    // Charm of Leadership
    public static final ArcanaAchievement RAID_LEADER = ArcanaAchievements.register(
-         new EventAchievement("raid_leader", new ItemStack(Items.DIAMOND_SWORD), ArcanaRegistry.LEADERSHIP_CHARM, 1000, 1));
+         new EventAchievement("raid_leader", new ItemStack(Items.DIAMOND_SWORD), ArcanaRegistry.LEADERSHIP_CHARM, 1000, 1)).setHidden(true);
    
    // Charm of Light
    public static final ArcanaAchievement ENLIGHTENED = ArcanaAchievements.register(
@@ -113,7 +115,7 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement ARCANE_ADDICT = ArcanaAchievements.register(
          new EventAchievement("arcane_addict", new ItemStack(Items.KNOWLEDGE_BOOK), ArcanaRegistry.ARCANE_TOME, 50000, 4));
    public static final ArcanaAchievement ALL_ACHIEVEMENTS = ArcanaAchievements.register(
-         new EventAchievement("all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000, 6666));
+         new EventAchievement("all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000, 6666)).setHidden(true);
    public static final ArcanaAchievement MOST_ACHIEVEMENTS = ArcanaAchievements.register(
          new EventAchievement("most_achievements", new ItemStack(Items.ENDER_PEARL), ArcanaRegistry.ARCANE_TOME, 100000, 66));
    
@@ -594,7 +596,7 @@ public class ArcanaAchievements {
    }
    
    public static void grant(ServerPlayer player, ArcanaAchievement ach){
-      grant(player.getUUID(),ach);
+      grant(player.getUUID(), ach);
    }
    
    public static void grant(UUID player, ArcanaAchievement ach){
@@ -655,7 +657,7 @@ public class ArcanaAchievements {
    }
    
    public static void setCondition(ServerPlayer player, ArcanaAchievement ach, String condition, boolean set){
-      setCondition(player.getUUID(),ach,condition,set);
+      setCondition(player.getUUID(), ach, condition, set);
    }
    
    public static void setCondition(UUID player, ArcanaAchievement ach, String condition, boolean set){
@@ -679,7 +681,7 @@ public class ArcanaAchievements {
    }
    
    public static void progress(ServerPlayer player, ArcanaAchievement ach, int toAdd){
-      progress(player.getUUID(),ach,toAdd);
+      progress(player.getUUID(), ach, toAdd);
    }
    
    public static void progress(UUID player, ArcanaAchievement ach, int toAdd){
@@ -718,7 +720,7 @@ public class ArcanaAchievements {
    }
    
    public static int getProgress(ServerPlayer player, ArcanaAchievement ach){
-      return getProgress(player.getUUID(),ach);
+      return getProgress(player.getUUID(), ach);
    }
    
    public static int getProgress(UUID player, ArcanaAchievement ach){
@@ -742,7 +744,7 @@ public class ArcanaAchievements {
    }
    
    public static void revoke(ServerPlayer player, ArcanaAchievement ach){
-      revoke(player.getUUID(),ach);
+      revoke(player.getUUID(), ach);
    }
    
    public static void revoke(UUID player, ArcanaAchievement ach){
@@ -751,7 +753,7 @@ public class ArcanaAchievements {
    }
    
    public static void reset(ServerPlayer player, ArcanaAchievement ach){
-      reset(player.getUUID(),ach);
+      reset(player.getUUID(), ach);
    }
    
    public static void reset(UUID player, ArcanaAchievement ach){
@@ -767,7 +769,7 @@ public class ArcanaAchievements {
    }
    
    public static boolean isTimerActive(ServerPlayer player, ArcanaAchievement ach){
-      return isTimerActive(player.getUUID(),ach);
+      return isTimerActive(player.getUUID(), ach);
    }
    
    public static boolean isTimerActive(UUID player, ArcanaAchievement ach){

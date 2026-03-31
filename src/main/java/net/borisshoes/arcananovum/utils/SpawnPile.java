@@ -23,8 +23,8 @@ public class SpawnPile {
    double z;
    
    public SpawnPile(double x, double z){
-      this.x=x;
-      this.z=z;
+      this.x = x;
+      this.z = z;
    }
    
    double getDistance(SpawnPile other){
@@ -53,14 +53,14 @@ public class SpawnPile {
       if(this.x < minX){
          this.x = minX;
          bl = true;
-      } else if(this.x > maxX){
+      }else if(this.x > maxX){
          this.x = maxX;
          bl = true;
       }
       if(this.z < minZ){
          this.z = minZ;
          bl = true;
-      } else if(this.z > maxZ){
+      }else if(this.z > maxZ){
          this.z = maxZ;
          bl = true;
       }
@@ -68,7 +68,7 @@ public class SpawnPile {
    }
    
    public static int getSurfaceY(BlockGetter blockView, int maxY, int x, int z){
-      BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, (double)(maxY + 1), z);
+      BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, (double) (maxY + 1), z);
       boolean bl = blockView.getBlockState(mutable).isAir();
       mutable.move(Direction.DOWN);
       boolean bl2 = blockView.getBlockState(mutable).isAir();
@@ -117,18 +117,18 @@ public class SpawnPile {
             int z = center.getZ() + (int) (Math.random() * range * 2 - range);
             entitySpawnPos = getEntitySpawnPos(world, entityType, x, z, true);
             tries++;
-         }while(Math.abs(entitySpawnPos.getY()-center.getY()) > range && tries < 10000);
+         }while(Math.abs(entitySpawnPos.getY() - center.getY()) > range && tries < 10000);
          positions.add(entitySpawnPos);
       }
       return positions;
    }
    
    public int getY(BlockGetter blockView, int maxY){
-      BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(this.x, (double)(maxY + 1), this.z);
+      BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(this.x, (double) (maxY + 1), this.z);
       boolean bl = blockView.getBlockState(mutable).isAir();
       mutable.move(Direction.DOWN);
       boolean bl2 = blockView.getBlockState(mutable).isAir();
-      while (mutable.getY() > blockView.getMinY()){
+      while(mutable.getY() > blockView.getMinY()){
          mutable.move(Direction.DOWN);
          boolean bl3 = blockView.getBlockState(mutable).isAir();
          if(!bl3 && bl2 && bl){
@@ -141,7 +141,7 @@ public class SpawnPile {
    }
    
    public boolean isSafe(BlockGetter world, int maxY){
-      BlockPos blockPos = BlockPos.containing(this.x, (double)(this.getY(world, maxY) - 1), this.z);
+      BlockPos blockPos = BlockPos.containing(this.x, (double) (this.getY(world, maxY) - 1), this.z);
       BlockState blockState = world.getBlockState(blockPos);
       FluidState fluidState = world.getFluidState(blockPos);
       boolean invalid = blockState.is(Blocks.WITHER_ROSE) || blockState.is(Blocks.SWEET_BERRY_BUSH) || blockState.is(Blocks.CACTUS) || blockState.is(Blocks.POWDER_SNOW) || blockState.is(BlockTags.PREVENT_MOB_SPAWNING_INSIDE) || WalkNodeEvaluator.isBurningBlock(blockState);
@@ -154,11 +154,11 @@ public class SpawnPile {
    }
    
    public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, ServerLevel world){
-      return makeSpawnLocations(num,range,world,new BlockPos(0,0,0));
+      return makeSpawnLocations(num, range, world, new BlockPos(0, 0, 0));
    }
-
+   
    public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, ServerLevel world, BlockPos center){
-      return makeSpawnLocations(num,range,128,world,center);
+      return makeSpawnLocations(num, range, 128, world, center);
    }
    
    public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, int maxY, ServerLevel world, BlockPos center){
@@ -171,8 +171,8 @@ public class SpawnPile {
             int z = center.getZ() + (int) (Math.random() * range * 2 - range);
             pile = new SpawnPile(x, z);
             tries++;
-         }while(!pile.isSafe(world,maxY) && tries < 10000);
-         positions.add(BlockPos.containing(pile.x,pile.getY(world,maxY),pile.z));
+         }while(!pile.isSafe(world, maxY) && tries < 10000);
+         positions.add(BlockPos.containing(pile.x, pile.getY(world, maxY), pile.z));
       }
       return positions;
    }

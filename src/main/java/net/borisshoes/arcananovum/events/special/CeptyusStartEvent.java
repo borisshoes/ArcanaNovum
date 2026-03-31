@@ -33,16 +33,17 @@ public class CeptyusStartEvent extends Event {
       
       if(!this.sentInvestigate && this.timeAlive % 20 == 0){
          Structure structure = player.level().structureManager().registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.ANCIENT_CITY);
-         StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(),structure);
+         StructureStart start = player.level().structureManager().getStructureAt(player.blockPosition(), structure);
          if(!(start.isValid() && start.canBeReferenced())) return;
          for(StructurePiece piece : start.getPieces()){
             if(!(piece.getBoundingBox().isInside(player.blockPosition()))) continue;
-            if(!(piece instanceof PoolElementStructurePiece poolPiece && poolPiece.getElement() instanceof SinglePoolElement elem)) continue;
+            if(!(piece instanceof PoolElementStructurePiece poolPiece && poolPiece.getElement() instanceof SinglePoolElement elem))
+               continue;
             Identifier pieceId = elem.getTemplateLocation();
             String[] split = pieceId.getPath().split("/");
-            if(split[split.length-1].contains("city_center")){
+            if(split[split.length - 1].contains("city_center")){
                player.sendSystemMessage(Component.literal("\n[Investigate the Portal]").withStyle(s ->
-                     s.withBold(true).withColor(ChatFormatting.DARK_AQUA).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action c_investigate"))),false);
+                     s.withBold(true).withColor(ChatFormatting.DARK_AQUA).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action c_investigate"))), false);
                this.sentInvestigate = true;
                this.timeAlive = 0;
                break;

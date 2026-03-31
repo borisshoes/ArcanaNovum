@@ -30,7 +30,7 @@ public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
    protected final ArcanaItem arcanaItem;
    
    public ArcanaPolymerItem(ArcanaItem arcanaItem){
-      this(arcanaItem,arcanaItem.getArcanaItemComponents());
+      this(arcanaItem, arcanaItem.getArcanaItemComponents());
    }
    
    public ArcanaPolymerItem(ArcanaItem arcanaItem, net.minecraft.world.item.Item.Properties settings){
@@ -39,7 +39,7 @@ public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
    }
    
    @Override
-   public Component getName(ItemStack stack) {
+   public Component getName(ItemStack stack){
       return arcanaItem.getDisplayName() != null ? arcanaItem.getDisplayName() : super.getName(stack);
    }
    

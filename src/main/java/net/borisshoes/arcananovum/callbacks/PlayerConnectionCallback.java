@@ -29,19 +29,19 @@ import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
 public class PlayerConnectionCallback {
    public static void onPlayerJoin(ServerGamePacketListenerImpl netHandler, PacketSender sender, MinecraftServer server){
       ServerPlayer player = netHandler.player;
-      DataFixer.onPlayerJoin(netHandler,sender,server);
-   
+      DataFixer.onPlayerJoin(netHandler, sender, server);
+      
       ArcanaPlayerData profile = ArcanaNovum.data(player);
       profile.setUsername(player.getGameProfile().name());
       if(profile.getLevel() == 0){ // Profile needs initialization
          profile.setLevel(1);
       }
       profile.setLevel(LevelUtils.levelFromXp(profile.getXP())); // update level from xp just in case leveling changed
-   
-   
+      
+      
       // Linked Augments
-      HashMap<String,ArrayList<ArcanaAugment>> linkedAugments = new HashMap<>();
-      HashMap<String,Integer> highestValue = new HashMap<>();
+      HashMap<String, ArrayList<ArcanaAugment>> linkedAugments = new HashMap<>();
+      HashMap<String, Integer> highestValue = new HashMap<>();
       for(Map.Entry<ArcanaAugment, String> entry : ArcanaAugments.linkedAugments.entrySet()){
          String linkedId = entry.getValue();
          ArcanaAugment augment = entry.getKey();
@@ -50,28 +50,28 @@ public class PlayerConnectionCallback {
             linkedAugments.get(linkedId).add(augment);
             int lvl = profile.getAugmentLevel(augment);
             if(lvl > highestValue.get(linkedId)){
-               highestValue.put(linkedId,lvl);
+               highestValue.put(linkedId, lvl);
             }
          }else{
             ArrayList<ArcanaAugment> augs = new ArrayList<>();
             augs.add(augment);
-            highestValue.put(linkedId,profile.getAugmentLevel(augment));
-            linkedAugments.put(linkedId,augs);
+            highestValue.put(linkedId, profile.getAugmentLevel(augment));
+            linkedAugments.put(linkedId, augs);
          }
       }
       
-      for(Map.Entry<String,ArrayList<ArcanaAugment>> entry : linkedAugments.entrySet()){
+      for(Map.Entry<String, ArrayList<ArcanaAugment>> entry : linkedAugments.entrySet()){
          ArrayList<ArcanaAugment> augs = entry.getValue();
          for(ArcanaAugment aug : augs){
-            profile.setAugmentLevel(aug,highestValue.get(entry.getKey()));
+            profile.setAugmentLevel(aug, highestValue.get(entry.getKey()));
          }
       }
-   
+      
       for(Map.Entry<ArcanaAugment, Integer> entry : profile.getAugments().entrySet()){
          ArcanaAugment baseAug = ArcanaAugments.registry.get(entry.getKey());
          if(baseAug != null){
             if(entry.getValue() > baseAug.getTiers().length){
-               profile.setAugmentLevel(entry.getKey(),baseAug.getTiers().length);
+               profile.setAugmentLevel(entry.getKey(), baseAug.getTiers().length);
             }
          }
       }
@@ -99,22 +99,22 @@ public class PlayerConnectionCallback {
       }
       
       if(profile.hasAnySkin()){
-         profile.setResearchTask(ResearchTasks.CONTRIBUTE,true);
-         profile.setResearchTask(ResearchTasks.HAVE_A_SKIN,true);
+         profile.setResearchTask(ResearchTasks.CONTRIBUTE, true);
+         profile.setResearchTask(ResearchTasks.HAVE_A_SKIN, true);
       }
    }
    
    public static void onPlayerLeave(ServerGamePacketListenerImpl handler, MinecraftServer server){
       ServerPlayer player = handler.player;
       if(player.getMaxHealth() > 20 && player.getHealth() > 20){
-         BorisLib.addLoginCallback(new MaxHealthLoginCallback(server,player.getStringUUID(),player.getHealth()));
+         BorisLib.addLoginCallback(new MaxHealthLoginCallback(server, player.getStringUUID(), player.getHealth()));
       }
       
       VIRTUAL_INVENTORY_GUIS.forEach((virtualInventoryGui, p) -> {
          if(player.getStringUUID().equals(p.getStringUUID()) && virtualInventoryGui.getInventory() != null){
             for(ItemStack itemStack : virtualInventoryGui.getInventory()){
                if(!itemStack.isEmpty()){
-                  BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(itemStack.copyAndClear(),player,0));
+                  BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(itemStack.copyAndClear(), player, 0));
                }
             }
          }

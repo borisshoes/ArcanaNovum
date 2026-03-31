@@ -32,7 +32,7 @@ import java.util.function.Predicate;
 @Mixin(EnchantmentHelper.class)
 public class EnchantmentHelperMixin {
    
-   @Inject(method= "setEnchantments",at=@At("RETURN"))
+   @Inject(method = "setEnchantments", at = @At("RETURN"))
    private static void arcananovum$enchantHelperSetItemLore(ItemStack stack, ItemEnchantments enchantments, CallbackInfo ci){
       if(ArcanaItemUtils.isArcane(stack)){
          ArcanaItemUtils.identifyItem(stack).buildItemLore(stack, BorisLib.SERVER);
@@ -44,42 +44,43 @@ public class EnchantmentHelperMixin {
       if(ArcanaItemUtils.isArcane(stack)){
          TooltipDisplay display = stack.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
          if(display.shows(DataComponents.ENCHANTMENTS)){
-            stack.set(DataComponents.TOOLTIP_DISPLAY,display.withHidden(DataComponents.ENCHANTMENTS,true));
+            stack.set(DataComponents.TOOLTIP_DISPLAY, display.withHidden(DataComponents.ENCHANTMENTS, true));
          }
       }
    }
    
-   @Inject(method= "updateEnchantments",at=@At("RETURN"))
+   @Inject(method = "updateEnchantments", at = @At("RETURN"))
    private static void arcananovum$enchantHelperSetHideTooltipApplyReturn(ItemStack stack, Consumer<ItemEnchantments.Mutable> applier, CallbackInfoReturnable<ItemEnchantments> cir){
       if(ArcanaItemUtils.isArcane(stack)){
          TooltipDisplay display = stack.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
          if(display.shows(DataComponents.ENCHANTMENTS)){
-            stack.set(DataComponents.TOOLTIP_DISPLAY,display.withHidden(DataComponents.ENCHANTMENTS,true));
+            stack.set(DataComponents.TOOLTIP_DISPLAY, display.withHidden(DataComponents.ENCHANTMENTS, true));
          }
          ArcanaItemUtils.identifyItem(stack).buildItemLore(stack, BorisLib.SERVER);
       }
    }
    
-   @Inject(method= "updateEnchantments",at= @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;set(Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object;", shift = At.Shift.BEFORE))
-   private static void arcananovum$enchantHelperSetHideTooltipApplySet(ItemStack stack, Consumer<ItemEnchantments.Mutable> applier, CallbackInfoReturnable<ItemEnchantments> cir, @Local(ordinal=1) LocalRef<ItemEnchantments> itemEnchantmentsComponent2){
+   @Inject(method = "updateEnchantments", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;set(Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object;", shift = At.Shift.BEFORE))
+   private static void arcananovum$enchantHelperSetHideTooltipApplySet(ItemStack stack, Consumer<ItemEnchantments.Mutable> applier, CallbackInfoReturnable<ItemEnchantments> cir, @Local(ordinal = 1) LocalRef<ItemEnchantments> itemEnchantmentsComponent2){
       if(ArcanaItemUtils.isArcane(stack)){
          TooltipDisplay display = stack.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
          if(display.shows(DataComponents.ENCHANTMENTS)){
-            stack.set(DataComponents.TOOLTIP_DISPLAY,display.withHidden(DataComponents.ENCHANTMENTS,true));
+            stack.set(DataComponents.TOOLTIP_DISPLAY, display.withHidden(DataComponents.ENCHANTMENTS, true));
          }
       }
    }
    
-   @Inject(method = "processProjectileCount",at=@At("RETURN"), cancellable = true)
+   @Inject(method = "processProjectileCount", at = @At("RETURN"), cancellable = true)
    private static void arcananovum$modifyProjectileCount(ServerLevel world, ItemStack stack, Entity user, int baseProjectileCount, CallbackInfoReturnable<Integer> cir){
       if(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SCATTERSHOT) > 0 && cir.getReturnValueI() < 5){
          cir.setReturnValue(5);
       }
    }
    
-   @Inject(method = "getRandomItemWith", at=@At("RETURN"))
+   @Inject(method = "getRandomItemWith", at = @At("RETURN"))
    private static void arcananovum$useMendingFallback(DataComponentType<?> dataComponentType, LivingEntity livingEntity, Predicate<ItemStack> predicate, CallbackInfoReturnable<Optional<EnchantedItemInUse>> cir){
-      if(dataComponentType != EnchantmentEffectComponents.REPAIR_WITH_XP || cir.getReturnValue().isEmpty() || !(livingEntity instanceof ServerPlayer player)) return;
+      if(dataComponentType != EnchantmentEffectComponents.REPAIR_WITH_XP || cir.getReturnValue().isEmpty() || !(livingEntity instanceof ServerPlayer player))
+         return;
       ArcanaNovum.data(player).setResearchTask(ResearchTasks.ACTIVATE_MENDING, true);
    }
 }

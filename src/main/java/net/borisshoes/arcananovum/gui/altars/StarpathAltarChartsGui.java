@@ -37,7 +37,7 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
       super(MenuType.GENERIC_9x6, player, new ArrayList<>(blockEntity.getSavedTargets()));
       this.blockEntity = blockEntity;
       this.returnGui = returnGui;
-      this.stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE) > 0;
+      this.stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.STARGATE) > 0;
       setTitle(Component.literal("Star Charts"));
       
       action1TextColor(ChatFormatting.AQUA.getColor().intValue());
@@ -46,7 +46,7 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
       primaryTextColor(ChatFormatting.DARK_AQUA.getColor().intValue());
       secondaryTextColor(ChatFormatting.BLUE.getColor().intValue());
       
-      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,0x20224B)).hideTooltip());
+      blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, 0x20224B)).hideTooltip());
       
       itemElemBuilder((entry, index) -> {
          GuiElementBuilder destItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
@@ -71,7 +71,7 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
       
       elemClickFunction((item, index, clickType) -> {
          if(clickType == ClickType.MOUSE_RIGHT){ // Rename
-            StarpathTargetGui gui = new StarpathTargetGui(player,blockEntity,false,this,(obj) -> {
+            StarpathTargetGui gui = new StarpathTargetGui(player, blockEntity, false, this, (obj) -> {
                String newName = (String) obj;
                blockEntity.getSavedTargets().remove(item);
                blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry(newName, item.dimension(), item.x(), item.y(), item.z()));
@@ -104,7 +104,7 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
             .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(" to return to the altar").withStyle(ChatFormatting.BLUE)))));
       labelItem.setCallback((clickType) -> close());
-      setSlot(4,labelItem);
+      setSlot(4, labelItem);
       
       GuiElementBuilder newItem = new GuiElementBuilder(Items.WRITABLE_BOOK).hideDefaultTooltip();
       newItem.setName((Component.literal("")
@@ -114,14 +114,14 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
             .append(Component.literal(" to add a new destination").withStyle(ChatFormatting.BLUE)))));
       newItem.setCallback((clickType) -> {
          AtomicReference<BlockPos> newDest = new AtomicReference<>();
-         StarpathTargetGui nameGui = new StarpathTargetGui(player,blockEntity,false,this,(obj) -> {
-            blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry((String) obj,player.level().dimension().identifier().toString(),newDest.get().getX(),newDest.get().getY(),newDest.get().getZ()));
+         StarpathTargetGui nameGui = new StarpathTargetGui(player, blockEntity, false, this, (obj) -> {
+            blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry((String) obj, player.level().dimension().identifier().toString(), newDest.get().getX(), newDest.get().getY(), newDest.get().getZ()));
             buildPage();
          });
-         StarpathTargetGui targetGui = new StarpathTargetGui(player,blockEntity,true,nameGui,(obj) -> newDest.set((BlockPos) obj));
+         StarpathTargetGui targetGui = new StarpathTargetGui(player, blockEntity, true, nameGui, (obj) -> newDest.set((BlockPos) obj));
          targetGui.open();
       });
-      setSlot(49,newItem);
+      setSlot(49, newItem);
    }
    
    @Override

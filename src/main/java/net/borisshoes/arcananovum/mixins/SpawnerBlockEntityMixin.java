@@ -13,17 +13,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SpawnerBlockEntity.class)
 public class SpawnerBlockEntityMixin {
-
-   @Inject(method= "serverTick", at = @At(value="HEAD"), cancellable = true)
+   
+   @Inject(method = "serverTick", at = @At(value = "HEAD"), cancellable = true)
    private static void arcananovum$infuseSpawner(Level world, BlockPos pos, BlockState state, SpawnerBlockEntity blockEntity, CallbackInfo ci){
       try{
-         BlockPos infuserPos = blockEntity.getBlockPos().offset(0,-2,0);
+         BlockPos infuserPos = blockEntity.getBlockPos().offset(0, -2, 0);
          
          BlockState infuserState = world.getBlockState(infuserPos);
          BlockEntity be = world.getBlockEntity(infuserPos);
          if(be instanceof SpawnerInfuserBlockEntity infuser){
             if(infuser.isActive()){
-               infuser.tickInfuser(pos,blockEntity);
+               infuser.tickInfuser(pos, blockEntity);
                ci.cancel(); // Cancel to avoid double ticking
             }
          }
