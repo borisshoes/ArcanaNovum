@@ -213,6 +213,11 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
          stateManager.add(BLOOM, ACTIVATABLE);
       }
       
+      @Override
+      public boolean forceLightUpdates(BlockState blockState){
+         return true;
+      }
+      
       @Nullable
       @Override
       public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
@@ -229,8 +234,12 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
                   player.getCooldowns().addCooldown(playerEntity.getMainHandItem(), 1);
                   player.getCooldowns().addCooldown(playerEntity.getOffhandItem(), 1);
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(altar.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(altar.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(altar.getMultiblockCheck(), player);
+                  }
                }
             }
          }

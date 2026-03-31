@@ -206,8 +206,12 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
                      player.getCooldowns().addCooldown(playerEntity.getOffhandItem(), 1);
                   }
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(fletchery.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(fletchery.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(fletchery.getMultiblockCheck(), player);
+                  }
                }
             }
          }

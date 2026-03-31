@@ -7,12 +7,15 @@ import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlock;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.*;
@@ -23,10 +26,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -245,7 +246,6 @@ public class Multiblock {
          Path path = pathOptional.get().get();
          InputStream in = Files.newInputStream(path);
          CompoundTag compound = NbtIo.readCompressed(in, NbtAccounter.unlimitedHeap());
-         if(compound == null) return null;
          
          ListTag size = compound.getListOrEmpty("size");
          int sizeX = size.getIntOr(0, 0);
@@ -410,6 +410,49 @@ public class Multiblock {
       element.setScale(new Vector3f(0.5F, 0.5F, 0.5F));
       element.setOffset(new Vec3(0.25F, 0.25F, 0.25F));
       return element;
+   }
+   
+   public void build(MultiblockCheck checkParams){
+      int numRotations = calculateRotations(checkParams);
+      int[][][] rotatedPattern = calculateRotated(numRotations);
+      int width = rotatedPattern.length;
+      int height = rotatedPattern[0].length;
+      int length = rotatedPattern[0][0].length;
+      BlockPos cornerOffset = checkParams.cornerOffset();
+      BlockPos rotatedOffset = calculateRotOffset(numRotations, cornerOffset);
+      
+      BlockPos corner = checkParams.corePos().offset(rotatedOffset);
+      for(int x = 0; x < width; x++){
+         for(int y = 0; y < height; y++){
+            for(int z = 0; z < length; z++){
+               int pattern = rotatedPattern[x][y][z];
+               if(pattern == -1) continue;
+               
+               BlockPos pos = corner.offset(x, y, z);
+               BlockState state = checkParams.world.getBlockState(pos);
+               Tuple<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
+               BlockState rotatedRawState = pair.getA();
+               for(int i = 0; i < numRotations; i++){
+                  rotatedRawState = rotatedRawState.rotate(Rotation.COUNTERCLOCKWISE_90);
+               }
+               
+               Predicate<BlockState> predicate = pair.getB();
+               Predicate<BlockState> rotatedPred = bs -> {
+                  for(int i = 0; i < numRotations; i++){
+                     bs = bs.rotate(Rotation.CLOCKWISE_90);
+                  }
+                  return predicate.test(bs);
+               };
+               
+               if(!rotatedPred.test(state)){
+                  if(state.isAir() && !(state.getBlock() instanceof BaseEntityBlock)) {
+                     checkParams.world().setBlock(pos,rotatedRawState,Block.UPDATE_ALL);
+                  }
+               }
+            }
+         }
+      }
+      
    }
    
    public record MultiblockCheck(ServerLevel world, BlockPos corePos, BlockState coreState, BlockPos cornerOffset,

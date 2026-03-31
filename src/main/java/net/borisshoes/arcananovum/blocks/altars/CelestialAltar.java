@@ -215,8 +215,12 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
                   player.getCooldowns().addCooldown(playerEntity.getMainHandItem(), 1);
                   player.getCooldowns().addCooldown(playerEntity.getOffhandItem(), 1);
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(altar.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(altar.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(altar.getMultiblockCheck(), player);
+                  }
                }
             }
          }
@@ -244,6 +248,11 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       
       public static int getLightLevel(BlockState state){
          return 15;
+      }
+      
+      @Override
+      public boolean forceLightUpdates(BlockState blockState){
+         return true;
       }
       
       @Override

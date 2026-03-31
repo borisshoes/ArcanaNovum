@@ -24,6 +24,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -32,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -261,6 +264,21 @@ public class Soulstone extends ArcanaItem {
          stringList.add("" + tier);
          baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
+      }
+      
+      @Override
+      public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         ItemStack item = playerEntity.getItemInHand(hand);
+         if(playerEntity.isCreative()){
+            if(!getType(item).equals("unattuned")){
+               int curSouls = Soulstone.getSouls(item);
+               int increase = playerEntity.isShiftKeyDown() ? 25 : 1;
+               putProperty(item, SOULS_TAG, curSouls + increase);
+               buildItemLore(item, world.getServer());
+            }
+            return InteractionResult.SUCCESS_SERVER;
+         }
+         return InteractionResult.PASS;
       }
       
       @Override

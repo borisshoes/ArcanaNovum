@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.blocks.forge;
 import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
+import eu.pb4.polymer.core.api.block.PolymerBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
@@ -136,6 +137,11 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
+      public boolean forceLightUpdates(BlockState blockState){
+         return true;
+      }
+      
+      @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state){
          return new MidnightEnchanterBlockEntity(pos, state);
       }
@@ -162,8 +168,12 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
                      }
                   }
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(enchanter.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(enchanter.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(enchanter.getMultiblockCheck(), player);
+                  }
                }
             }
          }

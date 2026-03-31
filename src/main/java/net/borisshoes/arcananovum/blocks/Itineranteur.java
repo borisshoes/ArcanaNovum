@@ -269,6 +269,11 @@ public class Itineranteur extends ArcanaBlock {
       }
       
       @Override
+      public boolean forceLightUpdates(BlockState blockState){
+         return true;
+      }
+      
+      @Override
       protected VoxelShape getShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext){
          return blockState.getValue(HANGING) ? SHAPE_HANGING : SHAPE_STANDING;
       }

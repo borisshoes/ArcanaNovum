@@ -264,8 +264,12 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       player.getCooldowns().addCooldown(player.getMainHandItem(), 1);
       player.getCooldowns().addCooldown(player.getOffhandItem(), 1);
       if(!assembled){
-         player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-         multiblock.displayStructure(getMultiblockCheck(), player);
+         if(player.isShiftKeyDown() && player.isCreative()){
+            multiblock.build(getMultiblockCheck());
+         }else{
+            player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+            multiblock.displayStructure(getMultiblockCheck(), player);
+         }
          return false;
       }
       

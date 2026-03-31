@@ -201,8 +201,12 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
                      anvil.openGui(0, player, "");
                   }
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(anvil.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(anvil.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(anvil.getMultiblockCheck(), player);
+                  }
                }
             }
          }

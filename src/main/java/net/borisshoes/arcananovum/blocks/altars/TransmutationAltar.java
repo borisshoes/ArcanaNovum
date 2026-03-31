@@ -236,8 +236,12 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
                   player.getCooldowns().addCooldown(playerEntity.getMainHandItem(), 1);
                   player.getCooldowns().addCooldown(playerEntity.getOffhandItem(), 1);
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(altar.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(altar.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(altar.getMultiblockCheck(), player);
+                  }
                }
             }
          }

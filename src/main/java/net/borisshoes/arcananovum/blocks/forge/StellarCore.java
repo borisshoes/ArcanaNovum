@@ -230,8 +230,12 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
                      core.openGui(player);
                   }
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(core.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(core.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(core.getMultiblockCheck(), player);
+                  }
                }
             }
          }
@@ -240,6 +244,11 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       
       public static int getLightLevel(BlockState state){
          return state.getValue(BlockStateProperties.LIT) ? 13 : 0;
+      }
+      
+      @Override
+      public boolean forceLightUpdates(BlockState blockState){
+         return true;
       }
       
       @Override

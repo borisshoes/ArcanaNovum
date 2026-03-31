@@ -204,8 +204,12 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
                if(forge.isAssembled()){
                   forge.openMainGui(player, null);
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(forge.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(forge.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(forge.getMultiblockCheck(), player);
+                  }
                }
             }
          }

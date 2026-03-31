@@ -212,6 +212,11 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
          return this.defaultBlockState().setValue(ACTIVE, false);
       }
       
+      @Override
+      public boolean forceLightUpdates(BlockState blockState){
+         return true;
+      }
+      
       @Nullable
       @Override
       public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type){
@@ -254,8 +259,12 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
                   InterdictorGui gui = new InterdictorGui(serverPlayer, interdictor);
                   gui.open();
                }else{
-                  serverPlayer.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(interdictor.getMultiblockCheck(), serverPlayer);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(interdictor.getMultiblockCheck());
+                  }else{
+                     serverPlayer.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(interdictor.getMultiblockCheck(), serverPlayer);
+                  }
                }
             }
             return InteractionResult.PASS;

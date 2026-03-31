@@ -244,6 +244,11 @@ public class ContinuumAnchor extends ArcanaBlock {
       }
       
       @Override
+      public boolean forceLightUpdates(BlockState blockState){
+         return true;
+      }
+      
+      @Override
       protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit){
          ContinuumAnchorBlockEntity anchor = (ContinuumAnchorBlockEntity) world.getBlockEntity(pos);
          if(anchor != null && anchor.interact(player, stack)) return InteractionResult.SUCCESS_SERVER;

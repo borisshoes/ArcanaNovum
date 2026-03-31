@@ -637,7 +637,8 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       boolean hasRedstone = this.level.hasNeighborSignal(getBlockPos());
       boolean validWaystone = validWaystone(this.inventory.getItem(0));
       AstralGatewayBlockEntity synced = getSyncedGateway();
-      boolean lostConnection = (synced == null || synced.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.OPEN);
+      GatewayState syncedState = syncedGateway == null ? GatewayState.CLOSED : synced.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
+      boolean lostConnection = (synced == null || (syncedState == GatewayState.CLOSED || syncedState == GatewayState.COOLDOWN));
       boolean cannotMaintainDial = dialler && (lostConnection || !validWaystone || !hasRedstone || !hasAnyStardust);
       
       if(!closed && !cooldown && (cannotMaintainDial || lostConnection || !hasAnyStardust)){

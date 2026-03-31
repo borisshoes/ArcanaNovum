@@ -237,8 +237,12 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
                      singularity.openGui(player);
                   }
                }else{
-                  player.sendSystemMessage(Component.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(singularity.getMultiblockCheck(), player);
+                  if(player.isShiftKeyDown() && player.isCreative()){
+                     multiblock.build(singularity.getMultiblockCheck());
+                  }else{
+                     player.sendSystemMessage(Component.literal("Multiblock not constructed."));
+                     multiblock.displayStructure(singularity.getMultiblockCheck(), player);
+                  }
                }
             }
          }
