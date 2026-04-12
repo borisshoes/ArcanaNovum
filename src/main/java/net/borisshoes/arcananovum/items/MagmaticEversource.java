@@ -14,9 +14,11 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -52,7 +54,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,13 +75,14 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       item = new MagmaticEversourceItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_LAVA_BUCKET, ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS, ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.UNLOCK_AQUATIC_EVERSOURCE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, MODE_TAG, 0); // 0 place, 1 remove
       putProperty(stack, USES_TAG, 1);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -172,10 +174,10 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
       Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
       
-      if(world.random.nextFloat() < 0.15){
+      if(world.getRandom().nextFloat() < 0.15){
          world.sendParticles(ParticleTypes.DRIPPING_LAVA, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);
       }
-      if(world.random.nextFloat() < 0.15){
+      if(world.getRandom().nextFloat() < 0.15){
          world.sendParticles(ParticleTypes.FALLING_LAVA, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);
       }
       
@@ -240,8 +242,8 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          int mode = getIntProperty(itemStack, MODE_TAG);
@@ -299,17 +301,17 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
             int newMode = (mode + 1) % 2;
             putProperty(stack, MODE_TAG, newMode);
             if(newMode == 1){
-               player.displayClientMessage(Component.literal("The Eversource Evaporates").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Eversource Evaporates").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_EMPTY_LAVA, 1.0f, 1.0f);
             }else{
-               player.displayClientMessage(Component.literal("The Eversource Condenses").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Eversource Condenses").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BUCKET_FILL_LAVA, 1.0f, 1.0f);
             }
             return InteractionResult.SUCCESS_SERVER;
          }
          
          if(mode != 1 && charges <= 0){
-            player.displayClientMessage(Component.literal("The Eversource is Recharging").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("The Eversource is Recharging").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
             return InteractionResult.PASS;
          }

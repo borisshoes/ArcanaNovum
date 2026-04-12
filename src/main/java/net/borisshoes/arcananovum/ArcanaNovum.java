@@ -59,7 +59,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public void onInitialize(){
       ArcanaRegistry.initialize();
       
-      ServerTickEvents.END_WORLD_TICK.register(WorldTickCallback::onWorldTick);
+      ServerTickEvents.END_LEVEL_TICK.register(WorldTickCallback::onWorldTick);
       ServerTickEvents.END_SERVER_TICK.register(TickCallback::onTick);
       UseEntityCallback.EVENT.register(EntityUseCallback::useEntity);
       AttackBlockCallback.EVENT.register(BlockAttackCallback::attackBlock);

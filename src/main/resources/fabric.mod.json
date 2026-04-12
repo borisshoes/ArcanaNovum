@@ -22,16 +22,7 @@
     ],
     "client": [
       "net.borisshoes.arcananovum.ArcanaNovum"
-    ],
-    "cardinal-components-entity": [
-      "net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer"
-    ],
-    "cardinal-components-world": [
-      "net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer"
     ]
-  },
-  "custom": {
-    "cardinal-components": ["arcananovum:profile","arcananovum:bossfight","arcananovum:active_anchors"]
   },
   "mixins": [
     "arcananovum.mixins.json"
@@ -39,7 +30,8 @@
   "accessWidener" : "arcananovum.accesswidener",
   "depends": {
     "fabricloader": ">=${loader_version}",
-    "fabric": "*",
-    "minecraft": ">=${minecraft_version}"
+    "fabric-api": "*",
+    "minecraft": ">=${minecraft_version}",
+    "borislib": ">=${borislib_mod_version}"
   }
 }

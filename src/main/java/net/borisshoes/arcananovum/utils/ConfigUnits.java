@@ -58,12 +58,14 @@ public enum ConfigUnits {
    }
    
    public Component makeValue(double value, int decimalPlaces){
-      DecimalFormat df = new DecimalFormat("#,##0." + "#".repeat(Math.max(0, decimalPlaces)), DecimalFormatSymbols.getInstance(Locale.ROOT));
+      String pattern = decimalPlaces > 0 ? "#,##0." + "#".repeat(decimalPlaces) : "#,##0";
+      DecimalFormat df = new DecimalFormat(pattern, DecimalFormatSymbols.getInstance(Locale.ROOT));
       return Component.literal(df.format(value)).append(getName());
    }
    
    public Component makeValue(double[] values, int decimalPlaces){
-      DecimalFormat df = new DecimalFormat("#,##0." + "#".repeat(Math.max(0, decimalPlaces)), DecimalFormatSymbols.getInstance(Locale.ROOT));
+      String pattern = decimalPlaces > 0 ? "#,##0." + "#".repeat(decimalPlaces) : "#,##0";
+      DecimalFormat df = new DecimalFormat(pattern, DecimalFormatSymbols.getInstance(Locale.ROOT));
       MutableComponent comp = Component.literal("");
       int size = values.length;
       if(perValueSuffix){

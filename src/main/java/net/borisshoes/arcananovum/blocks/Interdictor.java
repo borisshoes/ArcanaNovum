@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -19,8 +20,8 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.interdictor.InterdictorGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -31,10 +32,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -57,7 +55,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,11 +81,6 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       item = new InterdictorItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_MATTER, ResearchTasks.OBTAIN_BEACON, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.OBTAIN_END_CRYSTAL, ResearchTasks.USE_ENDER_EYE, ResearchTasks.ADVANCEMENT_KILL_A_MOB};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -167,22 +159,6 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       public @NonNull ItemStack getDefaultInstance(){
          return prefItem;
       }
-      
-      @Override
-      public void inventoryTick(@NonNull ItemStack stack, @NonNull ServerLevel world, @NonNull Entity entity, @Nullable EquipmentSlot slot){
-         if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(entity instanceof ServerPlayer player)) return;
-         
-         
-      }
-      
-      @Override
-      public @NonNull InteractionResult use(@NonNull Level world, Player playerEntity, @NonNull InteractionHand hand){
-         ItemStack stack = playerEntity.getItemInHand(hand);
-         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
-         
-         return InteractionResult.PASS;
-      }
    }
    
    public class InterdictorBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {
@@ -194,7 +170,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.BEACON.defaultBlockState();
@@ -254,10 +230,12 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       @Override
       protected InteractionResult useWithoutItem(BlockState blockState, Level level, BlockPos blockPos, Player player, BlockHitResult blockHitResult){
          if(level.getBlockEntity(blockPos) instanceof InterdictorBlockEntity interdictor){
-            if(player instanceof ServerPlayer serverPlayer && !player.isShiftKeyDown()){
+            if(player instanceof ServerPlayer serverPlayer){
                if(interdictor.isAssembled()){
-                  InterdictorGui gui = new InterdictorGui(serverPlayer, interdictor);
-                  gui.open();
+                  if(!player.isShiftKeyDown()){
+                     InterdictorGui gui = new InterdictorGui(serverPlayer, interdictor);
+                     gui.open();
+                  }
                }else{
                   if(player.isShiftKeyDown() && player.isCreative()){
                      multiblock.build(interdictor.getMultiblockCheck());
@@ -289,10 +267,10 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack INTERDICTOR_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor"));
-      public static final ItemStack INTERDICTOR_TOP = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor_top_shell"));
-      public static final ItemStack INTERDICTOR_BOT = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor_bottom_shell"));
-      public static final ItemStack INTERDICTOR_CORE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/interdictor_core"));
+      public static final LazyItemStack INTERDICTOR_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/interdictor"));
+      public static final LazyItemStack INTERDICTOR_TOP = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/interdictor_top_shell"));
+      public static final LazyItemStack INTERDICTOR_BOT = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/interdictor_bottom_shell"));
+      public static final LazyItemStack INTERDICTOR_CORE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/interdictor_core"));
       
       // Base rotation speeds (radians per tick)
       private static final float SHELL_BASE_SPEED = 0.5f * Mth.DEG_TO_RAD;
@@ -363,7 +341,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
          this.targetSpeedMultiplier = active ? ACTIVE_SPEED_MULTIPLIER : 1.0f;
          this.currentSpeedMultiplier = targetSpeedMultiplier;
          
-         // Use ThreadLocalRandom for initialization since world.random may not be accessible from this thread
+         // Use ThreadLocalRandom for initialization since world.getRandom() may not be accessible from this thread
          Random initRandom = ThreadLocalRandom.current();
          
          // Random phase offsets for independent oscillation
@@ -440,13 +418,13 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
             topShellSurgeTimer--;
             if(topShellSurgeTimer <= 0){
                topShellSurge = SURGE_SPEED_BOOST;
-               topShellSurgeTimer = MIN_SURGE_INTERVAL + world.random.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
+               topShellSurgeTimer = MIN_SURGE_INTERVAL + world.getRandom().nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
             }
             
             botShellSurgeTimer--;
             if(botShellSurgeTimer <= 0){
                botShellSurge = SURGE_SPEED_BOOST;
-               botShellSurgeTimer = MIN_SURGE_INTERVAL + world.random.nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
+               botShellSurgeTimer = MIN_SURGE_INTERVAL + world.getRandom().nextInt(MAX_SURGE_INTERVAL - MIN_SURGE_INTERVAL);
             }
             
             // Core bursts and shakes
@@ -454,15 +432,15 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
             if(coreBurstTimer <= 0){
                coreBurst = CORE_BURST_SPEED;
                // Also add a shake when bursting
-               coreShakeX = (world.random.nextFloat() * 2 - 1) * SHAKE_AMPLITUDE;
-               coreShakeZ = (world.random.nextFloat() * 2 - 1) * SHAKE_AMPLITUDE;
-               coreBurstTimer = MIN_BURST_INTERVAL + world.random.nextInt(MAX_BURST_INTERVAL - MIN_BURST_INTERVAL);
+               coreShakeX = (world.getRandom().nextFloat() * 2 - 1) * SHAKE_AMPLITUDE;
+               coreShakeZ = (world.getRandom().nextFloat() * 2 - 1) * SHAKE_AMPLITUDE;
+               coreBurstTimer = MIN_BURST_INTERVAL + world.getRandom().nextInt(MAX_BURST_INTERVAL - MIN_BURST_INTERVAL);
             }
             
             // Random small shakes while active
-            if(world.random.nextFloat() < 0.1f){
-               coreShakeX = (world.random.nextFloat() * 2 - 1) * SHAKE_AMPLITUDE * 0.5f;
-               coreShakeZ = (world.random.nextFloat() * 2 - 1) * SHAKE_AMPLITUDE * 0.5f;
+            if(world.getRandom().nextFloat() < 0.1f){
+               coreShakeX = (world.getRandom().nextFloat() * 2 - 1) * SHAKE_AMPLITUDE * 0.5f;
+               coreShakeZ = (world.getRandom().nextFloat() * 2 - 1) * SHAKE_AMPLITUDE * 0.5f;
             }
          }
          

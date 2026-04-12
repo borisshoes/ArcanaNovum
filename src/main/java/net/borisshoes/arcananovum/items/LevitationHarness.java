@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import io.github.ladysnake.pal.VanillaAbilities;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -14,16 +13,15 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
-import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventoryListener;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
-import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -40,14 +38,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
@@ -56,7 +51,6 @@ import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,15 +80,16 @@ public class LevitationHarness extends EnergyItem {
       item = new LevitationHarnessItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SHULKER_CORE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.ADVANCEMENT_ELYTRA, ResearchTasks.UNLOCK_ARCANE_SINGULARITY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, SOULS_TAG, 500.0);
       putProperty(stack, GLOWSTONE_TAG, 960.0);
       putProperty(stack, STALL_TAG, -1);
       putProperty(stack, WAS_FLYING_TAG, false);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -225,63 +220,10 @@ public class LevitationHarness extends EnergyItem {
       putProperty(stack, STALL_TAG, seconds);
    }
    
-   public void buildGui(ItemStack stack, LevitationHarnessGui gui){
-      int souls = (int) getSouls(stack);
-      int glow = (int) getGlow(stack);
-      int energy = getEnergy(stack);
-      
-      String soulText = souls > -1 ? TextUtils.readableInt(souls) + " Shulker Souls" : "No Soulstone Inserted";
-      String durationText = energy > 0 ? "Flight Time Remaining: " + getDuration(stack) : "No Fuel!";
-      String glowText = glow > 0 ? TextUtils.readableInt(glow) + " Glowstone Left" : "No Glowstone Remaining";
-      GuiElementBuilder soulPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, souls > -1 ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
-      GuiElementBuilder durationPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, energy > 0 ? ArcanaColors.LIGHT_COLOR : 0x880000));
-      GuiElementBuilder glowPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, glow > 0 ? 0xffdd00 : ArcanaColors.DARK_COLOR));
-      ChatFormatting soulTextColor = souls > -1 ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.RED;
-      ChatFormatting durationTextColor = energy > 0 ? ChatFormatting.GRAY : ChatFormatting.RED;
-      ChatFormatting glowTextColor = glow > 0 ? ChatFormatting.GOLD : ChatFormatting.RED;
-      
-      gui.setSlot(0, soulPane.setName(Component.literal(soulText).withStyle(soulTextColor)));
-      gui.setSlot(2, durationPane.setName(Component.literal(durationText).withStyle(durationTextColor)));
-      gui.setSlot(4, glowPane.setName(Component.literal(glowText).withStyle(glowTextColor)));
-   }
-   
    public void openGui(Player playerEntity, ItemStack stack){
       if(!(playerEntity instanceof ServerPlayer player))
          return;
-      LevitationHarnessGui gui = new LevitationHarnessGui(MenuType.HOPPER, player, this, stack);
-      
-      double souls = getSouls(stack);
-      
-      for(int i = 0; i < gui.getSize(); i++){
-         gui.clearSlot(i);
-      }
-      
-      buildGui(stack, gui);
-      
-      SimpleContainer inv = new SimpleContainer(2);
-      LevitationHarnessInventoryListener listener = new LevitationHarnessInventoryListener(this, gui, stack);
-      inv.addListener(listener);
-      listener.setUpdating();
-      
-      gui.setSlotRedirect(1, new Slot(inv, 0, 0, 0));
-      gui.setSlotRedirect(3, new Slot(inv, 1, 0, 0));
-      if(souls > -1){
-         CompoundTag stoneData = getCompoundProperty(stack, STONE_DATA_TAG);
-         ItemStack stone;
-         if(stoneData == null || stoneData.isEmpty()){
-            stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
-         }else{
-            stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, player.registryAccess()), stoneData).result().orElse(ItemStack.EMPTY);
-         }
-         stone = Soulstone.setSouls(stone, (int) souls);
-         inv.setItem(0, stone);
-         gui.validStone(stone);
-      }else{
-         gui.notValidStone();
-      }
-      gui.setTitle(Component.literal("Levitation Harness"));
-      listener.finishUpdate();
-      
+      LevitationHarnessGui gui = new LevitationHarnessGui(player, this, stack);
       gui.open();
    }
    
@@ -320,8 +262,8 @@ public class LevitationHarness extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
          Identifier modelId = ArcanaItem.getSkin(itemStack) != null ? ArcanaItem.getSkin(itemStack).getModelId() : ArcanaRegistry.arcanaId(ID);
          Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, modelId)).build();
@@ -410,7 +352,7 @@ public class LevitationHarness extends EnergyItem {
             if(stall > 0){
                if(stall == 1){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_POWER_SELECT, 0.5f, 1.6f);
-                  player.displayClientMessage(Component.literal("Your Harness Reboots").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("Your Harness Reboots").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
                   putProperty(stack, STALL_TAG, -1);
                }else{
                   putProperty(stack, STALL_TAG, stall - 1);

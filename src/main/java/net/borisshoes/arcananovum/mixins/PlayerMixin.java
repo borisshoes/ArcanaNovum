@@ -63,13 +63,13 @@ public class PlayerMixin {
                }));
          }
       }
-      if(ArcanaItemUtils.identifyItem(handStack) instanceof ShadowStalkersGlaive glaive){
+      if(ArcanaItemUtils.identifyItem(handStack) instanceof ShadowStalkersGlaive glaive && player instanceof ServerPlayer serverPlayer){
          if(atkPercentage > 0.8){
             int toAdd = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHADOW_STALKERS_GLAIVE_HIT_ENERGY);
             int oldEnergy = EnergyItem.getEnergy(handStack);
             glaive.addEnergy(handStack, toAdd);
             int newEnergy = EnergyItem.getEnergy(handStack);
-            glaive.sendEnergyMessage(player, oldEnergy, newEnergy, false);
+            glaive.sendEnergyMessage(serverPlayer, oldEnergy, newEnergy, false);
          }
       }
    }

@@ -5,7 +5,9 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -23,7 +25,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 
@@ -41,12 +42,12 @@ public abstract class ArcanaPolymerBowItem extends BowItem implements PolymerIte
    }
    
    @Override
-   public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-      return PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context);
+   public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+      return PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
    }
    
    @Override
-   public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
+   public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
       if(PolymerResourcePackUtils.hasMainPack(context)){
          ArcanaSkin skin = ArcanaItem.getSkin(stack);
          if(skin != null){
@@ -60,8 +61,8 @@ public abstract class ArcanaPolymerBowItem extends BowItem implements PolymerIte
    }
    
    @Override
-   public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context){
-      PolymerItem.super.modifyBasePolymerItemStack(out, stack, context);
+   public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
+      PolymerItem.super.modifyBasePolymerItemStack(out, stack, context, lookup);
    }
    
    @Override

@@ -1,13 +1,13 @@
 package net.borisshoes.arcananovum.effects;
 
-import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
+import eu.pb4.polymer.core.api.other.PolymerMobEffect;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 
-public class DeathWardEffect extends MobEffect implements PolymerStatusEffect {
+public class DeathWardEffect extends MobEffect implements PolymerMobEffect {
    public DeathWardEffect(){
       super(MobEffectCategory.BENEFICIAL, 0x270000, ParticleTypes.TRIAL_OMEN);
    }

@@ -2,19 +2,20 @@ package net.borisshoes.arcananovum.datagen;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.tags.TagAppender;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
-   public ItemTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture){
-      super(output, registriesFuture);
+public class ItemTagGenerator extends FabricTagsProvider.ItemTagsProvider {
+   public ItemTagGenerator(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture, @Nullable FabricTagsProvider.BlockTagsProvider blockTagsProvider){
+      super(output, registriesFuture, blockTagsProvider);
    }
    
    @Override
@@ -24,7 +25,7 @@ public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
       TagAppender<Item, Item> runicArrowsBuilder = valueLookupBuilder(ArcanaRegistry.RUNIC_ARROWS);
       ArcanaRegistry.ARCANA_ITEMS.forEach(item -> {
          allItemsBuilder.add(item.getItem());
-         if(item.getItem().getDefaultMaxStackSize() == 1){
+         if(item.getMaxCount() == 1){
             unstackableItemsBuilder.add(item.getItem());
          }
          if(item instanceof RunicArrow){

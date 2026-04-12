@@ -69,6 +69,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
+import static net.borisshoes.borislib.utils.MinecraftUtils.makeEnchantComponent;
 
 public class GravitonMaul extends ArcanaItem {
    public static final String ID = "graviton_maul";
@@ -85,13 +86,14 @@ public class GravitonMaul extends ArcanaItem {
       item = new GravitonMaulItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_MACE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OVER_OVERKILL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, MODE_TAG, 0); // 0 jump boost, 1 gravity amp, 2 channel
       putProperty(stack, FALL_START_HEIGHT_TAG, Double.NaN);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -157,16 +159,6 @@ public class GravitonMaul extends ArcanaItem {
             .append(Component.literal(".").withStyle(ChatFormatting.GRAY)));
       
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
-   }
-   
-   @Override
-   public void finalizePrefItem(MinecraftServer server){
-      super.finalizePrefItem(server);
-      ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.BREACH), 5)
-      ));
-      this.prefItem = buildItemLore(curPrefItem, server);
    }
    
    @Override
@@ -362,6 +354,7 @@ public class GravitonMaul extends ArcanaItem {
                .component(DataComponents.CONSUMABLE, Consumable.builder().consumeSeconds(72000).animation(ItemUseAnimation.BOW).sound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.AMETHYST_BLOCK_CHIME)).build())
                .component(DataComponents.WEAPON, new Weapon(1, 7.5F))
                .component(DataComponents.USE_EFFECTS, new UseEffects(false, true, 0.01f))
+               .delayedComponent(DataComponents.ENCHANTMENTS, ctx -> makeEnchantComponent(new EnchantmentInstance(ctx.getOrThrow(Enchantments.BREACH),5)))
                .attributes(ItemAttributeModifiers.builder()
                      .add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 5.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
                      .add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, -3.4F, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)

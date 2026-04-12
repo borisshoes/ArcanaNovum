@@ -13,6 +13,8 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.gui.ContainerWatcher;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.gui.arcanesingularity.ArcaneSingularityGui;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
@@ -33,8 +35,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
-import net.minecraft.world.ContainerListener;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -57,7 +57,7 @@ import java.util.*;
 
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
-public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerListener, ArcanaBlockEntity {
+public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerWatcher, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
@@ -66,7 +66,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
-   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
+   private WatchedContainer inventory = new WatchedContainer(getContainerSize());
    private boolean seenForge;
    private boolean updating;
    private final HashMap<ServerPlayer, ArcaneSingularityGui> watchingPlayers = new HashMap<>();
@@ -74,7 +74,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    public ArcaneSingularityBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY, pos, state);
       this.multiblock = ((MultiblockCore) ArcanaRegistry.ARCANE_SINGULARITY).getMultiblock();
-      this.inventory.addListener(this);
+      this.inventory.addWatcher(this);
    }
    
    public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
@@ -109,10 +109,10 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
          double fillPercent = (0.75 + 0.05 * ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.SUPERMASSIVE)) * ((double) getNumBooks() / getCapacity());
          ArcanaEffectUtils.arcaneSingularityAnim(serverWorld, center, ticks % 300, dir, fillPercent);
          
-         if(Math.random() < 0.001){
-            SoundUtils.playSound(serverWorld, BlockPos.containing(center), SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.3f, 1 + (float) Math.random());
+         if(serverWorld.getRandom().nextFloat() < 0.001f){
+            SoundUtils.playSound(serverWorld, BlockPos.containing(center), SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.3f, 1 + serverWorld.getRandom().nextFloat());
          }
-         if(Math.random() < 0.0005){
+         if(serverWorld.getRandom().nextFloat() < 0.0005f){
             SoundUtils.playSound(serverWorld, BlockPos.containing(center), SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 1f, 0.5f);
          }
       }
@@ -389,8 +389,8 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    }
    
    public void initializeBooks(ListTag bookList, HolderLookup.Provider registryLookup){
-      inventory = new SimpleContainer(getContainerSize());
-      inventory.addListener(this);
+      inventory = new WatchedContainer(getContainerSize());
+      inventory.addWatcher(this);
       for(Tag e : bookList){
          inventory.addItem(ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, registryLookup), e).result().orElse(ItemStack.EMPTY));
       }
@@ -412,7 +412,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
-      this.inventory = new SimpleContainer(getContainerSize());
+      this.inventory = new WatchedContainer(getContainerSize());
       if(!this.tryLoadLootTable(view)){
          CodecUtils.readBigInventory(view, this.inventory.getItems());
       }
@@ -475,8 +475,14 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
    }
    
    @Override
-   public void containerChanged(Container sender){
+   public void onChanged(WatchedContainer sender){
       sendRefresh();
+   }
+   
+   @Override
+   public void setChanged(){
+      super.setChanged();
+      this.inventory.setChanged();
    }
    
    public enum SingularityResult {

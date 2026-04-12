@@ -38,42 +38,6 @@ public class CelestialAltarGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      int phase = blockEntity.getPhase();
-      int mode = blockEntity.getMode();
-      if(index == 2){
-         if(!control){
-            blockEntity.setPhase(phase == 4 ? 0 : 4);
-         }else{
-            blockEntity.setPhase((phase + 1) % 8);
-         }
-      }else if(index == 4){
-         if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-            blockEntity.setMode((mode + 1) % 2);
-         }else{
-            if(blockEntity.getCooldown() <= 0 && blockEntity.getLevel() instanceof ServerLevel serverWorld){
-               Tuple<Item, Integer> cost = CelestialAltarBlockEntity.getCost();
-               if(MinecraftUtils.removeItems(player, cost.getA(), cost.getB())){
-                  blockEntity.startStarChange(player);
-                  close();
-               }else{
-                  player.displayClientMessage(Component.literal("You do not have " + cost.getB() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                        .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
-                        .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-                  close();
-               }
-            }else{
-               player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-               close();
-            }
-         }
-      }
-      return true;
-   }
-   
-   @Override
    public void onTick(){
       Level world = blockEntity.getLevel();
       if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
@@ -147,6 +111,18 @@ public class CelestialAltarGui extends SimpleGui {
          phaseItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Click to change the phase").withStyle(ChatFormatting.GRAY)))));
       }
+      phaseItem.setCallback((clickType) -> {
+         int curPhase = blockEntity.getPhase();
+         if(!control){
+            blockEntity.setPhase(curPhase == 4 ? 0 : 4);
+         }else{
+            if(clickType.isRight){
+               blockEntity.setPhase((curPhase - 1 + 8) % 8);
+            }else{
+               blockEntity.setPhase((curPhase + 1) % 8);
+            }
+         }
+      });
       setSlot(2, phaseItem);
       
       
@@ -165,6 +141,30 @@ public class CelestialAltarGui extends SimpleGui {
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("The Altar Requires " + cost.getB() + " ").withStyle(ChatFormatting.AQUA))
             .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+      activateItem.setCallback((clickType) -> {
+         int curMode = blockEntity.getMode();
+         if(clickType == ClickType.MOUSE_RIGHT || clickType == ClickType.MOUSE_RIGHT_SHIFT){
+            blockEntity.setMode((curMode + 1) % 2);
+         }else{
+            if(blockEntity.getCooldown() <= 0 && blockEntity.getLevel() instanceof ServerLevel serverWorld){
+               Tuple<Item, Integer> curCost = CelestialAltarBlockEntity.getCost();
+               if(MinecraftUtils.removeItems(player, curCost.getA(), curCost.getB())){
+                  blockEntity.startStarChange(player);
+                  close();
+               }else{
+                  player.sendSystemMessage(Component.literal("You do not have " + curCost.getB() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(curCost.getA().getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
+                        .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+                  close();
+               }
+            }else{
+               player.sendSystemMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+               close();
+            }
+         }
+      });
       setSlot(4, activateItem);
    }
    

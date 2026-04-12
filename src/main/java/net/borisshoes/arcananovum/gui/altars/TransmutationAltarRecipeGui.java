@@ -330,7 +330,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       if(returnGui != null){
          returnGui.open();
       }

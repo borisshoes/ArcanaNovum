@@ -135,7 +135,7 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       if(returnGui != null){
          returnGui.open();
       }

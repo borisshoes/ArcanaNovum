@@ -46,11 +46,6 @@ public class ArcaneTome extends ArcanaItem {
       item = new ArcaneTomeItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override

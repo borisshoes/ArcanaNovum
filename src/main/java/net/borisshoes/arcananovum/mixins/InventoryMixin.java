@@ -1,17 +1,15 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.items.ArcanistsBelt;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
+import net.borisshoes.arcananovum.utils.ArcanaInventory;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
-import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.util.Tuple;
-import net.minecraft.world.SimpleContainer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -66,40 +64,23 @@ public abstract class InventoryMixin {
    private void arcananovum$onPickup(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       try{
          Inventory playerInv = (Inventory) (Object) this;
-         List<Tuple<List<ItemStack>, ItemStack>> allItems = ArcanaUtils.getAllItems(playerInv.player);
-         if(playerInv.player.isShiftKeyDown()) return;
+         if(player.isShiftKeyDown() || !(player instanceof ServerPlayer serverPlayer)) return;
          
-         for(int i = 0; i < allItems.size(); i++){
-            List<ItemStack> itemList = allItems.get(i).getA();
-            ItemStack carrier = allItems.get(i).getB();
-            SimpleContainer sinv = new SimpleContainer(itemList.size());
-            
-            for(int j = 0; j < itemList.size(); j++){
-               ItemStack item = itemList.get(j);
-               
-               boolean isArcane = ArcanaItemUtils.isArcane(item);
-               if(!isArcane){
-                  sinv.setItem(j, item);
-                  continue; // Item not arcane, skip
-               }
-               
-               // Look for charm
-               if(ArcanaItemUtils.identifyItem(item) instanceof CindersCharm charm){
-                  ItemStack output = charm.smelt(item, playerInv.player, stack);
-                  if(output != null){
-                     cir.setReturnValue(customPickUp(stack, slot, playerInv, output));
-                     cir.cancel();
-                  }
-               }
-               
-               sinv.setItem(j, item);
-            }
-            
-            if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-               belt.buildItemLore(carrier, BorisLib.SERVER);
+         ArcanaInventory arcanaInventory = ArcanaInventory.getPlayerItems(serverPlayer);
+         List<ArcanaInventory.Entry> entries = arcanaInventory.getMatchingItems(invStack ->
+               ArcanaItemUtils.identifyItem(invStack) instanceof CindersCharm && EnergyItem.getEnergy(invStack) > 0);
+         for(ArcanaInventory.Entry entry : entries){
+            ItemStack charmStack = entry.getStack();
+            CindersCharm charm = (CindersCharm) ArcanaItemUtils.identifyItem(charmStack);
+            ItemStack output = charm.smelt(charmStack, serverPlayer, stack); // TODO maybe do partial smelts?
+            if(output != null){
+               entry.setModified();
+               arcanaInventory.close();
+               cir.setReturnValue(customPickUp(stack, slot, playerInv, output));
+               cir.cancel();
+               return;
             }
          }
-         
       }catch(Exception e){
          e.printStackTrace();
       }

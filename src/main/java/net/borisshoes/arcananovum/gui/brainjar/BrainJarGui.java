@@ -52,6 +52,9 @@ public class BrainJarGui extends SimpleGui {
             .append(Component.literal("" + player.experienceLevel).withStyle(ChatFormatting.AQUA))
             .append(Component.literal(")").withStyle(ChatFormatting.GREEN))
             .append(Component.literal(" levels").withStyle(ChatFormatting.DARK_AQUA))));
+      echest.setCallback((clickType) -> {
+         jar.depositXP(player, stack, clickType != ClickType.MOUSE_RIGHT, this);
+      });
       setSlot(0, echest);
       
       GuiElementBuilder bottle = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE);
@@ -66,6 +69,9 @@ public class BrainJarGui extends SimpleGui {
             .append(Component.literal("" + EnergyItem.getEnergy(stack)).withStyle(ChatFormatting.AQUA))
             .append(Component.literal(")").withStyle(ChatFormatting.GREEN))
             .append(Component.literal(" XP").withStyle(ChatFormatting.DARK_AQUA))));
+      bottle.setCallback((clickType) -> {
+         jar.withdrawXP(player, stack, clickType != ClickType.MOUSE_RIGHT, this);
+      });
       setSlot(4, bottle);
       
       setSlot(1, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Component.literal(TextUtils.readableInt(EnergyItem.getEnergy(stack)) + " XP Stored").withStyle(ChatFormatting.GREEN)));
@@ -77,6 +83,9 @@ public class BrainJarGui extends SimpleGui {
          notmending.addLoreLine(TextUtils.removeItalics(Component.literal("Currently Not Mending Items").withStyle(ChatFormatting.RED)));
          notmending.addLoreLine(TextUtils.removeItalics(Component.literal("")));
          notmending.addLoreLine(TextUtils.removeItalics(Component.literal("Click to toggle ON").withStyle(ChatFormatting.GREEN)));
+         notmending.setCallback((clickType) -> {
+            jar.toggleMending(this, player, stack);
+         });
          setSlot(2, notmending);
       }else{
          GuiElementBuilder mending = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM));
@@ -84,27 +93,12 @@ public class BrainJarGui extends SimpleGui {
          mending.addLoreLine(TextUtils.removeItalics(Component.literal("Currently Mending Items").withStyle(ChatFormatting.GREEN)));
          mending.addLoreLine(TextUtils.removeItalics(Component.literal("")));
          mending.addLoreLine(TextUtils.removeItalics(Component.literal("Click to toggle OFF").withStyle(ChatFormatting.RED)));
+         mending.setCallback((clickType) -> {
+            jar.toggleMending(this, player, stack);
+         });
          setSlot(2, mending);
       }
       
       setTitle(Component.literal("Brain in a Jar"));
    }
-   
-   @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      if(index == 0){
-         jar.depositXP(player, stack, type != ClickType.MOUSE_RIGHT, this);
-      }else if(index == 2){
-         jar.toggleMending(this, player, stack);
-      }else if(index == 4){
-         jar.withdrawXP(player, stack, type != ClickType.MOUSE_RIGHT, this);
-      }
-      return true;
-   }
-   
-   @Override
-   public void onClose(){
-   
-   }
-   
 }

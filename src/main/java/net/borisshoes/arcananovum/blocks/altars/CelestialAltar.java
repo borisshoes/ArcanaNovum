@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -18,6 +19,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -53,7 +55,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,11 +79,6 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Lunaralpacas")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("Lunaralpacas"))};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -166,7 +162,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.PEARLESCENT_FROGLIGHT.defaultBlockState();
@@ -267,9 +263,9 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack CELESTIAL_ALTAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/celestial_altar"));
-      public static final ItemStack MOON = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/celestial_altar_moon"));
-      public static final ItemStack SUN = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/celestial_altar_sun"));
+      public static final LazyItemStack CELESTIAL_ALTAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/celestial_altar"));
+      public static final LazyItemStack MOON = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/celestial_altar_moon"));
+      public static final LazyItemStack SUN = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/celestial_altar_sun"));
       
       // Satellite animation constants
       private static final float SATELLITE_SPIN_SPEED = 0.5f * Mth.DEG_TO_RAD; // Slow spin (degrees per tick)
@@ -324,7 +320,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
                boolean oldLunar = this.lunar;
                this.lunar = altar.getMode() == 1;
                if(oldLunar != this.lunar){
-                  this.satellite.setItem(lunar ? MOON : SUN);
+                  this.satellite.setItem(lunar ? MOON.get() : SUN.get());
                }
             }
          }

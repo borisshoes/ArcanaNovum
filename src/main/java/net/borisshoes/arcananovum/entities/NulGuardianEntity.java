@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
@@ -40,7 +41,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -63,10 +63,9 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    }
    
    @Override
-   public boolean canAttackType(EntityType<?> type){
-      boolean base = super.canAttackType(type);
-      if(type == ArcanaRegistry.NUL_GUARDIAN_ENTITY || type == ArcanaRegistry.NUL_CONSTRUCT_ENTITY){
-         
+   public boolean canAttack(LivingEntity target){
+      boolean base = super.canAttack(target);
+      if(target.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS)){
          return false;
       }
       return base;

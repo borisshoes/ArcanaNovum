@@ -75,13 +75,14 @@ public class AequalisScientia extends ArcanaItem {
       item = new AequalisScientiaItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TRANSMUTATION_ALTAR, ResearchTasks.OBTAIN_DIVINE_CATALYST, ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_CAKE_TO_NOTE_BLOCK, ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_ITEM_TO_PLAYER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, USES_TAG, ArcanaNovum.CONFIG.getInt(ArcanaConfig.AEQUALIS_SCIENTIA_BASE_USES));
       putProperty(stack, TRANSMUTATION_TAG, "");
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -544,7 +545,7 @@ public class AequalisScientia extends ArcanaItem {
       ), new int[]{0, 120, 100}, 0, 1, 0b10000));
       
       DialogHelper helper = new DialogHelper(dialogOptions, conditions);
-      helper.sendDialog(List.of(player), helper.getWeightedResult(), true);
+      DialogHelper.sendDialog(List.of(player), helper.getWeightedResult(player.getRandom()), true);
    }
    
    @Override
@@ -576,12 +577,12 @@ public class AequalisScientia extends ArcanaItem {
          if(!(entity instanceof ServerPlayer player)) return;
          
          double dialogChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.AEQUALIS_DIALOG_CHANCE);
-         if(Math.random() < dialogChance){
+         if(world.getRandom().nextDouble() < dialogChance){
             inventoryDialog(player);
          }
          
          double eventChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CEPTYUS_EVENT_CHANCE);
-         if(Math.random() < eventChance){
+         if(world.getRandom().nextDouble() < eventChance){
             ArcanaPlayerData data = ArcanaNovum.data(player);
             if(!data.completedCeptyus() && data.canAttemptCeptyus() && data.getLastCeptyusAttempt() <= 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.CEPTYUS_EVENT_ENABLED)){
                Structure structure = player.level().structureManager().registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.ANCIENT_CITY);
@@ -616,20 +617,20 @@ public class AequalisScientia extends ArcanaItem {
                   if(commieRecipe.validCommunalInput(playerEntity.getItemInHand(InteractionHand.OFF_HAND))){
                      ItemStack input = getAndSplitValidCommunalStack(stack, commieRecipe, playerEntity.getItemInHand(InteractionHand.OFF_HAND), player);
                      if(input == null){
-                        player.displayClientMessage(Component.literal("You do not have a valid input item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+                        player.sendSystemMessage(Component.literal("You do not have a valid input item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
                      ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                      if(reagent1 == null){
                         MinecraftUtils.returnItems(new SimpleContainer(input), player);
-                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
+                        player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
                      ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                      if(reagent2 == null){
                         MinecraftUtils.returnItems(new SimpleContainer(input), player);
                         MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
-                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
+                        player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
                      ItemStack focus = playerEntity.getItemInHand(InteractionHand.OFF_HAND).split(1);
@@ -638,26 +639,26 @@ public class AequalisScientia extends ArcanaItem {
                      results = commieRecipe.doTransmutation(input, focus, reagent1, reagent2, stack, player);
                   }else{
                      results = null;
-                     player.displayClientMessage(Component.literal("Your offhand must be a valid focus item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+                     player.sendSystemMessage(Component.literal("Your offhand must be a valid focus item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                }else if(recipe instanceof InfusionTransmutationRecipe infusionRecipe){
                   ItemStack input = getAndSplitValidStack(stack, infusionRecipe.getInputCount(), infusionRecipe.getInputPredicate(), player, true);
                   if(input == null){
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(infusionRecipe.getInputName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(infusionRecipe.getInputName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                   if(reagent1 == null){
                      MinecraftUtils.returnItems(new SimpleContainer(input), player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                   if(reagent2 == null){
                      MinecraftUtils.returnItems(new SimpleContainer(input), player);
                      MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   
@@ -666,20 +667,20 @@ public class AequalisScientia extends ArcanaItem {
                }else if(recipe instanceof PermutationTransmutationRecipe permutationRecipe){
                   ItemStack input = getAndSplitValidStack(stack, permutationRecipe.getInput(), player, true);
                   if(input == null){
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(permutationRecipe.getInput().getHoverName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(permutationRecipe.getInput().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                   if(reagent1 == null){
                      MinecraftUtils.returnItems(new SimpleContainer(input), player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                   if(reagent2 == null){
                      MinecraftUtils.returnItems(new SimpleContainer(input), player);
                      MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   
@@ -689,20 +690,20 @@ public class AequalisScientia extends ArcanaItem {
                   Predicate<ItemStack> aeqPred = aeq -> !getStringProperty(aeq, TRANSMUTATION_TAG).isEmpty();
                   ItemStack input = getAndSplitValidStack(stack, ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItem(), aeqPred, player, true);
                   if(input == null){
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have a valid ")).append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have a valid ")).append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                   if(reagent1 == null){
                      MinecraftUtils.returnItems(new SimpleContainer(input), player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                   if(reagent2 == null){
                      MinecraftUtils.returnItems(new SimpleContainer(input), player);
                      MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
-                     player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
+                     player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                   
@@ -715,20 +716,20 @@ public class AequalisScientia extends ArcanaItem {
                   if(heldItem != null){
                      ItemStack cata = getAndSplitValidTransmogStack(stack, arcanaStack, player);
                      if(cata == null){
-                        player.displayClientMessage(Component.literal("You do not have a valid Transmogrification Catalyst.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+                        player.sendSystemMessage(Component.literal("You do not have a valid Transmogrification Catalyst.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
                      ItemStack reagent1 = getAndSplitValidReagent1(stack, recipe, player);
                      if(reagent1 == null){
                         MinecraftUtils.returnItems(new SimpleContainer(cata), player);
-                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
+                        player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent1().getHoverName()), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
                      ItemStack reagent2 = getAndSplitValidReagent2(stack, recipe, player);
                      if(reagent2 == null){
                         MinecraftUtils.returnItems(new SimpleContainer(cata), player);
                         MinecraftUtils.returnItems(new SimpleContainer(reagent1), player);
-                        player.displayClientMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
+                        player.sendSystemMessage(Component.literal("").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC).append(Component.literal("You do not have enough ")).append(recipe.getExampleReagent2().getHoverName()), false);
                         return InteractionResult.SUCCESS_SERVER;
                      }
                      ItemStack input = playerEntity.getItemInHand(InteractionHand.OFF_HAND).split(1);
@@ -737,7 +738,7 @@ public class AequalisScientia extends ArcanaItem {
                      results = transmogRecipe.doTransmutation(input, cata, reagent1, reagent2, stack, player);
                   }else{
                      results = null;
-                     player.displayClientMessage(Component.literal("Your offhand must be a valid Arcana Item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+                     player.sendSystemMessage(Component.literal("Your offhand must be a valid Arcana Item.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
                      return InteractionResult.SUCCESS_SERVER;
                   }
                }else{

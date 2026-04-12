@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
@@ -33,21 +34,25 @@ public abstract class ArcanaAchievement {
    // 2 - conditionals achievement, one boolean and compound of booleans stored
    // 3 - timed achievement, two booleans, three ints stored and one compound
    private boolean acquired;
-   private final ItemStack displayItem;
+   private final Supplier<ItemStack> displayItemSupplier;
    private final ArcanaItem arcanaItem;
    public final int xpReward;
    public final int pointsReward;
    public boolean hidden;
    
-   protected ArcanaAchievement(String id, int type, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward){
+   protected ArcanaAchievement(String id, int type, Supplier<ItemStack> displayItemSupplier, ArcanaItem arcanaItem, int xpReward, int pointsReward){
       this.id = id;
       this.type = type;
-      this.displayItem = displayItem;
+      this.displayItemSupplier = displayItemSupplier;
       this.arcanaItem = arcanaItem;
       this.xpReward = xpReward;
       this.pointsReward = pointsReward;
       this.acquired = false;
       this.hidden = false;
+   }
+   
+   protected ArcanaAchievement(String id, int type, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward){
+      this(id, type, () -> displayItem, arcanaItem, xpReward, pointsReward);
    }
    
    public ArcanaAchievement setHidden(boolean hidden){
@@ -80,7 +85,7 @@ public abstract class ArcanaAchievement {
    }
    
    public ItemStack getDisplayItem(){
-      return displayItem;
+      return displayItemSupplier.get();
    }
    
    public ArcanaItem getArcanaItem(){
@@ -185,7 +190,7 @@ public abstract class ArcanaAchievement {
       }else{
          if(player != null){
             for(MutableComponent msg : msgs){
-               player.displayClientMessage(msg, false);
+               player.sendSystemMessage(msg, false);
             }
          }
       }

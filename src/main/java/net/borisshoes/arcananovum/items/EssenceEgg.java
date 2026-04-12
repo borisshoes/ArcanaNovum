@@ -64,13 +64,14 @@ public class EssenceEgg extends ArcanaItem {
       item = new EssenceEggItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.FIND_SPAWNER, ResearchTasks.OBTAIN_EGG};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, Soulstone.TYPE_TAG, "unattuned");
       putProperty(stack, USES_TAG, 0);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -221,7 +222,7 @@ public class EssenceEgg extends ArcanaItem {
                      blockEntity.setChanged();
                      
                      if(playerEntity instanceof ServerPlayer player){
-                        player.displayClientMessage(Component.literal("The Spawner Assumes the Essence of " + EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                        player.sendSystemMessage(Component.literal("The Spawner Assumes the Essence of " + EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                         SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
                         int xp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ESSENCE_EGG_CONVERT);
                         ArcanaNovum.data(playerEntity).addXP(Math.min(0, xp * cost / Math.max(1, baseConvertCost))); // Add xp
@@ -240,7 +241,7 @@ public class EssenceEgg extends ArcanaItem {
                      
                      CompoundTag nbtCompound = new CompoundTag();
                      nbtCompound.putString("id", getType(stack));
-                     int spawns = Math.random() >= splitChance ? 1 : 2;
+                      int spawns = serverWorld.getRandom().nextDouble() >= splitChance ? 1 : 2;
                      
                      for(int i = 0; i < spawns; i++){
                         Entity newEntity = EntityType.loadEntityRecursive(nbtCompound, serverWorld, EntitySpawnReason.SPAWN_ITEM_USE, entity -> {
@@ -253,7 +254,7 @@ public class EssenceEgg extends ArcanaItem {
                         serverWorld.tryAddFreshEntityWithPassengers(newEntity);
                      }
                      
-                     if(Math.random() >= efficiencyChance){
+                     if(serverWorld.getRandom().nextDouble() >= efficiencyChance){
                         addUses(stack, -1);
                      }
                      if(playerEntity instanceof ServerPlayer player){
@@ -291,14 +292,14 @@ public class EssenceEgg extends ArcanaItem {
             String type = getType(stack);
             
             if(type.equals("unattuned") && entity instanceof Mob attackedEntity && playerEntity instanceof ServerPlayer player){
-               if(entity.getType().is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)){
-                  player.displayClientMessage(Component.literal("The Essence Egg cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
+               if(entity.is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)){
+                  player.sendSystemMessage(Component.literal("The Essence Egg cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
                }else{
                   String entityTypeId = EntityType.getKey(attackedEntity.getType()).toString();
                   String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
                   
                   setType(stack, entityTypeId);
-                  player.displayClientMessage(Component.literal("The Essence Egg attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The Essence Egg attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1, .5f);
                }
             }

@@ -4,6 +4,7 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class DialogHelper {
       dialogs.add(dialog);
    }
    
-   public Dialog getWeightedResult(){
+   public Dialog getWeightedResult(RandomSource random){
       ArrayList<Integer> pool = new ArrayList<>();
       int[] weights = new int[dialogs.size()];
       for(int i = 0; i < dialogs.size(); i++){
@@ -45,7 +46,7 @@ public class DialogHelper {
          }
       }
       
-      return dialogs.get(pool.get((int) (Math.random() * pool.size())));
+      return dialogs.get(pool.get(random.nextInt(pool.size())));
    }
    
    public static void sendDialog(List<ServerPlayer> players, Dialog dialog, boolean sounds){
@@ -60,7 +61,7 @@ public class DialogHelper {
             int finalIndex = index;
             BorisLib.addTickTimerCallback(new GenericTimer(curDelay, () -> {
                for(ServerPlayer player : players){
-                  player.displayClientMessage(msg, false);
+                  player.sendSystemMessage(msg, false);
                   if(sounds && finalIndex < dialog.sounds().size()){
                      Dialog.DialogSound soundEvent = dialog.sounds().get(finalIndex);
                      if(soundEvent != null){
@@ -71,7 +72,7 @@ public class DialogHelper {
             }));
          }else{
             for(ServerPlayer player : players){
-               player.displayClientMessage(msg, false);
+               player.sendSystemMessage(msg, false);
                if(sounds && index < dialog.sounds().size()){
                   Dialog.DialogSound soundEvent = dialog.sounds().get(index);
                   if(soundEvent != null){

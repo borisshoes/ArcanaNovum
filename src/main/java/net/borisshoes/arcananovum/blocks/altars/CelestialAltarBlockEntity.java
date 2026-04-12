@@ -29,6 +29,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -101,21 +102,24 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    
    private void changeTime(@Nullable ServerPlayer player){
       if(!(this.getLevel() instanceof ServerLevel serverWorld)) return;
+      Holder<WorldClock> clockHolder = serverWorld.dimensionType().defaultClock().orElse(serverWorld.getServer().overworld().dimensionType().defaultClock().get());
+      
       int phase = this.getPhase();
       int mode = this.getMode();
-      long timeOfDay = serverWorld.getDayTime();
+      long timeOfDay = serverWorld.getGameTime();
       if(mode == 0){
          int curTime = (int) (timeOfDay % 24000L);
          int targetTime = TIMES[phase];
          int timeDiff = (targetTime - curTime + 24000) % 24000;
-         serverWorld.setDayTime(timeOfDay + timeDiff);
+         
+         serverWorld.clockManager().setTotalTicks(clockHolder, timeOfDay + timeDiff);
          
          if(player != null) ArcanaAchievements.grant(player, ArcanaAchievements.POWER_OF_THE_SUN);
       }else{
          int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
          int phaseDiff = (phase - curPhase + 8) % 8;
-         serverWorld.setDayTime(timeOfDay + phaseDiff * 24000L);
+         serverWorld.clockManager().setTotalTicks(clockHolder, timeOfDay + phaseDiff * 24000L);
          
          if(phase == 0 && player != null){
             ArcanaAchievements.grant(player, ArcanaAchievements.LYCANTHROPE);
@@ -208,6 +212,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    
    public void setMode(int mode){
       this.mode = mode;
+      setChanged();
    }
    
    public int getPhase(){
@@ -216,6 +221,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    
    public void setPhase(int phase){
       this.phase = phase;
+      setChanged();
    }
    
    public int getCooldown(){

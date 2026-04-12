@@ -12,7 +12,6 @@ import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
-import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -82,6 +81,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    public int itemVersion;
    protected Item item;
    protected Item vanillaItem;
+   protected int maxCount = 1;
    protected Component displayName;
    protected ResourceKey<ResearchTask>[] researchTasks = new ResourceKey[0];
    protected Tuple<MutableComponent, MutableComponent>[] attributions = new Tuple[0];
@@ -145,16 +145,28 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       return vanillaItem;
    }
    
+   public int getMaxCount(){
+      return maxCount;
+   }
+   
    protected ArcanaItem getThis(){
       return this;
    }
    
    // Returns item stack with preferred attributes but without a unique UUID
    public ItemStack getPrefItem(){
+      if(prefItem == null){
+         ArcanaNovum.log(2,"Tried to get pref item for "+id+" before it was available");
+         return ItemStack.EMPTY;
+      }
       return prefItem.copy();
    }
    
    public ItemStack getPrefItemNoLore(){
+      if(prefItem == null){
+         ArcanaNovum.log(2,"Tried to get pref item (no lore) for "+id+" before it was available");
+         return ItemStack.EMPTY;
+      }
       ItemStack stack = prefItem.copy();
       stack.remove(DataComponents.LORE);
       return stack;
@@ -262,18 +274,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       return ArcanaSkin.getSkinFromString(getStringProperty(item, SKIN_TAG));
    }
    
-   
-   protected void setPrefStack(ItemStack stack){
-      prefItem = stack.copy();
-   }
-   
-   public void initializePrefItem(){
-      prefItem = buildItemLore(prefItem, BorisLib.SERVER);
-   }
-   
-   // Override to apply any default enchantments
-   public void finalizePrefItem(MinecraftServer server){
-   
+   public void initializePrefItem(MinecraftServer server){
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getDefaultMaxStackSize());
+      prefItem = buildItemLore(stack, server);
    }
    
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
@@ -349,12 +354,13 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       return new Item.Properties().stacksTo(1)
             .component(DataComponents.LORE, new ItemLore(getItemLore(null)))
             .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO))
+            .delayedComponent(DataComponents.DAMAGE_RESISTANT, context -> new DamageResistant(context.getOrThrow(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO)))
             .component(DataComponents.TOOLTIP_DISPLAY, getTooltipDisplayComponent())
             ;
    }
    
    public Item.Properties getArcanaArrowItemComponents(int color){
+      this.maxCount = 64;
       return getArcanaItemComponents().stacksTo(64).component(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.of(color), new ArrayList<>(), Optional.empty()));
    }
    
@@ -617,8 +623,8 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
          double rangeMin = 0, rangeMax = 3.0, shieldDisable = 0;
          AttackRange rangeComp = item.get(DataComponents.ATTACK_RANGE);
          if(rangeComp != null){
-            rangeMin = rangeComp.minRange();
-            rangeMax = rangeComp.maxRange();
+            rangeMin = rangeComp.minReach();
+            rangeMax = rangeComp.maxReach();
          }
          Weapon weaponComp = item.get(DataComponents.WEAPON);
          if(weaponComp != null){

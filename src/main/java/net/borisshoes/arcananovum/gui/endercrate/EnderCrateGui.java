@@ -33,9 +33,9 @@ public class EnderCrateGui extends SimpleGui {
    public void build(){
       for(int i = 0; i < size; i++){
          if(channel.isLocked()){
-            setSlotRedirect(i, new Slot(channel.getInventory(), i, i % 9, i / 9));
+            setSlot(i, new Slot(channel.getInventory(), i, i % 9, i / 9));
          }else{
-            setSlotRedirect(i, new NoArcanaSlot(channel.getInventory(), i, i % 9, i / 9));
+            setSlot(i, new NoArcanaSlot(channel.getInventory(), i, i % 9, i / 9));
          }
       }
    }
@@ -60,8 +60,7 @@ public class EnderCrateGui extends SimpleGui {
    }
    
    @Override
-   public void onClose(){
-      super.onClose();
+   public void afterRemoval(){
       if(block != null){
          SoundUtils.playSound(block.getLevel(), block.getBlockPos(), SoundEvents.ENDER_CHEST_CLOSE, SoundSource.BLOCKS, 1, 1.2f);
       }

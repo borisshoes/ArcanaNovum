@@ -72,11 +72,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.levelgen.feature.EndSpikeFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.SpikeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.EndSpikeConfiguration;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -91,7 +91,7 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.devPrint;
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
-import static net.borisshoes.arcananovum.utils.SpawnPile.makeSpawnLocations;
+import static net.borisshoes.borislib.utils.SpawnPile.makeSpawnLocations;
 
 public class DragonBossFight {
    private static boolean prepNotif = false;
@@ -224,7 +224,7 @@ public class DragonBossFight {
                      List<ServerPlayer> players = server.getPlayerList().getPlayers();
                      for(ServerPlayer player : players){
                         if(!player.isCreative() && !player.isSpectator()){
-                           player.teleport(new TeleportTransition(endWorld, new Vec3(100.5+(Math.random()*3-1.5),51,0.5+(Math.random()*3-1.5)), Vec3.ZERO, 90, 0, TeleportTransition.PLACE_PORTAL_TICKET));
+                           player.teleport(new TeleportTransition(endWorld, new Vec3(100.5+(endWorld.getRandom().nextDouble()*3-1.5),51,0.5+(endWorld.getRandom().nextDouble()*3-1.5)), Vec3.ZERO, 90, 0, TeleportTransition.PLACE_PORTAL_TICKET));
                         }
                      }
    
@@ -233,7 +233,7 @@ public class DragonBossFight {
                      ListTag phantomData = new ListTag();
                      for(int i=0;i<guardianPhantoms.length;i++){
                         guardianPhantoms[i] = DragonGoonHelper.makeGuardianPhantom(endWorld,numPlayers);
-                        phantomBossBars[i] = endWorld.getServer().getCustomBossEvents().create(Identifier.parse("guardianphantom-"+guardianPhantoms[i].getStringUUID()),guardianPhantoms[i].getCustomName());
+                        phantomBossBars[i] = endWorld.getServer().getCustomBossEvents().create(endWorld.getRandom(),Identifier.parse("guardianphantom-"+guardianPhantoms[i].getStringUUID()),guardianPhantoms[i].getCustomName());
                         phantomBossBars[i].setColor(BossEvent.BossBarColor.PURPLE);
                         guardianPhantoms[i].addEffect(new MobEffectInstance(MobEffects.RESISTANCE,100,4));
                         endWorld.addFreshEntityWithPassengers(guardianPhantoms[i]);
@@ -339,7 +339,7 @@ public class DragonBossFight {
                         final int finalI = i;
                         List<ServerPlayer> nearbyPlayers = endWorld.getPlayers(p -> p.distanceToSqr(wizards[finalI].position()) <= 20*20);
                         for(ServerPlayer player : nearbyPlayers){
-                           player.displayClientMessage(Component.literal("The Crystal's Shield Fades!").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC),true);
+                           player.sendSystemMessage(Component.literal("The Crystal's Shield Fades!").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC),true);
                         }
                         
                         wizards[i].discard();
@@ -421,7 +421,7 @@ public class DragonBossFight {
                      enderman.setPersistentAngerEndTime(enderman.tickCount + 1200);
                   }else{
                      Player randomPlayer = endWorld.getRandomPlayer();
-                     if(randomPlayer != null && Math.random() < .1*numPlayers){
+                     if(randomPlayer != null && endWorld.getRandom().nextDouble() < .1*numPlayers){
                         enderman.setBeingStaredAt();
                         enderman.setTarget(randomPlayer);
                         enderman.setPersistentAngerTarget(EntityReference.of(randomPlayer));
@@ -498,9 +498,9 @@ public class DragonBossFight {
          List<Endermite> curGoons = endWorld.getEntities(EntityType.ENDERMITE, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
          if(curGoons.size() > 35) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
-         if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
+         if(endWorld.getRandom().nextDouble() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         Endermite[] goons = new Endermite[Mth.clamp((int)(Math.random()*3*numPlayers+2+numPlayers),10,35)];
+         Endermite[] goons = new Endermite[Mth.clamp(endWorld.getRandom().nextInt(3*numPlayers)+2+numPlayers,10,35)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          float endermiteHP = Mth.clamp(10 + 3*numPlayers,10,40);
          for(int i=0;i<goons.length;i++){
@@ -521,9 +521,9 @@ public class DragonBossFight {
          List<Shulker> curGoons = endWorld.getEntities(EntityType.SHULKER, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
          if(curGoons.size() > 35) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
-         if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
+         if(endWorld.getRandom().nextDouble() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         Shulker[] goons = new Shulker[Mth.clamp((int)(Math.random()*2*numPlayers+2+numPlayers),10,35)];
+         Shulker[] goons = new Shulker[Mth.clamp(endWorld.getRandom().nextInt(2*numPlayers)+2+numPlayers,10,35)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          float shulkerHP = Mth.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
@@ -543,9 +543,9 @@ public class DragonBossFight {
          List<EnderMan> curGoons = endWorld.getEntities(EntityType.ENDERMAN, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
          if(curGoons.size() > 50) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
-         if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
+         if(endWorld.getRandom().nextDouble() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         EnderMan[] goons = new EnderMan[Mth.clamp((int)(Math.random()*3*numPlayers+2+numPlayers*2),20,50)];
+         EnderMan[] goons = new EnderMan[Mth.clamp(endWorld.getRandom().nextInt(3*numPlayers)+2+numPlayers*2,20,50)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          float endermanHP = Mth.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
@@ -672,7 +672,7 @@ public class DragonBossFight {
             player.setDeltaMovement(-vec.x,1,-vec.z);
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
       
-            player.displayClientMessage(Component.literal("The Crystal Tower is Shielded!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
+            player.sendSystemMessage(Component.literal("The Crystal Tower is Shielded!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
          }
       }
    }
@@ -767,8 +767,8 @@ public class DragonBossFight {
    }
    
    private static void resetTowers(ServerLevel endWorld){
-      List<SpikeFeature.EndSpike> list = SpikeFeature.getSpikesForLevel(endWorld);
-      for(SpikeFeature.EndSpike spike : list){
+      List<EndSpikeFeature.EndSpike> list = EndSpikeFeature.getSpikesForLevel(endWorld);
+      for(EndSpikeFeature.EndSpike spike : list){
          List<EndCrystal> nearCrystals = endWorld.getEntities(EntityType.END_CRYSTAL, new AABB(BlockPos.containing(spike.getCenterX()-10,0,spike.getCenterZ()-10).getCenter(), BlockPos.containing(spike.getCenterX()+10,255,spike.getCenterZ()+10).getCenter()), EndCrystal::showsBottom);
          for(EndCrystal nearCrystal : nearCrystals){
             nearCrystal.kill(endWorld);
@@ -780,25 +780,24 @@ public class DragonBossFight {
             BlockPos blockPos = var16.next();
             endWorld.removeBlock(blockPos, false);
          }
-         
 
          endWorld.explode((Entity)null, (double)((float)spike.getCenterX() + 0.5F), (double)spike.getHeight(), (double)((float)spike.getCenterZ() + 0.5F), 5.0F, Level.ExplosionInteraction.NONE);
-         SpikeConfiguration endSpikeFeatureConfig = new SpikeConfiguration(false, ImmutableList.of(spike), (BlockPos)null);
+         EndSpikeConfiguration endSpikeFeatureConfig = new EndSpikeConfiguration(false, ImmutableList.of(spike), (BlockPos)null);
          Feature.END_SPIKE.place(endSpikeFeatureConfig, endWorld, endWorld.getChunkSource().getGenerator(), RandomSource.create(), BlockPos.containing(spike.getCenterX(), 45, spike.getCenterZ()));
       }
    }
    
    public static int prepBoss(ServerPlayer player){
       if(player.level().dimension() != Level.END){
-         player.displayClientMessage(Component.literal("The Dragon boss must take place in The End"), false);
+         player.sendSystemMessage(Component.literal("The Dragon boss must take place in The End"), false);
          return -1;
       }
       ServerLevel endWorld = player.level();
-      CompoundTag dragonData = (CompoundTag) (EndDragonFight.Data.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), endWorld.getDragonFight().saveData()).getOrThrow());
+      CompoundTag dragonData = (CompoundTag) (EnderDragonFight.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), endWorld.getDragonFight()).getOrThrow());
       CompoundTag fightData = new CompoundTag();
-      if(dragonData.getBooleanOr("DragonKilled", false)){
-         player.displayClientMessage(Component.literal("Dragon is Dead, Commencing Respawn"), false);
-         int[] exitList = dragonData.getIntArray("ExitPortalLocation").get();
+      if(dragonData.getBooleanOr("dragon_killed", false)){
+         player.sendSystemMessage(Component.literal("Dragon is Dead, Commencing Respawn"), false);
+         int[] exitList = dragonData.getIntArray("exit_portal_location").get();
          BlockPos portalPos = new BlockPos(exitList[0], exitList[1], exitList[2]);
          BlockPos blockPos2 = portalPos.above(1);
          Iterator<Direction> var4 = Direction.Plane.HORIZONTAL.iterator();
@@ -812,18 +811,18 @@ public class DragonBossFight {
          fightData.putString("State", States.WAITING_RESPAWN.name());
          BorisLib.addTickTimerCallback(new DragonRespawnTimerCallback(player.level().getServer()));
       }else{
-         player.displayClientMessage(Component.literal("Co-opting Dragon"), false);
+         player.sendSystemMessage(Component.literal("Co-opting Dragon"), false);
          if(endWorld.getEntities(EntityType.END_CRYSTAL, new AABB(new BlockPos(-50, 25, -50).getCenter(), new BlockPos(50, 115, 50).getCenter()), EndCrystal::showsBottom).size() != 10){
-            player.displayClientMessage(Component.literal("Tower Anomaly Detected, Resetting").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+            player.sendSystemMessage(Component.literal("Tower Anomaly Detected, Resetting").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
             resetTowers(endWorld);
          }
          fightData.putString("State", States.WAITING_START.name());
       }
       fightData.putString("GameMaster", player.getStringUUID());
       fightData.putInt("numPlayers",0);
-      player.displayClientMessage(Component.literal(""), false);
-      player.displayClientMessage(Component.literal("You are now the Game Master, please stay in The End for the duration of the fight. All errors and updates will be sent to you.").withStyle(ChatFormatting.AQUA), false);
-      player.displayClientMessage(Component.literal(""), false);
+      player.sendSystemMessage(Component.literal(""), false);
+      player.sendSystemMessage(Component.literal("You are now the Game Master, please stay in The End for the duration of the fight. All errors and updates will be sent to you.").withStyle(ChatFormatting.AQUA), false);
+      player.sendSystemMessage(Component.literal(""), false);
       DataAccess.getWorld(Level.END, BossFightData.KEY).setBossFight(BossFights.DRAGON,fightData);
       return 0;
    }
@@ -1038,12 +1037,12 @@ public class DragonBossFight {
                .append(Component.literal("You are ").withStyle(ChatFormatting.AQUA))
                .append(Component.literal("protected").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
                .append(Component.literal(" from damage for 30 seconds!").withStyle(ChatFormatting.AQUA));
-         player.displayClientMessage(msg, false);
+         player.sendSystemMessage(msg, false);
          hasDied.remove(player);
       }else{
          MutableComponent msg = Component.literal("")
                .append(Component.literal("You only get to teleport after dying.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
-         player.displayClientMessage(msg, false);
+         player.sendSystemMessage(msg, false);
       }
    }
    
@@ -1108,12 +1107,7 @@ public class DragonBossFight {
             }
             
             @Override
-            public void interact(ServerPlayer player, InteractionHand hand){
-               click(player);
-            }
-            
-            @Override
-            public void interactAt(ServerPlayer player, InteractionHand hand, Vec3 pos){
+            public void interact(ServerPlayer player, InteractionHand hand, Vec3 pos, boolean usingSecondaryAction){
                click(player);
             }
             
@@ -1287,7 +1281,7 @@ public class DragonBossFight {
             player.setDeltaMovement(-vec.x,1,-vec.z);
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
          
-            player.displayClientMessage(Component.literal("The Tower's Explosion Launches You!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
+            player.sendSystemMessage(Component.literal("The Tower's Explosion Launches You!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
          }
          // Explosion Particles / Sounds
          endWorld.sendParticles(ParticleTypes.EXPLOSION_EMITTER, pos.x()+.5, pos.y()-1, pos.z()+.5, 20, 2, 2, 2,0.5);
@@ -1296,7 +1290,7 @@ public class DragonBossFight {
             boolean destroy = true;
             double dist = Math.sqrt(block.distToCenterSqr(pos));
             if(!block.closerToCenterThan(pos, 5)){
-               destroy = Math.random() < (-.01 * ((dist - 5) * (dist - 5)) + 1);
+               destroy = endWorld.getRandom().nextDouble() < (-.01 * ((dist - 5) * (dist - 5)) + 1);
             }
             if(destroy)
                endWorld.destroyBlock(block,false);

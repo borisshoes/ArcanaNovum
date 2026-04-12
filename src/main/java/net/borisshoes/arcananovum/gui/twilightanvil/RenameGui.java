@@ -1,10 +1,11 @@
 package net.borisshoes.arcananovum.gui.twilightanvil;
 
-import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
+import net.borisshoes.arcananovum.gui.ContainerWatcher;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
@@ -16,7 +17,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -24,12 +24,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class RenameGui extends AnvilInputGui {
+public class RenameGui extends AnvilInputGui implements ContainerWatcher {
    private final TwilightAnvilBlockEntity blockEntity;
    private Component newName;
-   private SimpleContainer inv;
-   private TinkerInventoryListener listener;
+   private WatchedContainer inv;
    private ItemStack item;
+   private volatile boolean updating = false;
    
    /**
     * Constructs a new input gui for the provided player.
@@ -50,31 +50,10 @@ public class RenameGui extends AnvilInputGui {
       setTitle(Component.literal("Rename Item"));
       setSlot(1, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)).hideTooltip());
       
-      inv = new SimpleContainer(2);
-      listener = new TinkerInventoryListener(this, 1, blockEntity);
-      inv.addListener(listener);
+      inv = new WatchedContainer(2);
+      inv.addWatcher(this);
       
-      setSlotRedirect(0, new Slot(inv, 0, 0, 0));
-   }
-   
-   @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      if(index == 2){
-         ItemStack outputStack = getSlot(2) == null ? ItemStack.EMPTY : getSlot(2).getItemStack();
-         if(item != null && !item.isEmpty() && !outputStack.isEmpty()){
-            if(newName.getString().isBlank()){
-               item.remove(DataComponents.CUSTOM_NAME);
-            }else{
-               item.set(DataComponents.CUSTOM_NAME, newName);
-               if(ArcanaItemUtils.isArcane(item)){
-                  ArcanaAchievements.grant(player, ArcanaAchievements.TOUCH_OF_PERSONALITY);
-               }
-            }
-            SoundUtils.playSound(player.level(), blockEntity.getBlockPos(), SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1f, (float) (0.75f * 0.5f * Math.random()));
-            this.close();
-         }
-      }
-      return true;
+      setSlot(0, new Slot(inv, 0, 0, 0));
    }
    
    @Override
@@ -105,7 +84,22 @@ public class RenameGui extends AnvilInputGui {
             newItem.set(DataComponents.CUSTOM_NAME, Component.literal(string));
          }
       }
-      setSlot(2, GuiElementBuilder.from(newItem));
+      GuiElementBuilder newElem = GuiElementBuilder.from(newItem);
+      newElem.setCallback((clickType) -> {
+         if(item != null && !item.isEmpty() && !newItem.isEmpty()){
+            if(newName.getString().isBlank()){
+               item.remove(DataComponents.CUSTOM_NAME);
+            }else{
+               item.set(DataComponents.CUSTOM_NAME, newName);
+               if(ArcanaItemUtils.isArcane(item)){
+                  ArcanaAchievements.grant(player, ArcanaAchievements.TOUCH_OF_PERSONALITY);
+               }
+            }
+            SoundUtils.playSound(player.level(), blockEntity.getBlockPos(), SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1f, 0.75f * 0.5f * player.getRandom().nextFloat());
+            this.close();
+         }
+      });
+      setSlot(2, newElem);
    }
    
    @Nullable
@@ -123,17 +117,35 @@ public class RenameGui extends AnvilInputGui {
       if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled()){
          this.close();
       }
-      
       super.onTick();
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       MinecraftUtils.returnItems(inv, player);
    }
    
    @Override
-   public void close(){
-      super.close();
+   public void onChanged(WatchedContainer inv){
+      if(!updating){
+         setUpdating();
+         ItemStack stack = inv.getItem(0);
+         if(!stack.isEmpty()){
+            setItem(stack);
+         }else{
+            setItem(null);
+            setSlot(2, ItemStack.EMPTY);
+         }
+         finishUpdate();
+      }
+   }
+   
+   
+   public void finishUpdate(){
+      updating = false;
+   }
+   
+   public void setUpdating(){
+      updating = true;
    }
 }

@@ -56,7 +56,7 @@ public class EnchantmentMixin {
       }
    }
    
-   @Inject(method = "modifyDamageProtection", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableFloat;setValue(F)V"))
+   @Inject(method = "modifyDamageProtection", at = @At("HEAD"))
    private void arcananovum$modifyDamageProtection(ServerLevel world, int level, ItemStack stack, Entity user, DamageSource damageSource, MutableFloat damageProtection, CallbackInfo ci){
       if(user instanceof ServerPlayer player){
          Enchantment enchant = (Enchantment) (Object) this;

@@ -47,11 +47,6 @@ public class TrackingArrows extends RunicArrow {
       item = new TrackingArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.USE_ENDER_EYE, ResearchTasks.ADVANCEMENT_USE_LODESTONE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override

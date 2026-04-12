@@ -15,8 +15,10 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -43,7 +45,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,11 +68,6 @@ public class EverlastingRocket extends EnergyItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       initEnergy = 16;
       researchTasks = new ResourceKey[]{ResearchTasks.USE_FIREWORK, ResearchTasks.ACTIVATE_MENDING, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -187,8 +183,8 @@ public class EverlastingRocket extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -257,7 +253,7 @@ public class EverlastingRocket extends EnergyItem {
                buildItemLore(itemStack, player.level().getServer());
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_EVERLASTING_ROCKET_USE)); // Add xp
             }else{
-               player.displayClientMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW), true);
+               player.sendSystemMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
             }
          }
@@ -272,7 +268,7 @@ public class EverlastingRocket extends EnergyItem {
             int flight = fireworks.flightDuration();
             flight = ((flight % 3) + 1);
             itemStack.set(DataComponents.FIREWORKS, new Fireworks(flight, fireworks.explosions()));
-            player.displayClientMessage(Component.literal("Fuse Adjusted to " + flight).withStyle(ChatFormatting.YELLOW), true);
+            player.sendSystemMessage(Component.literal("Fuse Adjusted to " + flight).withStyle(ChatFormatting.YELLOW), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_SNARE, 1, 0.8f);
          }else if(user.isFallFlying()){
             if(!world.isClientSide() && user instanceof ServerPlayer player){
@@ -289,7 +285,7 @@ public class EverlastingRocket extends EnergyItem {
                      ArcanaAchievements.grant(player, ArcanaAchievements.ROCKETMAN);
                   }
                }else{
-                  player.displayClientMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW), true);
+                  player.sendSystemMessage(Component.literal("The Rocket is out of Charges").withStyle(ChatFormatting.YELLOW), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
                }
             }

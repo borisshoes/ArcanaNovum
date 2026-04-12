@@ -34,7 +34,7 @@ public class StellarCoreGui extends SimpleGui {
       GuiHelper.outlineGUI(this, 0xffaa00, Component.literal("Insert Item to Salvage It").withStyle(ChatFormatting.GOLD));
       clearSlot(4);
       Container inv = blockEntity.getInventory();
-      setSlotRedirect(4, new Slot(inv, 0, 0, 0));
+      setSlot(4, new Slot(inv, 0, 0, 0));
    }
    
    @Override

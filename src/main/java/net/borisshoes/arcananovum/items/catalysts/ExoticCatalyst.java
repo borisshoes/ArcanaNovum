@@ -32,11 +32,6 @@ public class ExoticCatalyst extends ArcanaItem {
       item = new ExoticCatalystItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EMPOWERED_CATALYST, ResearchTasks.OBTAIN_DIAMOND, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override

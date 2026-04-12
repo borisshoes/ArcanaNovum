@@ -224,7 +224,7 @@ public interface DispenseItemBehaviorMixin {
                         
                         CompoundTag nbtCompound = new CompoundTag();
                         nbtCompound.putString("id", EssenceEgg.getType(stack));
-                        int spawns = Math.random() >= 0.1 * splitLevel ? 1 : 2;
+                        int spawns = serverWorld.getRandom().nextDouble() >= 0.1 * splitLevel ? 1 : 2;
                         
                         for(int i = 0; i < spawns; i++){
                            Entity newEntity = EntityType.loadEntityRecursive(nbtCompound, serverWorld, EntitySpawnReason.DISPENSER, entity -> {
@@ -237,7 +237,7 @@ public interface DispenseItemBehaviorMixin {
                            serverWorld.tryAddFreshEntityWithPassengers(newEntity);
                         }
                         
-                        if(Math.random() >= 0.1 * efficiencyLevel){
+                        if(serverWorld.getRandom().nextDouble() >= 0.1 * efficiencyLevel){
                            EssenceEgg.addUses(stack, -1);
                         }
                      }
@@ -272,7 +272,7 @@ public interface DispenseItemBehaviorMixin {
                            .getEntitiesOfClass(
                                  Mob.class,
                                  new AABB(blockPos),
-                                 entity -> !entity.getType().is(ArcanaRegistry.CONTAINMENT_CIRCLET_DISALLOWED) && entity.isAlive() && (hostiles || (!(entity instanceof Enemy)))
+                                 entity -> !entity.is(ArcanaRegistry.CONTAINMENT_CIRCLET_DISALLOWED) && entity.isAlive() && (hostiles || (!(entity instanceof Enemy)))
                            );
                      if(!list.isEmpty()){
                         Mob entity = list.getFirst();

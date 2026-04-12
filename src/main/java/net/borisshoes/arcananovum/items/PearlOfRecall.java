@@ -14,7 +14,9 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -39,7 +41,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,15 +64,16 @@ public class PearlOfRecall extends EnergyItem {
       item = new PearlOfRecallItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.ADVANCEMENT_USE_LODESTONE, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.UNLOCK_WAYSTONE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, HEAT_TAG, 0);
       CompoundTag locTag = new CompoundTag();
       locTag.putString("dim", "unattuned");
       putProperty(stack, LOCATION_TAG, locTag);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -243,8 +245,8 @@ public class PearlOfRecall extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          List<String> stringList = new ArrayList<>();
          if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
             stringList.add("cooldown");
@@ -314,21 +316,21 @@ public class PearlOfRecall extends EnergyItem {
             
             if(!(canClear && player.isShiftKeyDown())){
                if(dim.equals("unattuned")){
-                  locNbt.putString("dim", playerEntity.level().dimension().identifier().toString());
-                  locNbt.putDouble("x", playerEntity.position().x);
-                  locNbt.putDouble("y", playerEntity.position().y);
-                  locNbt.putDouble("z", playerEntity.position().z);
-                  locNbt.putFloat("yaw", playerEntity.getYRot());
-                  locNbt.putFloat("pitch", playerEntity.getXRot());
+                  locNbt.putString("dim", player.level().dimension().identifier().toString());
+                  locNbt.putDouble("x", player.position().x);
+                  locNbt.putDouble("y", player.position().y);
+                  locNbt.putDouble("z", player.position().z);
+                  locNbt.putFloat("yaw", player.getYRot());
+                  locNbt.putFloat("pitch", player.getXRot());
                   putProperty(item, LOCATION_TAG, locNbt);
-                  buildItemLore(item, playerEntity.level().getServer());
+                  buildItemLore(item, player.level().getServer());
                }else{
                   int curEnergy = getEnergy(item);
                   if(curEnergy >= getMaxEnergy(item)){
                      putProperty(item, HEAT_TAG, 1); // Starts the heat up process
                      SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 1, 1);
                   }else{
-                     playerEntity.displayClientMessage(Component.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").withStyle(ChatFormatting.DARK_AQUA), true);
+                     player.sendSystemMessage(Component.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").withStyle(ChatFormatting.DARK_AQUA), true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                   }
                }
@@ -337,9 +339,9 @@ public class PearlOfRecall extends EnergyItem {
                   locNbt = new CompoundTag();
                   locNbt.putString("dim", "unattuned");
                   putProperty(item, LOCATION_TAG, locNbt);
-                  buildItemLore(item, playerEntity.level().getServer());
+                  buildItemLore(item, player.level().getServer());
                   
-                  playerEntity.displayClientMessage(Component.literal("Saved Location Cleared").withStyle(ChatFormatting.DARK_AQUA), true);
+                  player.sendSystemMessage(Component.literal("Saved Location Cleared").withStyle(ChatFormatting.DARK_AQUA), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_DEPLETE, 1, .7f);
                }
             }

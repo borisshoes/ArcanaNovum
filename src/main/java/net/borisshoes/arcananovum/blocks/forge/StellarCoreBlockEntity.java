@@ -11,6 +11,8 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.gui.ContainerWatcher;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.gui.stellarcore.StellarCoreGui;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
@@ -29,11 +31,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.item.enchantment.Repairable;
@@ -52,7 +58,7 @@ import java.util.*;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.MOLTEN_CORE_ITEMS;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
 
-public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, WorldlyContainer, ContainerListener, ArcanaBlockEntity {
+public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, WorldlyContainer, ContainerWatcher, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
@@ -63,13 +69,13 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
    private boolean assembled;
    private boolean seenForge;
    private boolean updating;
-   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
+   private WatchedContainer inventory = new WatchedContainer(getContainerSize());
    private final Set<ServerPlayer> watchingPlayers = new HashSet<>();
    
    public StellarCoreBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY, pos, state);
       this.multiblock = ((MultiblockCore) ArcanaRegistry.STELLAR_CORE).getMultiblock();
-      this.inventory.addListener(this);
+      this.inventory.addWatcher(this);
    }
    
    public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
@@ -220,7 +226,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          finalSalv.forEach((salvItem, count) -> {
             double baseCount = Math.round(count * salvageLvl);
             int salvCount = (int) baseCount;
-            if(this.getLevel().random.nextDouble() < (baseCount - salvCount - 1E-9)){
+            if(this.getLevel().getRandom().nextDouble() < (baseCount - salvCount - 1E-9)){
                salvCount++;
             }
             salvage.add(new ItemStack(salvItem, salvCount));
@@ -307,8 +313,8 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
       this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.inventory = new SimpleContainer(getContainerSize());
-      this.inventory.addListener(this);
+      this.inventory = new WatchedContainer(getContainerSize());
+      this.inventory.addWatcher(this);
       if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
@@ -379,7 +385,13 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
    }
    
    @Override
-   public void containerChanged(Container inv){
+   public void setChanged(){
+      super.setChanged();
+      this.inventory.setChanged();
+   }
+   
+   @Override
+   public void onChanged(WatchedContainer inv){
       if(!updating){
          updating = true;
          if(!(getLevel() instanceof ServerLevel serverWorld)){
@@ -411,8 +423,9 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
             SoundUtils.playSound(serverWorld, getBlockPos(), SoundEvents.BLAZE_DEATH, SoundSource.BLOCKS, 1, 0.8f);
             SoundUtils.playSound(serverWorld, getBlockPos(), SoundEvents.IRON_GOLEM_HURT, SoundSource.BLOCKS, 1, 1.2f);
          }else if(moltenCore){
-            ItemStack moltenItem = MOLTEN_CORE_ITEMS.get(stack.getItem());
-            if(moltenItem != null){
+            ItemStackTemplate moltenItemTemplate = MOLTEN_CORE_ITEMS.get(stack.getItem());
+            if(moltenItemTemplate != null){
+               ItemStack moltenItem = moltenItemTemplate.create();
                int returnCount = stack.getCount() * moltenItem.getCount();
                inv.setItem(0, ItemStack.EMPTY);
                int finalReturnCount = returnCount;

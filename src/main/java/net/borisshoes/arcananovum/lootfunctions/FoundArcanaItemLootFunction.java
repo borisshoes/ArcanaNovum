@@ -7,7 +7,6 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.List;
@@ -25,8 +24,8 @@ public class FoundArcanaItemLootFunction extends LootItemConditionalFunction {
    
    @SuppressWarnings("unchecked")
    @Override
-   public LootItemFunctionType<? extends LootItemConditionalFunction> getType(){
-      return (LootItemFunctionType<FoundArcanaItemLootFunction>) ArcanaRegistry.FOUND_ARCANA_ITEM_LOOT_FUNCTION;
+   public MapCodec<? extends LootItemConditionalFunction> codec(){
+      return (MapCodec<FoundArcanaItemLootFunction>) ArcanaRegistry.FOUND_ARCANA_ITEM_LOOT_FUNCTION;
    }
    
    @Override

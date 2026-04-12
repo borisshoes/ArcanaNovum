@@ -32,11 +32,6 @@ public class MundaneCatalyst extends ArcanaItem {
       item = new MundaneCatalystItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_CATALYTIC_MATRIX, ResearchTasks.OBTAIN_QUARTZ, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override

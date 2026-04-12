@@ -37,38 +37,6 @@ public class StormcallerAltarGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      int duration = blockEntity.getDuration();
-      int mode = blockEntity.getMode();
-      if(index == 2 && tempest){
-         blockEntity.setDuration((duration + 1) % 16);
-      }else if(index == 4){
-         if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-            blockEntity.setMode((mode + 1) % 3);
-         }else{
-            if(blockEntity.getCooldown() <= 0){
-               Tuple<Item, Integer> cost = StormcallerAltarBlockEntity.getCost();
-               if(MinecraftUtils.removeItems(player, cost.getA(), cost.getB())){
-                  blockEntity.startWeatherChange(player);
-                  close();
-               }else{
-                  player.displayClientMessage(Component.literal("You do not have " + cost.getB() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                        .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
-                        .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-                  close();
-               }
-            }else{
-               player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-               close();
-            }
-         }
-      }
-      return true;
-   }
-   
-   @Override
    public void onTick(){
       Level world = blockEntity.getLevel();
       if(world == null || world.getBlockEntity(blockEntity.getBlockPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
@@ -122,6 +90,10 @@ public class StormcallerAltarGui extends SimpleGui {
          durationItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
          durationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Click to change duration").withStyle(ChatFormatting.GRAY)))));
+         durationItem.setCallback((clickType) -> {
+            int curDuration = blockEntity.getDuration();
+            blockEntity.setDuration((curDuration + 1) % 16);
+         });
       }else{
          durationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Unlock this ability with Augmentation").withStyle(ChatFormatting.RED)))));
@@ -151,6 +123,30 @@ public class StormcallerAltarGui extends SimpleGui {
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("The Altar Requires " + cost.getB() + " ").withStyle(ChatFormatting.AQUA))
             .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+      activateItem.setCallback((clickType) -> {
+         int curMode = blockEntity.getMode();
+         if(clickType == ClickType.MOUSE_RIGHT || clickType == ClickType.MOUSE_RIGHT_SHIFT){
+            blockEntity.setMode((curMode + 1) % 3);
+         }else{
+            if(blockEntity.getCooldown() <= 0){
+               Tuple<Item, Integer> curCost = StormcallerAltarBlockEntity.getCost();
+               if(MinecraftUtils.removeItems(player, curCost.getA(), curCost.getB())){
+                  blockEntity.startWeatherChange(player);
+                  close();
+               }else{
+                  player.sendSystemMessage(Component.literal("You do not have " + curCost.getB() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(curCost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
+                        .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+                  close();
+               }
+            }else{
+               player.sendSystemMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+               close();
+            }
+         }
+      });
       setSlot(4, activateItem);
    }
    

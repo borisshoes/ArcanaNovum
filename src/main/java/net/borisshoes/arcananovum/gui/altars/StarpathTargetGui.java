@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.gui.altars;
 
-import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -65,49 +64,41 @@ public class StarpathTargetGui extends AnvilInputGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      if(index == 2){
-         if(targetMode){
-            BlockPos parsed = parseValid();
-            if(parsed == null){
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
-            }else{
-               onCompletion.accept(parsed);
-               this.close();
-            }
-         }else if(text != null){
-            String trimmedName = text.trim();
-            if(trimmedName.isBlank() || trimmedName.length() > 50){
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
-            }else{
-               onCompletion.accept(trimmedName);
-               this.close();
-            }
-         }
-      }
-      
-      //BorisLib.addTickTimerCallback(new GenericTimer(1, ()-> GuiHelpers.sendSlotUpdate(player, this.syncId, 2, getSlot(2).getItemStack())));
-      return true;
-   }
-   
-   
-   @Override
    public void onInput(String input){
       text = input;
       
+      GuiElementBuilder elem = null;
       if(targetMode){
          BlockPos parsed = parseValid();
          if(parsed == null){
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Component.literal("Invalid Location").withStyle(ChatFormatting.DARK_AQUA)));
+            elem = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Component.literal("Invalid Location").withStyle(ChatFormatting.DARK_AQUA));
+            elem.setCallback((clickType) -> {
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
+            });
+            setSlot(2,elem);
          }else{
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).hideDefaultTooltip().setName(Component.literal("Valid Location: " + parsed.toShortString()).withStyle(ChatFormatting.DARK_AQUA)));
+            elem = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).hideDefaultTooltip().setName(Component.literal("Valid Location: " + parsed.toShortString()).withStyle(ChatFormatting.DARK_AQUA));
+            elem.setCallback((clickType) -> {
+               onCompletion.accept(parsed);
+               this.close();
+            });
+            setSlot(2,elem);
          }
       }else if(text != null){
          String trimmedName = text.trim();
          if(trimmedName.isBlank() || trimmedName.length() > 50){
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Component.literal("Invalid Name").withStyle(ChatFormatting.DARK_AQUA)));
+            elem = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Component.literal("Invalid Name").withStyle(ChatFormatting.DARK_AQUA));
+            elem.setCallback((clickType) -> {
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
+            });
+            setSlot(2,elem);
          }else{
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).setName(Component.literal("Valid Name: " + trimmedName).withStyle(ChatFormatting.DARK_AQUA)));
+            elem = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).setName(Component.literal("Valid Name: " + trimmedName).withStyle(ChatFormatting.DARK_AQUA));
+            elem.setCallback((clickType) -> {
+               onCompletion.accept(trimmedName);
+               this.close();
+            });
+            setSlot(2,elem);
          }
       }
    }
@@ -123,7 +114,7 @@ public class StarpathTargetGui extends AnvilInputGui {
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       if(returnGui != null){
          returnGui.open();
       }

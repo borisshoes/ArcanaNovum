@@ -9,7 +9,7 @@ import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -43,11 +43,6 @@ public class DetonationArrows extends RunicArrow {
       item = new DetonationArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.OBTAIN_TNT};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -88,7 +83,7 @@ public class DetonationArrows extends RunicArrow {
    }
    
    private void explode(AbstractArrow arrow, Vec3 pos, int blastLvl, int personLvl){
-      float power = 2.5f * ArcanaUtils.getArrowPercentage(arrow, 0.1f);
+      float power = 2.5f * MinecraftUtils.getArrowPercentage(arrow, 0.1f);
       DamageSource source1 = ArcanaDamageTypes.of(arrow.level(), ArcanaDamageTypes.DETONATION_TERRAIN, arrow, arrow.getOwner());
       DamageSource source2 = ArcanaDamageTypes.of(arrow.level(), ArcanaDamageTypes.DETONATION_DAMAGE, arrow, arrow.getOwner());
       float blastMineBoost = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.DETONATION_ARROW_BLAST_MINE_INCREASE_PER_LVL).get(blastLvl);

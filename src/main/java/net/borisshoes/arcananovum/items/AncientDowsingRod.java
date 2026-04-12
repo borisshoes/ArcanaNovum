@@ -15,8 +15,10 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -39,7 +41,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,11 +61,6 @@ public class AncientDowsingRod extends EnergyItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.RESONATE_BELL, ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS, ResearchTasks.ADVANCEMENT_FIND_BASTION};
       initEnergy = 100;
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -120,8 +116,8 @@ public class AncientDowsingRod extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          List<String> stringList = new ArrayList<>();
          if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
             stringList.add("cooldown");
@@ -232,26 +228,26 @@ public class AncientDowsingRod extends EnergyItem {
                      }
                      if(!debris.isEmpty()){
                         BlockPos closest = debris.get(0);
-                        Vec3 eyePos = playerEntity.getEyePosition();
+                        Vec3 eyePos = player.getEyePosition();
                         Vec3 blockPos = new Vec3(closest.getX() + .5, closest.getY() + 0.5, closest.getZ() + 0.5);
                         Vec3 start = eyePos.add(blockPos.subtract(eyePos).normalize().scale(1.5));
                         Vec3 end = eyePos.add(blockPos.subtract(eyePos).normalize().scale(1.5 + 3));
                         ArcanaEffectUtils.dowsingRodArrow(player.level(), start, end, 1);
                         
                         ArcanaNovum.data(player).addXP(Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ANCIENT_DOWSING_ROD_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ANCIENT_DOWSING_ROD_PER_DEBRIS) * debris.size())); // Add xp
-                        SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1f, .5f);
+                        SoundUtils.playSound(world, player.blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1f, .5f);
                         
                         if(debris.size() >= 10){
                            ArcanaAchievements.grant(player, ArcanaAchievements.MOTHERLOAD);
                         }
                      }else{
-                        SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, .5f);
+                        SoundUtils.playSound(world, player.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, .5f);
                      }
                   }));
                }
                
             }else{
-               playerEntity.displayClientMessage(Component.literal("Dowsing Rod Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").withStyle(ChatFormatting.GOLD), true);
+               player.sendSystemMessage(Component.literal("Dowsing Rod Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").withStyle(ChatFormatting.GOLD), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             }
          }

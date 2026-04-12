@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -28,7 +29,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.TreeMap;
 import java.util.UUID;
@@ -64,8 +64,8 @@ public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implement
    public abstract BlockState getPolymerBlockState(BlockState state, PacketContext context);
    
    @Override
-   public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, PacketContext.NotNullWithPlayer contexts){
-      PolymerBlock.super.onPolymerBlockSend(blockState, pos, contexts);
+   public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, ServerPlayer player){
+      PolymerBlock.super.onPolymerBlockSend(blockState, pos, player);
    }
    
    @Override

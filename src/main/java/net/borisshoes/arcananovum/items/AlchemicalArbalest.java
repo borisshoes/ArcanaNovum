@@ -12,8 +12,10 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -31,13 +33,13 @@ import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.enchantment.*;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.borislib.utils.MinecraftUtils.makeEnchantComponent;
 
 public class AlchemicalArbalest extends ArcanaItem {
    public static final String ID = "alchemical_arbalest";
@@ -53,19 +55,6 @@ public class AlchemicalArbalest extends ArcanaItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OL_BETSY, ResearchTasks.ADVANCEMENT_WHOS_THE_PILLAGER_NOW, ResearchTasks.ADVANCEMENT_ARBALISTIC, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_TIPPED_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION, ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("Sethzilla42"))};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
-   }
-   
-   @Override
-   public void finalizePrefItem(MinecraftServer server){
-      super.finalizePrefItem(server);
-      ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.MULTISHOT), 1)));
-      this.prefItem = buildItemLore(curPrefItem, server);
    }
    
    @Override
@@ -162,12 +151,13 @@ public class AlchemicalArbalest extends ArcanaItem {
    public class AlchemicalArbalestItem extends ArcanaPolymerCrossbowItem {
       
       public AlchemicalArbalestItem(){
-         super(getThis(), getEquipmentArcanaItemComponents());
+         super(getThis(), getEquipmentArcanaItemComponents()
+               .delayedComponent(DataComponents.ENCHANTMENTS, ctx -> makeEnchantComponent(new EnchantmentInstance(ctx.getOrThrow(Enchantments.MULTISHOT),1))));
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();

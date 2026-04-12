@@ -20,8 +20,10 @@ import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -52,7 +54,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -77,12 +78,13 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       item = new CleansingCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.MILK_CLEANSE, ResearchTasks.HONEY_CLEANSE, ResearchTasks.EFFECT_POISON, ResearchTasks.EFFECT_NAUSEA, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.ADVANCEMENT_FURIOUS_COCKTAIL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, ACTIVE_TAG, true);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -219,8 +221,8 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
          stele.setChanged();
       }
       
-      if(world.random.nextFloat() < 0.35){
-         int rgb = Color.HSBtoRGB(world.random.nextFloat(), 0.5f, 1.0f);
+      if(world.getRandom().nextFloat() < 0.35){
+         int rgb = Color.HSBtoRGB(world.getRandom().nextFloat(), 0.5f, 1.0f);
          float r = ((rgb >> 16) & 0xFF) / 255.0f;
          float g = ((rgb >> 8) & 0xFF) / 255.0f;
          float b = (rgb & 0xFF) / 255.0f;
@@ -235,8 +237,8 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          
@@ -277,10 +279,10 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
             putProperty(stack, ACTIVE_TAG, active);
             
             if(active){
-               player.displayClientMessage(Component.literal("The Charm glows with iridescence").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm glows with iridescence").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_POWER_SELECT, 0.5f, 2f);
             }else{
-               player.displayClientMessage(Component.literal("The Charm's glow fades").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm's glow fades").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_DEACTIVATE, 0.5f, .8f);
             }
             

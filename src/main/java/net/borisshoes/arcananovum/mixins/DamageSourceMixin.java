@@ -37,7 +37,7 @@ public class DamageSourceMixin {
          };
          final Component deathMsg = Component.literal("")
                .append(Component.literal(killed.getScoreboardName()).withStyle(playerColor).withStyle())
-               .append(Component.literal(deathStrings[(int) (Math.random() * deathStrings.length)]).withStyle(ChatFormatting.WHITE));
+               .append(Component.literal(deathStrings[killed.getRandom().nextInt(deathStrings.length)]).withStyle(ChatFormatting.WHITE));
          cir.setReturnValue(deathMsg);
       }
    }

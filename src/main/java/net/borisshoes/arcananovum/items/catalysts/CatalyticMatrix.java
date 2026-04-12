@@ -34,11 +34,6 @@ public class CatalyticMatrix extends ArcanaItem {
       item = new CatalyticMatrixItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -83,6 +78,7 @@ public class CatalyticMatrix extends ArcanaItem {
    public class CatalyticMatrixItem extends ArcanaPolymerItem {
       public CatalyticMatrixItem(){
          super(getThis(), getArcanaItemComponents().stacksTo(4));
+         maxCount = 4;
       }
       
       @Override

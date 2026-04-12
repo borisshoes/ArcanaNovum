@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(SmithingTransformRecipe.class)
 public class SmithingTransformRecipeMixin {
    
-   @ModifyExpressionValue(method = "assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/SmithingRecipeInput;base()Lnet/minecraft/world/item/ItemStack;"))
+   @ModifyExpressionValue(method = "assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/SmithingRecipeInput;base()Lnet/minecraft/world/item/ItemStack;"))
    private ItemStack arcananovum$modifyBaseItem(ItemStack original){
       ItemStack stack = original;
       if(EnhancedStatUtils.isEnhanced(original)){
@@ -21,7 +21,7 @@ public class SmithingTransformRecipeMixin {
       return stack;
    }
    
-   @ModifyReturnValue(method = "assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At("RETURN"))
+   @ModifyReturnValue(method = "assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;)Lnet/minecraft/world/item/ItemStack;", at = @At("RETURN"))
    private ItemStack arcananovum$modifyReturnItem(ItemStack original){
       if(EnhancedStatUtils.isEnhanced(original)){
          EnhancedStatUtils.enhanceItem(original, EnhancedStatUtils.getPercentile(original));

@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version "${loom_version}"
+    id "net.fabricmc.fabric-loom" version "${loom_version}"
     id 'maven-publish'
 }
 
@@ -54,52 +54,43 @@ repositories {
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.6")))
+    include(implementation("maven.modrinth:boris-lib:${project.borislib_maven_version}"))
+    include(implementation("eu.pb4:sgui:${project.sgui_version}"))
+    include(implementation("eu.pb4:polymer-core:${project.polymer_version}"))
+    include(implementation("eu.pb4:polymer-blocks:${project.polymer_version}"))
+    include(implementation("eu.pb4:polymer-resource-pack:${project.polymer_version}"))
+    include(implementation("eu.pb4:polymer-resource-pack-extras:${project.polymer_version}"))
+    include(implementation("eu.pb4:polymer-virtual-entity:${project.polymer_version}"))
+    include(implementation("eu.pb4:polymer-networking:${project.polymer_version}"))
+    include(implementation("eu.pb4:polymer-autohost:${project.polymer_version}"))
+    include(implementation("eu.pb4:factorytools:${project.factorytools_version}"))
+    include(implementation("xyz.nucleoid:server-translations-api:${project.translation_version}"))
+    include(implementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_api_version}"))
 
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    include(implementation("io.github.ladysnake:PlayerAbilityLib:${pal_version}"))
 
-    modImplementation include("maven.modrinth:boris-lib:${project.borislib_version}")
-	
-	modImplementation include("eu.pb4:sgui:${project.sgui_version}")
-
-    modImplementation include("eu.pb4:polymer-core:${project.polymer_version}")
-    modImplementation include("eu.pb4:polymer-blocks:${project.polymer_version}")
-    modImplementation include("eu.pb4:polymer-resource-pack:${project.polymer_version}")
-    modImplementation include("eu.pb4:polymer-resource-pack-extras:${project.polymer_version}")
-    modImplementation include("eu.pb4:polymer-virtual-entity:${project.polymer_version}")
-    modImplementation include("eu.pb4:polymer-networking:${project.polymer_version}")
-    modImplementation include("eu.pb4:polymer-autohost:${project.polymer_version}")
-    modImplementation include("eu.pb4:factorytools:${project.factorytools_version}")
-    modImplementation include("xyz.nucleoid:server-translations-api:${project.translation_version}")
-    modImplementation "me.lucko:fabric-permissions-api:${project.fabric_permissions_api_version}"
-
-    modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-    modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
-    modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-world:${project.cca_version}")
-
-    modImplementation include("io.github.ladysnake:PlayerAbilityLib:${pal_version}")
-
-    modImplementation "maven.modrinth:simple-voice-chat:fabric-${voicechat_version}"
+    implementation "maven.modrinth:simple-voice-chat:fabric-${voicechat_version}"
 }
 
 processResources {
     inputs.property "version", project.version
     inputs.property "minecraft_version", project.minecraft_version
     inputs.property "loader_version", project.loader_version
+    inputs.property "borislib_mod_version", project.borislib_mod_version
     filteringCharset "UTF-8"
 
-    filesMatching("fabric.mod.json"){
+    filesMatching("fabric.mod.json") {
         expand "version": project.version,
                 "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version
+                "loader_version": project.loader_version,
+                "borislib_mod_version": project.borislib_mod_version
     }
 }
-def targetJavaVersion = 21
+def targetJavaVersion = 25
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
     // this fixes some edge cases with special characters not displaying correctly
@@ -143,5 +134,13 @@ publishing {
         // Notice: This block does NOT have the same function as the block in the top level.
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
+    }
+}
+
+allprojects {
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            options.compilerArgs << "-Xmaxerrs" << "500"
+        }
     }
 }

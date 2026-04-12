@@ -5,25 +5,19 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.ConditionalsAchievement;
-import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.entities.SpearOfTenbrousEntity;
-import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
+import net.borisshoes.arcananovum.utils.ArcanaInventory;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
-import net.borisshoes.borislib.BorisLib;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.warden.Warden;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -44,38 +38,16 @@ public class EntityKilledCallback {
             String entityTypeId = EntityType.getKey(killed.getType()).toString();
             
             // Check for soulstone then activate
-            List<Tuple<List<ItemStack>, ItemStack>> allItems = ArcanaUtils.getAllItems(player);
-            Inventory playerInv = player.getInventory();
-            boolean procdStone = false;
-            
-            for(int i = 0; i < allItems.size(); i++){
-               List<ItemStack> itemList = allItems.get(i).getA();
-               ItemStack carrier = allItems.get(i).getB();
-               SimpleContainer sinv = new SimpleContainer(itemList.size());
-               
-               for(int j = 0; j < itemList.size(); j++){
-                  ItemStack item = itemList.get(j);
-                  
-                  boolean isArcane = ArcanaItemUtils.isArcane(item);
-                  if(!isArcane){
-                     sinv.setItem(j, item);
-                     continue; // Item not arcane, skip
-                  }
-                  ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-                  
-                  if(arcanaItem instanceof Soulstone stone && !procdStone){
-                     if(Soulstone.getType(item).equals(entityTypeId)){
-                        stone.killedEntity(serverWorld, player, killed, item, spear != null ? spear.getWeaponItem() : player.getWeaponItem());
-                        procdStone = true; // Only activate one soulstone per kill
-                     }
-                  }
-                  
-                  sinv.setItem(j, item);
-               }
-               
-               if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-                  belt.buildItemLore(carrier, BorisLib.SERVER);
-               }
+            ArcanaInventory arcanaInventory = ArcanaInventory.getPlayerItems(player);
+            List<ArcanaInventory.Entry> entries = arcanaInventory.getMatchingItems(stack ->
+                  ArcanaItemUtils.identifyItem(stack) instanceof Soulstone && Soulstone.getType(stack).equals(entityTypeId));
+            if(!entries.isEmpty()){
+               ArcanaInventory.Entry stoneEntry = entries.getFirst();
+               ItemStack stoneStack = stoneEntry.getStack();
+               Soulstone stone = (Soulstone) ArcanaItemUtils.identifyItem(stoneStack);
+               stone.killedEntity(serverWorld, player, killed, stoneStack, spear != null ? spear.getWeaponItem() : player.getWeaponItem());
+               stoneEntry.setModified();
+               arcanaInventory.close();
             }
             
             ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);

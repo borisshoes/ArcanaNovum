@@ -78,7 +78,7 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends AvoidEntityGoa
       this.mob.playSound(SoundEvents.CREEPER_HURT, 1, 1);
       if(this.toAvoid instanceof ServerPlayer player){
          ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_CREEPER)); // Add xp
-         SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
+         SoundUtils.playSongToPlayer(player, SoundUtils.getSound("entity.cat.hiss"), .1f, 1);
       }
    }
 }

@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
-import eu.pb4.polymer.core.api.block.PolymerBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
@@ -18,6 +18,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -44,7 +45,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,11 +68,6 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       item = new MidnightEnchanterItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_ENCHANT_ITEM, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING, ResearchTasks.ADVANCEMENT_READ_POWER_OF_CHISELED_BOOKSHELF, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.UNLOCK_STARLIGHT_FORGE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -129,7 +124,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.ENCHANTING_TABLE.defaultBlockState();
@@ -192,8 +187,8 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack ENCHANTER_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/midnight_enchanter"));
-      public static final ItemStack ENCHANTER_BOOK = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/midnight_enchanter_book"));
+      public static final LazyItemStack ENCHANTER_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/midnight_enchanter"));
+      public static final LazyItemStack ENCHANTER_BOOK = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/midnight_enchanter_book"));
       
       private static final float PASSIVE_ROTATION_SPEED = 1.0f; // Degrees per tick
       private static final float TRACKING_LERP_SPEED = 0.1f; // Interpolation factor for smooth tracking

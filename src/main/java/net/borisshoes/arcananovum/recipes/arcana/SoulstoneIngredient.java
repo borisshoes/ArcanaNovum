@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +18,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
    private final boolean ignoreEssenceEggTypes;
    
    public SoulstoneIngredient(int souls, boolean repeatable, boolean consume, boolean ignoreEssenceEggTypes, @Nullable String type){
-      super(ArcanaRegistry.SOULSTONE.getPrefItem().getItem(), 1, true);
+      super(ArcanaRegistry.SOULSTONE.getItem(), 1, true);
       this.souls = souls;
       this.repeatable = repeatable;
       this.consume = consume;
@@ -40,7 +41,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          
          if(!ignoreEssenceEggTypes){
             EntityType<?> eType = EntityType.byString(Soulstone.getType(stack)).orElse(null);
-            if(eType != null && eType.is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)) return false;
+            if(eType != null && BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(eType).is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)) return false;
          }
          return Soulstone.getSouls(stack) >= souls;
       }else{

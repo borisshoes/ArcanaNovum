@@ -22,7 +22,6 @@ import net.minecraft.nbt.IntTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
@@ -53,6 +52,7 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.borislib.utils.MinecraftUtils.makeEnchantComponent;
 
 public class PickaxeOfCeptyus extends ArcanaItem {
    public static final String ID = "pickaxe_of_ceptyus";
@@ -69,22 +69,6 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       item = new PickaxeOfCeptyusItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_PICKAXE_OF_CEPTYUS};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
-   }
-   
-   @Override
-   public void finalizePrefItem(MinecraftServer server){
-      super.finalizePrefItem(server);
-      ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.FORTUNE), 5),
-            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.EFFICIENCY), 5)
-      ));
-      this.prefItem = buildItemLore(curPrefItem, server);
    }
    
    @Override
@@ -222,6 +206,9 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       public PickaxeOfCeptyusItem(){
          super(getThis(), getEquipmentArcanaItemComponents()
                .pickaxe(ToolMaterial.NETHERITE, 1, -2.8f)
+               .delayedComponent(DataComponents.ENCHANTMENTS, ctx -> makeEnchantComponent(
+                     new EnchantmentInstance(ctx.getOrThrow(Enchantments.EFFICIENCY),5),
+                     new EnchantmentInstance(ctx.getOrThrow(Enchantments.FORTUNE),5)))
          );
       }
       

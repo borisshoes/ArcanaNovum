@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.datagen;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceCondition;
 import net.minecraft.core.HolderLookup;
@@ -14,7 +14,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import java.util.concurrent.CompletableFuture;
 
 public class EnchantmentGenerator extends FabricDynamicRegistryProvider {
-   public EnchantmentGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture){
+   public EnchantmentGenerator(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture){
       super(output, registriesFuture);
    }
    

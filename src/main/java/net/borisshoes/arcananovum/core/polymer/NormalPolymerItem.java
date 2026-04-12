@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.core.polymer;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -10,7 +12,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 public abstract class NormalPolymerItem extends Item implements PolymerItem {
    
@@ -22,7 +23,7 @@ public abstract class NormalPolymerItem extends Item implements PolymerItem {
    }
    
    @Override
-   public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
+   public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
       if(PolymerResourcePackUtils.hasMainPack(context)){
          return ArcanaRegistry.arcanaId(this.id);
       }else{

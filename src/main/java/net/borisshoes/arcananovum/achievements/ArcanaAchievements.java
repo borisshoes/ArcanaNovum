@@ -183,7 +183,7 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement MINE_DIAMONDS = ArcanaAchievements.register(
          new EventAchievement("mine_diamonds", new ItemStack(Items.DIAMOND), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 2500, 1));
    public static final ArcanaAchievement INTERLOPER = ArcanaAchievements.register(
-         new EventAchievement("interloper", ArcanaRegistry.PLANESHIFTER.getPrefItemNoLore(), ArcanaRegistry.PICKAXE_OF_CEPTYUS, 100000, 10)).setHidden(true);
+         new EventAchievement("interloper", ArcanaRegistry.PLANESHIFTER::getPrefItemNoLore, ArcanaRegistry.PICKAXE_OF_CEPTYUS, 100000, 10)).setHidden(true);
    
    // Runic Bow
    public static final ArcanaAchievement JUST_LIKE_ARCHER = ArcanaAchievements.register(
@@ -401,7 +401,7 @@ public class ArcanaAchievements {
    
    // Aequalis Scientia
    public static final ArcanaAchievement PRICE_OF_KNOWLEDGE = ArcanaAchievements.register(
-         new EventAchievement("price_of_knowledge", ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(), ArcanaRegistry.AEQUALIS_SCIENTIA, 10000, 3));
+         new EventAchievement("price_of_knowledge", ArcanaRegistry.DIVINE_CATALYST::getPrefItemNoLore, ArcanaRegistry.AEQUALIS_SCIENTIA, 10000, 3));
    public static final ArcanaAchievement QUESTIONABLE_EXCHANGE = ArcanaAchievements.register(
          new EventAchievement("questionable_exchange", new ItemStack(Items.NETHERITE_HOE), ArcanaRegistry.AEQUALIS_SCIENTIA, 10000, 3));
    public static final ArcanaAchievement FRACTAL_ATTUNEMENT = ArcanaAchievements.register(
@@ -465,19 +465,19 @@ public class ArcanaAchievements {
                      EntityType.ENDER_DRAGON.getDescription().getString()
                }));
    public static final ArcanaAchievement HISTORY_CARVED_IN_STONE = ArcanaAchievements.register(
-         new EventAchievement("history_carved_in_stone", ArcanaRegistry.SOULSTONE.getPrefItemNoLore(), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5));
+         new EventAchievement("history_carved_in_stone", ArcanaRegistry.SOULSTONE::getPrefItemNoLore, ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5));
    public static final ArcanaAchievement ZERAIYA = ArcanaAchievements.register(
          new EventAchievement("zeraiya", new ItemStack(Items.DRAGON_EGG), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 10)).setHidden(true);
    
    // Geomantic Stele
    public static final ArcanaAchievement ARTIFICIAL_VOLCANO = ArcanaAchievements.register(
-         new EventAchievement("artificial_volcano", ArcanaRegistry.MAGMATIC_EVERSOURCE.getPrefItemNoLore(), ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
+         new EventAchievement("artificial_volcano", ArcanaRegistry.MAGMATIC_EVERSOURCE::getPrefItemNoLore, ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
    public static final ArcanaAchievement ARTIFICIAL_GEYSER = ArcanaAchievements.register(
-         new EventAchievement("artificial_geyser", ArcanaRegistry.AQUATIC_EVERSOURCE.getPrefItemNoLore(), ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
+         new EventAchievement("artificial_geyser", ArcanaRegistry.AQUATIC_EVERSOURCE::getPrefItemNoLore, ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
    public static final ArcanaAchievement MONOLITH_OF_FEAR = ArcanaAchievements.register(
-         new EventAchievement("monolith_of_fear", ArcanaRegistry.FELIDAE_CHARM.getPrefItemNoLore(), ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
+         new EventAchievement("monolith_of_fear", ArcanaRegistry.FELIDAE_CHARM::getPrefItemNoLore, ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
    public static final ArcanaAchievement DOCTOR_STONE = ArcanaAchievements.register(
-         new EventAchievement("doctor_stone", ArcanaRegistry.CLEANSING_CHARM.getPrefItemNoLore(), ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
+         new EventAchievement("doctor_stone", ArcanaRegistry.CLEANSING_CHARM::getPrefItemNoLore, ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
    public static final ArcanaAchievement KOKOPELLI = ArcanaAchievements.register(
          new EventAchievement("kokopelli", new ItemStack(Items.WHEAT), ArcanaRegistry.GEOMANTIC_STELE, 1000, 1));
    

@@ -1,11 +1,11 @@
 package net.borisshoes.arcananovum.gui.quivers;
 
+import net.borisshoes.arcananovum.gui.ContainerWatcher;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.items.QuiverItem;
-import net.minecraft.world.Container;
-import net.minecraft.world.ContainerListener;
 import net.minecraft.world.item.ItemStack;
 
-public class QuiverInventoryListener implements ContainerListener {
+public class QuiverInventoryListener implements ContainerWatcher {
    
    private final QuiverItem quiver;
    private final QuiverGui gui;
@@ -19,7 +19,7 @@ public class QuiverInventoryListener implements ContainerListener {
    }
    
    @Override
-   public void containerChanged(Container sender){
+   public void onChanged(WatchedContainer inv){
    
    }
    

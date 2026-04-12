@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
-import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.borisshoes.borislib.utils.MathUtils;
+import net.borisshoes.borislib.utils.SpawnPile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -127,9 +127,9 @@ public class DragonLairActions {
             int i = 0;
             for(ServerPlayer player : nearbyPlayers){
                BlockPos pos = locations.get(i);
-               player.teleport(new TeleportTransition(endWorld, pos.getCenter(), player.getDeltaMovement(), (float) (Math.random()*360-180),(float) (Math.random()*360-180), TeleportTransition.DO_NOTHING));
+               player.teleport(new TeleportTransition(endWorld, pos.getCenter(), player.getDeltaMovement(), endWorld.getRandom().nextFloat()*360-180, endWorld.getRandom().nextFloat()*360-180, TeleportTransition.DO_NOTHING));
                endWorld.sendParticles(ParticleTypes.REVERSE_PORTAL,pos.getX(),pos.getY()+1.5,pos.getZ(),300,.3,1,.3,3);
-               player.displayClientMessage(Component.literal("Ender Energy Surges Through You!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC),true);
+               player.sendSystemMessage(Component.literal("Ender Energy Surges Through You!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC),true);
                i++;
             }
          }else{
@@ -144,14 +144,14 @@ public class DragonLairActions {
             endWorld.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.END_STONE.defaultBlockState()), player.getX(), player.getY()-.5, player.getZ(), 20, 3, 1, 3, .5);
             
             if(quakeTicks % 4 == 0){
-               player.indicateDamage(Math.random()*5-2.5, Math.random()*5-2.5);
+               player.indicateDamage(endWorld.getRandom().nextDouble()*5-2.5, endWorld.getRandom().nextDouble()*5-2.5);
             }
          }
          quakeTicks--;
       }
       if(starfallTicks > 0){
          for(int i = 0; i < 40; i++){
-            stars.add(new Vec3(Math.random()*300-150,160,Math.random()*300-150));
+            stars.add(new Vec3(endWorld.getRandom().nextDouble()*300-150,160,endWorld.getRandom().nextDouble()*300-150));
          }
          for(int i = 0; i < stars.size(); i++){
             Vec3 star = stars.get(i);
@@ -197,8 +197,8 @@ public class DragonLairActions {
             chasm = !chasm;
             if(chasm){
                double radius = 60;
-               double theta = Math.random() * (Math.PI - 2) + 2;
-               double offset = Math.random() * 2 * Math.PI;
+               double theta = endWorld.getRandom().nextDouble() * (Math.PI - 2) + 2;
+               double offset = endWorld.getRandom().nextDouble() * 2 * Math.PI;
                int x1 = (int) (radius*Math.cos(offset));
                int z1 = (int) (radius*Math.sin(offset));
                int x2 = (int) (radius*Math.cos(theta+offset));
@@ -214,18 +214,18 @@ public class DragonLairActions {
                spikeBlocks = new HashMap<>();
             
                for(int i = 0; i < numSpikes; i++){
-                  int x1 = (int)(Math.random()*100-50);
+                  int x1 = endWorld.getRandom().nextInt(100)-50;
                   int y1 = 55;
-                  int z1 = (int)(Math.random()*100-50);
+                  int z1 = endWorld.getRandom().nextInt(100)-50;
                   Vec3 start = new Vec3(x1+0.5,y1+0.5,z1+0.5);
-                  double phi = Math.random() * 2 * Math.PI;
-                  double theta = Math.random() * (Math.PI/3);
-                  double length = Math.random() * 30 + 30;
+                  double phi = endWorld.getRandom().nextDouble() * 2 * Math.PI;
+                  double theta = endWorld.getRandom().nextDouble() * (Math.PI/3);
+                  double length = endWorld.getRandom().nextDouble() * 30 + 30;
                   double x2 = length * Math.sin(theta) * Math.cos(phi);
                   double z2 = length * Math.sin(theta) * Math.sin(phi);
                   double y2 = length * Math.cos(theta);
                   Vec3 end = start.add(x2,y2,z2);
-                  double size = Math.random() * 5 + 5;
+                  double size = endWorld.getRandom().nextDouble() * 5 + 5;
                
                   //log("New Spike at: "+start+" to "+end+" len: "+length+" with size: "+size);
                   spikes.add(new Spike(start,end,size));
@@ -306,7 +306,7 @@ public class DragonLairActions {
          }
       }
       
-      return weighted.get((int)(Math.random()*weighted.size()));
+      return weighted.get(endWorld.getRandom().nextInt(weighted.size()));
    }
    
    private HashMap<Integer,ArrayList<BlockPos>> makeChasm(BlockPos start, BlockPos end){

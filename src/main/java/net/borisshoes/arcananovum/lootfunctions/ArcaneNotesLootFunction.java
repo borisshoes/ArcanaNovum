@@ -19,7 +19,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.List;
@@ -56,8 +55,8 @@ public class ArcaneNotesLootFunction extends LootItemConditionalFunction {
    
    @SuppressWarnings("unchecked")
    @Override
-   public LootItemFunctionType<? extends LootItemConditionalFunction> getType(){
-      return (LootItemFunctionType<ArcaneNotesLootFunction>) ArcanaRegistry.ARCANE_NOTES_LOOT_FUNCTION;
+   public MapCodec<? extends LootItemConditionalFunction> codec(){
+      return (MapCodec<ArcaneNotesLootFunction>) ArcanaRegistry.ARCANE_NOTES_LOOT_FUNCTION;
    }
    
    @Override

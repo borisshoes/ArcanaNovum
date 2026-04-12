@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -23,6 +24,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,7 +57,6 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,11 +79,6 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       item = new TransmutationAltarItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TRADE, ResearchTasks.OBTAIN_AMETHYST_SHARD, ResearchTasks.OBTAIN_DIAMOND, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -187,7 +183,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.DIAMOND_BLOCK.defaultBlockState();
@@ -275,7 +271,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack TRANSMUTATION_ALTAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/transmutation_altar"));
+      public static final LazyItemStack TRANSMUTATION_ALTAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/transmutation_altar"));
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

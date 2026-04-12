@@ -24,7 +24,6 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -47,7 +46,7 @@ public class ClockworkMultitoolEnderGui extends SimpleGui {
       setSlot(2, mid);
       setSlot(4, mid);
       
-      GuiElementBuilder echest = new GuiElementBuilder(Items.ENDER_CHEST).hideDefaultTooltip().setName(Items.ENDER_CHEST.getName().copy().withStyle(ChatFormatting.DARK_AQUA));
+      GuiElementBuilder echest = new GuiElementBuilder(Items.ENDER_CHEST).hideDefaultTooltip().setName(Items.ENDER_CHEST.getDefaultInstance().getItemName().copy().withStyle(ChatFormatting.DARK_AQUA));
       echest.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Click").withStyle(ChatFormatting.GREEN))
             .append(Component.literal(" to access your Ender Chest").withStyle(ChatFormatting.DARK_AQUA)))));
@@ -70,7 +69,7 @@ public class ClockworkMultitoolEnderGui extends SimpleGui {
          channelComp.append(Component.literal("\uD83D\uDD13 Public Channel: ").withStyle(ChatFormatting.LIGHT_PURPLE));
       }
       for(DyeColor color : colors){
-         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(DyeItem.byColor(color));
+         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(MinecraftUtils.getVanillaDyeItem(color));
          channelComp.append(dyeComp);
          channelComp.append(" ");
       }
@@ -95,7 +94,7 @@ public class ClockworkMultitoolEnderGui extends SimpleGui {
             gui.build();
             gui.open();
          }else{
-            int bandwidth = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.ENDER_MECHANISM) - 2;
+            int bandwidth = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.ENDER_MECHANISM) - 2);
             EnderCrateGui gui = new EnderCrateGui(player, channel, bandwidth);
             gui.open();
          }

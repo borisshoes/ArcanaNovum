@@ -59,11 +59,6 @@ public class TotemOfVengeance extends ArcanaItem {
       item = new TotemOfVengeanceItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.ADVANCEMENT_TOTEM_OF_UNDYING, ResearchTasks.KILL_EVOKER, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.EFFECT_STRENGTH, ResearchTasks.EFFECT_FIRE_RESISTANCE, ResearchTasks.EFFECT_SWIFTNESS};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override

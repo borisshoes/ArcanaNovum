@@ -7,15 +7,12 @@ import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlock;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.*;
@@ -26,7 +23,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -300,7 +296,7 @@ public class Multiblock {
             boolean allowSimilarBlocks = ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ALLOW_SIMILAR_BLOCK_CHECKS);
             Set<Block> allowedBlocks = new HashSet<>();
             if(allowSimilarBlocks){
-               allowedBlocks.addAll(ArcanaUtils.getSimilarBlocks(rawState.getBlock()));
+               allowedBlocks.addAll(MinecraftUtils.getSimilarBlocks(rawState.getBlock()));
             }else{
                allowedBlocks.add(rawState.getBlock());
             }

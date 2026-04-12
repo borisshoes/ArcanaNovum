@@ -182,7 +182,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                GuiElementBuilder playerItem;
                try{
                   playerGameProf = player.level().getServer().services().profileResolver().fetchById(playerId).orElseThrow();
-                  playerItem = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(playerGameProf, player.level().getServer());
+                  playerItem = new GuiElementBuilder(Items.PLAYER_HEAD).setProfile(playerGameProf);
                   playerItem.setName(Component.literal(playerGameProf.name()).withStyle(ChatFormatting.LIGHT_PURPLE));
                }catch(Exception e){
                   playerItem = new GuiElementBuilder(Items.BARRIER);
@@ -268,7 +268,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                   if(!recipes.isEmpty()){
                      if(forTome) buildGui(TomeMode.RECIPE, arcanaItem, recipes, 0);
                   }else{
-                     player.displayClientMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED), false);
+                     player.sendSystemMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED), false);
                   }
                }else{
                   if(forTome) buildGui(TomeMode.ITEM, arcanaItem);
@@ -283,7 +283,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                   LoreGui loreGui = new LoreGui(player, bookBuilder, this);
                   loreGui.open();
                }else{
-                  player.displayClientMessage(Component.literal("No Lore Found For That Item").withStyle(ChatFormatting.RED), false);
+                  player.sendSystemMessage(Component.literal("No Lore Found For That Item").withStyle(ChatFormatting.RED), false);
                }
             }else{
                List<ArcanaRecipe> recipes = RecipeManager.getRecipesFor(ingredientEntry.getItem());
@@ -303,7 +303,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
             if(forTome) buildGui(TomeMode.ITEM, arcanaItem);
          }else{
-            player.displayClientMessage(Component.literal("You Have Not Researched This Item").withStyle(ChatFormatting.RED), false);
+            player.sendSystemMessage(Component.literal("You Have Not Researched This Item").withStyle(ChatFormatting.RED), false);
          }
       };
    }
@@ -327,7 +327,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       if(permaCloseFlag) return;
       if(returnGui != null){
          returnGui.open();
@@ -705,7 +705,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
             LoreGui loreGui = new LoreGui(player, bookBuilder, this);
             loreGui.open();
          }else{
-            player.displayClientMessage(Component.literal("No Lore Found For That Item").withStyle(ChatFormatting.RED), false);
+            player.sendSystemMessage(Component.literal("No Lore Found For That Item").withStyle(ChatFormatting.RED), false);
          }
       });
       if(!forAnvil) setSlot(6, book);
@@ -721,7 +721,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          if(!recipes.isEmpty()){
             buildGui(TomeMode.RECIPE, selectedArcanaItem, recipes, 0);
          }else{
-            player.displayClientMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED), false);
+            player.sendSystemMessage(Component.literal("You Cannot Craft This Item").withStyle(ChatFormatting.RED), false);
          }
       });
       if(!forAnvil) setSlot(2, table);
@@ -801,7 +801,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                   SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_PLING, 1, (.5f + ((float) (augmentLvl + 1) / (tiers.length - 1))));
                   buildPage();
                }else{
-                  player.displayClientMessage(Component.literal("Not Enough Skill Points").withStyle(ChatFormatting.RED), false);
+                  player.sendSystemMessage(Component.literal("Not Enough Skill Points").withStyle(ChatFormatting.RED), false);
                }
             });
          }
@@ -916,7 +916,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                LoreGui loreGui = new LoreGui(player, bookBuilder, this);
                loreGui.open();
             }else{
-               player.displayClientMessage(Component.literal("No Lore Found For That Item").withStyle(ChatFormatting.RED), false);
+               player.sendSystemMessage(Component.literal("No Lore Found For That Item").withStyle(ChatFormatting.RED), false);
             }
          });
          setSlot(2, book);
@@ -1101,7 +1101,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                SoundUtils.playSongToPlayer(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 2, 0.9f);
                SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 2);
             }else{
-               player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+               player.sendSystemMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
                      .append(Component.translatable(paperType.getDescriptionId()).withStyle(ChatFormatting.ITALIC, ArcanaRarity.getColor(rarity))), false);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             }
@@ -1160,7 +1160,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                SoundUtils.playSongToPlayer(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 2, 0.9f);
                SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 2);
             }else{
-               player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+               player.sendSystemMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
                      .append(Component.translatable(paperType.getDescriptionId()).withStyle(ChatFormatting.ITALIC, ArcanaRarity.getColor(rarity))), false);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             }
@@ -1223,7 +1223,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                   int stacks = num / matItem.getDefaultMaxStackSize();
                   int rem = num % matItem.getDefaultMaxStackSize();
                   
-                  copyString.append(matItem.getName().getString()).append(" - ").append(num);
+                  copyString.append(matItem.getDefaultInstance().getItemName().getString()).append(" - ").append(num);
                   
                   if(num > matItem.getDefaultMaxStackSize()){
                      copyString.append(" - ");

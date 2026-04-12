@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -18,6 +19,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -46,7 +48,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,12 +78,13 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_ARCANE_TOME, ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("SnivyXXY")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("SnivyXXY"))};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, SEED_USES_TAG, 0);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -178,7 +180,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.SMITHING_TABLE.defaultBlockState();
@@ -237,12 +239,12 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack FORGE_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge"));
-      public static final ItemStack FORGE_APPLE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_apple"));
-      public static final ItemStack STAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_star"));
-      public static final ItemStack PULSAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_pulsar"));
-      public static final ItemStack QUASAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_quasar"));
-      public static final ItemStack BLACK_HOLE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_black_hole"));
+      public static final LazyItemStack FORGE_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge"));
+      public static final LazyItemStack FORGE_APPLE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_apple"));
+      public static final LazyItemStack STAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_star"));
+      public static final LazyItemStack PULSAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_pulsar"));
+      public static final LazyItemStack QUASAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_quasar"));
+      public static final LazyItemStack BLACK_HOLE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_black_hole"));
       
       // Apple animation constants
       private static final float APPLE_SPIN_SPEED = 1.0f * Mth.DEG_TO_RAD; // Degrees per tick
@@ -302,7 +304,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
          this.decal2 = ItemDisplayElementUtil.createSimple(STAR);
          this.decal2.setInterpolationDuration(2);
          
-         // Use ThreadLocalRandom for initialization since world.random may not be accessible from this thread
+         // Use ThreadLocalRandom for initialization since world.getRandom() may not be accessible from this thread
          Random initRandom = ThreadLocalRandom.current();
          
          // Initialize decal paths
@@ -323,18 +325,18 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       private ItemStack getRandomDecalType(float roll){
          // Weighted random: Star (common), Pulsar (uncommon), Black Hole (rare), Quasar (very rare)
          if(roll < 0.6f){
-            return STAR;
+            return STAR.get();
          }else if(roll < 0.85f){
-            return PULSAR;
+            return PULSAR.get();
          }else if(roll < 0.95f){
-            return BLACK_HOLE;
+            return BLACK_HOLE.get();
          }else{
-            return QUASAR;
+            return QUASAR.get();
          }
       }
       
       private void initializeDecalPath(int index){
-         initializeDecalPath(index, world.random::nextFloat, world.random::nextInt);
+         initializeDecalPath(index, world.getRandom()::nextFloat, world.getRandom()::nextInt);
       }
       
       private void initializeDecalPath(int index, Supplier<Float> nextFloat, IntUnaryOperator nextInt){

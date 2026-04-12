@@ -61,7 +61,7 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker {
          
          for(BlockPos block : affectedBlocks){
             boolean aboveFloor = world.getBlockState(block).getCollisionShape(world, block).isEmpty() && (world.getBlockState(block.below()).isCollisionShapeFullBlock(world, block.below()) || !world.getBlockState(block.below()).getCollisionShape(world, block.below()).isEmpty());
-            if(aboveFloor && Math.random() < 0.15)
+            if(aboveFloor && world.getRandom().nextDouble() < 0.15)
                world.sendParticles(ParticleTypes.WAX_OFF, block.getX(), block.getY(), block.getZ(), 1, 0.5, 0.5, 0.5, .1);
          }
       }

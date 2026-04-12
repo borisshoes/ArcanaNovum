@@ -20,11 +20,14 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -57,7 +60,6 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,13 +88,14 @@ public class BinaryBlades extends EnergyItem {
       item = new BinaryBladesItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.INFUSE_ITEM, ResearchTasks.OBTAIN_NETHERITE_SWORD, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, SPLIT_TAG, false);
       putProperty(stack, FAKE_TAG, false);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -186,13 +189,14 @@ public class BinaryBlades extends EnergyItem {
       int whiteDwarf = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.WHITE_DWARF_BLADES);
       if(whiteDwarf < 1) return null;
       float[] reducePercentages = new float[]{0f, 0.5f, 0.75f, 1.0f};
+      HolderLookup.Provider provider = BorisLib.SERVER.registryAccess();
       
       BlocksAttacks blockComp = new BlocksAttacks(
             0.15F,
             0.5F,
             List.of(new BlocksAttacks.DamageReduction(60.0F, Optional.empty(), 0.0F, reducePercentages[whiteDwarf])),
             new BlocksAttacks.ItemDamageFunction(1.0F, 1.0F, 1.0F),
-            Optional.of(DamageTypeTags.BYPASSES_SHIELD),
+            Optional.of(provider.getOrThrow(DamageTypeTags.BYPASSES_SHIELD)),
             Optional.of(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.HEAVY_CORE_BREAK)),
             Optional.of(SoundEvents.SHIELD_BREAK)
       );
@@ -281,8 +285,8 @@ public class BinaryBlades extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -359,7 +363,7 @@ public class BinaryBlades extends EnergyItem {
                   }
                }
                message.append(" ✦ \uD83D\uDDE1");
-               player.displayClientMessage(Component.literal(message.toString()).withStyle(getColor(stack)), true);
+               player.sendSystemMessage(Component.literal(message.toString()).withStyle(getColor(stack)), true);
             }
          }else if(split){
             putProperty(stack, SPLIT_TAG, false);

@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.bosses.dragon.guis;
 
 import eu.pb4.sgui.api.ClickType;
+import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.HotbarGui;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
@@ -10,6 +10,7 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Items;
 
 public class TowerGui extends HotbarGui {
@@ -37,7 +38,7 @@ public class TowerGui extends HotbarGui {
    }
    
    @Override
-   public boolean onClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action, GuiElementInterface element){
+   public boolean onClick(int index, ClickType type, ContainerInput action, GuiElement element){
       if(type == ClickType.MOUSE_LEFT || type == ClickType.MOUSE_RIGHT){
          if(index == 8){
             this.close();
@@ -48,7 +49,7 @@ public class TowerGui extends HotbarGui {
                reclaimState.castShield();
                shieldTicks = shieldCD;
             }else{
-               player.displayClientMessage(Component.literal("The Shield Spell is on Cooldown!").withStyle(ChatFormatting.AQUA),true);
+               player.sendSystemMessage(Component.literal("The Shield Spell is on Cooldown!").withStyle(ChatFormatting.AQUA),true);
             }
          }
       }
@@ -68,7 +69,7 @@ public class TowerGui extends HotbarGui {
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       reclaimState.playerExits();
    }
 }

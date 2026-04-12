@@ -45,11 +45,13 @@ public class TransmogrificationCatalyst extends ArcanaItem {
       item = new TransmogrificationCatalyst.TransmogrificationCatalystItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_CATALYTIC_MATRIX, ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.HAVE_A_SKIN};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, SELECTED_SKIN_TAG, "");
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override

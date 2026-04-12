@@ -15,7 +15,9 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -44,7 +46,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,14 +71,15 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       item = new MagnetismCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_HEAVY_CORE, ResearchTasks.FISH_ITEM};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, MODE_TAG, 0); // 0 off, 1 attract, 2 repel
       putProperty(stack, COOLDOWN_TAG, 0);
       putProperty(stack, FILTER_TAG, new CompoundTag());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -208,13 +210,13 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       int mode = (getIntProperty(item, MODE_TAG) + 1) % (canRepel ? 3 : 2);
       putProperty(item, MODE_TAG, mode);
       if(mode == 1){
-         player.displayClientMessage(Component.literal("The Charm's Pull Strengthens").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
+         player.sendSystemMessage(Component.literal("The Charm's Pull Strengthens").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ANVIL_LAND, 1, 2f);
       }else if(mode == 2){
-         player.displayClientMessage(Component.literal("The Charm's Pull Reverses").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
+         player.sendSystemMessage(Component.literal("The Charm's Pull Reverses").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ANVIL_LAND, 1, 1f);
       }else{
-         player.displayClientMessage(Component.literal("The Charm's Pull Weakens").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
+         player.sendSystemMessage(Component.literal("The Charm's Pull Weakens").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ANVIL_LAND, .3f, .5f);
       }
    }
@@ -240,19 +242,19 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       
       if(itemStatus == 0){
          filter.remove(itemId);
-         player.displayClientMessage(Component.literal("")
+         player.sendSystemMessage(Component.literal("")
                .append(Component.literal("Removed ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
                .append(Component.translatable(filterItem.getDescriptionId()).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
                .append(Component.literal(" from the filter").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), true);
       }else if(itemStatus == 1){
          filter.putInt(itemId, itemStatus);
-         player.displayClientMessage(Component.literal("")
+         player.sendSystemMessage(Component.literal("")
                .append(Component.literal("Whitelisted ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
                .append(Component.translatable(filterItem.getDescriptionId()).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
                .append(Component.literal(" in the filter").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), true);
       }else if(itemStatus == 2){
          filter.putInt(itemId, itemStatus);
-         player.displayClientMessage(Component.literal("")
+         player.sendSystemMessage(Component.literal("")
                .append(Component.literal("Blacklisted ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
                .append(Component.translatable(filterItem.getDescriptionId()).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
                .append(Component.literal(" from the filter").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), true);
@@ -310,7 +312,7 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
          AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
          passiveSuck(world, stack, box, new AABB(stele.getBlockPos()).inflate(1.125), suckPos.add(0, 0.5, 0));
       }
-      if(world.random.nextFloat() < 0.25){
+      if(world.getRandom().nextFloat() < 0.25){
          world.sendParticles(ParticleTypes.OMINOUS_SPAWNING, suckPos.x(), suckPos.y(), suckPos.z(), 5, 0.25, 0.25, 0.25, 1);
       }
    }
@@ -321,8 +323,8 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          int mode = getIntProperty(itemStack, MODE_TAG);
          boolean neo = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.NEODYMIUM) >= 1;
@@ -381,7 +383,7 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
          
          if(canFilter && hand == InteractionHand.OFF_HAND && playerEntity.isShiftKeyDown()){
             putProperty(stack, FILTER_TAG, new CompoundTag());
-            player.displayClientMessage(Component.literal("Filter Cleared").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Filter Cleared").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ANVIL_LAND, 0.5f, 1f);
          }else if(canFilter && hand == InteractionHand.MAIN_HAND && !offHand.isEmpty() && playerEntity.isShiftKeyDown()){
             toggleFilterItem(player, stack, offHand.getItem());

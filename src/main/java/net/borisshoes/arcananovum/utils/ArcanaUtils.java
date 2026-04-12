@@ -7,47 +7,21 @@ import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EnchantmentTags;
-import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ArcanaUtils {
-   
-   public static Set<Block> getSimilarBlocks(Block baseBlock){
-      Set<Block> allowedBlocks = new HashSet<>();
-      allowedBlocks.add(baseBlock);
-      Identifier baseId = BuiltInRegistries.BLOCK.getKey(baseBlock);
-      for(Identifier similarId : BuiltInRegistries.BLOCK.keySet()){
-         if(similarId.getPath().equals(baseId.getPath()))
-            allowedBlocks.add(BuiltInRegistries.BLOCK.getValue(similarId));
-      }
-      return allowedBlocks;
-   }
-   
-   public static float getArrowPercentage(AbstractArrow arrow){ // 0.5 is usually smallest natural value and 2.5-3 is usually largest natural value
-      return getArrowPercentage(arrow, 0f);
-   }
-   
-   public static float getArrowPercentage(AbstractArrow arrow, float minPercent){ // 0.5 is usually smallest natural value and 2.5-3 is usually largest natural value
-      return Math.max(minPercent, ((float) Mth.clamp(arrow.getDeltaMovement().length(), 0.5, 10) - 0.5f) / 2.5f);
-   }
    
    public static void blockWithShield(LivingEntity entity, float damage){
       if(entity.isBlocking()){
@@ -62,6 +36,9 @@ public class ArcanaUtils {
       }
    }
    
+   /**
+    * Note that this does not give a mutable item stack for items in containers!
+    */
    public static List<ItemStack> getArcanaItems(Player player, ArcanaItem arcanaItem){
       List<ItemStack> stacks = new ArrayList<>();
       Inventory inv = player.getInventory();
@@ -77,7 +54,8 @@ public class ArcanaUtils {
          }
          if(arcItem instanceof ArcanistsBelt){
             ItemContainerContents containerItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-            for(ItemStack stack : containerItems.nonEmptyItems()){
+            for(ItemStackTemplate template : containerItems.nonEmptyItems()){
+               ItemStack stack = template.create();
                ArcanaItem aItem = ArcanaItemUtils.identifyItem(stack);
                if(aItem != null && aItem.getId().equals(arcanaItem.getId())){
                   stacks.add(stack);
@@ -88,6 +66,9 @@ public class ArcanaUtils {
       return stacks;
    }
    
+   /**
+    * Note that this does not give a mutable item stack for items in containers!
+    */
    public static List<ItemStack> getArcanaItemsWithAug(Player player, ArcanaItem arcanaItem, ArcanaAugment augment, int level){
       List<ItemStack> stacks = new ArrayList<>();
       Inventory inv = player.getInventory();
@@ -105,7 +86,8 @@ public class ArcanaUtils {
          }
          if(arcItem instanceof ArcanistsBelt){
             ItemContainerContents containerItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-            for(ItemStack stack : containerItems.nonEmptyItems()){
+            for(ItemStackTemplate template : containerItems.nonEmptyItems()){
+               ItemStack stack = template.create();
                ArcanaItem aItem = ArcanaItemUtils.identifyItem(stack);
                if(aItem != null && aItem.getId().equals(arcanaItem.getId())){
                   if(augment == null || ArcanaAugments.getAugmentOnItem(stack, augment) >= level){
@@ -116,30 +98,6 @@ public class ArcanaUtils {
          }
       }
       return stacks;
-   }
-   
-   public static List<Tuple<List<ItemStack>, ItemStack>> getAllItems(Player player){
-      List<Tuple<List<ItemStack>, ItemStack>> allItems = new ArrayList<>();
-      Inventory playerInv = player.getInventory();
-      
-      List<ItemStack> invItems = new ArrayList<>();
-      for(int i = 0; i < playerInv.getContainerSize(); i++){
-         ItemStack item = playerInv.getItem(i);
-         if(item.isEmpty()){
-            continue;
-         }
-         
-         invItems.add(item);
-         ArcanaItem mitem = ArcanaItemUtils.identifyItem(item);
-         if(mitem instanceof ArcanistsBelt belt){
-            ItemContainerContents beltItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-            ArrayList<ItemStack> beltList = new ArrayList<>();
-            beltItems.nonEmptyItems().forEach(beltList::add);
-            allItems.add(new Tuple<>(beltList, item));
-         }
-      }
-      allItems.add(new Tuple<>(invItems, ItemStack.EMPTY));
-      return allItems;
    }
    
    public static int calcEssenceFromEnchants(ItemStack itemStack){

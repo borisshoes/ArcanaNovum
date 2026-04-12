@@ -49,11 +49,6 @@ public class PhotonicArrows extends RunicArrow {
       item = new PhotonicArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON, ResearchTasks.OBTAIN_AMETHYST_CLUSTER, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -91,7 +86,7 @@ public class PhotonicArrows extends RunicArrow {
       double prismaticPerMob = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_PER_LVL).get(alignmentLvl);
       MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, entity.getEyePosition(), entity.getForward(), maxRange, true, entity);
       
-      float percentage = ArcanaUtils.getArrowPercentage(proj);
+      float percentage = MinecraftUtils.getArrowPercentage(proj);
       float baseDmg = (float) (percentage * (maxDamage - minDamage) + minDamage);
       if(alignmentLvl == 5) baseDmg += (float) prismaticMaxBuff;
       float bonusDmg = 0;

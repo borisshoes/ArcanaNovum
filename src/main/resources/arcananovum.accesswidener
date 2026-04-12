@@ -1,4 +1,4 @@
-accessWidener	v2	named
+accessWidener	v2	official
 
 accessible field net/minecraft/world/entity/Entity random Lnet/minecraft/util/RandomSource;
 accessible field net/minecraft/world/entity/ai/control/MoveControl mob Lnet/minecraft/world/entity/Mob;
@@ -11,14 +11,13 @@ accessible field net/minecraft/server/level/ChunkMap serverViewDistance I
 accessible field net/minecraft/server/level/ChunkMap entityMap Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
 accessible field net/minecraft/server/level/ChunkMap$TrackedEntity serverEntity Lnet/minecraft/server/level/ServerEntity;
 accessible field net/minecraft/world/damagesource/CombatTracker entries Ljava/util/List;
-accessible field net/minecraft/world/item/Item components Lnet/minecraft/core/component/DataComponentMap;
 accessible field net/minecraft/server/network/ServerGamePacketListenerImpl aboveGroundTickCount I
-accessible field net/minecraft/world/item/crafting/ShapedRecipe result Lnet/minecraft/world/item/ItemStack;
-accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/minecraft/world/item/ItemStack;
 accessible field net/minecraft/world/item/crafting/ShapelessRecipe ingredients Ljava/util/List;
-accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/crafting/TransmuteResult;
 accessible field net/minecraft/world/entity/ExperienceOrb count I
 accessible field net/minecraft/stats/StatsCounter stats Lit/unimi/dsi/fastutil/objects/Object2IntMap;
+accessible field net/minecraft/world/item/crafting/ShapedRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
+accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
+accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
 
 accessible method net/minecraft/world/entity/LivingEntity collectEquipmentChanges ()Ljava/util/Map;
 accessible method net/minecraft/world/entity/animal/frog/Tadpole ageUp (I)V

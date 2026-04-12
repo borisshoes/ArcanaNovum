@@ -3,8 +3,8 @@ package net.borisshoes.arcananovum.research;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Lifecycle;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.utils.TreeNode;
 import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TreeNode;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -194,8 +194,12 @@ public class ResearchTasks {
    public static final ResourceKey<ResearchTask> EFFECT_POISON = of("effect_poison");
    public static final ResourceKey<ResearchTask> EFFECT_DOLPHINS_GRACE = of("effect_dolphins_grace");
    
+   private static boolean researchTasksRegistered = false;
+   
    @SuppressWarnings("unchecked")
    public static void registerResearchTasks(){
+      if(researchTasksRegistered) return;
+      researchTasksRegistered = true;
       ResearchTasks.register(OBTAIN_SPONGE, new ObtainResearchTask(
             OBTAIN_SPONGE.identifier().getPath(), Items.SPONGE,
             new ItemStack(Items.SPONGE)

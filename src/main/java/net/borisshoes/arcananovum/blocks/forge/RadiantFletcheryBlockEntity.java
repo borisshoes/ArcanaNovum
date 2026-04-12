@@ -11,6 +11,8 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.gui.ContainerWatcher;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.gui.radiantfletchery.RadiantFletcheryGui;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.BlockPos;
@@ -21,7 +23,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +43,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerListener, ArcanaBlockEntity {
+public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerWatcher, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
@@ -50,13 +54,13 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
    private boolean assembled;
    private boolean seenForge;
    private boolean updating;
-   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
+   private WatchedContainer inventory = new WatchedContainer(getContainerSize());
    private final Set<ServerPlayer> watchingPlayers = new HashSet<>();
    
    public RadiantFletcheryBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY, pos, state);
       this.multiblock = ((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getMultiblock();
-      this.inventory.addListener(this);
+      this.inventory.addWatcher(this);
    }
    
    public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
@@ -157,8 +161,8 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
       this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.inventory = new SimpleContainer(getContainerSize());
-      this.inventory.addListener(this);
+      this.inventory = new WatchedContainer(getContainerSize());
+      this.inventory.addWatcher(this);
       if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
@@ -225,7 +229,13 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
    }
    
    @Override
-   public void containerChanged(Container inv){
+   public void setChanged(){
+      super.setChanged();
+      this.inventory.setChanged();
+   }
+   
+   @Override
+   public void onChanged(WatchedContainer inv){
       if(!updating){
          updating = true;
          ItemStack arrowStack = inv.getItem(0);

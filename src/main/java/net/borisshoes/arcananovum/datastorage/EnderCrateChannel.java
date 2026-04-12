@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.CodecUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -13,7 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -25,7 +26,7 @@ import java.util.*;
 public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContainerHaver {
    private final UUID idLock;
    private final DyeColor[] colors = new DyeColor[9];
-   private final SimpleContainer inventory = new SimpleContainer(54);
+   private final SimpleContainer inventory = new WatchedContainer(54);
    private final int color;
    
    public static final Codec<EnderCrateChannel> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -71,14 +72,14 @@ public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContaine
       
       ItemStack testStack = new ItemStack(Items.LEATHER_CHESTPLATE);
       testStack.remove(DataComponents.DYED_COLOR);
-      ArrayList<DyeItem> colorList = new ArrayList<>();
+      ArrayList<Item> colorList = new ArrayList<>();
       for(DyeColor dyeColor : this.colors){
-         if(dyeColor != null) colorList.add(DyeItem.byColor(dyeColor));
+         if(dyeColor != null) colorList.add(MinecraftUtils.getVanillaDyeItem(dyeColor));
       }
       if(colorList.isEmpty()){
          this.color = 0xFFFFFF; // Default white when no colors specified
       }else{
-         ItemStack dyedStack = DyedItemColor.applyDyes(testStack, colorList);
+         ItemStack dyedStack = DyedItemColor.applyDyes(testStack, Arrays.stream(this.colors).filter(Objects::nonNull).toList());
          this.color = dyedStack.has(DataComponents.DYED_COLOR) ? dyedStack.get(DataComponents.DYED_COLOR).rgb() : 0xFFFFFF;
       }
    }
@@ -128,7 +129,7 @@ public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContaine
       
       MutableComponent name = ArcanaRegistry.ENDER_CRATE.getTranslatedName().append(" ");
       for(DyeColor color : colors){
-         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(DyeItem.byColor(color));
+         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(MinecraftUtils.getVanillaDyeItem(color));
          name.append(dyeComp.withStyle(ChatFormatting.WHITE));
       }
       

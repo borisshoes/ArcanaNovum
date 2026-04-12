@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.astralgateway;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -22,6 +23,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -60,7 +62,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,13 +87,14 @@ public class AstralGateway extends ArcanaBlock {
       item = new AstralGatewayItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_MATTER, ResearchTasks.UNLOCK_WAYSTONE, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.USE_ENDER_EYE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.OBTAIN_STARDUST};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack, STARDUST_TAG, 0);
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
+      putProperty(stack, STARDUST_TAG, 0L);
       putProperty(stack, WAYSTONES_TAG, new ListTag());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -209,7 +211,7 @@ public class AstralGateway extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(HAS_EYE, state.getValue(HAS_EYE)).setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
@@ -254,8 +256,7 @@ public class AstralGateway extends ArcanaBlock {
       
       @Override
       protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult){
-         AstralGatewayBlockEntity gateway = (AstralGatewayBlockEntity) level.getBlockEntity(blockPos);
-         if(gateway != null){
+         if(level.getBlockEntity(blockPos) instanceof AstralGatewayBlockEntity gateway){
             boolean validWaystone = gateway.validWaystone(itemStack);
             if(itemStack.is(ArcanaRegistry.WAYSTONE.getItem()) && !validWaystone){
                return InteractionResult.PASS;
@@ -281,8 +282,7 @@ public class AstralGateway extends ArcanaBlock {
       
       @Override
       protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult hit){
-         AstralGatewayBlockEntity gateway = (AstralGatewayBlockEntity) world.getBlockEntity(pos);
-         if(gateway != null){
+         if(world.getBlockEntity(pos) instanceof AstralGatewayBlockEntity gateway){
             if(playerEntity instanceof ServerPlayer player){
                boolean hitTop = hit.getDirection() == Direction.UP || (hit.getLocation().y - pos.getY()) > 0.8125;
                if(!gateway.getInventory().getItem(0).isEmpty() && hitTop && player.getMainHandItem().isEmpty()){
@@ -337,14 +337,14 @@ public class AstralGateway extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack GATEWAY_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway"));
-      public static final ItemStack GATEWAY_BASE_EMPTY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_empty"));
-      public static final ItemStack GATEWAY_SMALL_RING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_small_ring"));
-      public static final ItemStack GATEWAY_SMALL_RING_EMPTY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_small_ring_empty"));
-      public static final ItemStack GATEWAY_BIG_RING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_big_ring"));
-      public static final ItemStack GATEWAY_BIG_RING_EMPTY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_big_ring_empty"));
-      public static final ItemStack GATEWAY_KNOBS = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_knobs"));
-      public static final ItemStack GATEWAY_KNOBS_EMPTY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/astral_gateway_knobs_empty"));
+      public static final LazyItemStack GATEWAY_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway"));
+      public static final LazyItemStack GATEWAY_BASE_EMPTY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_empty"));
+      public static final LazyItemStack GATEWAY_SMALL_RING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_small_ring"));
+      public static final LazyItemStack GATEWAY_SMALL_RING_EMPTY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_small_ring_empty"));
+      public static final LazyItemStack GATEWAY_BIG_RING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_big_ring"));
+      public static final LazyItemStack GATEWAY_BIG_RING_EMPTY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_big_ring_empty"));
+      public static final LazyItemStack GATEWAY_KNOBS = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_knobs"));
+      public static final LazyItemStack GATEWAY_KNOBS_EMPTY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_knobs_empty"));
       
       // Knob animation constants
       private static final float KNOB_AMPLITUDE_NORMAL = 0.01f;
@@ -611,10 +611,10 @@ public class AstralGateway extends ArcanaBlock {
          if(entity instanceof AstralGatewayBlockEntity gateway){
             if(this.hasStardust != (gateway.getStardust() >= gateway.getOpeningStardust())){
                this.hasStardust = !this.hasStardust;
-               this.main.setItem(this.hasStardust ? GATEWAY_BASE : GATEWAY_BASE_EMPTY);
-               this.bigRing.setItem(this.hasStardust ? GATEWAY_BIG_RING : GATEWAY_BIG_RING_EMPTY);
-               this.smallRing.setItem(this.hasStardust ? GATEWAY_SMALL_RING : GATEWAY_SMALL_RING_EMPTY);
-               this.knobs.setItem(this.hasStardust ? GATEWAY_KNOBS : GATEWAY_KNOBS_EMPTY);
+               this.main.setItem(this.hasStardust ? GATEWAY_BASE.get() : GATEWAY_BASE_EMPTY.get());
+               this.bigRing.setItem(this.hasStardust ? GATEWAY_BIG_RING.get() : GATEWAY_BIG_RING_EMPTY.get());
+               this.smallRing.setItem(this.hasStardust ? GATEWAY_SMALL_RING.get() : GATEWAY_SMALL_RING_EMPTY.get());
+               this.knobs.setItem(this.hasStardust ? GATEWAY_KNOBS.get() : GATEWAY_KNOBS_EMPTY.get());
             }
             if(this.hasFrame != (gateway.getFrame() != null && gateway.getFrame().finishedAndValid())){
                this.hasFrame = !this.hasFrame;

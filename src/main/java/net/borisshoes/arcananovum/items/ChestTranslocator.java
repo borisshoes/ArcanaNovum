@@ -15,9 +15,11 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -57,7 +59,6 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,13 +82,14 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       item = new ChestTranslocatorItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.EFFECT_STRENGTH};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, CONTENTS_TAG, new CompoundTag());
       putProperty(stack, STATE_TAG, new CompoundTag());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -193,8 +195,8 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -240,7 +242,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                   SoundUtils.playSound(world, blockPos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1, 1);
                   setEnergy(stack, getMaxEnergy(stack));
                }else{
-                  player.displayClientMessage(Component.literal("Translocator Cooldown: " + cooldown + (cooldown != 1 ? " seconds" : " second")).withStyle(ChatFormatting.GOLD), true);
+                  player.sendSystemMessage(Component.literal("Translocator Cooldown: " + cooldown + (cooldown != 1 ? " seconds" : " second")).withStyle(ChatFormatting.GOLD), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                }
             }else{
@@ -282,7 +284,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CHEST_TRANSLOCATOR_USE)); // Add xp
                SoundUtils.playSound(world, placePos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1, 1);
             }else{
-               player.displayClientMessage(Component.literal("The chest cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The chest cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }
          }

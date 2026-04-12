@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -18,9 +19,11 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -67,7 +70,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,12 +93,13 @@ public class Itineranteur extends ArcanaBlock {
       item = new ItineranteurItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.EFFECT_SWIFTNESS, ResearchTasks.OBTAIN_BEACON, ResearchTasks.WALK_ONE_KILOMETER, ResearchTasks.OBTAIN_LANTERN};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, COLOR_TAG, LanternType.YELLOW.getId());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -180,8 +183,8 @@ public class Itineranteur extends ArcanaBlock {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -235,7 +238,7 @@ public class Itineranteur extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             LanternType type = state.getValue(TYPE);
@@ -329,19 +332,20 @@ public class Itineranteur extends ArcanaBlock {
       }
       
       @Override
-      protected InteractionResult useWithoutItem(BlockState blockState, Level level, BlockPos blockPos, Player player, BlockHitResult blockHitResult){
+      protected InteractionResult useWithoutItem(BlockState blockState, Level level, BlockPos blockPos, Player playerEntity, BlockHitResult blockHitResult){
          if(!(level.getBlockEntity(blockPos) instanceof ItineranteurBlockEntity itineranteur))
             return InteractionResult.PASS;
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          if(itineranteur.getEditor() == null && player instanceof ServerPlayer serverPlayer){
-            SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.LANTERN_PLACE, 1, 0.75f + level.random.nextFloat() * 0.5f);
+            SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.LANTERN_PLACE, 1, 0.75f + level.getRandom().nextFloat() * 0.5f);
             itineranteur.setEditor(serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
          }else if(itineranteur.getEditor().equals(player)){
-            SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.LANTERN_PLACE, 1, 0.75f + level.random.nextFloat() * 0.5f);
+            SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.LANTERN_PLACE, 1, 0.75f + level.getRandom().nextFloat() * 0.5f);
             itineranteur.setEditor(null);
             return InteractionResult.SUCCESS_SERVER;
          }else{
-            player.displayClientMessage(Component.literal("Someone else is editing the Itineranteur").withStyle(ChatFormatting.RED), true);
+            player.sendSystemMessage(Component.literal("Someone else is editing the Itineranteur").withStyle(ChatFormatting.RED), true);
          }
          return super.useWithoutItem(blockState, level, blockPos, player, blockHitResult);
       }
@@ -374,14 +378,14 @@ public class Itineranteur extends ArcanaBlock {
       COPPER("copper", Items.COPPER_LANTERN.waxed(), ((BlockItem) Items.COPPER_LANTERN.waxed()).getBlock()),
       GREEN("green", Items.COPPER_LANTERN.waxedOxidized(), ((BlockItem) Items.COPPER_LANTERN.waxedOxidized()).getBlock());
       
-      public static final ItemStack ITINERANTEUR_NORMAL = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_normal"));
-      public static final ItemStack ITINERANTEUR_NORMAL_HANGING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_normal_hanging"));
-      public static final ItemStack ITINERANTEUR_SOUL = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_soul"));
-      public static final ItemStack ITINERANTEUR_SOUL_HANGING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_soul_hanging"));
-      public static final ItemStack ITINERANTEUR_OXIDIZED = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_oxidized"));
-      public static final ItemStack ITINERANTEUR_OXIDIZED_HANGING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_oxidized_hanging"));
-      public static final ItemStack ITINERANTEUR_UNOXIDIZED = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_unoxidized"));
-      public static final ItemStack ITINERANTEUR_UNOXIDIZED_HANGING = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/itineranteur_unoxidized_hanging"));
+      public static final LazyItemStack ITINERANTEUR_NORMAL = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_normal"));
+      public static final LazyItemStack ITINERANTEUR_NORMAL_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_normal_hanging"));
+      public static final LazyItemStack ITINERANTEUR_SOUL = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_soul"));
+      public static final LazyItemStack ITINERANTEUR_SOUL_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_soul_hanging"));
+      public static final LazyItemStack ITINERANTEUR_OXIDIZED = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_oxidized"));
+      public static final LazyItemStack ITINERANTEUR_OXIDIZED_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_oxidized_hanging"));
+      public static final LazyItemStack ITINERANTEUR_UNOXIDIZED = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_unoxidized"));
+      public static final LazyItemStack ITINERANTEUR_UNOXIDIZED_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_unoxidized_hanging"));
       
       private final String id;
       private final Item item;
@@ -431,7 +435,7 @@ public class Itineranteur extends ArcanaBlock {
          return YELLOW;
       }
       
-      public static ItemStack getModel(BlockState state){
+      public static LazyItemStack getModel(BlockState state){
          LanternType type = state.getValue(ItineranteurBlock.TYPE);
          boolean hanging = state.getValue(ItineranteurBlock.HANGING);
          return switch(type){

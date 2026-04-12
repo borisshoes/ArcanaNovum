@@ -56,9 +56,9 @@ public class RadiantFletcheryGui extends SimpleGui {
       setSlot(5, potionItem);
       
       Container inv = blockEntity.getInventory();
-      setSlotRedirect(0, new RadiantFletcherySlot(inv, 0, 0, 0, 0));
-      setSlotRedirect(2, new RadiantFletcherySlot(inv, 1, 1, 0, 1));
-      setSlotRedirect(7, new RadiantFletcherySlot(inv, 2, 2, 0, 2));
+      setSlot(0, new RadiantFletcherySlot(inv, 0, 0, 0, 0));
+      setSlot(2, new RadiantFletcherySlot(inv, 1, 1, 0, 1));
+      setSlot(7, new RadiantFletcherySlot(inv, 2, 2, 0, 2));
    }
    
    @Override

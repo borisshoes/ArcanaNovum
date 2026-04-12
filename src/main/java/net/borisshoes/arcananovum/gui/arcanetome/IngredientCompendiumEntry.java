@@ -24,7 +24,7 @@ public class IngredientCompendiumEntry extends CompendiumEntry {
    }
    
    public IngredientCompendiumEntry(Component name, ItemStack displayStack, Item item, List<List<Component>> bookLore){
-      super(new ArcaneTomeGui.TomeFilter[]{ArcaneTomeGui.TomeFilter.INGREDIENT}, displayStack);
+      super(new ArcaneTomeGui.TomeFilter[]{ArcaneTomeGui.TomeFilter.INGREDIENT}, displayStack.copy());
       this.name = name;
       this.item = item;
       this.bookLore = bookLore == null ? Optional.empty() : Optional.of(bookLore);

@@ -6,7 +6,15 @@ import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiPredicate;
+
 public class QuiverSlot extends Slot {
+   public static final BiPredicate<ItemStack, List<ItemStack>> RUNIC_PREDICATE = (stack, others) ->
+         stack.is(ItemTags.ARROWS) || ArcanaItemUtils.isRunicArrow(stack);
+   public static final BiPredicate<ItemStack, List<ItemStack>> NON_RUNIC_PREDICATE = (stack, others) ->
+         stack.is(ItemTags.ARROWS) && !(ArcanaItemUtils.isRunicArrow(stack));
    
    private final boolean runic;
    
@@ -22,9 +30,9 @@ public class QuiverSlot extends Slot {
    
    public static boolean isValidItem(ItemStack stack, boolean isRunic){
       if(isRunic){
-         return stack.is(ItemTags.ARROWS) || ArcanaItemUtils.isRunicArrow(stack);
+         return RUNIC_PREDICATE.test(stack,new ArrayList<>());
       }else{
-         return stack.is(ItemTags.ARROWS) && !(ArcanaItemUtils.isRunicArrow(stack));
+         return NON_RUNIC_PREDICATE.test(stack,new ArrayList<>());
       }
    }
 }

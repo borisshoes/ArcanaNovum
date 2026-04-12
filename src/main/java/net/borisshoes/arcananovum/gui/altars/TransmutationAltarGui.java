@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.gui.altars;
 
-import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -11,7 +10,6 @@ import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.inventory.MenuType;
@@ -27,30 +25,6 @@ public class TransmutationAltarGui extends SimpleGui {
       super(type, player, false);
       this.blockEntity = blockEntity;
       setTitle(Component.literal("Transmutation Altar"));
-   }
-   
-   @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      if(index == 2){
-         TransmutationAltarRecipeGui recipeGui = new TransmutationAltarRecipeGui(player, this, Optional.of(blockEntity));
-         recipeGui.buildPage();
-         recipeGui.open();
-      }else if(index == 4 && blockEntity.getLevel() instanceof ServerLevel serverWorld){
-         if(blockEntity.getCooldown() <= 0){
-            if(blockEntity.checkTransmute() != null){
-               blockEntity.startTransmute(player);
-            }else{
-               player.sendSystemMessage(Component.literal("No Transmutation Items Found").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-            }
-            close();
-         }else{
-            player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
-            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-            close();
-         }
-      }
-      return true;
    }
    
    @Override
@@ -87,7 +61,11 @@ public class TransmutationAltarGui extends SimpleGui {
       recipeItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
             .append(Component.literal(" to view all Transmutation Recipes").withStyle(ChatFormatting.BLUE)))));
-      
+      recipeItem.setCallback((clickType) -> {
+         TransmutationAltarRecipeGui recipeGui = new TransmutationAltarRecipeGui(player, this, Optional.of(blockEntity));
+         recipeGui.buildPage();
+         recipeGui.open();
+      });
       setSlot(2, recipeItem);
       
       
@@ -98,6 +76,15 @@ public class TransmutationAltarGui extends SimpleGui {
          activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Click").withStyle(ChatFormatting.BLUE))
                .append(Component.literal(" to begin a Transmutation").withStyle(ChatFormatting.DARK_PURPLE)))));
+         activateItem.setCallback((clickType) -> {
+            if(blockEntity.checkTransmute() != null){
+               blockEntity.startTransmute(player);
+            }else{
+               player.sendSystemMessage(Component.literal("No Transmutation Items Found").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+            }
+            close();
+         });
          setSlot(4, activateItem);
       }else{
          GuiElementBuilder activateItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.CANCEL_COLOR, ArcanaColors.EQUAYUS_COLOR));
@@ -105,6 +92,11 @@ public class TransmutationAltarGui extends SimpleGui {
                .append(Component.literal("Altar Recharging").withStyle(ChatFormatting.BLUE))));
          activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal((blockEntity.getCooldown() / 20) + " Seconds").withStyle(ChatFormatting.DARK_PURPLE)))));
+         activateItem.setCallback((clickType) -> {
+            player.sendSystemMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+            close();
+         });
          setSlot(4, activateItem);
       }
    }

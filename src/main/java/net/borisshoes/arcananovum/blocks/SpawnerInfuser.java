@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -20,6 +21,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -59,7 +61,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,11 +86,6 @@ public class SpawnerInfuser extends ArcanaBlock {
       item = new SpawnerInfuserItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_ARCANE_SINGULARITY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_SPAWNER_HARNESS, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.ADVANCEMENT_KILL_MOB_NEAR_SCULK_CATALYST};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -193,7 +189,7 @@ public class SpawnerInfuser extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(BlockStateProperties.CAN_SUMMON, state.getValue(ACTIVE));
@@ -242,7 +238,7 @@ public class SpawnerInfuser extends ArcanaBlock {
             if(placer instanceof ServerPlayer player){
                SoundUtils.soulSounds(player.level(), pos, 5, 30);
                SoundUtils.playSound(world, pos, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.BLOCKS, 1, .6f);
-               player.displayClientMessage(Component.literal("The Infuser makes a most unsettling sound...").withStyle(ChatFormatting.DARK_GREEN), true);
+               player.sendSystemMessage(Component.literal("The Infuser makes a most unsettling sound...").withStyle(ChatFormatting.DARK_GREEN), true);
             }
          }
       }
@@ -264,8 +260,8 @@ public class SpawnerInfuser extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack INFUSER = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/spawner_infuser"));
-      public static final ItemStack INFUSER_ARM = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/spawner_infuser_arm"));
+      public static final LazyItemStack INFUSER = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/spawner_infuser"));
+      public static final LazyItemStack INFUSER_ARM = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/spawner_infuser_arm"));
       
       // Arm rotation constants - each arm points to a corner (45, 135, 225, 315 degrees)
       private static final float[] ARM_YAW = {45f, 135f, 225f, 315f};

@@ -42,7 +42,7 @@ public class AstralGatewayPortalBlockEntity extends BlockEntity implements Polym
          return;
       }
       
-      if(serverWorld.random.nextFloat() < 0.015f){
+      if(serverWorld.getRandom().nextFloat() < 0.015f){
          serverWorld.sendParticles(ParticleTypes.END_ROD, getBlockPos().getX() + 0.5, getBlockPos().getY() + 0.5, getBlockPos().getZ() + 0.5, 1, 0.3, 0.3, 0.3, 0.015);
       }
       

@@ -312,13 +312,12 @@ public class GatewayFrame {
    private void calculateEnclosedBlocks(ServerLevel level){
       if(blocks.size() < 4) return;
       
-      Set<BlockPos> blockSet = new HashSet<>(blocks);
       int maxBlocks = (maxSize * maxSize) / 4 + 1;
       
       for(Vec3i fillVec : fillVecs){
          BlockPos candidate = core.offset(fillVec);
-         if(!blockSet.contains(candidate)){
-            if(boundedFloodFill(level, candidate, blockSet, maxBlocks)){
+         if(!this.blockSet.contains(candidate)){
+            if(boundedFloodFill(level, candidate, this.blockSet, maxBlocks)){
                return;
             }
          }
@@ -452,7 +451,7 @@ public class GatewayFrame {
          for(Vec3i fillVec : fillVecs){
             BlockPos neighbor = current.offset(fillVec);
             if(visited.contains(neighbor)) continue;
-            if(!enclosedSet.contains(neighbor) && !blocks.contains(neighbor)) continue;
+            if(!enclosedSet.contains(neighbor) && !blockSet.contains(neighbor)) continue;
             
             visited.add(neighbor);
             queue.add(neighbor);

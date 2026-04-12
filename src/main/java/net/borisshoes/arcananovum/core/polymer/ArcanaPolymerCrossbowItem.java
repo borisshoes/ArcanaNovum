@@ -11,7 +11,9 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -36,7 +38,6 @@ import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 
@@ -76,15 +77,15 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    }
    
    @Override
-   public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-      ItemStack stack = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context);
+   public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+      ItemStack stack = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
       ChargedProjectiles projs = itemStack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
       stack.set(DataComponents.CHARGED_PROJECTILES, projs);
       return stack;
    }
    
    @Override
-   public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
+   public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
       if(PolymerResourcePackUtils.hasMainPack(context)){
          ArcanaSkin skin = ArcanaItem.getSkin(stack);
          if(skin != null){
@@ -103,8 +104,8 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    }
    
    @Override
-   public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context){
-      PolymerItem.super.modifyBasePolymerItemStack(out, stack, context);
+   public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
+      PolymerItem.super.modifyBasePolymerItemStack(out, stack, context, lookup);
    }
    
    @Override

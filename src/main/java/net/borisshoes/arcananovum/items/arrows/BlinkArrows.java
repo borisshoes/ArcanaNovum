@@ -10,9 +10,9 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -51,11 +51,6 @@ public class BlinkArrows extends RunicArrow {
       item = new BlinkArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.USE_ENDER_PEARL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -106,7 +101,7 @@ public class BlinkArrows extends RunicArrow {
       ArcanaEffectUtils.blinkArrowTp(player.level(), player.position());
       SoundUtils.playSound(arrow.level(), player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, .8f, .9f);
       
-      float percentage = ArcanaUtils.getArrowPercentage(arrow, 0.1f);
+      float percentage = MinecraftUtils.getArrowPercentage(arrow, 0.1f);
       int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN);
       int phaseInDuration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.BLINK_ARROW_PHASE_IN_DURATION_PER_LVL).get(phaseLvl);
       float phaseInDamageMod = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BLINK_ARROW_PHASE_IN_DMG_MULTIPLIER);

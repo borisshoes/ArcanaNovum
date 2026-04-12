@@ -13,7 +13,7 @@ import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
@@ -154,9 +154,8 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                serverWorld.addFreshEntity(new ItemEntity(serverWorld, worldPosition.getX() + 0.5, worldPosition.getY() + 1.25, worldPosition.getZ() + 0.5, obby, 0, 0.2, 0));
             }else{ // Put in inventory
                
-               try{
-                  Transaction transaction = Transaction.openOuter();
-                  int inserted = (int) StorageUtil.tryInsertStacking(InventoryStorage.of(output, Direction.DOWN), ItemVariant.of(obby), obby.getCount(), transaction);
+               try(Transaction transaction = Transaction.openOuter()){
+                  int inserted = (int) StorageUtil.tryInsertStacking(ContainerStorage.of(output, Direction.DOWN), ItemVariant.of(obby), obby.getCount(), transaction);
                   if(inserted < obby.getCount()){
                      obby.setCount(obby.getCount() - inserted);
                      serverWorld.addFreshEntity(new ItemEntity(serverWorld, worldPosition.getX() + 0.5, worldPosition.getY() + 2.5, worldPosition.getZ() + 0.5, obby, 0, 0.2, 0));
@@ -175,7 +174,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
             // Remove Source Blocks
             int efficiencyLvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.THERMAL_EXPANSION);
             double efficiency = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.IGNEOUS_COLLIDER_EFFICIENCY_PER_LVL).get(efficiencyLvl);
-            if(Math.random() >= efficiency){
+            if(serverWorld.getRandom().nextFloat() >= efficiency){
                if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
                   serverWorld.setBlock(hasLava, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                }else if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA_CAULDRON){
@@ -200,6 +199,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
             SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.ZOMBIE_VILLAGER_CURE, SoundSource.BLOCKS, 1, .6f);
             level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
             this.cooldown = getBaseCooldown();
+            this.setChanged();
          }
       }
    }

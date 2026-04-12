@@ -304,7 +304,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       if(tick >= 120 && tick <= 270){
          if(tick % 19 == 0){
             animatedLightningBolt(world, itemCenter, MathUtils.randomSpherePoint(itemCenter, 4, 2.5), 8, 0.5, ParticleTypes.ELECTRIC_SPARK, 8, 1, 0, 0, false, 2, 30);
-            SoundUtils.playSound(world, forgePos, SoundEvents.TRIDENT_THUNDER, SoundSource.BLOCKS, 0.25f, 1.75f + 0.25f * (float) Math.random());
+            SoundUtils.playSound(world, forgePos, SoundEvents.TRIDENT_THUNDER, SoundSource.BLOCKS, 0.25f, 1.75f + 0.25f * world.getRandom().nextFloat());
          }
       }
       
@@ -461,7 +461,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       if(tick >= 120 && tick <= 270){
          if(tick % 19 == 0){
             animatedLightningBolt(world, itemCenter, MathUtils.randomSpherePoint(itemCenter, 4, 2.5), 8, 0.5, ParticleTypes.ELECTRIC_SPARK, 8, 1, 0, 0, false, 2, 30);
-            SoundUtils.playSound(world, forgePos, SoundEvents.TRIDENT_THUNDER, SoundSource.BLOCKS, 0.25f, 1.75f + 0.25f * (float) Math.random());
+            SoundUtils.playSound(world, forgePos, SoundEvents.TRIDENT_THUNDER, SoundSource.BLOCKS, 0.25f, 1.75f + 0.25f * world.getRandom().nextFloat());
          }
       }
       
@@ -706,8 +706,8 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       if(tick > 60 && tick < 450){
-         if(Math.random() < 0.1){
-            animatedLightningBolt(world, center, outerPairs.get((int) (Math.random() * outerPairs.size())).getB(), 12, 0.5, ParticleTypes.ELECTRIC_SPARK, 16, 1, 0, 0, false, 0, 15);
+         if(world.getRandom().nextFloat() < 0.1f){
+            animatedLightningBolt(world, center, outerPairs.get(world.getRandom().nextInt(outerPairs.size())).getB(), 12, 0.5, ParticleTypes.ELECTRIC_SPARK, 16, 1, 0, 0, false, 0, 15);
          }
          if(tick % 6 == 0){
             world.sendParticles(ParticleTypes.END_ROD, center.x, center.y, center.z, 1, 1.6, 1.6, 1.6, 0);
@@ -715,10 +715,10 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       if(tick % 70 == 20){
-         SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, SoundSource.BLOCKS, 1, ((float) Math.random()) * .5f + 0.7f);
+         SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, SoundSource.BLOCKS, 1, world.getRandom().nextFloat() * .5f + 0.7f);
       }
       if(tick % 100 == 35){
-         SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.5f, ((float) Math.random()) * .4f + 1.2f);
+         SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.5f, world.getRandom().nextFloat() * .4f + 1.2f);
       }
       
       
@@ -877,10 +877,10 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
          SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 1, 1.5f);
       }
       if(tick % 70 == 20){
-         SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, SoundSource.BLOCKS, 1, ((float) Math.random()) * .5f + 0.7f);
+         SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM, SoundSource.BLOCKS, 1, world.getRandom().nextFloat() * .5f + 0.7f);
       }
       if(tick % 100 == 35){
-         SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.5f, ((float) Math.random()) * .4f + 1.2f);
+         SoundUtils.playSound(world, BlockPos.containing(center), SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.5f, world.getRandom().nextFloat() * .4f + 1.2f);
       }
       
       if(tick < 500){
@@ -936,8 +936,8 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       for(int i = 0; i < 2; i++){
-         double angle = Math.random() * Math.PI * 2;
-         double r = Math.random() * 1 + 3;
+         double angle = world.getRandom().nextDouble() * Math.PI * 2;
+         double r = world.getRandom().nextDouble() * 1 + 3;
          double x = r * Math.cos(angle) + center.x;
          double z = r * Math.sin(angle) + center.z;
          double y = center.y + 4.5;
@@ -946,8 +946,8 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
          world.sendParticles(ParticleTypes.FALLING_WATER, x, y, z, 5, 0.3, 0.3, 0.3, 1);
       }
       for(int i = 0; i < 5; i++){
-         double angle = Math.random() * Math.PI * 2;
-         double r = Math.random() * 1 + 3;
+         double angle = world.getRandom().nextDouble() * Math.PI * 2;
+         double r = world.getRandom().nextDouble() * 1 + 3;
          double x = r * Math.cos(angle) + center.x;
          double z = r * Math.sin(angle) + center.z;
          double y = center.y + 4.5;
@@ -1079,11 +1079,11 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
             groundStars.removeIf((p) -> p.getB() <= 0);
             if(groundStars.size() < 8){ // Re-add stars
                for(int i = 0; i < 2; i++){
-                  double t = Math.random() * Math.PI * 2;
-                  double r = (Math.random() * 3 + 1);
+                  double t = world.getRandom().nextDouble() * Math.PI * 2;
+                  double r = (world.getRandom().nextDouble() * 3 + 1);
                   double x = Math.cos(t) * r;
                   double z = Math.sin(t) * r;
-                  int lifeTime = (int) (Math.random() * 8 + 4);
+                  int lifeTime = world.getRandom().nextInt(8) + 4;
                   groundStars.add(new Tuple<>(new Vec3(x, 0, z).add(center.x, center.y + 0.5, center.z), lifeTime));
                }
             }
@@ -1098,8 +1098,8 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
          if(skyStars.size() < 30){
             double starRadius = 4.5;
             for(int i = 0; i < 30; i++){
-               double t = Math.random() * Math.PI * 2;
-               double r = (Math.random() * starRadius + 0.75);
+               double t = world.getRandom().nextDouble() * Math.PI * 2;
+               double r = (world.getRandom().nextDouble() * starRadius + 0.75);
                double x = Math.cos(t) * r;
                double z = Math.sin(t) * r;
                double y = Math.sqrt(starRadius * starRadius - r * r);
@@ -1433,10 +1433,10 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void smokeArrowEmit(ServerLevel world, Vec3 pos){
-      if(Math.random() < 0.1){
+      if(world.getRandom().nextFloat() < 0.1f){
          spawnLongParticle(world, ParticleTypes.LARGE_SMOKE, pos.x, pos.y, pos.z, 0.5, 0.5, 0.5, .01, 1);
       }
-      if(Math.random() < 0.05){
+      if(world.getRandom().nextFloat() < 0.05f){
          spawnLongParticle(world, ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, pos.x, pos.y, pos.z, 0.5, 0.5, 0.5, .01, 1);
       }
    }

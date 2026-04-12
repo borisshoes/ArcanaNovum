@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
@@ -13,14 +12,15 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -37,7 +37,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,11 +57,6 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
       item = new FelidaeCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CREEPER_HEAD, ResearchTasks.TAME_CAT, ResearchTasks.CAT_SCARE, ResearchTasks.FEATHER_FALL, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -111,8 +105,8 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      if(world.random.nextFloat() < 0.01){
-         SoundUtils.playSound(world, stele.getBlockPos(), SoundEvents.CAT_AMBIENT, SoundSource.BLOCKS, 1f, (float) (0.5 * (Math.random() - 0.5) + 1));
+      if(world.getRandom().nextFloat() < 0.01){
+         SoundUtils.playSound(world, stele.getBlockPos(), SoundUtils.getSound("entity.cat.ambient"), SoundSource.BLOCKS, 1f, 0.5f * (world.getRandom().nextFloat() - 0.5f) + 1);
       }
    }
    
@@ -122,8 +116,8 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -143,7 +137,7 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
-         SoundUtils.playSongToPlayer(player, SoundEvents.CAT_AMBIENT, 1f, (float) (0.5 * (Math.random() - 0.5) + 1));
+         SoundUtils.playSongToPlayer(player, SoundUtils.getSound("entity.cat.ambient"), 1f, 0.5f * (player.getRandom().nextFloat() - 0.5f) + 1);
          ArcanaAchievements.grant(player, ArcanaAchievements.MEOW);
          return InteractionResult.SUCCESS_SERVER;
       }

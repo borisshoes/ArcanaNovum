@@ -24,7 +24,6 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -183,7 +182,7 @@ public class ArcanaItemUtils {
             Identifier.withDefaultNamespace("ender_chest"),
             player.getEnderChestInventory(), player.getEnderChestInventory().getContainerSize(), 100,
             Component.literal("EC"),
-            Items.ENDER_CHEST.getName().copy(),
+            Items.ENDER_CHEST.getDefaultInstance().getItemName().copy(),
             0.5);
       arcanaInvHelper(inv, arcanaInv, new ArrayList<>());
       arcanaInvHelper(eChest, arcanaInv, new ArrayList<>(List.of(eChestCont)));
@@ -206,7 +205,7 @@ public class ArcanaItemUtils {
             BundleContents bundleComp = item.get(DataComponents.BUNDLE_CONTENTS);
             SimpleContainer bundleInv = new SimpleContainer(bundleComp.size());
             int index = 0;
-            for(ItemStack itemStack : bundleComp.itemsCopy()){
+            for(ItemStack itemStack : bundleComp.itemCopyStream().toList()){
                bundleInv.setItem(index, itemStack);
                index++;
             }
@@ -323,18 +322,8 @@ public class ArcanaItemUtils {
       return itemsTakingConc;
    }
    
-   public static boolean hasItemInInventory(Player player, Item itemType){
-      List<Tuple<List<ItemStack>, ItemStack>> allItems = ArcanaUtils.getAllItems(player);
-      
-      for(Tuple<List<ItemStack>, ItemStack> allItem : allItems){
-         List<ItemStack> itemList = allItem.getA();
-         
-         for(ItemStack item : itemList){
-            if(item.is(itemType)) return true;
-         }
-         
-      }
-      return false;
+   public static boolean hasItemInInventory(ServerPlayer player, Item itemType){
+      return ArcanaInventory.getPlayerItems(player).anyMatch(stack -> stack.is(itemType));
    }
    
    public static int countRarityInList(List<String> ids, ArcanaRarity rarity, boolean exclude){

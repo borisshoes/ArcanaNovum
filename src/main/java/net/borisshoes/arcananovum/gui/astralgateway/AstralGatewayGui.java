@@ -44,7 +44,7 @@ public class AstralGatewayGui extends SimpleGui {
          if(i == 0){
             continue;
          }else if(i == 1){
-            setSlotRedirect(7, new StardustSlot(gateway.getInventory(), i, i, 0));
+            setSlot(7, new StardustSlot(gateway.getInventory(), i, i, 0));
          }else{
             int adjustedI = i - 2;
             int guiIndex = 19 + (adjustedI % 7) + 9 * (adjustedI / 7);
@@ -52,7 +52,7 @@ public class AstralGatewayGui extends SimpleGui {
             if(!this.gateway.isAstralStargate()){
                slot = slot.withMatchedWorld(this.gateway.getLevel().dimension());
             }
-            setSlotRedirect(guiIndex, slot);
+            setSlot(guiIndex, slot);
          }
       }
    }
@@ -151,7 +151,7 @@ public class AstralGatewayGui extends SimpleGui {
       int stardustPerMin = gateway.getStardustPerMinute();
       int openingStardust = gateway.getOpeningStardust();
       GuiElementBuilder stardustCount = GuiElementBuilder.from(MinecraftUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultInstance()));
-      stardustCount.setName(Component.literal("Stored Stardust: " + TextUtils.readableInt((int) stardust)).withStyle(ChatFormatting.GOLD));
+      stardustCount.setName(Component.literal("Stored Stardust: " + TextUtils.readableInt((int) Math.min(stardust, Integer.MAX_VALUE))).withStyle(ChatFormatting.GOLD));
       stardustCount.addLoreLine(Component.literal("Maintaining the Gateway takes ").withStyle(ChatFormatting.YELLOW)
             .append(Component.literal("" + stardustPerMin).withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" Stardust per minute").withStyle(ChatFormatting.YELLOW)));
@@ -170,13 +170,13 @@ public class AstralGatewayGui extends SimpleGui {
       setSlot(8, stardustCount);
       
       boolean hasFrame = gateway.getFrame() != null && gateway.getFrame().finishedAndValid();
-      if(hasFrame && !(getSlotRedirect(4) instanceof WaystoneSlot)){
+      if(hasFrame && !(getCustomSlot(4) instanceof WaystoneSlot)){
          clearSlot(4);
          WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(), 0, 0, 0).withForGateway(gateway.getBlockPos()).withAttunement(true);
          if(!this.gateway.isAstralStargate()){
             slot = slot.withMatchedWorld(this.gateway.getLevel().dimension());
          }
-         setSlotRedirect(4, slot);
+         setSlot(4, slot);
       }else if(!hasFrame){
          clearSlot(4);
          GuiElementBuilder frameFind = new GuiElementBuilder(Items.SPYGLASS).hideDefaultTooltip();

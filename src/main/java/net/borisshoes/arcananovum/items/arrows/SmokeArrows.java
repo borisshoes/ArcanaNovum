@@ -10,7 +10,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -42,11 +42,6 @@ public class SmokeArrows extends RunicArrow {
       item = new SmokeArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SQUID, ResearchTasks.USE_CAMPFIRE, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.EFFECT_WEAKNESS};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -73,7 +68,7 @@ public class SmokeArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
-         float percentage = ArcanaUtils.getArrowPercentage(arrow);
+         float percentage = MinecraftUtils.getArrowPercentage(arrow);
          double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MIN);
          double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MAX);
          float range = (float) Mth.clamp(percentage * maxRange, minRange, maxRange);
@@ -85,7 +80,7 @@ public class SmokeArrows extends RunicArrow {
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.level() instanceof ServerLevel serverWorld){
-         float percentage = ArcanaUtils.getArrowPercentage(arrow);
+         float percentage = MinecraftUtils.getArrowPercentage(arrow);
          double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MIN);
          double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SMOKE_ARROW_RANGE_MAX);
          float range = (float) Mth.clamp(percentage * maxRange, minRange, maxRange);

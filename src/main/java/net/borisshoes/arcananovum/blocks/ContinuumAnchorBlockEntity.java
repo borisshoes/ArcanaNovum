@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.items.ExoticMatter;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -24,7 +25,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -43,7 +46,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.TreeMap;
 import java.util.UUID;
 
-public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, WorldlyContainer, ContainerListener {
+public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, WorldlyContainer {
    private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
@@ -52,11 +55,10 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
    private String customName;
    private int fuel;
    private boolean active;
-   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
+   private WatchedContainer inventory = new WatchedContainer(getContainerSize());
    
    public ContinuumAnchorBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.CONTINUUM_ANCHOR_BLOCK_ENTITY, pos, state);
-      this.inventory.addListener(this);
    }
    
    public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
@@ -155,7 +157,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
          if(active && serverWorld.getServer().getTickCount() % 20 == 0){
             int lvl = ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.TEMPORAL_RELATIVITY);
             double efficiency = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.CONTINUUM_ANCHOR_EFFICIENCY_PER_LVL).get(lvl);
-            if(Math.random() >= efficiency){
+            if(serverWorld.getRandom().nextFloat() >= efficiency){
                fuel = Math.max(0, fuel - 1);
                
                if(ArcanaItemUtils.identifyItem(getFuelStack()) instanceof ExoticMatter matter){
@@ -173,8 +175,11 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
             }
          }
          int fuelMarks = (int) Math.min(Math.ceil(4.0 * fuel / 600000.0), 4);
-         BlockState blockState = level.getBlockState(worldPosition).setValue(ContinuumAnchor.ContinuumAnchorBlock.ACTIVE, active).setValue(ContinuumAnchor.ContinuumAnchorBlock.CHARGES, fuelMarks);
-         level.setBlock(worldPosition, blockState, Block.UPDATE_ALL);
+         BlockState oldState = level.getBlockState(worldPosition);
+         BlockState newState = oldState.setValue(ContinuumAnchor.ContinuumAnchorBlock.ACTIVE, active).setValue(ContinuumAnchor.ContinuumAnchorBlock.CHARGES, fuelMarks);
+         if(oldState != newState){
+            level.setBlock(worldPosition, newState, Block.UPDATE_ALL);
+         }
          
          if(prevActive && !active){ // Power Down
             ArcanaNovum.removeActiveAnchor(serverWorld, worldPosition);
@@ -182,14 +187,16 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
          }else if(!prevActive && active){ // Power Up
             ArcanaNovum.addActiveAnchor(serverWorld, worldPosition);
             SoundUtils.playSound(serverWorld, worldPosition, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1, 0.7f);
-            ContinuumAnchor.loadChunks(serverWorld, new ChunkPos(worldPosition));
+            ContinuumAnchor.loadChunks(serverWorld, ChunkPos.containing(worldPosition));
          }
          
-         this.setChanged();
+         if(prevActive != active || oldState != newState){
+            this.setChanged();
+         }
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.active){
-         ContinuumAnchor.loadChunks(serverWorld, new ChunkPos(worldPosition));
+         ContinuumAnchor.loadChunks(serverWorld, ChunkPos.containing(worldPosition));
          ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
       }
    }
@@ -216,8 +223,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
-      this.inventory = new SimpleContainer(getContainerSize());
-      this.inventory.addListener(this);
+      this.inventory = new WatchedContainer(getContainerSize());
       if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
@@ -286,7 +292,8 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
    }
    
    @Override
-   public void containerChanged(Container sender){
-   
+   public void setChanged(){
+      super.setChanged();
+      this.inventory.setChanged();
    }
 }

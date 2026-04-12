@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
@@ -45,9 +46,9 @@ public class EnhancedStatUtils {
             (stack.has(DataComponents.MAX_DAMAGE));
    }
    
-   public static double generatePercentile(int stars){
-      double random = Math.random();
-      double uncapped = 0.2 * (stars + 1) * random * random + 0.1 * stars;
+   public static double generatePercentile(int stars, RandomSource random){
+      double r = random.nextDouble();
+      double uncapped = 0.2 * (stars + 1) * r * r + 0.1 * stars;
       return Math.min(1, uncapped);
    }
    

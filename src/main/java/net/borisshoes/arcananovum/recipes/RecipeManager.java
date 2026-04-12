@@ -371,7 +371,7 @@ public class RecipeManager {
       a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR), 1, "", false)
             .withName(Component.literal("In Midnight Enchanter").withStyle(ChatFormatting.DARK_AQUA));
       c = new ExplainIngredient(ArcanaRegistry.NEBULOUS_ESSENCE, 1, "Nebulous Essence", true)
-            .withName(ArcanaRegistry.NEBULOUS_ESSENCE.getName().copy().withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
+            .withName(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance().getItemName().copy().withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
             .withLore(List.of(Component.literal("1 Nebulous Essence per Paper").withStyle(ChatFormatting.BLUE)));
       d = new ExplainIngredient(Items.EXPERIENCE_BOTTLE, 10, "Levels", true)
             .withName(Component.literal("Experience").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD))
@@ -499,9 +499,10 @@ public class RecipeManager {
          List<SuspiciousStewEffects.Entry> effects = new ArrayList<>();
          Registry<MobEffect> effectRegistry = minecraftServer.registryAccess().lookupOrThrow(Registries.MOB_EFFECT);
          List<Holder.Reference<MobEffect>> effectEntries = effectRegistry.listElements().toList();
+         RandomSource random = minecraftServer.overworld().getRandom();
          int count = 0;
-         while(count < 10 && (Math.random() < 0.35 || count == 0)){
-            effects.add(new SuspiciousStewEffects.Entry(effectEntries.get((int) (Math.random() * effectEntries.size())), (int) (Math.random() * 580 + 20)));
+         while(count < 10 && (random.nextDouble() < 0.35 || count == 0)){
+            effects.add(new SuspiciousStewEffects.Entry(effectEntries.get(random.nextInt(effectEntries.size())), random.nextInt(580) + 20));
             count++;
          }
          SuspiciousStewEffects comp = new SuspiciousStewEffects(effects);
@@ -513,7 +514,8 @@ public class RecipeManager {
          ItemStack newBook = new ItemStack(Items.BOOK);
          ArrayList<Holder<Enchantment>> enchants = new ArrayList<>();
          minecraftServer.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).asHolderIdMap().forEach(enchants::add);
-         return EnchantmentHelper.enchantItem(RandomSource.create(), newBook, (int) (Math.random() * 30 + 15), enchants.stream());
+         RandomSource random = minecraftServer.overworld().getRandom();
+         return EnchantmentHelper.enchantItem(random, newBook, random.nextInt(30) + 15, enchants.stream());
       }, Component.literal("A Random ").append(Component.translatable(Items.ENCHANTED_BOOK.getDescriptionId()))));
       
       TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("goat_horns", new ItemStack(Items.GOAT_HORN, 1), MinecraftUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 3)), new ItemStack(Items.AMETHYST_SHARD, 7), (stack, minecraftServer) -> {
@@ -521,8 +523,8 @@ public class RecipeManager {
          Registry<Instrument> registry = minecraftServer.registryAccess().lookupOrThrow(Registries.INSTRUMENT);
          Identifier curId = Identifier.fromNamespaceAndPath("empty", "empty");
          if(curInstrument != null){
-            Instrument inst = curInstrument.instrument().unwrap(registry).orElse(null);
-            if(inst != null && registry.getKey(inst) != null){
+            Instrument inst = curInstrument.instrument().value();
+            if(registry.getKey(inst) != null){
                curId = registry.getKey(inst);
             }
          }
@@ -532,26 +534,34 @@ public class RecipeManager {
             options.add(entry);
          }
          if(options.isEmpty()) return stack;
-         Holder<Instrument> newInst = options.get(minecraftServer.overworld().random.nextInt(options.size()));
+         Holder<Instrument> newInst = options.get(minecraftServer.overworld().getRandom().nextInt(options.size()));
          return InstrumentItem.create(Items.GOAT_HORN, newInst);
       }, Component.literal("A Random ").append(Component.translatable(Items.GOAT_HORN.getDescriptionId()))));
       
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_normal", ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore(), MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.LANTERN, 1), (stack, minecraftServer) -> {
+      ItemStack normalItineranteur = ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore().copy();
+      ArcanaItem.putProperty(normalItineranteur, Itineranteur.COLOR_TAG, Itineranteur.LanternType.YELLOW.getId());
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_normal", normalItineranteur, MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.LANTERN, 1), (stack, minecraftServer) -> {
          ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.YELLOW.getId());
          return stack;
       }, Component.literal("A Normal ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
       
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_soul", ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore(), MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.SOUL_LANTERN, 1), (stack, minecraftServer) -> {
+      ItemStack soulItineranteur = ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore().copy();
+      ArcanaItem.putProperty(soulItineranteur, Itineranteur.COLOR_TAG, Itineranteur.LanternType.BLUE.getId());
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_soul", soulItineranteur, MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.SOUL_LANTERN, 1), (stack, minecraftServer) -> {
          ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.BLUE.getId());
          return stack;
       }, Component.literal("A Soulfire ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
       
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_oxidized", ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore(), MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.oxidized(), 1), (stack, minecraftServer) -> {
+      ItemStack oxidizedItineranteur = ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore().copy();
+      ArcanaItem.putProperty(oxidizedItineranteur, Itineranteur.COLOR_TAG, Itineranteur.LanternType.GREEN.getId());
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_oxidized", oxidizedItineranteur, MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.oxidized(), 1), (stack, minecraftServer) -> {
          ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.GREEN.getId());
          return stack;
       }, Component.literal("An Oxidized ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
       
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_unoxidized", ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore(), MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.unaffected(), 1), (stack, minecraftServer) -> {
+      ItemStack unoxidizedItineranteur = ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore().copy();
+      ArcanaItem.putProperty(unoxidizedItineranteur, Itineranteur.COLOR_TAG, Itineranteur.LanternType.COPPER.getId());
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_unoxidized", unoxidizedItineranteur, MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.unaffected(), 1), (stack, minecraftServer) -> {
          ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.COPPER.getId());
          return stack;
       }, Component.literal("An Unoxidized ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));

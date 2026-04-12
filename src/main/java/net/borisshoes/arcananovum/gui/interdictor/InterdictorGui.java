@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.Level;
 
 public class InterdictorGui extends SimpleGui {
    private final InterdictorBlockEntity interdictor;
@@ -25,6 +26,15 @@ public class InterdictorGui extends SimpleGui {
       }else{
          buildUneditable();
       }
+   }
+   
+   @Override
+   public void onTick(){
+      Level world = interdictor.getLevel();
+      if(world == null || world.getBlockEntity(interdictor.getBlockPos()) != interdictor || !interdictor.isAssembled()){
+         this.close();
+      }
+      super.onTick();
    }
    
    private void buildUneditable(){

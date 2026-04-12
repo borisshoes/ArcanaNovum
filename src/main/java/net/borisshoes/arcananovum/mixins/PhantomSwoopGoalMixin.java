@@ -14,7 +14,6 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.monster.Phantom;
@@ -32,15 +31,15 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    
    @Final
    @Shadow
-   Phantom field_7333; // Outer class synthetic field
+   Phantom this$0; // Outer class synthetic field
    
    @ModifyReturnValue(method = "canContinueToUse", at = @At(value = "RETURN"))
    private boolean arcananovum$shouldContinue(boolean original){
-      if(field_7333 instanceof DragonPhantomEntity) return true; // Guardian Phantoms immune to Felidae Charm
-      if(original && field_7333.getTarget() instanceof ServerPlayer player){
+      if(this$0 instanceof DragonPhantomEntity) return true; // Guardian Phantoms immune to Felidae Charm
+      if(original && this$0.getTarget() instanceof ServerPlayer player){
          GeomanticSteleBlockEntity.SteleZone felidaeStele = GeomanticSteleBlockEntity.getZoneAtEntity(player, (item) -> item.is(ArcanaRegistry.FELIDAE_CHARM.getItem()));
          if(felidaeStele != null){
-            SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
+            SoundUtils.playSongToPlayer(player, SoundUtils.getSound("entity.cat.hiss"), .1f, 1);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
             felidaeStele.getBlockEntity().giveXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_PHANTOM));
             return false;
@@ -58,7 +57,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
                continue; // Item not arcane, skip
             
             if(ArcanaItemUtils.identifyItem(item) instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item, ArcanaRegistry.FELIDAE_CHARM.getItem())){
-               SoundUtils.playSongToPlayer(player, SoundEvents.CAT_HISS, .1f, 1);
+               SoundUtils.playSongToPlayer(player, SoundUtils.getSound("entity.cat.hiss"), .1f, 1);
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
                return false;
             }

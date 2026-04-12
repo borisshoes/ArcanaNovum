@@ -17,8 +17,8 @@ import net.borisshoes.arcananovum.items.BinaryBlades;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -97,7 +97,7 @@ public class ItemEntityMixin {
             }
          }
          
-         long timeOfDay = serverWorld.getDayTime();
+         long timeOfDay = serverWorld.getGameTime();
          int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
          int curTime = (int) (timeOfDay % 24000L);
          int curPhase = day % 8;
@@ -108,7 +108,7 @@ public class ItemEntityMixin {
          boolean allowSimilarBlocks = ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ALLOW_SIMILAR_BLOCK_CHECKS);
          Set<Block> allowedBlocks = new HashSet<>();
          if(allowSimilarBlocks){
-            allowedBlocks.addAll(ArcanaUtils.getSimilarBlocks(Blocks.SMITHING_TABLE));
+            allowedBlocks.addAll(MinecraftUtils.getSimilarBlocks(Blocks.SMITHING_TABLE));
          }else{
             allowedBlocks.add(Blocks.SMITHING_TABLE);
          }
@@ -165,7 +165,7 @@ public class ItemEntityMixin {
          boolean allowSimilarBlocks = ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ALLOW_SIMILAR_BLOCK_CHECKS);
          Set<Block> allowedBlocks = new HashSet<>();
          if(allowSimilarBlocks){
-            allowedBlocks.addAll(ArcanaUtils.getSimilarBlocks(Blocks.ENCHANTING_TABLE));
+            allowedBlocks.addAll(MinecraftUtils.getSimilarBlocks(Blocks.ENCHANTING_TABLE));
          }else{
             allowedBlocks.add(Blocks.ENCHANTING_TABLE);
          }
@@ -225,8 +225,8 @@ public class ItemEntityMixin {
                   tomeEntity.setTarget(tomeCrafter.getUUID());
                }
                
-               float f = world.random.nextFloat() * 0.1F;
-               float g = world.random.nextFloat() * 6.2831855F;
+               float f = world.getRandom().nextFloat() * 0.1F;
+               float g = world.getRandom().nextFloat() * 6.2831855F;
                tomeEntity.setDeltaMovement((double) (-Mth.sin(g) * f), 0.20000000298023224, (double) (Mth.cos(g) * f));
                world.addFreshEntity(tomeEntity);
                
@@ -277,8 +277,8 @@ public class ItemEntityMixin {
             ItemEntity cryingObby = new ItemEntity(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), cObby);
             cryingObby.setPickUpDelay(40);
             
-            float f = world.random.nextFloat() * 0.1F;
-            float g = world.random.nextFloat() * 6.2831855F;
+            float f = world.getRandom().nextFloat() * 0.1F;
+            float g = world.getRandom().nextFloat() * 6.2831855F;
             cryingObby.setDeltaMovement((double) (-Mth.sin(g) * f), 0.20000000298023224, (double) (Mth.cos(g) * f));
             world.addFreshEntity(cryingObby);
             

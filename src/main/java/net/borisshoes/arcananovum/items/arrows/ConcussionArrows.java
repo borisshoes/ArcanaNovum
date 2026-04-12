@@ -11,11 +11,11 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -65,11 +65,6 @@ public class ConcussionArrows extends RunicArrow {
       item = new ConcussionArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SQUID, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.EFFECT_WEAKNESS, ResearchTasks.USE_FIREWORK};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -102,7 +97,7 @@ public class ConcussionArrows extends RunicArrow {
    
    private void concuss(AbstractArrow arrow, Level world, Vec3 pos, int levelBoost){
       AABB rangeBox = new AABB(pos.x + 10, pos.y + 10, pos.z + 10, pos.x - 10, pos.y - 10, pos.z - 10);
-      float percentage = ArcanaUtils.getArrowPercentage(arrow);
+      float percentage = MinecraftUtils.getArrowPercentage(arrow);
       double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CONCUSSION_ARROW_RANGE_MAX);
       double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CONCUSSION_ARROW_RANGE_MIN);
       double range = Mth.clamp(percentage * maxRange, minRange, maxRange);

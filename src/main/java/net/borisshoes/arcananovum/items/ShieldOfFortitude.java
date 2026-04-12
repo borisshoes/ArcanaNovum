@@ -18,7 +18,9 @@ import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -45,7 +47,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,11 +71,6 @@ public class ShieldOfFortitude extends ArcanaItem {
       item = new ShieldOfFortitudeItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.EFFECT_ABSORPTION, ResearchTasks.ADVANCEMENT_DEFLECT_ARROW, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -176,13 +172,13 @@ public class ShieldOfFortitude extends ArcanaItem {
          super(getThis(),
                getEquipmentArcanaItemComponents()
                      .equippableUnswappable(EquipmentSlot.OFFHAND)
-                     .component(DataComponents.BLOCKS_ATTACKS,
-                           new BlocksAttacks(
+                     .delayedComponent(DataComponents.BLOCKS_ATTACKS,
+                           context -> new BlocksAttacks(
                                  0.25F,
                                  1.0F,
                                  List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
                                  new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F),
-                                 Optional.of(DamageTypeTags.BYPASSES_SHIELD),
+                                 Optional.of(context.getOrThrow(DamageTypeTags.BYPASSES_SHIELD)),
                                  Optional.of(SoundEvents.SHIELD_BLOCK),
                                  Optional.of(SoundEvents.SHIELD_BREAK)
                            ))
@@ -212,7 +208,7 @@ public class ShieldOfFortitude extends ArcanaItem {
       }
       
       @Override
-      public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
+      public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
          if(PolymerResourcePackUtils.hasMainPack(context)){
             ArcanaSkin skin = ArcanaItem.getSkin(stack);
             if(skin != null){
@@ -237,8 +233,8 @@ public class ShieldOfFortitude extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack stack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack stack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          List<String> stringList = new ArrayList<>();
          float abs = getFloatProperty(itemStack, ABSORPTION_TAG);
          if(abs >= 40){

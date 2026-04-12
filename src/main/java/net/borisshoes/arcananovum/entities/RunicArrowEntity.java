@@ -18,6 +18,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.MathUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -40,7 +41,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2d;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Map;
@@ -118,7 +118,7 @@ public class RunicArrowEntity extends Arrow implements PolymerEntity {
             if(getOwner() != null && getOwner().isShiftKeyDown()){
                data.putBoolean("severed", true);
                if(getOwner() instanceof ServerPlayer player){
-                  player.displayClientMessage(Component.literal("Arcane Tethers Severed").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("Arcane Tethers Severed").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
                }
             }
             

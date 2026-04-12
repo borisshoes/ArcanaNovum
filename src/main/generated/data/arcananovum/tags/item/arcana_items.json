@@ -79,6 +79,14 @@
     "arcananovum:greaves_of_gaialtus",
     "arcananovum:cleansing_charm",
     "arcananovum:cetacea_charm",
-    "arcananovum:waystone"
+    "arcananovum:waystone",
+    "arcananovum:interdictor",
+    "arcananovum:itineranteur",
+    "arcananovum:negotiation_charm",
+    "arcananovum:astral_gateway",
+    "arcananovum:clockwork_multitool",
+    "arcananovum:ender_crate",
+    "arcananovum:geomantic_stele",
+    "arcananovum:transmogrification_catalyst"
   ]
 }

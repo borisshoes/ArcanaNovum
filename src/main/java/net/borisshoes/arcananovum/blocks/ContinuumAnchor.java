@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -24,6 +25,7 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -62,7 +64,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,11 +92,6 @@ public class ContinuumAnchor extends ArcanaBlock {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.UNLOCK_EXOTIC_MATTER, ResearchTasks.ADVANCEMENT_CHARGE_RESPAWN_ANCHOR, ResearchTasks.UNLOCK_STELLAR_CORE};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("SnivyXXY")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("SnivyXXY"))};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -138,7 +134,7 @@ public class ContinuumAnchor extends ArcanaBlock {
    public static void loadChunks(ServerLevel serverWorld, ChunkPos pos){
       for(int i = -RANGE; i <= RANGE; i++){
          for(int j = -RANGE; j <= RANGE; j++){
-            ContinuumAnchor.addChunk(serverWorld, new ChunkPos(pos.x + i, pos.z + j));
+            ContinuumAnchor.addChunk(serverWorld, new ChunkPos(pos.x() + i, pos.z() + j));
          }
       }
    }
@@ -146,11 +142,12 @@ public class ContinuumAnchor extends ArcanaBlock {
    public static void addChunk(ServerLevel world, ChunkPos chunk){
       world.getChunkSource().addTicketWithRadius(ArcanaRegistry.ANCHOR_TICKET_TYPE, chunk, 2);
       Long2IntOpenHashMap m = ANCHOR_CHUNKS.computeIfAbsent(world, w -> new Long2IntOpenHashMap());
-      m.put(chunk.toLong(), 40);
+      m.put(chunk.pack(), 40);
    }
    
    public static boolean isChunkLoaded(ServerLevel serverWorld, ChunkPos chunk){
-      return ANCHOR_CHUNKS.getOrDefault(serverWorld, new Long2IntOpenHashMap()).containsKey(chunk.toLong());
+      Long2IntOpenHashMap chunks = ANCHOR_CHUNKS.get(serverWorld);
+      return chunks != null && chunks.containsKey(chunk.pack());
    }
    
    public static void updateLoadedChunks(MinecraftServer server){
@@ -176,7 +173,7 @@ public class ContinuumAnchor extends ArcanaBlock {
    public static void initLoadedChunks(MinecraftServer minecraftServer){
       for(ServerLevel serverWorld : minecraftServer.getAllLevels()){
          for(BlockPos anchorPos : DataAccess.getWorld(serverWorld.dimension(), AnchorData.KEY).getAnchors()){
-            ChunkPos chunkPos = new ChunkPos(anchorPos);
+            ChunkPos chunkPos = ChunkPos.containing(anchorPos);
             loadChunks(serverWorld, chunkPos);
          }
       }
@@ -214,7 +211,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.RESPAWN_ANCHOR.defaultBlockState().setValue(CHARGES, state.getValue(CHARGES));
@@ -269,7 +266,7 @@ public class ContinuumAnchor extends ArcanaBlock {
             initializeArcanaBlock(stack, anchor);
             
             if(placer instanceof ServerPlayer player){
-               player.displayClientMessage(Component.literal("Placing the Continuum Anchor sends a ripple across spacetime.").withStyle(ChatFormatting.DARK_BLUE), true);
+               player.sendSystemMessage(Component.literal("Placing the Continuum Anchor sends a ripple across spacetime.").withStyle(ChatFormatting.DARK_BLUE), true);
                SoundUtils.playSound(world, pos, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 5, .8f);
             }
          }
@@ -296,12 +293,12 @@ public class ContinuumAnchor extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack ANCHOR_BASE_0 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_0"));
-      public static final ItemStack ANCHOR_BASE_1 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_1"));
-      public static final ItemStack ANCHOR_BASE_2 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_2"));
-      public static final ItemStack ANCHOR_BASE_3 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_3"));
-      public static final ItemStack ANCHOR_BASE_4 = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_4"));
-      public static final ItemStack ANCHOR_SPIKE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/continuum_anchor_spike"));
+      public static final LazyItemStack ANCHOR_BASE_0 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_0"));
+      public static final LazyItemStack ANCHOR_BASE_1 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_1"));
+      public static final LazyItemStack ANCHOR_BASE_2 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_2"));
+      public static final LazyItemStack ANCHOR_BASE_3 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_3"));
+      public static final LazyItemStack ANCHOR_BASE_4 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_4"));
+      public static final LazyItemStack ANCHOR_SPIKE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_spike"));
       
       // Spike animation constants
       private static final float SPIKE_TILT = 7.5f * Mth.DEG_TO_RAD; // Tilt towards center
@@ -368,7 +365,7 @@ public class ContinuumAnchor extends ArcanaBlock {
          this.eastSpike.setScale(new Vector3f(0f));
          this.eastSpike.setInterpolationDuration(2);
          
-         this.matter = ItemDisplayElementUtil.createSimple(ArcanaRegistry.EXOTIC_MATTER.getPrefItemNoLore());
+         this.matter = ItemDisplayElementUtil.createSimple(new ItemStack(ArcanaRegistry.EXOTIC_MATTER.getItem()));
          this.matter.setInterpolationDuration(2);
          if(charges > 0) this.addElement(this.matter);
          
@@ -404,11 +401,11 @@ public class ContinuumAnchor extends ArcanaBlock {
       
       private static ItemStack getBaseModelForCharges(int charges){
          return switch(charges){
-            case 1 -> ANCHOR_BASE_1;
-            case 2 -> ANCHOR_BASE_2;
-            case 3 -> ANCHOR_BASE_3;
-            case 4 -> ANCHOR_BASE_4;
-            default -> ANCHOR_BASE_0;
+            case 1 -> ANCHOR_BASE_1.get();
+            case 2 -> ANCHOR_BASE_2.get();
+            case 3 -> ANCHOR_BASE_3.get();
+            case 4 -> ANCHOR_BASE_4.get();
+            default -> ANCHOR_BASE_0.get();
          };
       }
       

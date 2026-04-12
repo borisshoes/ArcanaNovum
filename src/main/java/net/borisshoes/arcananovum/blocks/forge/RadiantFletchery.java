@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -17,6 +18,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -46,7 +48,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,11 +74,6 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       item = new RadiantFletcheryItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.ADVANCEMENT_SHOOT_ARROW, ResearchTasks.ADVANCEMENT_OL_BETSY, ResearchTasks.OBTAIN_TIPPED_ARROW, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION, ResearchTasks.UNLOCK_STARLIGHT_FORGE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -153,7 +149,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.FLETCHING_TABLE.defaultBlockState();
@@ -230,8 +226,8 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack FLETCHERY = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/radiant_fletchery"));
-      public static final ItemStack MATRIX = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/radiant_fletchery_matrix"));
+      public static final LazyItemStack FLETCHERY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/radiant_fletchery"));
+      public static final LazyItemStack MATRIX = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/radiant_fletchery_matrix"));
       
       // Rubik's cube-like basis vectors - each disc rotates around its assigned axis
       private static final Vector3f[] BASIS_VECTORS = {
@@ -300,7 +296,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
          basisIndices[1] = 1;
          basisIndices[2] = 2;
          
-         // Use ThreadLocalRandom.current() for initialization since world.random may not be accessible from this thread
+         // Use ThreadLocalRandom.current() for initialization since world.getRandom() may not be accessible from this thread
          Random initRandom = ThreadLocalRandom.current();
          for(int i = 0; i < 3; i++){
             oscillationPhases[i] = initRandom.nextFloat() * Mth.TWO_PI;
@@ -371,10 +367,10 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
                   currentAngles[i] = targetAngles[i];
                   flickCooldowns[i]--;
                   if(flickCooldowns[i] <= 0){
-                     float flickDegrees = MIN_FLICK_DEGREES + world.random.nextFloat() * (MAX_FLICK_DEGREES - MIN_FLICK_DEGREES);
-                     float flickAmount = flickDegrees * Mth.DEG_TO_RAD * (world.random.nextBoolean() ? 1 : -1);
+                     float flickDegrees = MIN_FLICK_DEGREES + world.getRandom().nextFloat() * (MAX_FLICK_DEGREES - MIN_FLICK_DEGREES);
+                     float flickAmount = flickDegrees * Mth.DEG_TO_RAD * (world.getRandom().nextBoolean() ? 1 : -1);
                      targetAngles[i] += flickAmount;
-                     flickCooldowns[i] = MIN_WAIT_TICKS + world.random.nextInt(MAX_WAIT_TICKS - MIN_WAIT_TICKS);
+                     flickCooldowns[i] = MIN_WAIT_TICKS + world.getRandom().nextInt(MAX_WAIT_TICKS - MIN_WAIT_TICKS);
                   }
                }
             }

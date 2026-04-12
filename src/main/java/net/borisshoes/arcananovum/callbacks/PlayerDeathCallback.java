@@ -43,8 +43,8 @@ public class PlayerDeathCallback {
                               .withColor(ChatFormatting.LIGHT_PURPLE).withBold(true)))
                   .append(Component.literal(" to Teleport back to the fight!").withStyle(ChatFormatting.AQUA));
             
-            newPlayer.displayClientMessage(deathMsg1, false);
-            newPlayer.displayClientMessage(deathMsg2, false);
+            newPlayer.sendSystemMessage(deathMsg1, false);
+            newPlayer.sendSystemMessage(deathMsg2, false);
          }));
       }
    }

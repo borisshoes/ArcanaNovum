@@ -14,7 +14,9 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -36,7 +38,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,15 +65,16 @@ public class Soulstone extends ArcanaItem {
       item = new SoulstoneItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_KILL_A_MOB, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.USE_SOUL_SPEED, ResearchTasks.UNLOCK_STELLAR_CORE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, TYPE_TAG, "unattuned");
       putProperty(stack, SOULS_TAG, 0);
       putProperty(stack, MAX_TIER_TAG, 0);
       putProperty(stack, SOULS_FROM_SPEAR_TAG, 0);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -149,7 +151,7 @@ public class Soulstone extends ArcanaItem {
       int tier = soulsToTier(souls);
       if(tier != soulsToTier(souls - toAdd)){
          // Level up notification
-         player.displayClientMessage(Component.literal("Your Soulstone crackles with new power!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
+         player.sendSystemMessage(Component.literal("Your Soulstone crackles with new power!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
          SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_CHARGE, 1, 1f);
          if(tier > maxTier){
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SOULSTONE_LEVEL_UP_PER_SOUL) * souls); // Add xp
@@ -255,8 +257,8 @@ public class Soulstone extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack) || getType(itemStack).equals("unattuned")) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -292,15 +294,15 @@ public class Soulstone extends ArcanaItem {
          String type = getStringProperty(stack, TYPE_TAG);
          
          if(type.equals("unattuned") && target instanceof Mob attackedEntity && playerEntity instanceof ServerPlayer player){
-            if(attackedEntity.getType().is(ArcanaRegistry.SOULSTONE_DISALLOWED)){
-               player.displayClientMessage(Component.literal("The Soulstone cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
+            if(attackedEntity.is(ArcanaRegistry.SOULSTONE_DISALLOWED)){
+               player.sendSystemMessage(Component.literal("The Soulstone cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
             }else{
                String entityTypeId = EntityType.getKey(attackedEntity.getType()).toString();
                String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
                
                putProperty(stack, TYPE_TAG, entityTypeId);
                buildItemLore(stack, player.level().getServer());
-               player.displayClientMessage(Component.literal("The Soulstone attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Soulstone attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1, .5f);
             }
          }

@@ -104,7 +104,13 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
          ArcanaAchievements.grant(player, ArcanaAchievements.COME_AGAIN_RAIN);
       }
       
-      serverWorld.setWeatherParameters(mode == 0 ? dur : 0, mode >= 1 ? dur : 0, mode >= 1, mode == 2);
+      if(mode == 0){
+         serverWorld.getWeatherData().setClearWeatherTime(dur);
+      }else if(mode == 1){
+         serverWorld.getWeatherData().setRainTime(dur);
+      }else if(mode == 2){
+         serverWorld.getWeatherData().setThunderTime(dur);
+      }
       level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
       this.setActive(false);
    }
@@ -213,6 +219,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    
    public void setMode(int mode){
       this.mode = mode;
+      setChanged();
    }
    
    public int getDuration(){
@@ -221,6 +228,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    
    public void setDuration(int duration){
       this.duration = duration;
+      setChanged();
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

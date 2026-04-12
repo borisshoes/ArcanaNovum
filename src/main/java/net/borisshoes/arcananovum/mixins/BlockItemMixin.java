@@ -34,15 +34,21 @@ public class BlockItemMixin {
       ItemStack pants = player.getItemBySlot(EquipmentSlot.LEGS);
       if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || !ArcanaItem.getBooleanProperty(pants, ArcanaItem.ACTIVE_TAG))
          return;
-      ItemStack refillStack = greaves.getStackOf(pants, stack);
+      int maxRefillAmt = upperThresh - count;
+      ItemStack refillStack = greaves.removeStackOf(pants, stack, maxRefillAmt);
       if(!refillStack.isEmpty()){
-         int amtToRefill = Math.min(upperThresh - count, refillStack.getCount());
-         player.getInventory().add(refillStack.split(amtToRefill));
+         int amtToRefill = refillStack.getCount();
+         player.getInventory().add(refillStack);
          greaves.buildItemLore(pants, BorisLib.SERVER);
          
          if(stack.is(Items.DIAMOND_BLOCK)){
             ArcanaAchievements.grant(player, ArcanaAchievements.MINERS_WALLET);
-         }else if(stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() != null && (blockItem.getBlock().builtInRegistryHolder().is(BlockTags.BASE_STONE_OVERWORLD) || blockItem.getBlock().builtInRegistryHolder().is(BlockTags.DIRT))){
+         }else if(stack.getItem() instanceof BlockItem blockItem &&
+               (blockItem.getBlock().builtInRegistryHolder().is(BlockTags.BASE_STONE_OVERWORLD) ||
+                     blockItem.getBlock().builtInRegistryHolder().is(BlockTags.DIRT) ||
+                     blockItem.getBlock().builtInRegistryHolder().is(BlockTags.GRASS_BLOCKS) ||
+                     blockItem.getBlock().builtInRegistryHolder().is(BlockTags.MUD) ||
+                     blockItem.getBlock().builtInRegistryHolder().is(BlockTags.MOSS_BLOCKS))){
             ArcanaAchievements.progress(player, ArcanaAchievements.TERRAFORMER, amtToRefill);
          }
          

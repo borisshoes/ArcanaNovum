@@ -51,12 +51,13 @@ public class FeastingCharm extends ArcanaItem {
       item = new FeastingCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENCHANTED_GOLDEN_APPLE, ResearchTasks.HUNGER_DAMAGE, ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, MODE_TAG, 0);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -88,13 +89,13 @@ public class FeastingCharm extends ArcanaItem {
       putProperty(stack, MODE_TAG, mode);
       switch(mode){
          case 0 ->
-               player.displayClientMessage(Component.literal("Feasting Mode: Optimal").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("Feasting Mode: Optimal").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
          case 1 ->
-               player.displayClientMessage(Component.literal("Feasting Mode: Regen").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("Feasting Mode: Regen").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
          case 2 ->
-               player.displayClientMessage(Component.literal("Feasting Mode: Optimal + Emergency").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("Feasting Mode: Optimal + Emergency").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
          case 3 ->
-               player.displayClientMessage(Component.literal("Feasting Mode: Regen + Emergency").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("Feasting Mode: Regen + Emergency").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
       }
    }
    
@@ -170,7 +171,7 @@ public class FeastingCharm extends ArcanaItem {
                };
                
                if(consume){
-                  player.displayClientMessage(Component.literal("Your Feasting Charm consumes a " + selectedFood.getHoverName().getString()).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("Your Feasting Charm consumes a " + selectedFood.getHoverName().getString()).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), true);
                   float extraSat = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_SATURATION_PER_LVL).get(gluttony);
                   int extraHunger = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_FOOD_PER_LVL).get(gluttony);
                   hunger.eat(extraHunger, extraSat);

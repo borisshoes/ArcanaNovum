@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.blocks;
 
 import com.google.common.collect.Lists;
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -23,6 +24,7 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -48,7 +50,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,11 +72,6 @@ public class FractalSponge extends ArcanaBlock {
       item = new FractalSpongeItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SPONGE, ResearchTasks.OBTAIN_END_CRYSTAL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -227,7 +223,7 @@ public class FractalSponge extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.SPONGE.defaultBlockState();
@@ -274,8 +270,8 @@ public class FractalSponge extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack SPONGE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/fractal_sponge"));
-      public static final ItemStack SPONGE_WET = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/fractal_sponge_wet"));
+      public static final LazyItemStack SPONGE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/fractal_sponge"));
+      public static final LazyItemStack SPONGE_WET = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/fractal_sponge_wet"));
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

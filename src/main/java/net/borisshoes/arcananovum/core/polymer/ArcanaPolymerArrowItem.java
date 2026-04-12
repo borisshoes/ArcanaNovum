@@ -8,8 +8,10 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,7 +36,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,8 +64,8 @@ public abstract class ArcanaPolymerArrowItem extends ArrowItem implements Polyme
    }
    
    @Override
-   public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-      ItemStack superStack = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context);
+   public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+      ItemStack superStack = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
       PotionContents stackComp = itemStack.get(DataComponents.POTION_CONTENTS);
       if(stackComp != null){
          PotionContents cur = superStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
@@ -77,7 +78,7 @@ public abstract class ArcanaPolymerArrowItem extends ArrowItem implements Polyme
    }
    
    @Override
-   public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
+   public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
       if(PolymerResourcePackUtils.hasMainPack(context)){
          ArcanaSkin skin = ArcanaItem.getSkin(stack);
          if(skin != null){
@@ -95,8 +96,8 @@ public abstract class ArcanaPolymerArrowItem extends ArrowItem implements Polyme
    }
    
    @Override
-   public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context){
-      PolymerItem.super.modifyBasePolymerItemStack(out, stack, context);
+   public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
+      PolymerItem.super.modifyBasePolymerItemStack(out, stack, context, lookup);
    }
    
    @Override

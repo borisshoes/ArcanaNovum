@@ -67,6 +67,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -244,7 +245,7 @@ public class ArcanaCommands {
                   .append(arcanaItem.getTranslatedName().withStyle(ChatFormatting.AQUA))
                   .append(Component.literal("] ID: ").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(Component.literal(uuid).withStyle(ChatFormatting.DARK_PURPLE));
-            response.add(feedback.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowItem(stack)).withClickEvent(new ClickEvent.CopyToClipboard(uuid))));
+            response.add(feedback.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowItem(ItemStackTemplate.fromNonEmptyStack(stack))).withClickEvent(new ClickEvent.CopyToClipboard(uuid))));
             
             if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount() / arcanaItem.getPrefItem().getCount())){
                MutableComponent duplicateWarning = Component.literal("")
@@ -297,7 +298,7 @@ public class ArcanaCommands {
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(player.getOffhandItem());
          
          if(lines.isEmpty()){
-            player.displayClientMessage(Component.literal("Hold a written book to get data"), true);
+            player.sendSystemMessage(Component.literal("Hold a written book to get data"), true);
          }else{
             Optional<Optional<Path>> outPathOpt = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/" + MOD_ID + "/datagen/"));
             if(outPathOpt.isEmpty() || outPathOpt.get().isEmpty()){
@@ -447,7 +448,7 @@ public class ArcanaCommands {
             
             out.close();
          }else{
-            player.displayClientMessage(Component.literal("Hold an item to get data"), true);
+            player.sendSystemMessage(Component.literal("Hold an item to get data"), true);
          }
       }catch(Exception e){
          log(2, e.toString());

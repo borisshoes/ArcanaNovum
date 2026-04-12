@@ -243,10 +243,10 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe {
          }
       }
       if(first != null){
-         return first.getName().copy();
+         return first.getDefaultInstance().getItemName().copy();
       }
       if(second != null){
-         return second.getName().copy();
+         return second.getDefaultInstance().getItemName().copy();
       }
       return Component.literal("???");
    }

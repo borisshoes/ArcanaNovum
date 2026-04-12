@@ -13,7 +13,9 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -40,7 +42,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,12 +63,13 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CONDUIT, ResearchTasks.CATCH_FISH, ResearchTasks.EFFECT_DOLPHINS_GRACE, ResearchTasks.DROWNING_DAMAGE};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Rookodzol"))};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, ACTIVE_TAG, true);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -142,7 +144,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
          }
       }
       
-      if(world.random.nextFloat() < 0.15){
+      if(world.getRandom().nextFloat() < 0.15){
          Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
          world.sendParticles(ParticleTypes.NAUTILUS, stackPos.x(), stackPos.y() + 1, stackPos.z(), 5, 0.25, 0.25, 0.25, 1);
          world.sendParticles(ParticleTypes.DRIPPING_WATER, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, 1);
@@ -160,8 +162,8 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          boolean delphinidae = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.DELPHINIDAE) > 0;
@@ -224,10 +226,10 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
             putProperty(stack, ACTIVE_TAG, active);
             
             if(active){
-               player.displayClientMessage(Component.literal("The Charm moistens").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm moistens").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.PUFFER_FISH_DEATH, 0.5f, 0.8f);
             }else{
-               player.displayClientMessage(Component.literal("The Charm dries out").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm dries out").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.PUFFER_FISH_BLOW_OUT, 0.5f, 0.7f);
             }
             

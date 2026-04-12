@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.gui.altars;
 
-import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -33,40 +32,6 @@ public class StarpathAltarGui extends SimpleGui {
       stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.STARGATE) > 0;
       
       setTitle(Component.literal("Starpath Altar"));
-   }
-   
-   @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      if(index == 2){
-         
-         if(starcharts){
-            StarpathAltarChartsGui gui = new StarpathAltarChartsGui(player, this, blockEntity);
-            gui.buildPage();
-            gui.open();
-         }else{
-            StarpathTargetGui gui = new StarpathTargetGui(player, blockEntity, true, this, (obj) -> blockEntity.setTarget((BlockPos) obj));
-            gui.open();
-         }
-      }else if(index == 4){
-         if(blockEntity.getCooldown() <= 0){
-            Item cost = StarpathAltarBlockEntity.getCost();
-            if(MinecraftUtils.removeItems(player, cost, blockEntity.calculateCost())){
-               blockEntity.startTeleport(player);
-               close();
-            }else{
-               player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                     .append(Component.translatable(cost.getDescriptionId()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))
-                     .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
-               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-               close();
-            }
-         }else{
-            player.displayClientMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
-            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-            close();
-         }
-      }
-      return true;
    }
    
    @Override
@@ -115,6 +80,16 @@ public class StarpathAltarGui extends SimpleGui {
             .append(Component.literal("").withStyle(ChatFormatting.YELLOW)))));
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Click to Change Target").withStyle(ChatFormatting.YELLOW)))));
+      locationItem.setCallback((clickType) -> {
+         if(starcharts){
+            StarpathAltarChartsGui gui = new StarpathAltarChartsGui(player, this, blockEntity);
+            gui.buildPage();
+            gui.open();
+         }else{
+            StarpathTargetGui gui = new StarpathTargetGui(player, blockEntity, true, this, (obj) -> blockEntity.setTarget((BlockPos) obj));
+            gui.open();
+         }
+      });
       setSlot(2, locationItem);
       
       int cost = blockEntity.calculateCost();
@@ -144,6 +119,25 @@ public class StarpathAltarGui extends SimpleGui {
          }
       }
       activateItem.addLoreLine(TextUtils.removeItalics(text));
+      activateItem.setCallback((clickType) -> {
+         if(blockEntity.getCooldown() <= 0){
+            Item curCost = StarpathAltarBlockEntity.getCost();
+            if(MinecraftUtils.removeItems(player, curCost, blockEntity.calculateCost())){
+               blockEntity.startTeleport(player);
+               close();
+            }else{
+               player.sendSystemMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                     .append(Component.translatable(curCost.getDescriptionId()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))
+                     .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
+               SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+               close();
+            }
+         }else{
+            player.sendSystemMessage(Component.literal("The Altar is on Cooldown").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+            close();
+         }
+      });
       setSlot(4, activateItem);
    }
    

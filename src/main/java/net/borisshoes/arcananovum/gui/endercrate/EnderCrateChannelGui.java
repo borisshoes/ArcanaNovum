@@ -21,7 +21,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -90,7 +89,7 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
          setSlot(i + 18, bottom.setCallback(click));
          
          GuiElementBuilder dye = GuiElementBuilder.from(GraphicalItem.with(EnderCrateChannel.colorToGraphicElement(color))).hideDefaultTooltip();
-         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(DyeItem.byColor(color));
+         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(MinecraftUtils.getVanillaDyeItem(color));
          dye.setName(Component.literal("")
                .append(Component.literal("Frequency " + (i + 1) + ": ").withStyle(ChatFormatting.DARK_PURPLE))
                .append(dyeComp));
@@ -155,7 +154,7 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
       if(watched != null){
          Level world = watched.getLevel();
          if(world == null || world.getBlockEntity(watched.getBlockPos()) != watched){
-            world.gameEvent(GameEvent.CONTAINER_CLOSE, watched.getBlockPos(), GameEvent.Context.of(watched.getBlockState()));
+            if(world != null) world.gameEvent(GameEvent.CONTAINER_CLOSE, watched.getBlockPos(), GameEvent.Context.of(watched.getBlockState()));
             this.close();
          }
       }
@@ -164,7 +163,7 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       if(onConfirm != null){
          onConfirm.accept(this.channel);
          Set<DyeColor> colors = new HashSet<>();
@@ -175,7 +174,6 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
             ArcanaAchievements.grant(player, ArcanaAchievements.SECURITY_RAINBOW);
          }
       }
-      super.onClose();
    }
    
    @Override

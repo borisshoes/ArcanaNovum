@@ -20,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -96,7 +97,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                            MinecraftUtils.returnItems(new SimpleContainer(new ItemStack(Items.BOOK)), player);
                            selected = ItemStack.EMPTY;
                         }else if(result == ArcaneSingularityBlockEntity.SingularityResult.FAIL){
-                           player.displayClientMessage(Component.literal("Those books are incompatible").withStyle(ChatFormatting.RED), false);
+                           player.sendSystemMessage(Component.literal("Those books are incompatible").withStyle(ChatFormatting.RED), false);
                         }
                         break;
                      }
@@ -108,14 +109,14 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                if(MinecraftUtils.removeItems(player, Items.BOOK, 1)){
                   ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.splitBook(book);
                   if(result == ArcaneSingularityBlockEntity.SingularityResult.FULL){
-                     player.displayClientMessage(Component.literal("That Singularity is full").withStyle(ChatFormatting.RED), false);
+                     player.sendSystemMessage(Component.literal("That Singularity is full").withStyle(ChatFormatting.RED), false);
                   }else if(result == ArcaneSingularityBlockEntity.SingularityResult.FAIL){
-                     player.displayClientMessage(Component.literal("That book cannot be split").withStyle(ChatFormatting.RED), false);
+                     player.sendSystemMessage(Component.literal("That book cannot be split").withStyle(ChatFormatting.RED), false);
                   }else if(result == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
                      selected = ItemStack.EMPTY;
                   }
                }else{
-                  player.displayClientMessage(Component.literal("You need a book to split the enchants to").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("You need a book to split the enchants to").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                }
             }else{
@@ -133,7 +134,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
+   public boolean onAnyClick(int index, ClickType type, ContainerInput action){
       if(index >= size && type == ClickType.MOUSE_LEFT_SHIFT){
          int invSlot = index >= 27 + size ? index - (27 + size) : index - 45;
          ItemStack stack = player.getInventory().getItem(invSlot);
@@ -153,7 +154,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
       ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.addBook(book);
       
       if(result == ArcaneSingularityBlockEntity.SingularityResult.FULL){
-         player.displayClientMessage(Component.literal("The Singularity is Full").withStyle(ChatFormatting.RED), false);
+         player.sendSystemMessage(Component.literal("The Singularity is Full").withStyle(ChatFormatting.RED), false);
          return false;
       }
       if(!isFull && blockEntity.getNumBooks() == capacity){

@@ -10,9 +10,9 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -55,11 +55,6 @@ public class ExpulsionArrows extends RunicArrow {
       item = new ExpulsionArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SLIME, ResearchTasks.OBTAIN_AMETHYST_SHARD, ResearchTasks.USE_ENDER_PEARL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -91,13 +86,13 @@ public class ExpulsionArrows extends RunicArrow {
          if(evict){
             double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MIN);
             double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MAX);
-            double percentage = ArcanaUtils.getArrowPercentage(arrow);
+            double percentage = MinecraftUtils.getArrowPercentage(arrow);
             double range = Mth.clamp(percentage * maxRange, minRange, maxRange);
             BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld, entityHitResult.getLocation(), range)));
          }else{
             double minDur = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_DURATION_MIN);
             double maxDur = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_DURATION_MAX);
-            double percentage = ArcanaUtils.getArrowPercentage(arrow);
+            double percentage = MinecraftUtils.getArrowPercentage(arrow);
             int duration = (int) Mth.clamp(percentage * maxDur, minDur, maxDur); // Measured in quarter seconds
             double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_RANGE);
             double extraRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.EXPULSION_ARROW_REPULSION_RANGE_PER_LVL).get(arrow.getAugment(ArcanaAugments.REPULSION)).floatValue();
@@ -114,13 +109,13 @@ public class ExpulsionArrows extends RunicArrow {
          if(evict){
             double minRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MIN);
             double maxRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MAX);
-            double percentage = ArcanaUtils.getArrowPercentage(arrow);
+            double percentage = MinecraftUtils.getArrowPercentage(arrow);
             double range = Mth.clamp(percentage * maxRange, minRange, maxRange);
             BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld, blockHitResult.getLocation(), range)));
          }else{
             double minDur = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_DURATION_MIN);
             double maxDur = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_DURATION_MAX);
-            double percentage = ArcanaUtils.getArrowPercentage(arrow);
+            double percentage = MinecraftUtils.getArrowPercentage(arrow);
             int duration = (int) Mth.clamp(percentage * maxDur, minDur, maxDur); // Measured in quarter seconds
             double baseRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.EXPULSION_ARROW_RANGE);
             double extraRange = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.EXPULSION_ARROW_REPULSION_RANGE_PER_LVL).get(arrow.getAugment(ArcanaAugments.REPULSION));

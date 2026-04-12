@@ -11,7 +11,6 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -52,11 +51,6 @@ public class SiphoningArrows extends RunicArrow {
       item = new SiphoningArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION, ResearchTasks.OBTAIN_GLISTERING_MELON};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -83,7 +77,7 @@ public class SiphoningArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayer player){
-         double percentage = ArcanaUtils.getArrowPercentage(arrow);
+         double percentage = MinecraftUtils.getArrowPercentage(arrow);
          double minHeal = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SIPHONING_ARROW_MIN_HEAL);
          double maxHeal = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SIPHONING_ARROW_MAX_HEAL);
          float heal = (float) Mth.clamp(percentage * maxHeal, minHeal, maxHeal);

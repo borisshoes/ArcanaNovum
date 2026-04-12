@@ -1,18 +1,19 @@
 package net.borisshoes.arcananovum.recipes.vanilla;
 
-import eu.pb4.polymer.core.api.utils.PolymerObject;
-import net.borisshoes.arcananovum.ArcanaRegistry;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.MagmaticEversource;
-import net.minecraft.core.HolderLookup;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.CustomRecipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 import java.util.Map;
@@ -20,13 +21,42 @@ import java.util.Map;
 import static java.util.Map.entry;
 
 public class MagmaticEversourceFillRecipe extends CustomRecipe {
+   public static final MapCodec<MagmaticEversourceFillRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec(
+         i -> i.group(
+                     Ingredient.CODEC.fieldOf("item").forGetter(o -> o.item),
+                     Ingredient.CODEC.fieldOf("eversource").forGetter(o -> o.eversource),
+                     ItemStackTemplate.CODEC.fieldOf("result").forGetter(o -> o.result)
+               )
+               .apply(i, MagmaticEversourceFillRecipe::new)
+   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, MagmaticEversourceFillRecipe> STREAM_CODEC = StreamCodec.composite(
+         Ingredient.CONTENTS_STREAM_CODEC,
+         o -> o.item,
+         Ingredient.CONTENTS_STREAM_CODEC,
+         o -> o.eversource,
+         ItemStackTemplate.STREAM_CODEC,
+         o -> o.result,
+         MagmaticEversourceFillRecipe::new
+   );
+   public static final RecipeSerializer<MagmaticEversourceFillRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
    
-   private static final Map<Item, ItemStack> FILLABLE = Map.ofEntries(
-         entry(Items.BUCKET, Items.LAVA_BUCKET.getDefaultInstance())
+   public static final Map<Item, ItemStackTemplate> FILLABLE = Map.ofEntries(
+         entry(Items.BUCKET, new ItemStackTemplate(Items.LAVA_BUCKET))
    );
    
-   public MagmaticEversourceFillRecipe(CraftingBookCategory craftingRecipeCategory){
-      super(CraftingBookCategory.MISC);
+   private final Ingredient item;
+   private final Ingredient eversource;
+   private final ItemStackTemplate result;
+   
+   public MagmaticEversourceFillRecipe(Ingredient item, Ingredient eversource, ItemStackTemplate result){
+      this.item = item;
+      this.eversource = eversource;
+      this.result = result;
+   }
+   
+   @Override
+   public CraftingBookCategory category() {
+      return CraftingBookCategory.MISC;
    }
    
    @Override
@@ -39,11 +69,11 @@ public class MagmaticEversourceFillRecipe extends CustomRecipe {
          ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
-         if(!hasEversource && rStack.getItem() instanceof MagmaticEversource.MagmaticEversourceItem){
+         if(!hasEversource && this.eversource.test(rStack)){
             hasEversource = true;
             eversourceSlot = i;
             continue;
-         }else if(!hasFillable && FILLABLE.containsKey(rStack.getItem())){
+         }else if(!hasFillable && this.item.test(rStack)){
             hasFillable = true;
             continue;
          }
@@ -57,14 +87,8 @@ public class MagmaticEversourceFillRecipe extends CustomRecipe {
    }
    
    @Override
-   public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries){
-      for(int i = 0; i < input.size(); ++i){
-         ItemStack rStack = input.getItem(i);
-         if(FILLABLE.containsKey(rStack.getItem())){
-            return FILLABLE.get(rStack.getItem()).copyWithCount(1);
-         }
-      }
-      return ItemStack.EMPTY;
+   public ItemStack assemble(CraftingInput input){
+      return this.result.withCount(1).create();
    }
    
    
@@ -75,9 +99,10 @@ public class MagmaticEversourceFillRecipe extends CustomRecipe {
          ItemStack rStack = input.getItem(i);
          if(rStack.isEmpty()) continue;
          
-         if(rStack.getItem() instanceof MagmaticEversource.MagmaticEversourceItem){
+         if(this.eversource.test(rStack)){
             ItemStack source = rStack.copy();
             ArcanaItem.putProperty(source, MagmaticEversource.USES_TAG, ArcanaItem.getIntProperty(source, MagmaticEversource.USES_TAG) - 1);
+            if(ArcanaItemUtils.identifyItem(rStack) instanceof MagmaticEversource arcanaItem) arcanaItem.buildItemLore(source, BorisLib.SERVER);
             stacks.set(i, source);
          }
       }
@@ -86,12 +111,6 @@ public class MagmaticEversourceFillRecipe extends CustomRecipe {
    
    @Override
    public RecipeSerializer<? extends CustomRecipe> getSerializer(){
-      return ArcanaRegistry.MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
-   }
-   
-   public static class MagmaticEversourceRecipeSerializer extends Serializer implements PolymerObject {
-      public MagmaticEversourceRecipeSerializer(Factory factory){
-         super(factory);
-      }
+      return SERIALIZER;
    }
 }

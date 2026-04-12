@@ -21,16 +21,16 @@ import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.timers.GenericTimer;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -53,7 +53,6 @@ import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.Equippable;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +61,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
+import static net.borisshoes.borislib.utils.MinecraftUtils.makeEnchantComponent;
 
 public class NulMemento extends EnergyItem {
    public static final String ID = "nul_memento";
@@ -78,23 +78,14 @@ public class NulMemento extends EnergyItem {
       item = new NulMementoItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST, ResearchTasks.KILL_CONSTRUCT};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      putProperty(stack, ACTIVE_TAG, false);
-      putProperty(stack, HEAD_TAG, false);
-      setPrefStack(stack);
    }
    
    @Override
-   public void finalizePrefItem(MinecraftServer server){
-      super.finalizePrefItem(server);
-      ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.PROTECTION), 4)
-      ));
-      this.prefItem = buildItemLore(curPrefItem, server);
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
+      putProperty(stack, ACTIVE_TAG, false);
+      putProperty(stack, HEAD_TAG, false);
+      return stack;
    }
    
    @Override
@@ -407,14 +398,15 @@ public class NulMemento extends EnergyItem {
    }
    
    private void processHalted(ServerPlayer player){
-      player.displayClientMessage(Component.literal(""), false);
-      player.displayClientMessage(Component.literal(""), false);
-      player.displayClientMessage(Component.literal(""), false);
-      player.displayClientMessage(Component.literal("")
+      player.sendSystemMessage(Component.literal(""), false);
+      player.sendSystemMessage(Component.literal(""), false);
+      player.sendSystemMessage(Component.literal(""), false);
+      player.sendSystemMessage(Component.literal("")
             .append(Component.literal("The weight of the ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
             .append(Component.literal("Nul Memento").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD, ChatFormatting.ITALIC))
             .append(Component.literal(" becomes too much to bare, perhaps you aren't ready...").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), false);
       player.removeAllEffects();
+      Conditions.removeCondition(player.level().getServer(),player,Conditions.NEARSIGHT,arcanaId(ID));
    }
    
    public void inventoryDialog(ServerPlayer player){
@@ -681,7 +673,7 @@ public class NulMemento extends EnergyItem {
       
       
       DialogHelper helper = new DialogHelper(dialogOptions, conditions);
-      helper.sendDialog(List.of(player), helper.getWeightedResult(), true);
+      DialogHelper.sendDialog(List.of(player), helper.getWeightedResult(player.getRandom()), true);
    }
    
    @Override
@@ -700,6 +692,7 @@ public class NulMemento extends EnergyItem {
       public NulMementoItem(){
          super(getThis(), getEquipmentArcanaItemComponents()
                .humanoidArmor(ArmorMaterials.NETHERITE, ArmorType.HELMET)
+               .delayedComponent(DataComponents.ENCHANTMENTS, ctx -> makeEnchantComponent(new EnchantmentInstance(ctx.getOrThrow(Enchantments.PROTECTION),4)))
          );
       }
       
@@ -713,8 +706,8 @@ public class NulMemento extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
          Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).build();
          baseStack.set(DataComponents.EQUIPPABLE, newComp);
@@ -737,7 +730,7 @@ public class NulMemento extends EnergyItem {
          }
          
          double dialogChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MEMENTO_DIALOG_CHANCE);
-         if(Math.random() < dialogChance){
+         if(world.getRandom().nextDouble() < dialogChance){
             inventoryDialog(player);
          }
       }

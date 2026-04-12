@@ -16,11 +16,11 @@ import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.StarpathAltarGui;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.SpawnPile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -120,7 +120,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       if(!destWorld.dimension().identifier().equals(getLevel().dimension().identifier()) && ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.STARGATE) < 1)
          return;
       AABB teleportBox = (new AABB(this.getBlockPos().offset(0, 2, 0))).inflate(5, 2, 5);
-      List<Entity> targets = this.getLevel().getEntities((Entity) null, teleportBox, (e) -> e instanceof LivingEntity || e.getType().is(ArcanaRegistry.STARPATH_ALLOWED));
+      List<Entity> targets = this.getLevel().getEntities((Entity) null, teleportBox, (e) -> e instanceof LivingEntity || e.is(ArcanaRegistry.STARPATH_ALLOWED));
       
       int tries = 0;
       int range = 4;
@@ -135,7 +135,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       if(locations.size() != targets.size()){
          for(Entity target : targets){
             if(target instanceof ServerPlayer targetPlayer)
-               targetPlayer.displayClientMessage(Component.literal("The teleport goes awry, everyone is shunted uncontrollably!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
+               targetPlayer.sendSystemMessage(Component.literal("The teleport goes awry, everyone is shunted uncontrollably!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
          }
          locations = new ArrayList<>();
          for(int i = 0; i < targets.size(); i++){
@@ -167,7 +167,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       
       this.setActiveTicks(500);
       this.resetCooldown();
-      ArcanaEffectUtils.starpathAltarAnim(destWorld, this.getBlockPos().getCenter());
+      ArcanaEffectUtils.starpathAltarAnim(serverWorld, this.getBlockPos().getCenter());
       BorisLib.addTickTimerCallback(new GenericTimer(500, () -> {
          teleport(player);
          if(player == null && getCrafterId() != null && !getCrafterId().isEmpty()){
@@ -216,7 +216,10 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
          return;
       }
       
-      if(isAssembled() && cooldown > 0) cooldown--;
+      if(isAssembled() && cooldown > 0){
+         cooldown--;
+         this.setChanged();
+      }
       
       boolean isActive = isActive();
       
@@ -229,8 +232,8 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       
       if(isActive){
          activeTicks--;
+         this.setChanged();
       }
-      this.setChanged();
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
          ArcanaNovum.addActiveBlock(new Tuple<>(this, this));

@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -151,9 +152,10 @@ public class ArcanaIngredient {
    public ItemStack getRemainder(ItemStack stack, int resourceLvl){
       int saved = 0;
       if(!ignoresResourceful){
+         RandomSource random = RandomSource.create();
          for(int i = 0; i < count; i++){
             double resourcefulChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STARLIGHT_FORGE_RESOURCEFUL_PER_LVL).get(resourceLvl);
-            if(Math.random() < resourcefulChance) saved++;
+            if(random.nextDouble() < resourcefulChance) saved++;
          }
       }
       int newCount = ArcanaItemUtils.isArcane(stack) ? count : count - saved;
@@ -388,11 +390,11 @@ public class ArcanaIngredient {
                ingredient.exampleStack.set(DataComponents.POTION_CONTENTS, newComp);
                
                if(ingredient.exampleStack.is(Items.POTION)){
-                  ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, Items.POTION.getName().copy().setStyle(Style.EMPTY.withItalic(false)));
+                  ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, (new ItemStack(Items.POTION)).getItemName().copy().setStyle(Style.EMPTY.withItalic(false)));
                }else if(ingredient.exampleStack.is(Items.SPLASH_POTION)){
-                  ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, Items.SPLASH_POTION.getName().copy().setStyle(Style.EMPTY.withItalic(false)));
+                  ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, (new ItemStack(Items.SPLASH_POTION)).getItemName().copy().setStyle(Style.EMPTY.withItalic(false)));
                }else if(ingredient.exampleStack.is(Items.LINGERING_POTION)){
-                  ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, Items.LINGERING_POTION.getName().copy().setStyle(Style.EMPTY.withItalic(false)));
+                  ingredient.exampleStack.set(DataComponents.CUSTOM_NAME, (new ItemStack(Items.LINGERING_POTION)).getItemName().copy().setStyle(Style.EMPTY.withItalic(false)));
                }
             }
          }

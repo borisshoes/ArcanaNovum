@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -21,6 +22,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -58,7 +60,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,12 +86,13 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       item = new StarpathAltarItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.USE_ENDER_EYE, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.UNLOCK_WAYSTONE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, TARGETS_TAG, new ListTag());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -190,7 +192,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.SCULK_CATALYST.defaultBlockState().setValue(BLOOM, state.getValue(BLOOM));
@@ -301,8 +303,8 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack STARPATH_ALTAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starpath_altar"));
-      public static final ItemStack STAR = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/starlight_forge_pulsar"));
+      public static final LazyItemStack STARPATH_ALTAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starpath_altar"));
+      public static final LazyItemStack STAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_pulsar"));
       
       // Star particle constants
       private static final int MAX_STARS = 8;
@@ -349,13 +351,13 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
          // Random position within the block with padding
          float range = 1f - 2f * PADDING;
          starPosition[index].set(
-               PADDING + world.random.nextFloat() * range - 0.5f,
-               PADDING + world.random.nextFloat() * range - 0.5f,
-               PADDING + world.random.nextFloat() * range - 0.5f
+               PADDING + world.getRandom().nextFloat() * range - 0.5f,
+               PADDING + world.getRandom().nextFloat() * range - 0.5f,
+               PADDING + world.getRandom().nextFloat() * range - 0.5f
          );
          
          // Random lifetime
-         starInitialLifetime[index] = STAR_MIN_LIFETIME + world.random.nextInt(STAR_MAX_LIFETIME - STAR_MIN_LIFETIME);
+         starInitialLifetime[index] = STAR_MIN_LIFETIME + world.getRandom().nextInt(STAR_MAX_LIFETIME - STAR_MIN_LIFETIME);
          starLifetime[index] = starInitialLifetime[index];
          
          // Calculate max drift speed based on lifetime so star can't leave padded area
@@ -364,18 +366,18 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
          
          // Random slow drift direction with speed limit
          starDrift[index].set(
-               (world.random.nextFloat() * 2 - 1) * maxDriftSpeed,
-               (world.random.nextFloat() * 2 - 1) * maxDriftSpeed,
-               (world.random.nextFloat() * 2 - 1) * maxDriftSpeed
+               (world.getRandom().nextFloat() * 2 - 1) * maxDriftSpeed,
+               (world.getRandom().nextFloat() * 2 - 1) * maxDriftSpeed,
+               (world.getRandom().nextFloat() * 2 - 1) * maxDriftSpeed
          );
          
          // Random rotation axis (normalized)
          starRotationAxis[index].set(
-               world.random.nextFloat() * 2 - 1,
-               world.random.nextFloat() * 2 - 1,
-               world.random.nextFloat() * 2 - 1
+               world.getRandom().nextFloat() * 2 - 1,
+               world.getRandom().nextFloat() * 2 - 1,
+               world.getRandom().nextFloat() * 2 - 1
          ).normalize();
-         starRotationAngle[index] = world.random.nextFloat() * Mth.TWO_PI;
+         starRotationAngle[index] = world.getRandom().nextFloat() * Mth.TWO_PI;
          
          // Set initial transformation at scale 0 BEFORE adding the element
          // This prevents the client from interpolating from the old position

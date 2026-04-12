@@ -18,8 +18,10 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -57,7 +59,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,12 +80,13 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction {
       item = new BrainJarItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.BREAK_SCULK, ResearchTasks.LEVEL_100, ResearchTasks.ACTIVATE_MENDING, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING, ResearchTasks.OBTAIN_ZOMBIE_HEAD, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, ACTIVE_TAG, false);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -216,10 +218,10 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction {
       AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
       Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
       
-      if(world.random.nextFloat() < 0.25){
+      if(world.getRandom().nextFloat() < 0.25){
          world.sendParticles(ParticleTypes.SCRAPE, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);
       }
-      if(world.random.nextFloat() < 0.25){
+      if(world.getRandom().nextFloat() < 0.25){
          world.sendParticles(ParticleTypes.GLOW, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .0);
       }
       
@@ -356,15 +358,15 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction {
       
       @Override
       public Item getPolymerItem(ItemStack itemStack, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return textureItem;
          }
          return super.getPolymerItem(itemStack, context);
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          
@@ -437,14 +439,14 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction {
             boolean active = !getBooleanProperty(stack, ACTIVE_TAG);
             putProperty(stack, ACTIVE_TAG, active);
             if(active){
-               playerEntity.displayClientMessage(Component.literal("The Jar's Experience Mends").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Jar's Experience Mends").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.EXPERIENCE_ORB_PICKUP, .5f, 1.3f);
             }else{
-               playerEntity.displayClientMessage(Component.literal("The Jar's Experience Withdraws").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Jar's Experience Withdraws").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.EXPERIENCE_ORB_PICKUP, .5f, 0.7f);
             }
          }else{
-            openGui(playerEntity, stack);
+            openGui(player, stack);
          }
          return InteractionResult.SUCCESS_SERVER;
       }

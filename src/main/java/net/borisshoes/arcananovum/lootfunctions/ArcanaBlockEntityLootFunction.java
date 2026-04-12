@@ -7,7 +7,6 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -26,8 +25,8 @@ public class ArcanaBlockEntityLootFunction extends LootItemConditionalFunction {
    
    @SuppressWarnings("unchecked")
    @Override
-   public LootItemFunctionType<? extends LootItemConditionalFunction> getType(){
-      return (LootItemFunctionType<ArcanaBlockEntityLootFunction>) ArcanaRegistry.ARCANA_BLOCK_ENTITY_LOOT_FUNCTION;
+   public MapCodec<? extends LootItemConditionalFunction> codec(){
+      return (MapCodec<? extends LootItemConditionalFunction>) ArcanaRegistry.ARCANA_BLOCK_ENTITY_LOOT_FUNCTION;
    }
    
    @Override

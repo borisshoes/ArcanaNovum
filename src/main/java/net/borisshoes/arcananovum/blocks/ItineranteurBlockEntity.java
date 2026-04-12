@@ -120,7 +120,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          return;
       }
       
-      if(serverWorld.random.nextFloat() < 0.05f){
+      if(serverWorld.getRandom().nextFloat() < 0.05f){
          ParticleOptions particleType;
          if(getBlockState().getValue(Itineranteur.ItineranteurBlock.TYPE) == Itineranteur.LanternType.GREEN ||
                getBlockState().getValue(Itineranteur.ItineranteurBlock.TYPE) == Itineranteur.LanternType.BLUE){
@@ -836,7 +836,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
    }
    
    private static long getChunkKey(BlockPos pos){
-      return ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4);
+      return ChunkPos.pack(pos.getX() >> 4, pos.getZ() >> 4);
    }
    
    private static void registerZone(ItineranteurZone zone){

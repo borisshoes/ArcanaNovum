@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -15,6 +16,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -34,7 +36,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,11 +56,6 @@ public class IgneousCollider extends ArcanaBlock {
       item = new IgneousColliderItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_PICKAXE, ResearchTasks.BREAK_OBSIDIAN, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -127,7 +123,7 @@ public class IgneousCollider extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.LODESTONE.defaultBlockState();
@@ -152,13 +148,11 @@ public class IgneousCollider extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack COLLIDER = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/igneous_collider"));
+      public static final LazyItemStack COLLIDER = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/igneous_collider"));
       
-      private final ServerLevel world;
       private final ItemDisplayElement main;
       
       public Model(ServerLevel world, BlockState state){
-         this.world = world;
          this.main = ItemDisplayElementUtil.createSimple(COLLIDER);
          this.main.setScale(new Vector3f(1f));
          this.addElement(this.main);

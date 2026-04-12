@@ -13,7 +13,7 @@ public class ShulkerCoreIngredient extends ArcanaIngredient {
    private final int minSouls;
    
    public ShulkerCoreIngredient(boolean needsStone, int minSouls){
-      super(ArcanaRegistry.SHULKER_CORE.getPrefItem().getItem(), 1, true);
+      super(ArcanaRegistry.SHULKER_CORE.getItem(), 1, true);
       this.needsStone = needsStone;
       this.minSouls = minSouls;
    }

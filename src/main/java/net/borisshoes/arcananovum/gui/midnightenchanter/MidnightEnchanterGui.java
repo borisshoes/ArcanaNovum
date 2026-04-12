@@ -14,7 +14,9 @@ import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.gui.ContainerWatcher;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
@@ -36,8 +38,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.Container;
-import net.minecraft.world.ContainerListener;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
@@ -55,21 +55,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantEntry> implements ContainerListener, VirtualInventoryGui<SimpleContainer> {
+public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantEntry> implements ContainerWatcher, VirtualInventoryGui<SimpleContainer> {
    private final MidnightEnchanterBlockEntity blockEntity;
    private int xpCost = 0;
    private int essenceCost = 0;
    private int bookshelves = -1; // Mode for enchanting unenchanted items
    private int lapisLevel = 0;
-   private boolean updating = false;
-   private final SimpleContainer inventory;
+   private volatile boolean updating = false;
+   private final WatchedContainer inventory;
    
    public MidnightEnchanterGui(ServerPlayer player, MidnightEnchanterBlockEntity blockEntity){
       super(MenuType.GENERIC_9x6, player, new ArrayList<>());
       this.blockEntity = blockEntity;
       setTitle(Component.literal("Midnight Enchanter"));
-      inventory = new SimpleContainer(1);
-      inventory.addListener(this);
+      inventory = new WatchedContainer(1);
+      inventory.addWatcher(this);
       
       blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR)).hideTooltip());
       setPaneHeight(3);
@@ -115,7 +115,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR, Component.empty());
       clearSlot(4);
       
-      setSlotRedirect(4, new MidnightEnchanterSlot(inventory, 0, 0, 0));
+      setSlot(4, new MidnightEnchanterSlot(inventory, 0, 0, 0));
       
       boolean enchanted = EnchantmentHelper.hasAnyEnchantments(getStack());
       Component name = getStack().isEmpty() ? Component.literal("Insert an Enchanted or Enchantable Item").withStyle(ChatFormatting.DARK_PURPLE) : Component.literal("Add Enchantments or Disenchant Your Item").withStyle(ChatFormatting.LIGHT_PURPLE);
@@ -161,7 +161,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                   sinv.addItem(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultInstance().copyWithCount(essence));
                }
             }
-            SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random() * 0.4f + 0.8f));
+            SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, blockEntity.getLevel().getRandom().nextFloat() * 0.4f + 0.8f);
             MinecraftUtils.returnItems(sinv, player);
             
             int maxCount = 0;
@@ -203,10 +203,10 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                      EnchantmentHelper.setEnchantments(book, enchantBuilder.toImmutable());
                   }
                   SimpleContainer sinv = new SimpleContainer(book);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random() * 0.4f + 0.8f));
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, blockEntity.getLevel().getRandom().nextFloat() * 0.4f + 0.8f);
                   MinecraftUtils.returnItems(sinv, player);
                }else{
-                  player.displayClientMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                }
                buildPage();
@@ -242,15 +242,15 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                         }
                         singularity.addBook(book);
                      }else{
-                        player.displayClientMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                        player.sendSystemMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                         SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                      }
                   }else{
-                     player.displayClientMessage(Component.literal("The Singularity does not have enough space").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                     player.sendSystemMessage(Component.literal("The Singularity does not have enough space").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                   }
                }else{
-                  player.displayClientMessage(Component.literal("The Enchanter's Forge does not have access to a Singularity").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The Enchanter's Forge does not have access to a Singularity").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                }
                buildPage();
@@ -454,12 +454,12 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       enchantItem.setCallback((clickType) -> {
          if(vanillaEnchantingMode){
             if(lapisLevel == -1){
-               player.displayClientMessage(Component.literal("You must select a Lapis Level").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("You must select a Lapis Level").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                return;
             }
             if(player.experienceLevel < xpCost && !player.isCreative()){
-               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                return;
             }
@@ -469,12 +469,12 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                removeXP(lapisLevel);
                applyEnchants();
                MinecraftUtils.returnItems(inventory, player);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random() * 0.4f + 0.8f));
+               SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, player.getRandom().nextFloat() * 0.4f + 0.8f);
                setUpdating();
                setItem(ItemStack.EMPTY);
                finishUpdate();
             }else{
-               player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+               player.sendSystemMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
                      .append(Component.translatable(Items.LAPIS_LAZULI.getDescriptionId()).withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC)), false);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }
@@ -486,17 +486,17 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                   ItemStack newStack = new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER);
                   newStack.setCount(getStack().getCount());
                   setItem(newStack);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random() * 0.4f + 0.8f));
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, blockEntity.getLevel().getRandom().nextFloat() * 0.4f + 0.8f);
                   MinecraftUtils.returnItems(inventory, player);
                   setItem(ItemStack.EMPTY);
                   finishUpdate();
                }else{
-                  player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                  player.sendSystemMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
                         .append(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)), false);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                }
             }else{
-               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }
          }else{
@@ -505,18 +505,18 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                if(MinecraftUtils.removeItems(player, ArcanaRegistry.NEBULOUS_ESSENCE, essenceCost)){
                   removeXP(xpCost);
                   applyEnchants();
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random() * 0.4f + 0.8f));
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, blockEntity.getLevel().getRandom().nextFloat() * 0.4f + 0.8f);
                   MinecraftUtils.returnItems(inventory, player);
                   setUpdating();
                   setItem(ItemStack.EMPTY);
                   finishUpdate();
                }else{
-                  player.displayClientMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                  player.sendSystemMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
                         .append(Component.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getDescriptionId()).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)), false);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                }
             }else{
-               player.displayClientMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("You do not have enough levels").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }
          }
@@ -736,7 +736,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
          
          if(!EnchantmentHelper.isEnchantmentCompatible(curEnchants.keySet(), entry) && !curEnchants.containsKey(entry))
             continue; // Remove incompatible enchants
-         if(!stack.is(Items.BOOK) && !enchantment.isSupportedItem(stack)) continue; // Remove enchants for wrong items
+         if(!stack.is(Items.BOOK) && !stack.is(Items.ENCHANTED_BOOK) && !enchantment.isSupportedItem(stack)) continue; // Remove enchants for wrong items
          
          if(curEnchants.containsKey(entry)){
             int curLevel = curEnchants.getInt(entry);
@@ -781,7 +781,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       if(!player.isDeadOrDying() && !player.isSpectator()){
          MinecraftUtils.returnItems(inventory, player);
       }else if(blockEntity.getLevel() != null){
@@ -789,18 +789,12 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       }
       this.inventory.clearContent();
       onVirtualInventoryClose();
-      super.onClose();
    }
    
    @Override
    public void onOpen(){
       onVirtualInventoryOpen();
       super.onOpen();
-   }
-   
-   @Override
-   public void close(){
-      super.close();
    }
    
    @Override
@@ -814,7 +808,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
    }
    
    @Override
-   public void containerChanged(Container inv){
+   public void onChanged(WatchedContainer inv){
       if(!updating){
          setUpdating();
          ItemStack mainStack = inv.getItem(0);
@@ -919,9 +913,9 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
    private static class BookSort extends GuiSort<EnchantEntry> {
       public static final List<BookSort> SORTS = new ArrayList<>();
       
-      public static final BookSort LEVEL_ASC = new BookSort("gui.arcananovum.level_descending", ChatFormatting.AQUA.getColor().intValue(),
+      public static final BookSort LEVEL_DESC = new BookSort("gui.arcananovum.level_descending", ChatFormatting.AQUA.getColor().intValue(),
             Comparator.<EnchantEntry>comparingInt(entry -> -entry.level()));
-      public static final BookSort LEVEL_DESC = new BookSort("gui.arcananovum.level_ascending", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+      public static final BookSort LEVEL_ASC = new BookSort("gui.arcananovum.level_ascending", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
             Comparator.<EnchantEntry>comparingInt(EnchantEntry::level));
       public static final BookSort ALPHABETICAL = new BookSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor().intValue(),
             Comparator.comparing(entry -> Enchantment.getFullname(entry.enchantment(), entry.level()).getString()));

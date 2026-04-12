@@ -23,6 +23,15 @@
 |:---:|:---:|:---:|
 | [![Mod Tutorial](https://img.youtube.com/vi/JU-iLKURhzw/0.jpg)](https://www.youtube.com/watch?v=JU-iLKURhzw) | [![3.1 Changes Showcase](https://img.youtube.com/vi/z-8MGpFFSkQ/0.jpg)](https://www.youtube.com/watch?v=z-8MGpFFSkQ) | Coming Soon! ![4.0 Spotlight](non-mod-resources/ArcanaNovum_Banner.png) |
 
+## Texture Pack
+The server has the ability to automatically generate and serve the mod's texture pack to your players when they connect. To do this, you must enable auto-host. This is super easy to do in a few steps:
+1. Launch the server with the mod installed at least once to generate the configs
+2. Go into the 'config' folder of the server, there should be a folder called 'polymer', and inside that there should be a file called 'auto-host.json'
+3. In 'auto-host.json', in the first few lines there will be a line that says `"enabled": false`, change this to true.
+4. (Optional) You can also set the value to make the resource pack required by players, or set the "message" line to inform players why the resource pack is important to download when they are prompted to have it be auto downloaded.
+
+If everything is done correctly, then players will automatically load into the server with the resource pack installed.
+
 ## Commands
 ### Player Commands
 * ```/arcana version``` Shows the current Arcana Novum mod version.
@@ -175,7 +184,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config trackingArrowDetectionWidthPerLvl` The width of the arrow's detection cone per level for Runic Tracking Arrows. (default: [5.0, 6.5, 8.0, 9.5])
 
 #### Charm of Cinders
-* `/arcana config cindersCharmRegenerationRate` The energy regeneration rate for the Charm of Cinders. (default: 15)
+* `/arcana config cindersCharmRegenerationRate` The energy regeneration rate for the Charm of Cinders. (default: 5)
 * `/arcana config cindersCharmFirewebRangePerLvl` The range of the Web of Fire ability of the Charm of Cinders. (default: [0.0, 4.0, 6.0, 8.0, 10.0])
 * `/arcana config cindersCharmFirewebDmgPerLvl` The damage per energy point per level of Fireweb on the Charm of Cinders. (default: [0.0, 0.07, 0.085, 0.095, 0.105])
 * `/arcana config cindersCharmFirewebCreaturesPerLvl` The number of creatures targeted per augment level by the Web of Fire ability of the Charm of Cinders. (default: [0, 5, 10, 15, 20])
@@ -186,6 +195,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config cindersCharmPyroblastExplosionRangePerLvl` The explosion range of the Pyroblast ability of the Charm of Cinders. (default: [0.0, 4.0, 5.0, 6.0, 7.0])
 * `/arcana config cindersCharmPyroblastDmgPerLvl` The damage per energy per augment level for the Pyroblast ability of the Charm of Cinders. (default: [0.0, 0.1, 0.12, 0.14, 0.16])
 * `/arcana config cindersCharmCremationMultiplier` The Cremation damage multiplier for the Charm of Cinders. (default: 2.0)
+* `/arcana config cinderCharmCremationDamagePerEnergy` The damage mitigated per energy point by the Cremation ability of the Charm of Cinders. (default: 0.07)
 * `/arcana config cindersCharmWildfireRegenerationPerLvl` The Wildfire cinder regeneration rate per augment level for the Charm of Cinders. (default: [0, 1, 2, 3, 5, 7])
 * `/arcana config cindersCharmWildfireCindersPerLvl` The Wildfire max cinders increase per augment level for the Charm of Cinders. (default: [0, 20, 40, 60, 80, 100])
 * `/arcana config cindersCharmSupersmelterMultiplier` The smelting efficiency multiplier for the Supersmelter augment of the Charm of Cinders. (default: 4.0)
@@ -471,8 +481,8 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config fractalSpongePulseDuration` The duration in ticks between absorption pulses for the Fractal Sponge. (default: 50)
 
 #### Igneous Collider
-* `/arcana config igneousColliderCooldown` The cooldown in seconds for the Igneous Collider. (default: 15)
-* `/arcana config igneousColliderCooldownPerLvl` The cooldown reduction in seconds per augment level for the Igneous Collider. (default: [0, 2, 4, 6, 8, 10])
+* `/arcana config igneousColliderCooldown` The cooldown in ticks for the Igneous Collider. (default: 300)
+* `/arcana config igneousColliderCooldownPerLvl` The cooldown reduction in ticks per augment level for the Igneous Collider. (default: [0, 40, 80, 120, 160, 200])
 * `/arcana config igneousColliderEfficiencyPerLvl` The chance to not consume fluid per augment level for the Magmatic Injection augment of the Igneous Collider. (default: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
 
 #### Interdictor

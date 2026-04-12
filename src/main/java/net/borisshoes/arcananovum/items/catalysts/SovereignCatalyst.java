@@ -51,11 +51,6 @@ public class SovereignCatalyst extends ArcanaItem {
       item = new SovereignCatalystItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_CATALYST, ResearchTasks.OBTAIN_GOLD_INGOT, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -114,7 +109,7 @@ public class SovereignCatalyst extends ArcanaItem {
             canSpawn = ArcanaNovum.data(serverPlayer).hasResearched(ArcanaRegistry.DIVINE_CATALYST);
          }
          
-         if(state.is(Blocks.ANCIENT_DEBRIS) && pos.getY() >= world.getMinY() && canSpawn){ // Check construct
+         if(state.is(Blocks.ANCIENT_DEBRIS) && pos.getY() >= world.getMinY() && canSpawn&& playerEntity instanceof ServerPlayer serverPlayer){ // Check construct
             BlockPattern pattern = getBaseConstructPattern();
             BlockPattern.BlockPatternMatch patternResult = pattern.find(world, pos.offset(-1, -1, -1));
             if(patternResult != null){
@@ -124,15 +119,12 @@ public class SovereignCatalyst extends ArcanaItem {
                   BlockPos blockPos = patternResult.getBlock(1, 1, 0).getPos();
                   constructEntity.snapTo((double) blockPos.getX() + 0.5, (double) blockPos.getY() + 0.55, (double) blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
                   constructEntity.yBodyRot = patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
-                  constructEntity.onSummoned(playerEntity);
+                  constructEntity.onSummoned(serverPlayer);
                   
                   world.addFreshEntity(constructEntity);
                   CarvedPumpkinBlock.updatePatternBlocks(world, patternResult);
                   
-                  if(playerEntity instanceof ServerPlayer player){
-                     ArcanaAchievements.grant(player, ArcanaAchievements.DOOR_OF_DIVINITY);
-                  }
-                  
+                  ArcanaAchievements.grant(serverPlayer, ArcanaAchievements.DOOR_OF_DIVINITY);
                   context.getItemInHand().shrink(1);
                }
                return InteractionResult.SUCCESS_SERVER;

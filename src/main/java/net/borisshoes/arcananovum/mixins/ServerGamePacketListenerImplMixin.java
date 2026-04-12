@@ -56,17 +56,18 @@ public class ServerGamePacketListenerImplMixin {
    
    @ModifyExpressionValue(method = "tryPickItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;findSlotMatchingItem(Lnet/minecraft/world/item/ItemStack;)I"))
    private int arcananovum$greavesPickblock(int original, ItemStack stack){
+      if(this.player.hasInfiniteMaterials()) return original;
       if(original == -1){
          ItemStack pants = player.getItemBySlot(EquipmentSlot.LEGS);
          if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || !ArcanaItem.getBooleanProperty(pants, ArcanaItem.ACTIVE_TAG))
             return original;
-         ItemStack refillStack = greaves.getStackOf(pants, stack);
+         
          Inventory inv = player.getInventory();
          int emptySlot = inv.getFreeSlot();
-         if(!refillStack.isEmpty() && emptySlot != -1){
-            int amtToRefill = Math.min((int) (stack.getMaxStackSize() * 0.67), refillStack.getCount());
-            ItemStack insertStack = refillStack.split(amtToRefill);
-            inv.add(emptySlot, insertStack);
+         if(emptySlot != -1){
+            int maxRefillAmt = (int) (stack.getMaxStackSize() * 0.67);
+            ItemStack refillStack = greaves.removeStackOf(pants, stack, maxRefillAmt);
+            inv.add(emptySlot, refillStack);
             player.inventoryMenu.broadcastChanges();
             greaves.buildItemLore(pants, BorisLib.SERVER);
             return emptySlot;
@@ -108,7 +109,7 @@ public class ServerGamePacketListenerImplMixin {
       EntityHitResult hitEntity = ProjectileUtil.getEntityHitResult(player, startPos, rayEnd, box, e -> e instanceof LivingEntity living && !e.isSpectator() && living.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT), range);
       
       if(hitEntity != null && hitEntity.getEntity() != null){
-         networkHandler.handleInteract(ServerboundInteractPacket.createAttackPacket(hitEntity.getEntity(), player.isShiftKeyDown()));
+         networkHandler.handleAttack(new ServerboundAttackPacket(hitEntity.getEntity().getId()));
       }
       
       ItemStack hand = player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -154,7 +155,7 @@ public class ServerGamePacketListenerImplMixin {
    private void arcananovum$ensnarementPlayerTeleport(PositionMoveRotation pos, Set<Relative> flags, CallbackInfo ci){
       MobEffectInstance effect = player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null && effect.getAmplifier() > 0){
-         player.displayClientMessage(Component.literal("Your teleport has been ensnared!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC), true);
+         player.sendSystemMessage(Component.literal("Your teleport has been ensnared!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC), true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL, 2, .1f);
          ci.cancel();
       }

@@ -217,7 +217,7 @@ public class ArcanaConfig {
    
    // Charm of Cinders
    public static final IConfigSetting<?> CINDERS_CHARM_REGENERATION_RATE = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
-         new IntConfigValue("cindersCharmRegenerationRate", 15, new IntConfigValue.IntLimits(1))));
+         new IntConfigValue("cindersCharmRegenerationRate", 5, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> CINDERS_CHARM_FIREWEB_RANGE_PER_LVL = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
          new ListConfigValue<>("cindersCharmFirewebRangePerLvl", List.of(0.0, 4.0, 6.0, 8.0, 10.0), new DoubleConfigValue("cindersCharmFirewebRangePerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
    public static final IConfigSetting<?> CINDERS_CHARM_FIREWEB_DMG_PER_LVL = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
@@ -238,6 +238,8 @@ public class ArcanaConfig {
          new ListConfigValue<>("cindersCharmPyroblastDmgPerLvl", List.of(0.0, 0.1, 0.12, 0.14, 0.16), new DoubleConfigValue("cindersCharmPyroblastDmgPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
    public static final IConfigSetting<?> CINDERS_CHARM_CREMATION_MULTIPLIER = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new DoubleConfigValue("cindersCharmCremationMultiplier", 2.0, new DoubleConfigValue.DoubleLimits(0.0))));
+   public static final IConfigSetting<?> CINDERS_CHARM_CREMATION_DAMAGE_PER_ENERGY = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
+         new DoubleConfigValue("cinderCharmCremationDamagePerEnergy", 0.07, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> CINDERS_CHARM_WILDFIRE_REGENERATION_PER_LVL = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
          new ListConfigValue<>("cindersCharmWildfireRegenerationPerLvl", List.of(0, 1, 2, 3, 5, 7), new IntConfigValue("cindersCharmWildfireRegenerationPerLvl", 0, new IntConfigValue.IntLimits(0)))));
    public static final IConfigSetting<?> CINDERS_CHARM_WILDFIRE_CINDERS_PER_LVL = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
@@ -710,10 +712,10 @@ public class ArcanaConfig {
          new IntConfigValue("fractalSpongePulseDuration", 50, new IntConfigValue.IntLimits(1))));
    
    // Igneous Collider
-   public static final IConfigSetting<?> IGNEOUS_COLLIDER_COOLDOWN = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
-         new IntConfigValue("igneousColliderCooldown", 15, new IntConfigValue.IntLimits(0))));
-   public static final IConfigSetting<?> IGNEOUS_COLLIDER_COOLDOWN_PER_LVL = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
-         new ListConfigValue<>("igneousColliderCooldownPerLvl", List.of(0, 2, 4, 6, 8, 10), new IntConfigValue("igneousColliderCooldownPerLvl", 0, new IntConfigValue.IntLimits(0)))));
+   public static final IConfigSetting<?> IGNEOUS_COLLIDER_COOLDOWN = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
+         new IntConfigValue("igneousColliderCooldown", 300, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> IGNEOUS_COLLIDER_COOLDOWN_PER_LVL = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
+         new ListConfigValue<>("igneousColliderCooldownPerLvl", List.of(0, 40, 80, 120, 160, 200), new IntConfigValue("igneousColliderCooldownPerLvl", 0, new IntConfigValue.IntLimits(0)))));
    public static final IConfigSetting<?> IGNEOUS_COLLIDER_EFFICIENCY_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new ListConfigValue<>("igneousColliderEfficiencyPerLvl", List.of(0.0, 0.1, 0.2, 0.3, 0.4, 0.5), new DoubleConfigValue("igneousColliderEfficiencyPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
    

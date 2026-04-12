@@ -14,8 +14,8 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.DataFixer;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.utils.ItemContainerContentsMutable;
 import net.borisshoes.borislib.utils.MinecraftUtils;
-import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -27,8 +27,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
@@ -66,11 +64,6 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       item = new ArcanistsBeltItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BELT_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.CONCENTRATION_DAMAGE, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -104,7 +97,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       if(itemStack != null){
          ItemContainerContents beltItems = itemStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
          SimpleContainer inv = new SimpleContainer(9);
-         List<ItemStack> streamList = beltItems.nonEmptyStream().toList();
+         List<ItemStack> streamList = beltItems.nonEmptyItemCopyStream().toList();
          for(int i = 0; i < streamList.size(); i++){
             inv.setItem(i, streamList.get(i));
          }
@@ -168,7 +161,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       boolean padding = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.MENTAL_PADDING) >= 1;
       ItemContainerContents beltItems = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       SimpleContainer inv = new SimpleContainer(size);
-      List<ItemStack> streamList = beltItems.nonEmptyStream().toList();
+      List<ItemStack> streamList = beltItems.nonEmptyItemCopyStream().toList();
       for(int i = 0; i < streamList.size(); i++){
          inv.setItem(i, streamList.get(i));
       }
@@ -209,9 +202,9 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
          if(!(entity instanceof ServerPlayer player)) return;
          
          ItemContainerContents beltItems = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-         for(ItemStack invStack : beltItems.nonEmptyItems()){
-            invStack.getItem().inventoryTick(invStack, world, entity, null);
-         }
+         ItemContainerContentsMutable mutableItems = ItemContainerContentsMutable.fromComponent(beltItems);
+         mutableItems.getNonEmpty().forEach(s -> s.inventoryTick(world, entity, null));
+         stack.set(DataComponents.CONTAINER, mutableItems.toImmutable());
          buildItemLore(stack, BorisLib.SERVER);
       }
       
@@ -228,52 +221,13 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       }
       
       @Override
-      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference){
-         if(playerEntity.level().isClientSide() || !(playerEntity instanceof ServerPlayer player)) return false;
-         if(clickType == ClickAction.PRIMARY && otherStack.isEmpty()){
-            return false;
-         }else{
-            ItemContainerContents beltItems = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-            List<ItemStack> beltList = beltItems.stream().toList();
-            
-            if(clickType == ClickAction.PRIMARY && !otherStack.isEmpty()){ // Try insert
-               if(!ArcanistsBeltSlot.isValidItem(otherStack)){
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL, 1f, 1f);
-               }else{
-                  int size = BELT_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.POUCHES)];
-                  int count = otherStack.getCount();
-                  Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems, size, otherStack);
-                  if(count == addPair.getB().getCount()){
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL, 1f, 1f);
-                  }else{
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
-                     stack.set(DataComponents.CONTAINER, addPair.getA());
-                  }
-               }
-               buildItemLore(stack, player.level().getServer());
-               return true;
-            }else if(clickType == ClickAction.SECONDARY && otherStack.isEmpty()){ // Try remove
-               boolean found = false;
-               for(ItemStack itemStack : beltList.reversed()){
-                  if(!itemStack.isEmpty()){
-                     cursorStackReference.set(itemStack.copyAndClear());
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
-                     found = true;
-                     break;
-                  }
-               }
-               
-               if(found){
-                  stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(beltList));
-                  buildItemLore(stack, player.level().getServer());
-                  return true;
-               }else{
-                  return false;
-               }
-            }else{ // Move item
-               return false;
-            }
-         }
+      public boolean overrideOtherStackedOnMe(final ItemStack self, final ItemStack other, final Slot slot, final ClickAction clickAction, final Player playerEntity, final SlotAccess carriedItem){
+         return super.arcanaBundleOtherStackedOnMe(self, other, slot, clickAction, playerEntity, carriedItem, BELT_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(self, ArcanaAugments.POUCHES)], ArcanistsBeltSlot.PREDICATE);
+      }
+      
+      @Override
+      public boolean overrideStackedOnOther(final ItemStack self, final Slot slot, final ClickAction clickAction, final Player playerEntity){
+         return super.arcanaBundleStackedOnOther(self, slot, clickAction, playerEntity, BELT_SLOT_COUNT[ArcanaAugments.getAugmentOnItem(self, ArcanaAugments.POUCHES)], ArcanistsBeltSlot.PREDICATE);
       }
    }
 }

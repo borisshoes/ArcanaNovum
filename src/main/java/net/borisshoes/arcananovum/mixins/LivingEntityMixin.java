@@ -24,10 +24,7 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
-import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
@@ -51,8 +48,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -67,7 +62,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DeathProtection;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -211,12 +205,12 @@ public abstract class LivingEntityMixin {
             if(ArcanaItemUtils.identifyItem(chestItem) instanceof LevitationHarness harness){
                int sturdyLvl = ArcanaAugments.getAugmentOnItem(chestItem, ArcanaAugments.STURDY_CONSTRUCTION);
                final double sturdyChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.LEVITATION_HARNESS_DURABILITY_CHANCE).get(sturdyLvl);
-               if(Math.random() >= sturdyChance){
+               if(player.getRandom().nextDouble() >= sturdyChance){
                   int rebootLvl = ArcanaAugments.getAugmentOnItem(chestItem, ArcanaAugments.FAST_REBOOT);
                   int rebootDuration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.LEVITATION_HARNESS_REBOOT_SPEED_PER_LVL).get(rebootLvl);
                   harness.setStall(chestItem, rebootDuration);
                   player.setHealth(player.getHealth() / 2);
-                  player.displayClientMessage(Component.literal("Your Harness Stalls!").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("Your Harness Stalls!").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
                   SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.SHIELD_BREAK, SoundSource.PLAYERS, 1, 0.7f);
                   ArcanaEffectUtils.harnessStall(player.level(), player.position().add(0, 0.5, 0));
                   
@@ -252,7 +246,7 @@ public abstract class LivingEntityMixin {
          if(felidaeStele != null){
             int xp = (int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL) * (amount));
             if(entity instanceof ServerPlayer player){
-               SoundUtils.playSongToPlayer(player, SoundEvents.CAT_PURREOW, 1, 1);
+               SoundUtils.playSongToPlayer(player, SoundUtils.getSound("entity.cat.purreow"), 1, 1);
                ArcanaNovum.data(player).addXP(xp); // Add xp
                if(amount > player.getHealth()) ArcanaAchievements.grant(player, ArcanaAchievements.LAND_ON_FEET);
                felidaeStele.getBlockEntity().giveXP(xp);
@@ -263,7 +257,7 @@ public abstract class LivingEntityMixin {
       
       if(entity instanceof ServerPlayer player){
          if(source.is(DamageTypeTags.IS_FALL) && !ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.FELIDAE_CHARM, ArcanaAugments.FELINE_GRACE, 4).isEmpty()){
-            SoundUtils.playSongToPlayer(player, SoundEvents.CAT_PURREOW, 1, 1);
+            SoundUtils.playSongToPlayer(player, SoundUtils.getSound("entity.cat.purreow"), 1, 1);
             ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL) * (amount))); // Add xp
             if(amount > player.getHealth()) ArcanaAchievements.grant(player, ArcanaAchievements.LAND_ON_FEET);
             cir.setReturnValue(false);
@@ -345,125 +339,123 @@ public abstract class LivingEntityMixin {
          }
       }
       
-      while(newReturn > 0){
-         GeomanticSteleBlockEntity.SteleZone cremationStele = GeomanticSteleBlockEntity.getZoneAtEntity(entity, (item) -> item.is(ArcanaRegistry.CINDERS_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.CREMATION) > 0 && EnergyItem.getEnergy(item) > 0);
-         if(cremationStele != null && ArcanaItemUtils.identifyItem(cremationStele.getBlockEntity().getItem()) instanceof CindersCharm cinders){
-            ItemStack item = cremationStele.getBlockEntity().getItem();
-            final double energyPerDamage = 15;
-            float oldReturn = newReturn;
-            int energy = EnergyItem.getEnergy(item);
-            float dmgReduction = (float) Math.min(energy / energyPerDamage, oldReturn);
-            newReturn = oldReturn - dmgReduction;
-            cinders.addEnergy(item, (int) (-dmgReduction * energyPerDamage));
-         }else{
-            break;
+      ServerPlayer player = entity instanceof ServerPlayer p ? p : null;
+      ArcanaInventory arcanaInventory = player != null ? ArcanaInventory.getPlayerItems(player) : null;
+      
+      if(source.is(DamageTypeTags.IS_FIRE)){
+         if(arcanaInventory != null){
+            List<ArcanaInventory.Entry> cremationCharms = arcanaInventory.getMatchingItems(invStack ->
+                  ArcanaItemUtils.identifyItem(invStack) instanceof CindersCharm && ArcanaAugments.getAugmentOnItem(invStack, ArcanaAugments.CREMATION) > 0);
+            
+            for(ArcanaInventory.Entry entry : cremationCharms){
+               if(newReturn <= 0) break;
+               ItemStack item = entry.getStack();
+               final double damagePerEnergy = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CINDERS_CHARM_CREMATION_DAMAGE_PER_ENERGY);
+               float oldReturn = newReturn;
+               int energy = EnergyItem.getEnergy(item);
+               float dmgReduction = (float) Math.min(energy * damagePerEnergy, oldReturn);
+               newReturn = oldReturn - dmgReduction;
+               CindersCharm cinders = (CindersCharm) ArcanaItemUtils.identifyItem(item);
+               cinders.addEnergy(item, (int) (-dmgReduction / damagePerEnergy));
+               cinders.sendEnergyMessage(player, energy, cinders.getMaxEnergy(item), ChatFormatting.AQUA);
+               entry.setModified();
+            }
+         }
+         
+         while(newReturn > 0){
+            GeomanticSteleBlockEntity.SteleZone cremationStele = GeomanticSteleBlockEntity.getZoneAtEntity(entity, (item) -> item.is(ArcanaRegistry.CINDERS_CHARM.getItem()) && ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.CREMATION) > 0 && EnergyItem.getEnergy(item) > 0);
+            if(cremationStele != null && ArcanaItemUtils.identifyItem(cremationStele.getBlockEntity().getItem()) instanceof CindersCharm cinders){
+               ItemStack item = cremationStele.getBlockEntity().getItem();
+               final double damagePerEnergy = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.CINDERS_CHARM_CREMATION_DAMAGE_PER_ENERGY);
+               float oldReturn = newReturn;
+               int energy = EnergyItem.getEnergy(item);
+               float dmgReduction = (float) Math.min(energy * damagePerEnergy, oldReturn);
+               newReturn = oldReturn - dmgReduction;
+               cinders.addEnergy(item, (int) (-dmgReduction / damagePerEnergy));
+            }else{
+               break;
+            }
          }
       }
       
-      int felidaeLvl = 0;
-      Consumer<Float> felidaeXpCallback = null;
-      if(entity instanceof ServerPlayer player){
-         List<Tuple<List<ItemStack>, ItemStack>> allItems = ArcanaUtils.getAllItems(player);
-         
-         for(int i = 0; i < allItems.size(); i++){
-            List<ItemStack> itemList = allItems.get(i).getA();
-            ItemStack carrier = allItems.get(i).getB();
-            SimpleContainer sinv = new SimpleContainer(itemList.size());
-            
-            for(int j = 0; j < itemList.size(); j++){
-               ItemStack item = itemList.get(j);
-               
-               boolean isArcane = ArcanaItemUtils.isArcane(item);
-               if(!isArcane){
-                  sinv.setItem(j, item);
-                  continue; // Item not arcane, skip
-               }
-               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-               
-               if(arcanaItem instanceof FelidaeCharm && source.is(DamageTypeTags.IS_FALL)){ // Felidae Charm
-                  int graceLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.FELINE_GRACE);
-                  if(graceLvl > felidaeLvl){
-                     felidaeLvl = graceLvl;
-                     felidaeXpCallback = (dmg) -> {
+      if(source.is(DamageTypeTags.IS_FALL)){
+         int felidaeLvl = -1;
+         Consumer<Float> felidaeXpCallback = null;
+         if(arcanaInventory != null){
+            List<ArcanaInventory.Entry> felidaeEntries = arcanaInventory.getMatchingItems(invStack -> ArcanaItemUtils.identifyItem(invStack) instanceof FelidaeCharm);
+            for(ArcanaInventory.Entry entry : felidaeEntries){
+               ItemStack item = entry.getStack();
+               int graceLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.FELINE_GRACE);
+               if(graceLvl > felidaeLvl){
+                  felidaeLvl = graceLvl;
+                  felidaeXpCallback = (dmg) -> {
+                     if(player != null)
                         ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL) * dmg)); // Add xp
-                     };
-                  }
-               }else if(arcanaItem instanceof PearlOfRecall pearl){ // Cancel all Pearls of Recall
-                  int defenseLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.PHASE_DEFENSE);
-                  double defenseChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.PEARL_OF_RECALL_PHASE_DEFENSE_CHANCE).get(defenseLvl);
-                  
-                  if(ArcanaItem.getIntProperty(item, PearlOfRecall.HEAT_TAG) > 0){
-                     if(entity.random.nextFloat() >= defenseChance){
-                        player.displayClientMessage(Component.literal("Your Recall Has Been Disrupted!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
-                        ArcanaItem.putProperty(item, PearlOfRecall.HEAT_TAG, -1);
-                     }else{
-                        newReturn = 0;
-                     }
-                  }
-               }else if(arcanaItem instanceof Planeshifter){ // Cancel all Planeshifters
-                  if(ArcanaItem.getIntProperty(item, Planeshifter.HEAT_TAG) > 0){
-                     player.displayClientMessage(Component.literal("Your Plane-Shift Has Been Disrupted!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
-                     ArcanaItem.putProperty(item, Planeshifter.HEAT_TAG, -1);
-                  }
-               }else if(arcanaItem instanceof CindersCharm cinders && source.is(DamageTypeTags.IS_FIRE)){ // Cinders Charm Cremation
-                  boolean cremation = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.CREMATION) >= 1;
-                  if(cremation){
-                     final double energyPerDamage = 15;
-                     float oldReturn = newReturn;
-                     int energy = EnergyItem.getEnergy(item);
-                     float dmgReduction = (float) Math.min(energy / energyPerDamage, oldReturn);
-                     newReturn = oldReturn - dmgReduction;
-                     cinders.addEnergy(item, (int) (-dmgReduction * energyPerDamage));
-                     cinders.sendEnergyMessage(player, energy, cinders.getMaxEnergy(item), ChatFormatting.AQUA);
-                  }
+                  };
                }
-               
-               sinv.setItem(j, item);
             }
-            
-            if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-               belt.buildItemLore(carrier, BorisLib.SERVER);
-            }
-         }
-      }
-      List<GeomanticSteleBlockEntity.SteleZone> felidaeSteles = GeomanticSteleBlockEntity.getZonesAtEntity(entity, (item) -> item.is(ArcanaRegistry.FELIDAE_CHARM.getItem()));
-      if(!felidaeSteles.isEmpty()){
-         felidaeSteles.sort(Comparator.comparingInt((stele) -> -ArcanaAugments.getAugmentOnItem(stele.getBlockEntity().getItem(), ArcanaAugments.FELINE_GRACE)));
-         GeomanticSteleBlockEntity.SteleZone zone = felidaeSteles.getFirst();
-         int graceLvl = ArcanaAugments.getAugmentOnItem(zone.getBlockEntity().getItem(), ArcanaAugments.FELINE_GRACE);
-         if(graceLvl > felidaeLvl){
-            felidaeLvl = graceLvl;
-            felidaeXpCallback = (dmg) -> {
-               int xp = (int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL) * dmg);
-               if(entity instanceof ServerPlayer player) ArcanaNovum.data(player).addXP(xp); // Add xp
-               zone.getBlockEntity().giveXP(xp);
-            };
          }
          
-         float dmgMod = (float) (0.5 - 0.125 * graceLvl);
-         float oldReturn = newReturn;
-         newReturn = newReturn * dmgMod < 2 ? 0 : newReturn * dmgMod; // Reduce the damage, if the remaining damage is less than a heart, remove all of it.
-         if(entity instanceof ServerPlayer player){
-            SoundUtils.playSongToPlayer(player, SoundEvents.CAT_PURREOW, 1, 1);
-            int xp = (int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL) * (oldReturn - newReturn));
-            ArcanaNovum.data(player).addXP(xp); // Add xp
-            zone.getBlockEntity().giveXP(xp);
-            if(oldReturn > player.getHealth() && newReturn < player.getHealth())
-               ArcanaAchievements.grant(player, ArcanaAchievements.LAND_ON_FEET);
+         List<GeomanticSteleBlockEntity.SteleZone> felidaeSteles = GeomanticSteleBlockEntity.getZonesAtEntity(entity, (item) -> item.is(ArcanaRegistry.FELIDAE_CHARM.getItem()));
+         if(!felidaeSteles.isEmpty()){
+            felidaeSteles.sort(Comparator.comparingInt((stele) -> -ArcanaAugments.getAugmentOnItem(stele.getBlockEntity().getItem(), ArcanaAugments.FELINE_GRACE)));
+            GeomanticSteleBlockEntity.SteleZone zone = felidaeSteles.getFirst();
+            int graceLvl = ArcanaAugments.getAugmentOnItem(zone.getBlockEntity().getItem(), ArcanaAugments.FELINE_GRACE);
+            if(graceLvl > felidaeLvl){
+               felidaeLvl = graceLvl;
+               felidaeXpCallback = (dmg) -> {
+                  int xp = (int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_FELIDAE_CHARM_FALL) * dmg);
+                  if(player != null) ArcanaNovum.data(player).addXP(xp); // Add xp
+                  zone.getBlockEntity().giveXP(xp);
+               };
+            }
+         }
+         if(felidaeLvl >= 0){
+            float baseRed = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FELIDAE_CHARM_REDUCTION);
+            float extraRed = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.FELIDAE_CHARM_GRACE_REDUCTION_PER_LEVEL).get(felidaeLvl);
+            float dmgMod = 1.0f - (baseRed + extraRed);
+            float oldReturn = newReturn;
+            newReturn = newReturn * dmgMod < 2 ? 0 : newReturn * dmgMod; // Reduce the damage, if the remaining damage is less than a heart, remove all of it.
+            if(player != null){
+               SoundUtils.playSongToPlayer(player, SoundUtils.getSound("entity.cat.purreow"), 1, 1);
+               if(oldReturn > player.getHealth() && newReturn < player.getHealth())
+                  ArcanaAchievements.grant(player, ArcanaAchievements.LAND_ON_FEET);
+            }
+            felidaeXpCallback.accept(oldReturn - newReturn);
          }
       }
-      if(felidaeLvl != 0){
-         float baseRed = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.FELIDAE_CHARM_REDUCTION);
-         float extraRed = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.FELIDAE_CHARM_GRACE_REDUCTION_PER_LEVEL).get(felidaeLvl);
-         float dmgMod = 1.0f - (baseRed + extraRed);
-         float oldReturn = newReturn;
-         newReturn = newReturn * dmgMod < 2 ? 0 : newReturn * dmgMod; // Reduce the damage, if the remaining damage is less than a heart, remove all of it.
-         if(entity instanceof ServerPlayer player){
-            SoundUtils.playSongToPlayer(player, SoundEvents.CAT_PURREOW, 1, 1);
-            if(oldReturn > player.getHealth() && newReturn < player.getHealth())
-               ArcanaAchievements.grant(player, ArcanaAchievements.LAND_ON_FEET);
+      
+      if(arcanaInventory != null && newReturn > 0){
+         List<ArcanaInventory.Entry> recallPearlEntries = arcanaInventory.getMatchingItems(invStack ->
+               ArcanaItemUtils.identifyItem(invStack) instanceof PearlOfRecall);
+         
+         List<ArcanaInventory.Entry> planeshifterEntries = arcanaInventory.getMatchingItems(invStack ->
+               ArcanaItemUtils.identifyItem(invStack) instanceof Planeshifter);
+         
+         for(ArcanaInventory.Entry entry : recallPearlEntries){
+            ItemStack item = entry.getStack();
+            int defenseLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.PHASE_DEFENSE);
+            double defenseChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.PEARL_OF_RECALL_PHASE_DEFENSE_CHANCE).get(defenseLvl);
+            
+            if(ArcanaItem.getIntProperty(item, PearlOfRecall.HEAT_TAG) > 0){
+               if(entity.getRandom().nextFloat() >= defenseChance){
+                  player.sendSystemMessage(Component.literal("Your Recall Has Been Disrupted!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                  ArcanaItem.putProperty(item, PearlOfRecall.HEAT_TAG, -1);
+                  entry.setModified();
+               }else{
+                  newReturn = 0;
+               }
+            }
          }
-         felidaeXpCallback.accept(oldReturn - newReturn);
+         
+         for(ArcanaInventory.Entry entry : planeshifterEntries){
+            ItemStack item = entry.getStack();
+            if(ArcanaItem.getIntProperty(item, Planeshifter.HEAT_TAG) > 0){
+               player.sendSystemMessage(Component.literal("Your Plane-Shift Has Been Disrupted!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               ArcanaItem.putProperty(item, Planeshifter.HEAT_TAG, -1);
+               entry.setModified();
+            }
+         }
       }
       
       ItemStack chestItem = entity.getItemBySlot(EquipmentSlot.CHEST);
@@ -474,13 +466,13 @@ public abstract class LivingEntityMixin {
             float energyPerDmg = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.WINGS_OF_ENDERIA_ENERGY_PER_DMG);
             float maxDmgReduction = newReturn * .5f;
             float dmgReduction = Math.min(energy / energyPerDmg, maxDmgReduction);
-            if(entity instanceof ServerPlayer player){
+            if(player != null){
                if(dmgReduction >= 4){
                   if(source.is(DamageTypeTags.IS_FALL) || source.is(DamageTypes.FLY_INTO_WALL)){
-                     player.displayClientMessage(Component.literal("Your Armored Wings cushion your fall!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC), true);
+                     player.sendSystemMessage(Component.literal("Your Armored Wings cushion your fall!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC), true);
                   }
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENDER_DRAGON_FLAP, 1, 1.3f);
-                  BorisLib.addTickTimerCallback(new GenericTimer(50, () -> player.displayClientMessage(Component.literal("Wing Energy Remaining: " + EnergyItem.getEnergy(chestItem)).withStyle(ChatFormatting.DARK_PURPLE), true)));
+                  BorisLib.addTickTimerCallback(new GenericTimer(50, () -> player.sendSystemMessage(Component.literal("Wing Energy Remaining: " + EnergyItem.getEnergy(chestItem)).withStyle(ChatFormatting.DARK_PURPLE), true)));
                }
                ArcanaNovum.data(player).addXP((int) Math.min(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WINGS_OF_ENDERIA_CUSHION_CAP), ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_WINGS_OF_ENDERIA_CUSHION) * dmgReduction)); // Add xp
                if(source.is(DamageTypes.FLY_INTO_WALL) && newReturn > player.getHealth() && (newReturn - dmgReduction) < player.getHealth())
@@ -492,7 +484,7 @@ public abstract class LivingEntityMixin {
          
          // Wing Buffet ability
          int buffetLvl = ArcanaAugments.getAugmentOnItem(chestItem, ArcanaAugments.WING_BUFFET);
-         if(entity instanceof ServerPlayer player && buffetLvl > 0){
+         if(player != null && buffetLvl > 0){
             double buffetRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.WINGS_OF_ENDERIA_BUFFET_RANGE);
             double buffetPower = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.WINGS_OF_ENDERIA_BUFFET_POWER);
             ServerLevel world = player.level();
@@ -546,12 +538,13 @@ public abstract class LivingEntityMixin {
             newReturn = entity.getHealth() - 0.01f;
             damageWarded -= newReturn;
             
-            if(entity instanceof ServerPlayer player && ArcanaAchievements.isTimerActive(player, ArcanaAchievements.TOO_ANGRY_TO_DIE)){
+            if(player != null && ArcanaAchievements.isTimerActive(player, ArcanaAchievements.TOO_ANGRY_TO_DIE)){
                ArcanaAchievements.progress(player, ArcanaAchievements.TOO_ANGRY_TO_DIE, Math.round(damageWarded));
             }
          }
       }
       
+      if(arcanaInventory != null) arcanaInventory.close();
       return newReturn;
    }
    
@@ -600,24 +593,21 @@ public abstract class LivingEntityMixin {
       
       if(livingEntity instanceof ServerPlayer player){
          ItemCooldowns cooldowns = player.getCooldowns();
-         Container inv = player.getInventory();
-         block:
-         {
-            for(int i = 0; i < inv.getContainerSize(); i++){
-               ItemStack beltStack = inv.getItem(i);
-               if(ArcanaItemUtils.identifyItem(beltStack) instanceof ArcanistsBelt){
-                  ItemContainerContents beltItems = beltStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-                  for(ItemStack stack : beltItems.nonEmptyItems()){
-                     if(cooldowns.isOnCooldown(stack)) continue;
-                     deathProtectionComponent = stack.get(DataComponents.DEATH_PROTECTION);
-                     if(deathProtectionComponent != null){
-                        itemStack = stack.copy();
-                        stack.shrink(1);
-                        break block;
-                     }
-                  }
-               }
-            }
+         ArcanaInventory inventory = ArcanaInventory.getPlayerItems(player);
+         List<ArcanaInventory.Entry> totems = inventory.getMatchingEntries((entry) -> {
+            if(!entry.getContainerItem().is(ArcanaRegistry.ARCANISTS_BELT.getItem())) return false;
+            ItemStack stack = entry.getStack();
+            if(cooldowns.isOnCooldown(stack)) return false;
+            return stack.has(DataComponents.DEATH_PROTECTION);
+         });
+         if(!totems.isEmpty()){
+            ArcanaInventory.Entry entry = totems.getFirst();
+            ItemStack stack = entry.getStack();
+            deathProtectionComponent = stack.get(DataComponents.DEATH_PROTECTION);
+            itemStack = stack.copy();
+            stack.shrink(1);
+            entry.setModified();
+            inventory.close();
          }
       }
       
@@ -682,7 +672,7 @@ public abstract class LivingEntityMixin {
    @ModifyReturnValue(method = "getVisibilityPercent", at = @At("RETURN"))
    private double arcananovum$greaterInvisibilityAttackRangeScale(double original, Entity attacker){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
-      if(attacker.getType().is(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)) return original;
+      if(attacker.is(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)) return original;
       if(livingEntity.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
          return original * 0.01;
       }
@@ -692,10 +682,10 @@ public abstract class LivingEntityMixin {
    @ModifyReturnValue(method = "canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("RETURN"))
    private boolean arcananovum$canTarget(boolean original, LivingEntity target){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
-      if(target.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) && !livingEntity.getType().is(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)){
+      if(target.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) && !livingEntity.is(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)){
          return false;
       }
-      if(livingEntity.getType().is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS) && target instanceof NulConstructEntity){
+      if(livingEntity.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS) && target instanceof NulConstructEntity){
          return false;
       }
       if(target instanceof ServerPlayer player && livingEntity instanceof AbstractPiglin){

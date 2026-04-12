@@ -17,7 +17,9 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -45,7 +47,6 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.borislib.utils.MinecraftUtils.makeEnchantComponent;
 
 public class RunicBow extends ArcanaItem {
    public static final String ID = "runic_bow";
@@ -66,21 +68,6 @@ public class RunicBow extends ArcanaItem {
       item = new RunicBowItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.ADVANCEMENT_SNIPER_DUEL, ResearchTasks.ADVANCEMENT_BULLSEYE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
-   }
-   
-   @Override
-   public void finalizePrefItem(MinecraftServer server){
-      super.finalizePrefItem(server);
-      ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponents.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
-            new EnchantmentInstance(MinecraftUtils.getEnchantment(server.registryAccess(), Enchantments.POWER), 7)
-      ));
-      this.prefItem = buildItemLore(curPrefItem, server);
    }
    
    @Override
@@ -151,12 +138,13 @@ public class RunicBow extends ArcanaItem {
       public static final Predicate<ItemStack> RUNIC_BOW_PROJECTILES = stack -> (stack.is(ItemTags.ARROWS) || ArcanaItemUtils.identifyItem(stack) instanceof RunicArrow);
       
       public RunicBowItem(){
-         super(getThis(), getEquipmentArcanaItemComponents());
+         super(getThis(), getEquipmentArcanaItemComponents()
+               .delayedComponent(DataComponents.ENCHANTMENTS, ctx -> makeEnchantComponent(new EnchantmentInstance(ctx.getOrThrow(Enchantments.POWER),7))));
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -254,7 +242,7 @@ public class RunicBow extends ArcanaItem {
          if(accelLvl > 0 && user instanceof ServerPlayer player && prog >= 0.1){
             String t = "▁▂▃▅▆▇۞";
             char c = t.charAt((int) (Math.max(0, prog * t.length() - 1)));
-            player.displayClientMessage(Component.literal("")
+            player.sendSystemMessage(Component.literal("")
                   .append(Component.literal("\uD83C\uDFF9 (").withStyle(ChatFormatting.LIGHT_PURPLE))
                   .append(Component.literal(String.valueOf(c)).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                   .append(Component.literal(") \uD83C\uDFF9").withStyle(ChatFormatting.LIGHT_PURPLE)), true);

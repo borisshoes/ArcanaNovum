@@ -10,10 +10,16 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.function.Supplier;
+
 public class EventAchievement extends ArcanaAchievement {
    
    public EventAchievement(String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward){
       super(id, 0, displayItem, arcanaItem, xpReward, pointsReward);
+   }
+   
+   public EventAchievement(String id, Supplier<ItemStack> displayItemSupplier, ArcanaItem arcanaItem, int xpReward, int pointsReward){
+      super(id, 0, displayItemSupplier, arcanaItem, xpReward, pointsReward);
    }
    
    @Override

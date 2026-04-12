@@ -13,8 +13,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
-import net.minecraft.world.ContainerListener;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -28,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.TreeMap;
 import java.util.stream.IntStream;
 
-public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, ContainerListener, PolymerObject, ArcanaBlockEntity {
+public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
    private String uuid;
@@ -142,11 +140,6 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    
    @Override
    public void preRemoveSideEffects(BlockPos blockPos, BlockState blockState){
-   }
-   
-   @Override
-   public void containerChanged(Container container){
-   
    }
    
    @Override

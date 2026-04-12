@@ -76,12 +76,13 @@ public class SpearOfTenbrous extends ArcanaItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SPEAR_OF_TENBROUS};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Magirush"))};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, SPEAR_ID_TAG, "");
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -169,7 +170,7 @@ public class SpearOfTenbrous extends ArcanaItem {
                .component(DataComponents.TOOL, new Tool(List.of(), 1.0F, 2, false))
                .component(DataComponents.WEAPON, new Weapon(1))
                .component(DataComponents.ATTACK_RANGE, new AttackRange(1.0f, 4.75f, 1.0f, 6.75f, 0.1375f, 0.5f))
-               .component(DataComponents.DAMAGE_TYPE, new EitherHolder<>(ArcanaDamageTypes.ARCANE_LIGHTNING))
+               .delayedHolderComponent(DataComponents.DAMAGE_TYPE, ArcanaDamageTypes.ARCANE_LIGHTNING)
                .component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0f)
                .component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(SoundEvents.SPEAR_ATTACK), Optional.of(SoundEvents.SPEAR_HIT)))
                .component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, 20))
@@ -271,7 +272,7 @@ public class SpearOfTenbrous extends ArcanaItem {
       
       @Override
       public float getAttackDamageBonus(Entity target, float baseAttackDamage, DamageSource damageSource){
-         if(target.getType().is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)){
+         if(target.is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)){
             return baseAttackDamage * 0.25f;
          }else{
             return 0;
@@ -285,7 +286,7 @@ public class SpearOfTenbrous extends ArcanaItem {
             if(ArcanaItem.getSkin(stack) == ArcanaSkin.ZEPHOS_LANCE){
                particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT, 0x53D1FF, 0.0f);
             }
-            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> attacker.position().add(0, attacker.getBbHeight() / 2, 0), () -> target.position().add(0, target.getBbHeight() / 2, 0), (int) (Math.random() * 5 + 5), 0.5, particles,
+            ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> attacker.position().add(0, attacker.getBbHeight() / 2, 0), () -> target.position().add(0, target.getBbHeight() / 2, 0), serverWorld.getRandom().nextInt(5) + 5, 0.5, particles,
                   8, 1, 0, 1, false, 0, 5);
             ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, target::position, () -> target.position().add(0, target.getEyeHeight(), 0), (int) (5 + 2 * target.getEyeHeight()), target.getBbWidth(), particles,
                   8, 1, 0, 1, false, 0, 5);

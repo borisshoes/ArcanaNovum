@@ -13,7 +13,7 @@ public class GenericArcanaIngredient extends ArcanaIngredient {
    private final ArcanaItem item;
    
    public GenericArcanaIngredient(ArcanaItem item, int count){
-      super(item.getPrefItem().getItem(), count, true);
+      super(item.getItem(), count, true);
       this.item = item;
    }
    

@@ -1,10 +1,11 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import eu.pb4.sgui.api.SguiUtils;
+import eu.pb4.sgui.api.gui.GuiLike;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.login.MaxHealthLoginCallback;
-import net.borisshoes.arcananovum.cardinalcomponents.DataFixer;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.items.QuiverItem;
@@ -29,7 +30,6 @@ import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
 public class PlayerConnectionCallback {
    public static void onPlayerJoin(ServerGamePacketListenerImpl netHandler, PacketSender sender, MinecraftServer server){
       ServerPlayer player = netHandler.player;
-      DataFixer.onPlayerJoin(netHandler, sender, server);
       
       ArcanaPlayerData profile = ArcanaNovum.data(player);
       profile.setUsername(player.getGameProfile().name());
@@ -108,6 +108,11 @@ public class PlayerConnectionCallback {
       ServerPlayer player = handler.player;
       if(player.getMaxHealth() > 20 && player.getHealth() > 20){
          BorisLib.addLoginCallback(new MaxHealthLoginCallback(server, player.getStringUUID(), player.getHealth()));
+      }
+      
+      GuiLike guiInterface = SguiUtils.getCurrentGui(player); // TODO This can probably be done better
+      if(guiInterface != null){
+         guiInterface.close();
       }
       
       VIRTUAL_INVENTORY_GUIS.forEach((virtualInventoryGui, p) -> {

@@ -12,6 +12,8 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.gui.ContainerWatcher;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.gui.spawnerinfuser.SpawnerInfuserGui;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
@@ -27,7 +29,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
@@ -48,7 +53,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerListener, ArcanaBlockEntity {
+public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ContainerWatcher, ArcanaBlockEntity {
    
    private TreeMap<ArcanaAugment, Integer> augments;
    private String crafterId;
@@ -56,7 +61,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
    private int origin;
    private ArcanaSkin skin;
    private String customName;
-   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
+   private WatchedContainer inventory = new WatchedContainer(getContainerSize());
    private boolean active;
    private ItemStack soulstone;
    private int points;
@@ -73,7 +78,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
    
    public SpawnerInfuserBlockEntity(BlockPos blockPos, BlockState blockState){
       super(ArcanaRegistry.SPAWNER_INFUSER_BLOCK_ENTITY, blockPos, blockState);
-      this.inventory.addListener(this);
+      this.inventory.addWatcher(this);
    }
    
    public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
@@ -96,7 +101,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
    }
    
    public void openGui(ServerPlayer player){
-      SpawnerInfuserGui gui = new SpawnerInfuserGui(player, this, getLevel());
+      SpawnerInfuserGui gui = new SpawnerInfuserGui(player, this);
       gui.build();
       gui.open();
       watchingPlayers.put(player, gui);
@@ -128,6 +133,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
          
          if(!hasRedstone || !hasSoulstone || !hasSpawner){
             if(prevActive) this.active = false; // Update active status
+            if(prevActive != active) setChanged();
             level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE, active));
             return;
          }
@@ -140,17 +146,19 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
             CompoundTag spawnerData = nbtWriteView.buildResult();
             CompoundTag spawnData = spawnerData.getCompoundOrEmpty("SpawnData");
             if(spawnData.isEmpty() || !spawnData.contains("entity") || !spawnData.getCompoundOrEmpty("entity").contains("id")){
-               if(prevActive) this.active = false; // Update active status
-               level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE, active));
-               return;
-            }
+                if(prevActive) this.active = false; // Update active status
+                if(prevActive != active) setChanged();
+                level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE, active));
+                return;
+             }
             CompoundTag spawnEntity = spawnData.getCompoundOrEmpty("entity");
             
             boolean correctType = stoneType.equals(spawnEntity.getStringOr("id", ""));
             
             if(correctType){
-               if(!prevActive) this.active = true; // Update active status
-               level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE, active));
+                if(!prevActive) this.active = true; // Update active status
+                if(prevActive != active) setChanged();
+                level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE, active));
                ArcanaEffectUtils.spawnerInfuser(serverWorld, worldPosition, 5);
                SoundUtils.soulSounds(serverWorld, worldPosition, 1, 5);
             }
@@ -299,8 +307,8 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
-      this.inventory = new SimpleContainer(getContainerSize());
-      this.inventory.addListener(this);
+      this.inventory = new WatchedContainer(getContainerSize());
+      this.inventory.addWatcher(this);
       if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
@@ -417,7 +425,13 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
    }
    
    @Override
-   public void containerChanged(Container inv){
+   public void setChanged(){
+      super.setChanged();
+      this.inventory.setChanged();
+   }
+   
+   @Override
+   public void onChanged(WatchedContainer inv){
       if(!updating){
          updating = true;
          

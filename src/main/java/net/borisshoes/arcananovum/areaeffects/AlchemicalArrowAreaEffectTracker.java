@@ -100,8 +100,8 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
             List<MobEffectInstance> effects = new ArrayList<>();
             eithers.forEach(t -> t.getA().ifLeft(effects::add));
             
-            int random = (int) (Math.random() * effects.size());
-            if(Math.random() < 0.03){
+            int random = world.getRandom().nextInt(effects.size());
+            if(world.getRandom().nextDouble() < 0.03){
                ParticleOptions dust = new DustParticleOptions(effects.get(random).getEffect().value().getColor(), 1.2f);
                world.sendParticles(dust, pos.getX(), pos.getY(), pos.getZ(), 1, 0.5, 0.5, 0.5, 0);
             }

@@ -26,7 +26,7 @@ public class DragonGoonHelper {
       guardian.setNumPlayers(numPlayers);
       guardian.setCustomName(phantomName);
       guardian.setCustomNameVisible(true);
-      guardian.setPosRaw(Math.random()*50-25,100,Math.random()*50-25);
+      guardian.setPosRaw(endWorld.getRandom().nextDouble()*50-25,100,endWorld.getRandom().nextDouble()*50-25);
       return guardian;
    }
    

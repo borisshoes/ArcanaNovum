@@ -32,11 +32,6 @@ public class RunicMatrix extends ArcanaItem {
       item = new RunicMatrixItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_END_CRYSTAL, ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS, ResearchTasks.OBTAIN_AMETHYST_SHARD};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override

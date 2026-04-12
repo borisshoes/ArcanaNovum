@@ -13,7 +13,9 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -35,7 +37,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,13 +60,14 @@ public class StasisPearl extends EnergyItem {
       item = new StasisPearlItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, PEARL_ID_TAG, "");
       putProperty(stack, ACTIVE_TAG, false);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -161,8 +163,8 @@ public class StasisPearl extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          List<String> stringList = new ArrayList<>();
          
          boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
@@ -219,6 +221,7 @@ public class StasisPearl extends EnergyItem {
       
       @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          ItemStack stack = playerEntity.getItemInHand(hand);
          boolean active = getBooleanProperty(stack, ACTIVE_TAG);
          String pearlID = getStringProperty(stack, PEARL_ID_TAG);
@@ -241,10 +244,8 @@ public class StasisPearl extends EnergyItem {
                   }
                }else{
                   playerEntity.getCooldowns().addCooldown(stack, 0);
-                  if(playerEntity instanceof ServerPlayer player){
-                     playerEntity.displayClientMessage(Component.literal("Pearl Recharging: " + (getEnergy(stack) * 100 / getMaxEnergy(stack)) + "%").withStyle(ChatFormatting.BLUE), true);
-                     SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
-                  }
+                  player.sendSystemMessage(Component.literal("Pearl Recharging: " + (getEnergy(stack) * 100 / getMaxEnergy(stack)) + "%").withStyle(ChatFormatting.BLUE), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                }
             }else if(canDelete){ // Delete current pearl
                if(world instanceof ServerLevel serverWorld){
@@ -261,10 +262,8 @@ public class StasisPearl extends EnergyItem {
                // Reset data
                putProperty(stack, ACTIVE_TAG, false);
                putProperty(stack, PEARL_ID_TAG, "");
-               if(playerEntity instanceof ServerPlayer player){
-                  playerEntity.displayClientMessage(Component.literal("Pearl Cancelled").withStyle(ChatFormatting.BLUE), true);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.CHORUS_FRUIT_TELEPORT, 1, .5f);
-               }
+               player.sendSystemMessage(Component.literal("Pearl Cancelled").withStyle(ChatFormatting.BLUE), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.CHORUS_FRUIT_TELEPORT, 1, .5f);
             }else if(active){ // Un-stasis to pearl
                if(world instanceof ServerLevel serverWorld){
                   Entity foundEntity = null;

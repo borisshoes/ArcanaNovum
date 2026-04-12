@@ -20,7 +20,7 @@ public class WaystoneIngredient extends ArcanaIngredient {
    private ResourceKey<Level> worldKey;
    
    private WaystoneIngredient(int count, boolean consumed, boolean requireUnattuned, boolean requireAttuned, ResourceKey<Level> worldKey){
-      super(ArcanaRegistry.WAYSTONE.getPrefItem().getItem(), count, true);
+      super(ArcanaRegistry.WAYSTONE.getItem(), count, true);
       this.requireAttuned = requireAttuned;
       this.requireUnattuned = requireUnattuned;
       this.worldKey = worldKey;
@@ -28,7 +28,7 @@ public class WaystoneIngredient extends ArcanaIngredient {
    }
    
    public WaystoneIngredient(boolean consumed){
-      super(ArcanaRegistry.WAYSTONE.getPrefItem().getItem(), 1, true);
+      super(ArcanaRegistry.WAYSTONE.getItem(), 1, true);
       this.consumed = consumed;
    }
    

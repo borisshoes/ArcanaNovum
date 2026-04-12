@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -17,6 +18,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,7 +51,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,12 +79,13 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.OBTAIN_STARDUST, ResearchTasks.OBTAIN_NEBULOUS_ESSENCE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("ii_iridescent")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, BOOKS_TAG, new ListTag());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -191,7 +193,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.LECTERN.defaultBlockState().setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
@@ -275,10 +277,10 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack SINGULARITY_BASE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_bottom"));
-      public static final ItemStack SINGULARITY_STEM = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_middle"));
-      public static final ItemStack SINGULARITY_TOP_ON = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top"));
-      public static final ItemStack SINGULARITY_TOP_OFF = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top_off"));
+      public static final LazyItemStack SINGULARITY_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/arcane_singularity_bottom"));
+      public static final LazyItemStack SINGULARITY_STEM = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/arcane_singularity_middle"));
+      public static final LazyItemStack SINGULARITY_TOP_ON = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top"));
+      public static final LazyItemStack SINGULARITY_TOP_OFF = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top_off"));
       
       private final ServerLevel world;
       private final ItemDisplayElement base;
@@ -327,7 +329,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
                this.active = false;
             }
             if(this.active ^ oldActive){
-               this.top.setItem(this.active ? SINGULARITY_TOP_ON : SINGULARITY_TOP_OFF);
+               this.top.setItem(this.active ? SINGULARITY_TOP_ON.get() : SINGULARITY_TOP_OFF.get());
             }
          }
          ticks++;

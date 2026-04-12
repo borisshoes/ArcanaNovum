@@ -1707,8 +1707,12 @@ public class DefaultRecipeGenerator {
             .withViewStack(new ItemStack(Items.COBBLESTONE)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("dirts", new ItemStack(Items.EMERALD, 2), new ItemStack(Items.QUARTZ, 4))
-            .with(Items.GRASS_BLOCK, Items.DIRT, Items.COARSE_DIRT, Items.ROOTED_DIRT, Items.DIRT_PATH, Items.PODZOL, Items.MYCELIUM)
+            .with(Items.GRASS_BLOCK, Items.DIRT, Items.COARSE_DIRT, Items.ROOTED_DIRT, Items.DIRT_PATH, Items.PODZOL, Items.MYCELIUM, Items.MUD)
             .withViewStack(new ItemStack(Items.GRASS_BLOCK)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("mosses", new ItemStack(Items.EMERALD, 2), new ItemStack(Items.QUARTZ, 4))
+            .with(Items.MOSS_BLOCK, Items.PALE_MOSS_BLOCK)
+            .withViewStack(new ItemStack(Items.MOSS_BLOCK)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("sandstones", new ItemStack(Items.REDSTONE, 6), new ItemStack(Items.QUARTZ, 4))
             .with(Items.SANDSTONE, Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_SANDSTONE, Items.RED_SAND, Items.CHISELED_RED_SANDSTONE,
@@ -3632,8 +3636,12 @@ public class DefaultRecipeGenerator {
             .withViewStack(new ItemStack(Items.COBBLESTONE)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("dirts", new ItemStack(Items.EMERALD, 6), new ItemStack(Items.QUARTZ, 12))
-            .with(Items.GRASS_BLOCK, Items.DIRT, Items.COARSE_DIRT, Items.ROOTED_DIRT, Items.DIRT_PATH, Items.PODZOL, Items.MYCELIUM)
+            .with(Items.GRASS_BLOCK, Items.DIRT, Items.COARSE_DIRT, Items.ROOTED_DIRT, Items.DIRT_PATH, Items.PODZOL, Items.MYCELIUM, Items.MUD)
             .withViewStack(new ItemStack(Items.GRASS_BLOCK)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("mosses", new ItemStack(Items.EMERALD, 6), new ItemStack(Items.QUARTZ, 12))
+            .with(Items.MOSS_BLOCK, Items.PALE_MOSS_BLOCK)
+            .withViewStack(new ItemStack(Items.MOSS_BLOCK)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("sandstones", new ItemStack(Items.REDSTONE, 16), new ItemStack(Items.QUARTZ, 12))
             .with(Items.SANDSTONE, Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_SANDSTONE, Items.RED_SAND, Items.CHISELED_RED_SANDSTONE,

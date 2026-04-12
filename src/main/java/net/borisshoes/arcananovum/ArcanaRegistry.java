@@ -4,7 +4,7 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
-import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
+import eu.pb4.polymer.core.api.item.PolymerCreativeModeTabUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.resourcepack.extras.api.ResourcePackExtras;
 import io.github.ladysnake.pal.AbilitySource;
@@ -71,6 +71,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -85,9 +86,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.DamageResistant;
-import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.CustomRecipe;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
@@ -100,7 +100,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -156,58 +155,6 @@ public class ArcanaRegistry {
    
    // Enchantments
    public static final ResourceKey<Enchantment> FATE_ANCHOR = ResourceKey.create(Registries.ENCHANTMENT, arcanaId("fate_anchor"));
-   
-   // Registering Banner Recipe
-   public static final CustomRecipe.Serializer<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION_SERIALIZER;
-   public static final RecipeType<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION;
-   
-   static{
-      ARCANA_SHIELD_DECORATION = Registry.register(BuiltInRegistries.RECIPE_TYPE, arcanaId("arcana_shield_decoration"), new RecipeType<ArcanaShieldDecoratorRecipe>() {
-         @Override
-         public String toString(){
-            return "arcana_shield_decoration_recipe";
-         }
-      });
-      ARCANA_SHIELD_DECORATION_SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, arcanaId("arcana_shield_decoration"), new ArcanaShieldDecoratorRecipe.ShieldRecipeSerializer(ArcanaShieldDecoratorRecipe::new));
-   }
-   
-   // Registering Eversource Recipes
-   public static final CustomRecipe.Serializer<AquaticEversourceFillRecipe> AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
-   public static final RecipeType<AquaticEversourceFillRecipe> AQUATIC_EVERSOURCE_FILL_RECIPE;
-   public static final CustomRecipe.Serializer<MagmaticEversourceFillRecipe> MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
-   public static final RecipeType<MagmaticEversourceFillRecipe> MAGMATIC_EVERSOURCE_FILL_RECIPE;
-   
-   static{
-      AQUATIC_EVERSOURCE_FILL_RECIPE = Registry.register(BuiltInRegistries.RECIPE_TYPE, arcanaId("aquatic_eversource_fill"), new RecipeType<AquaticEversourceFillRecipe>() {
-         @Override
-         public String toString(){
-            return "aquatic_eversource_fill_recipe";
-         }
-      });
-      AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, arcanaId("aquatic_eversource_fill"), new AquaticEversourceFillRecipe.AquaticEversourceRecipeSerializer(AquaticEversourceFillRecipe::new));
-      
-      MAGMATIC_EVERSOURCE_FILL_RECIPE = Registry.register(BuiltInRegistries.RECIPE_TYPE, arcanaId("magmatic_eversource_fill"), new RecipeType<MagmaticEversourceFillRecipe>() {
-         @Override
-         public String toString(){
-            return "magmatic_eversource_fill_recipe";
-         }
-      });
-      MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, arcanaId("magmatic_eversource_fill"), new MagmaticEversourceFillRecipe.MagmaticEversourceRecipeSerializer(MagmaticEversourceFillRecipe::new));
-   }
-   
-   // Registering Waystone Cook Recipe
-   public static final AbstractCookingRecipe.Serializer<WaystoneCleanseRecipe> WAYSTONE_CLEANSE_RECIPE_SERIALIZER;
-   public static final RecipeType<WaystoneCleanseRecipe> WAYSTONE_CLEANSE_RECIPE;
-   
-   static{
-      WAYSTONE_CLEANSE_RECIPE = Registry.register(BuiltInRegistries.RECIPE_TYPE, arcanaId("waystone_cleanse"), new RecipeType<WaystoneCleanseRecipe>() {
-         @Override
-         public String toString(){
-            return "waystone_cleanse";
-         }
-      });
-      WAYSTONE_CLEANSE_RECIPE_SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, arcanaId("waystone_cleanse"), new WaystoneCleanseRecipe.WaystoneCleanseRecipeSerializer(WaystoneCleanseRecipe::new));
-   }
    
    public static final ResourceKey<? extends Registry<EquipmentAsset>> EQUIPMENT_ASSET_REGISTRY_KEY = ResourceKey.createRegistryKey(Identifier.withDefaultNamespace("equipment_asset"));
    
@@ -318,7 +265,7 @@ public class ArcanaRegistry {
    );
    public static final Item DIVINE_ARCANE_PAPER = registerItem("divine_arcane_paper", new DivineArcanePaper("divine_arcane_paper", new Item.Properties().stacksTo(64).rarity(Rarity.EPIC)
          .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-         .component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(ARCANA_ITEM_IMMUNE_TO)))
+         .delayedComponent(DataComponents.DAMAGE_RESISTANT, context -> new DamageResistant(context.getOrThrow(ARCANA_ITEM_IMMUNE_TO))))
    );
    
    // Normal Blocks (registered in initialize())
@@ -453,10 +400,16 @@ public class ArcanaRegistry {
    public static final BlockEntityType<? extends BlockEntity> ITINERANTEUR_BLOCK_ENTITY = registerBlockEntity(ITINERANTEUR.getId(), FabricBlockEntityTypeBuilder.create(ItineranteurBlockEntity::new, ((ArcanaBlock) ITINERANTEUR).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> GEOMANTIC_STELE_BLOCK_ENTITY = registerBlockEntity(GEOMANTIC_STELE.getId(), FabricBlockEntityTypeBuilder.create(GeomanticSteleBlockEntity::new, ((ArcanaBlock) GEOMANTIC_STELE).getBlock()).build());
    
+   // Registering Recipes
+   public static final RecipeSerializer<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION_RECIPE = registerRecipe("arcana_shield_decoration", ArcanaShieldDecoratorRecipe.SERIALIZER);
+   public static final RecipeSerializer<AquaticEversourceFillRecipe> AQUATIC_EVERSOURCE_FILL_RECIPE = registerRecipe("aquatic_eversource_fill", AquaticEversourceFillRecipe.SERIALIZER);
+   public static final RecipeSerializer<MagmaticEversourceFillRecipe> MAGMATIC_EVERSOURCE_FILL_RECIPE = registerRecipe("magmatic_eversource_fill", MagmaticEversourceFillRecipe.SERIALIZER);
+   public static final RecipeSerializer<WaystoneCleanseRecipe> WAYSTONE_CLEANSE_RECIPE = registerRecipe("waystone_cleanse", WaystoneCleanseRecipe.SERIALIZER);
+   
    // Loot Functions / Item Modifiers
-   public static final LootItemFunctionType<? extends LootItemFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
-   public static final LootItemFunctionType<? extends LootItemFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
-   public static final LootItemFunctionType<? extends LootItemFunction> FOUND_ARCANA_ITEM_LOOT_FUNCTION = registerLootFunction("found_arcana_item", FoundArcanaItemLootFunction.CODEC);
+   public static final MapCodec<? extends LootItemFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
+   public static final MapCodec<? extends LootItemFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
+   public static final MapCodec<? extends LootItemFunction> FOUND_ARCANA_ITEM_LOOT_FUNCTION = registerLootFunction("found_arcana_item", FoundArcanaItemLootFunction.CODEC);
    
    // PlayerAbilityLib Identifiers
    public static final AbilitySource LEVITATION_HARNESS_ABILITY = Pal.getAbilitySource(arcanaId(LEVITATION_HARNESS.getId()), AbilitySource.CONSUMABLE);
@@ -492,7 +445,6 @@ public class ArcanaRegistry {
       for(Map.Entry<ResourceKey<ArcanaItem>, ArcanaItem> entry : ARCANA_ITEMS.entrySet()){
          String id = entry.getKey().identifier().getPath();
          ArcanaItem arcanaItem = entry.getValue();
-         arcanaItem.initializePrefItem();
          registerItem(id, arcanaItem.getItem());
          
          if(arcanaItem instanceof ArcanaBlock arcanaBlock){
@@ -505,115 +457,14 @@ public class ArcanaRegistry {
          }
       }
       
-      ResearchTasks.registerResearchTasks();
-      
       FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/plains/houses"), arcanaId("village/plains_arcanists_house"), 4);
       FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/desert/houses"), arcanaId("village/desert_arcanists_house"), 16);
       FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/savanna/houses"), arcanaId("village/savanna_arcanists_house"), 14);
       FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/taiga/houses"), arcanaId("village/taiga_arcanists_house"), 5);
       FabricStructurePoolRegistry.registerSimple(Identifier.withDefaultNamespace("village/snowy/houses"), arcanaId("village/snowy_arcanists_house"), 4);
       
-      RECOMMENDED_LIST.addAll(Arrays.asList(
-            getCryingObsidianEntry(),
-            MundaneArcanePaper.getCompendiumEntry(),
-            EmpoweredArcanePaper.getCompendiumEntry(),
-            new ArcanaItemCompendiumEntry(ARCANE_TOME),
-            new ArcanaItemCompendiumEntry(STARLIGHT_FORGE),
-            new ArcanaItemCompendiumEntry(CLOCKWORK_MULTITOOL),
-            new ArcanaItemCompendiumEntry(MAGNETISM_CHARM),
-            new ArcanaItemCompendiumEntry(NEGOTIATION_CHARM),
-            new ArcanaItemCompendiumEntry(TELESCOPING_BEACON),
-            new ArcanaItemCompendiumEntry(ANCIENT_DOWSING_ROD),
-            new ArcanaItemCompendiumEntry(AQUATIC_EVERSOURCE),
-            new ArcanaItemCompendiumEntry(CONTAINMENT_CIRCLET),
-            new ArcanaItemCompendiumEntry(CHEST_TRANSLOCATOR),
-            new ArcanaItemCompendiumEntry(ENDER_CRATE),
-            new ArcanaItemCompendiumEntry(FRACTAL_SPONGE),
-            new ArcanaItemCompendiumEntry(CETACEA_CHARM),
-            new ArcanaItemCompendiumEntry(LIGHT_CHARM),
-            new ArcanaItemCompendiumEntry(TWILIGHT_ANVIL),
-            new ArcanaItemCompendiumEntry(MIDNIGHT_ENCHANTER),
-            NebulousEssenceItem.getCompendiumEntry(),
-            ExoticArcanePaper.getCompendiumEntry(),
-            new ArcanaItemCompendiumEntry(FELIDAE_CHARM),
-            new ArcanaItemCompendiumEntry(FEASTING_CHARM),
-            new ArcanaItemCompendiumEntry(ARCANISTS_BELT),
-            new ArcanaItemCompendiumEntry(ITINERANTEUR),
-            new ArcanaItemCompendiumEntry(MAGMATIC_EVERSOURCE),
-            new ArcanaItemCompendiumEntry(TEMPORAL_MOMENT),
-            new ArcanaItemCompendiumEntry(WILD_GROWTH_CHARM),
-            new ArcanaItemCompendiumEntry(PEARL_OF_RECALL),
-            new ArcanaItemCompendiumEntry(PLANESHIFTER),
-            new ArcanaItemCompendiumEntry(STASIS_PEARL),
-            new ArcanaItemCompendiumEntry(EVERLASTING_ROCKET),
-            new ArcanaItemCompendiumEntry(BRAIN_JAR),
-            new ArcanaItemCompendiumEntry(CLEANSING_CHARM),
-            new ArcanaItemCompendiumEntry(STELLAR_CORE),
-            StardustItem.getCompendiumEntry(),
-            SovereignArcanePaper.getCompendiumEntry(),
-            new ArcanaItemCompendiumEntry(IGNEOUS_COLLIDER),
-            new ArcanaItemCompendiumEntry(SPAWNER_HARNESS),
-            new ArcanaItemCompendiumEntry(CINDERS_CHARM),
-            new ArcanaItemCompendiumEntry(SOULSTONE),
-            new ArcanaItemCompendiumEntry(ESSENCE_EGG),
-            new ArcanaItemCompendiumEntry(EXOTIC_MATTER),
-            new ArcanaItemCompendiumEntry(CONTINUUM_ANCHOR),
-            new ArcanaItemCompendiumEntry(INTERDICTOR),
-            new ArcanaItemCompendiumEntry(ASTRAL_GATEWAY),
-            new ArcanaItemCompendiumEntry(STORMCALLER_ALTAR),
-            new ArcanaItemCompendiumEntry(CELESTIAL_ALTAR),
-            new ArcanaItemCompendiumEntry(STARPATH_ALTAR),
-            new ArcanaItemCompendiumEntry(TRANSMUTATION_ALTAR),
-            new TransmutationRecipesCompendiumEntry(),
-            new ArcanaItemCompendiumEntry(WAYSTONE),
-            DivineArcanePaper.getCompendiumEntry(),
-            new ArcanaItemCompendiumEntry(RUNIC_MATRIX),
-            new ArcanaItemCompendiumEntry(GEOMANTIC_STELE),
-            new ArcanaItemCompendiumEntry(RADIANT_FLETCHERY),
-            new ArcanaItemCompendiumEntry(OVERFLOWING_QUIVER),
-            new ArcanaItemCompendiumEntry(BINARY_BLADES),
-            new ArcanaItemCompendiumEntry(GRAVITON_MAUL),
-            new ArcanaItemCompendiumEntry(SHADOW_STALKERS_GLAIVE),
-            new ArcanaItemCompendiumEntry(SHIELD_OF_FORTITUDE),
-            new ArcanaItemCompendiumEntry(SOJOURNER_BOOTS),
-            new ArcanaItemCompendiumEntry(TOTEM_OF_VENGEANCE),
-            new ArcanaItemCompendiumEntry(ALCHEMICAL_ARBALEST),
-            new ArcanaItemCompendiumEntry(RUNIC_BOW),
-            new ArcanaItemCompendiumEntry(RUNIC_QUIVER),
-            new ArcanaItemCompendiumEntry(TETHER_ARROWS),
-            new ArcanaItemCompendiumEntry(BLINK_ARROWS),
-            new ArcanaItemCompendiumEntry(ARCANE_FLAK_ARROWS),
-            new ArcanaItemCompendiumEntry(CONCUSSION_ARROWS),
-            new ArcanaItemCompendiumEntry(SMOKE_ARROWS),
-            new ArcanaItemCompendiumEntry(DETONATION_ARROWS),
-            new ArcanaItemCompendiumEntry(SIPHONING_ARROWS),
-            new ArcanaItemCompendiumEntry(STORM_ARROWS),
-            new ArcanaItemCompendiumEntry(GRAVITON_ARROWS),
-            new ArcanaItemCompendiumEntry(EXPULSION_ARROWS),
-            new ArcanaItemCompendiumEntry(PHOTONIC_ARROWS),
-            new ArcanaItemCompendiumEntry(ENSNAREMENT_ARROWS),
-            new ArcanaItemCompendiumEntry(TRACKING_ARROWS),
-            new ArcanaItemCompendiumEntry(ARCANE_SINGULARITY),
-            new ArcanaItemCompendiumEntry(SPAWNER_INFUSER),
-            new ArcanaItemCompendiumEntry(SHULKER_CORE),
-            new ArcanaItemCompendiumEntry(LEVITATION_HARNESS),
-            new ArcanaItemCompendiumEntry(CATALYTIC_MATRIX),
-            new ArcanaItemCompendiumEntry(MUNDANE_CATALYST),
-            new ArcanaItemCompendiumEntry(EMPOWERED_CATALYST),
-            new ArcanaItemCompendiumEntry(EXOTIC_CATALYST),
-            new ArcanaItemCompendiumEntry(SOVEREIGN_CATALYST),
-            new ArcanaItemCompendiumEntry(DIVINE_CATALYST),
-            new ArcanaItemCompendiumEntry(TRANSMOGRIFICATION_CATALYST),
-            new ArcanaItemCompendiumEntry(AEQUALIS_SCIENTIA),
-            new ArcanaItemCompendiumEntry(NUL_MEMENTO),
-            new ArcanaItemCompendiumEntry(WINGS_OF_ENDERIA),
-            new ArcanaItemCompendiumEntry(SPEAR_OF_TENBROUS),
-            new ArcanaItemCompendiumEntry(PICKAXE_OF_CEPTYUS),
-            new ArcanaItemCompendiumEntry(GREAVES_OF_GAIALTUS),
-            new ArcanaItemCompendiumEntry(LEADERSHIP_CHARM)
-      ));
       
-      final CreativeModeTab ARCANA_ITEMS_GROUP = PolymerItemGroupUtils.builder().title(Component.translatable("itemGroup.arcana_items")).icon(ARCANE_TOME::getPrefItemNoLore).displayItems((displayContext, entries) -> {
+      final CreativeModeTab ARCANA_ITEMS_GROUP = PolymerCreativeModeTabUtils.builder().title(Component.translatable("itemGroup.arcana_items")).icon(ARCANE_TOME::getPrefItemNoLore).displayItems((displayContext, entries) -> {
          RECOMMENDED_LIST.forEach(entry -> {
             if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
                ItemStack entryStack = arcanaEntry.getArcanaItem().getPrefItem();
@@ -622,7 +473,7 @@ public class ArcanaRegistry {
             }
          });
       }).build();
-      final CreativeModeTab ARCANA_INGREDIENTS_GROUP = PolymerItemGroupUtils.builder().title(Component.translatable("itemGroup.arcana_ingredients")).icon(() -> MinecraftUtils.removeLore(new ItemStack(SOVEREIGN_ARCANE_PAPER))).displayItems((displayContext, entries) -> {
+      final CreativeModeTab ARCANA_INGREDIENTS_GROUP = PolymerCreativeModeTabUtils.builder().title(Component.translatable("itemGroup.arcana_ingredients")).icon(() -> MinecraftUtils.removeLore(new ItemStack(SOVEREIGN_ARCANE_PAPER))).displayItems((displayContext, entries) -> {
          RECOMMENDED_LIST.forEach(entry -> {
             if(entry instanceof IngredientCompendiumEntry ingredientEntry){
                entries.accept(new ItemStack(ingredientEntry.getDisplayStack().getItem()));
@@ -630,8 +481,8 @@ public class ArcanaRegistry {
          });
       }).build();
       
-      PolymerItemGroupUtils.registerPolymerItemGroup(arcanaId("arcana_items"), ARCANA_ITEMS_GROUP);
-      PolymerItemGroupUtils.registerPolymerItemGroup(arcanaId("arcana_ingredients"), ARCANA_INGREDIENTS_GROUP);
+      PolymerCreativeModeTabUtils.registerPolymerCreativeModeTab(arcanaId("arcana_items"), ARCANA_ITEMS_GROUP);
+      PolymerCreativeModeTabUtils.registerPolymerCreativeModeTab(arcanaId("arcana_ingredients"), ARCANA_INGREDIENTS_GROUP);
       
       if(ArcanaNovum.DEV_MODE) writeAchievementAndAugmentIds();
    }
@@ -738,7 +589,110 @@ public class ArcanaRegistry {
    }
    
    public static void onServerStarted(MinecraftServer server){
-      ARCANA_ITEMS.entrySet().forEach(entry -> entry.getValue().finalizePrefItem(server));
+      ARCANA_ITEMS.entrySet().forEach(entry -> entry.getValue().initializePrefItem(server));
+      ResearchTasks.registerResearchTasks();
+      
+      RECOMMENDED_LIST.clear();
+      RECOMMENDED_LIST.addAll(Arrays.asList(
+            getCryingObsidianEntry(),
+            MundaneArcanePaper.getCompendiumEntry(),
+            EmpoweredArcanePaper.getCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(ARCANE_TOME),
+            new ArcanaItemCompendiumEntry(STARLIGHT_FORGE),
+            new ArcanaItemCompendiumEntry(CLOCKWORK_MULTITOOL),
+            new ArcanaItemCompendiumEntry(MAGNETISM_CHARM),
+            new ArcanaItemCompendiumEntry(NEGOTIATION_CHARM),
+            new ArcanaItemCompendiumEntry(TELESCOPING_BEACON),
+            new ArcanaItemCompendiumEntry(ANCIENT_DOWSING_ROD),
+            new ArcanaItemCompendiumEntry(AQUATIC_EVERSOURCE),
+            new ArcanaItemCompendiumEntry(CONTAINMENT_CIRCLET),
+            new ArcanaItemCompendiumEntry(CHEST_TRANSLOCATOR),
+            new ArcanaItemCompendiumEntry(ENDER_CRATE),
+            new ArcanaItemCompendiumEntry(FRACTAL_SPONGE),
+            new ArcanaItemCompendiumEntry(CETACEA_CHARM),
+            new ArcanaItemCompendiumEntry(LIGHT_CHARM),
+            new ArcanaItemCompendiumEntry(TWILIGHT_ANVIL),
+            new ArcanaItemCompendiumEntry(MIDNIGHT_ENCHANTER),
+            NebulousEssenceItem.getCompendiumEntry(),
+            ExoticArcanePaper.getCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(FELIDAE_CHARM),
+            new ArcanaItemCompendiumEntry(FEASTING_CHARM),
+            new ArcanaItemCompendiumEntry(ARCANISTS_BELT),
+            new ArcanaItemCompendiumEntry(ITINERANTEUR),
+            new ArcanaItemCompendiumEntry(MAGMATIC_EVERSOURCE),
+            new ArcanaItemCompendiumEntry(TEMPORAL_MOMENT),
+            new ArcanaItemCompendiumEntry(WILD_GROWTH_CHARM),
+            new ArcanaItemCompendiumEntry(PEARL_OF_RECALL),
+            new ArcanaItemCompendiumEntry(PLANESHIFTER),
+            new ArcanaItemCompendiumEntry(STASIS_PEARL),
+            new ArcanaItemCompendiumEntry(EVERLASTING_ROCKET),
+            new ArcanaItemCompendiumEntry(BRAIN_JAR),
+            new ArcanaItemCompendiumEntry(CLEANSING_CHARM),
+            new ArcanaItemCompendiumEntry(STELLAR_CORE),
+            StardustItem.getCompendiumEntry(),
+            SovereignArcanePaper.getCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(IGNEOUS_COLLIDER),
+            new ArcanaItemCompendiumEntry(SPAWNER_HARNESS),
+            new ArcanaItemCompendiumEntry(CINDERS_CHARM),
+            new ArcanaItemCompendiumEntry(SOULSTONE),
+            new ArcanaItemCompendiumEntry(ESSENCE_EGG),
+            new ArcanaItemCompendiumEntry(EXOTIC_MATTER),
+            new ArcanaItemCompendiumEntry(CONTINUUM_ANCHOR),
+            new ArcanaItemCompendiumEntry(INTERDICTOR),
+            new ArcanaItemCompendiumEntry(ASTRAL_GATEWAY),
+            new ArcanaItemCompendiumEntry(STORMCALLER_ALTAR),
+            new ArcanaItemCompendiumEntry(CELESTIAL_ALTAR),
+            new ArcanaItemCompendiumEntry(STARPATH_ALTAR),
+            new ArcanaItemCompendiumEntry(TRANSMUTATION_ALTAR),
+            new TransmutationRecipesCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(WAYSTONE),
+            DivineArcanePaper.getCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(RUNIC_MATRIX),
+            new ArcanaItemCompendiumEntry(GEOMANTIC_STELE),
+            new ArcanaItemCompendiumEntry(RADIANT_FLETCHERY),
+            new ArcanaItemCompendiumEntry(OVERFLOWING_QUIVER),
+            new ArcanaItemCompendiumEntry(BINARY_BLADES),
+            new ArcanaItemCompendiumEntry(GRAVITON_MAUL),
+            new ArcanaItemCompendiumEntry(SHADOW_STALKERS_GLAIVE),
+            new ArcanaItemCompendiumEntry(SHIELD_OF_FORTITUDE),
+            new ArcanaItemCompendiumEntry(SOJOURNER_BOOTS),
+            new ArcanaItemCompendiumEntry(TOTEM_OF_VENGEANCE),
+            new ArcanaItemCompendiumEntry(ALCHEMICAL_ARBALEST),
+            new ArcanaItemCompendiumEntry(RUNIC_BOW),
+            new ArcanaItemCompendiumEntry(RUNIC_QUIVER),
+            new ArcanaItemCompendiumEntry(TETHER_ARROWS),
+            new ArcanaItemCompendiumEntry(BLINK_ARROWS),
+            new ArcanaItemCompendiumEntry(ARCANE_FLAK_ARROWS),
+            new ArcanaItemCompendiumEntry(CONCUSSION_ARROWS),
+            new ArcanaItemCompendiumEntry(SMOKE_ARROWS),
+            new ArcanaItemCompendiumEntry(DETONATION_ARROWS),
+            new ArcanaItemCompendiumEntry(SIPHONING_ARROWS),
+            new ArcanaItemCompendiumEntry(STORM_ARROWS),
+            new ArcanaItemCompendiumEntry(GRAVITON_ARROWS),
+            new ArcanaItemCompendiumEntry(EXPULSION_ARROWS),
+            new ArcanaItemCompendiumEntry(PHOTONIC_ARROWS),
+            new ArcanaItemCompendiumEntry(ENSNAREMENT_ARROWS),
+            new ArcanaItemCompendiumEntry(TRACKING_ARROWS),
+            new ArcanaItemCompendiumEntry(ARCANE_SINGULARITY),
+            new ArcanaItemCompendiumEntry(SPAWNER_INFUSER),
+            new ArcanaItemCompendiumEntry(SHULKER_CORE),
+            new ArcanaItemCompendiumEntry(LEVITATION_HARNESS),
+            new ArcanaItemCompendiumEntry(CATALYTIC_MATRIX),
+            new ArcanaItemCompendiumEntry(MUNDANE_CATALYST),
+            new ArcanaItemCompendiumEntry(EMPOWERED_CATALYST),
+            new ArcanaItemCompendiumEntry(EXOTIC_CATALYST),
+            new ArcanaItemCompendiumEntry(SOVEREIGN_CATALYST),
+            new ArcanaItemCompendiumEntry(DIVINE_CATALYST),
+            new ArcanaItemCompendiumEntry(TRANSMOGRIFICATION_CATALYST),
+            new ArcanaItemCompendiumEntry(AEQUALIS_SCIENTIA),
+            new ArcanaItemCompendiumEntry(NUL_MEMENTO),
+            new ArcanaItemCompendiumEntry(WINGS_OF_ENDERIA),
+            new ArcanaItemCompendiumEntry(SPEAR_OF_TENBROUS),
+            new ArcanaItemCompendiumEntry(PICKAXE_OF_CEPTYUS),
+            new ArcanaItemCompendiumEntry(GREAVES_OF_GAIALTUS),
+            new ArcanaItemCompendiumEntry(LEADERSHIP_CHARM)
+      ));
+      
       DefaultRecipeGenerator.generateBuiltInRecipes();
       RecipeManager.refreshRecipes(server);
    }
@@ -783,8 +737,16 @@ public class ArcanaRegistry {
       return tracker;
    }
    
-   private static LootItemFunctionType<? extends LootItemFunction> registerLootFunction(String id, MapCodec<? extends LootItemFunction> codec){
-      return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, arcanaId(id), new LootItemFunctionType<>(codec));
+   public static <T extends RecipeSerializer<?>> T registerRecipe(String id, T recipeSerializer) {
+      return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, arcanaId(id), recipeSerializer);
+   }
+   
+   public static <T extends Recipe<?>> RecipeSerializer<T> registerRecipe(String id, MapCodec<T> codec) {
+      return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, arcanaId(id), new RecipeSerializer<>(codec, ByteBufCodecs.fromCodecWithRegistries(codec.codec())));
+   }
+   
+   private static MapCodec<? extends LootItemFunction> registerLootFunction(String id, MapCodec<? extends LootItemFunction> codec){
+      return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, arcanaId(id), codec);
    }
    
    private static LoginCallback registerCallback(LoginCallback callback){

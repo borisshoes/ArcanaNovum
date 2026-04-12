@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.factorytools.api.block.FactoryBlock;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
@@ -32,9 +33,11 @@ import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -52,7 +55,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -79,7 +85,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,13 +113,14 @@ public class EnderCrate extends ArcanaBlock {
       item = new EnderCrateItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER, ResearchTasks.USE_ENDER_CHEST};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, CHANNEL_TAG, colorsToTag(DEFAULT_CHANNEL));
       putProperty(stack, LOCK_TAG, "");
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -184,7 +190,7 @@ public class EnderCrate extends ArcanaBlock {
             channelComp.append(Component.literal("\uD83D\uDD13 Public Channel: ").withStyle(ChatFormatting.LIGHT_PURPLE));
          }
          for(DyeColor color : colors){
-            MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(DyeItem.byColor(color));
+            MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(MinecraftUtils.getVanillaDyeItem(color));
             channelComp.append(dyeComp.withStyle(ChatFormatting.WHITE));
             channelComp.append(" ");
          }
@@ -247,8 +253,8 @@ public class EnderCrate extends ArcanaBlock {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -281,7 +287,7 @@ public class EnderCrate extends ArcanaBlock {
       
       @Override
       public BlockState getPolymerBlockState(BlockState state, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return Blocks.BARRIER.defaultBlockState();
          }else{
             return Blocks.ENDER_CHEST.defaultBlockState().setValue(WATERLOGGED, state.getValue(WATERLOGGED)).setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
@@ -345,14 +351,14 @@ public class EnderCrate extends ArcanaBlock {
       }
       
       @Override
-      public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, PacketContext.NotNullWithPlayer contexts){
-         if(!PolymerResourcePackUtils.hasMainPack(contexts.getPlayer())){
+      public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, ServerPlayer player){
+         if(!PolymerResourcePackUtils.hasMainPack(player)){
             CompoundTag main = new CompoundTag();
             main.putString("id", "minecraft:ender_chest");
             main.putInt("x", pos.getX());
             main.putInt("y", pos.getY());
             main.putInt("z", pos.getZ());
-            contexts.getPlayer().connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityType.ENDER_CHEST, main));
+            player.connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityType.ENDER_CHEST, main));
          }
       }
       
@@ -457,7 +463,7 @@ public class EnderCrate extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final ItemStack CRATE = ItemDisplayElementUtil.getTransparentModel(ArcanaRegistry.arcanaId("block/ender_crate"));
+      public static final LazyItemStack CRATE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/ender_crate"));
       
       // Direction offsets for each horizontal face (North, South, East, West)
       private static final Direction[] FACES = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};

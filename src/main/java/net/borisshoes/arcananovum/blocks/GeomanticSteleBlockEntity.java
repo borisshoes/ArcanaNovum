@@ -17,6 +17,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.gui.geomanticstele.GeomanticSteleGui;
 import net.borisshoes.arcananovum.items.AquaticEversource;
 import net.borisshoes.arcananovum.items.MagmaticEversource;
@@ -38,7 +39,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -80,7 +84,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    private HolderAttachment attachment;
    private int interactCooldown = 0;
    private SteleZone currentZone;
-   private SimpleContainer inventory = new SimpleContainer(getContainerSize());
+   private WatchedContainer inventory = new WatchedContainer(getContainerSize());
    
    public GeomanticSteleBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.GEOMANTIC_STELE_BLOCK_ENTITY, pos, state);
@@ -185,12 +189,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
          }
          
          @Override
-         public void interact(ServerPlayer player, InteractionHand hand){
-            click(player, player.getItemInHand(hand));
-         }
-         
-         @Override
-         public void interactAt(ServerPlayer player, InteractionHand hand, Vec3 pos){
+         public void interact(ServerPlayer player, InteractionHand hand, Vec3 pos, boolean usingSecondaryAction){
             click(player, player.getItemInHand(hand));
          }
       });
@@ -339,6 +338,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       this.rangeX = Mth.clamp(range.x, 0, maxRange.x);
       this.rangeY = Mth.clamp(range.y, 0, maxRange.y);
       this.rangeZ = Mth.clamp(range.z, 0, maxRange.z);
+      setChanged();
    }
    
    public Vec3 getRange(){
@@ -472,7 +472,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
-      this.inventory = new SimpleContainer(getContainerSize());
+      this.inventory = new WatchedContainer(getContainerSize());
       if(!this.tryLoadLootTable(view)){
          ContainerHelper.loadAllItems(view, this.inventory.getItems());
       }
@@ -614,7 +614,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    }
    
    private static long getChunkKey(BlockPos pos){
-      return ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4);
+      return ChunkPos.pack(pos.getX() >> 4, pos.getZ() >> 4);
    }
    
    private static void registerZone(GeomanticSteleBlockEntity.SteleZone zone){

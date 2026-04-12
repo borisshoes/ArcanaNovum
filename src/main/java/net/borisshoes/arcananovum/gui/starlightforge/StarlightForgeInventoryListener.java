@@ -5,6 +5,8 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.gui.ContainerWatcher;
+import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
@@ -15,7 +17,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
-import net.minecraft.world.ContainerListener;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -26,20 +27,20 @@ import net.minecraft.world.level.Level;
 
 import java.util.Optional;
 
-public class StarlightForgeInventoryListener implements ContainerListener {
+public class StarlightForgeInventoryListener implements ContainerWatcher {
    private final StarlightForgeBlockEntity blockEntity;
    private final Level world;
    private final StarlightForgeGui gui;
-   private boolean updating = false;
+   private volatile boolean updating = false;
    
-   public StarlightForgeInventoryListener(StarlightForgeGui gui, StarlightForgeBlockEntity blockEntity, Level world, int mode){
+   public StarlightForgeInventoryListener(StarlightForgeGui gui, StarlightForgeBlockEntity blockEntity, Level world){
       this.blockEntity = blockEntity;
       this.gui = gui;
       this.world = world;
    }
    
    @Override
-   public void containerChanged(Container inv){
+   public void onChanged(WatchedContainer inv){
       if(!updating){
          updating = true;
          //Check Valid Recipe, and update gui
@@ -74,8 +75,8 @@ public class StarlightForgeInventoryListener implements ContainerListener {
       if(!ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.DISABLE_STARDUST_INFUSION)){
          CraftingInput input = CraftingInput.of(3, 3, craftingStacks);
          Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, world);
-         if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input, world.registryAccess()))){
-            return optional.get().value().assemble(input, world.registryAccess()).copy();
+         if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input))){
+            return optional.get().value().assemble(input).copy();
          }
       }
       
@@ -91,7 +92,7 @@ public class StarlightForgeInventoryListener implements ContainerListener {
       }
       CraftingInput input = CraftingInput.of(3, 3, craftingStacks);
       Optional<RecipeHolder<CraftingRecipe>> optional = serverWorld.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input, world.registryAccess()))){
+      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().assemble(input))){
          return optional.get().value().getRemainingItems(input);
       }
       return remainders;

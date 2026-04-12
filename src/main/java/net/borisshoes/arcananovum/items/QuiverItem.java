@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.DataFixer;
 import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.ItemContainerContentsMutable;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
@@ -77,16 +78,18 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
    protected abstract double getEfficiencyMod(ItemStack item);
    
    protected void refillArrow(MinecraftServer server, @Nullable UUID playerId, ItemStack item){
-      ItemContainerContents arrows = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      ItemContainerContents initialContents = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      ItemContainerContentsMutable arrows = ItemContainerContentsMutable.fromComponent(initialContents, 9);
+      
       ArrayList<ItemStack> eligible = new ArrayList<>();
-      for(ItemStack stack : arrows.nonEmptyItems()){
+      for(ItemStack stack : arrows.getNonEmpty()){
          if(stack.getCount() < stack.getMaxStackSize() && !EnchantmentHelper.hasAnyEnchantments(stack)){
             eligible.add(stack);
          }
       }
       
       if(eligible.isEmpty()) return;
-      eligible.get((int) (Math.random() * eligible.size())).grow(1);
+      eligible.get(server.overworld().getRandom().nextInt(eligible.size())).grow(1);
       
       if(playerId != null){
          ArcanaNovum.data(playerId).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_QUIVER_REFILL)); // Add xp
@@ -96,38 +99,34 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
             ArcanaAchievements.progress(playerId, ArcanaAchievements.UNLIMITED_STOCK, 1);
          }
       }
+      item.set(DataComponents.CONTAINER, arrows.toImmutable());
       buildItemLore(item, server);
    }
    
    public boolean shootArrow(ItemStack item, int slot, ServerPlayer player, ItemStack bow){
-      ItemContainerContents arrowComp = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      ItemContainerContents initialContents = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      ItemContainerContentsMutable arrows = ItemContainerContentsMutable.fromComponent(initialContents, 9);
       boolean runic = ArcanaItemUtils.identifyItem(bow) instanceof RunicBow || (bow.is(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow, ArcanaAugments.RUNIC_ARBALEST) >= 1);
       
-      NonNullList<ItemStack> arrows = NonNullList.withSize(9, ItemStack.EMPTY);
-      arrowComp.copyInto(arrows);
-      
-      ItemStack stack = arrows.get(slot);
+      ItemStack stack = arrows.getItem(slot);
       if(stack.isEmpty()) return false;
       int count = stack.getCount();
       
       if(EnchantmentHelper.getItemEnchantmentLevel(MinecraftUtils.getEnchantment(Enchantments.INFINITY), bow) > 0 && item.is(Items.ARROW))
          return true;
-      if(Math.random() >= getEfficiencyMod(item)) count--;
+      if(player.getRandom().nextDouble() >= getEfficiencyMod(item)) count--;
       
       if(count == 0){
-         arrows.set(slot, ItemStack.EMPTY);
+         arrows.setItem(slot, ItemStack.EMPTY);
          switchArrowOption(player, runic, true);
       }else{
          stack.setCount(count);
       }
       
       Inventory inv = player.getInventory();
-//      for(int j = 0; j < inv.size(); j++){
-//         player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), j, inv.getStack(j)));
-//      }
       player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), 45, inv.getItem(Inventory.SLOT_OFFHAND)));
       
-      item.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(arrows));
+      item.set(DataComponents.CONTAINER, arrows.toImmutable());
       buildItemLore(item, player.level().getServer());
       return true;
    }
@@ -188,7 +187,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
       Predicate<ItemStack> PROJECTILES = runic ? RunicBow.RunicBowItem.RUNIC_BOW_PROJECTILES : ARROW_ONLY;
       if(option == null){ // No arrows accessible
          if(display)
-            player.displayClientMessage(Component.literal("No Arrows Available").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("No Arrows Available").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
          return null;
       }else{ // getArrowOption always returns a verified slot, but just in case...
          String invId = option.getA();
@@ -204,7 +203,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
                   if(arcanaArrow instanceof RunicArrow runicArrow){
                      name = runicArrow.getArrowName(stack);
                   }
-                  player.displayClientMessage(Component.literal("")
+                  player.sendSystemMessage(Component.literal("")
                               .append(Component.literal("Switched Arrows To: ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
                               .append(name.copy().withStyle(ChatFormatting.ITALIC))
                               .append(Component.literal(" (" + stack.getCount() + ")").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
@@ -235,7 +234,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
                      if(arcanaArrow instanceof RunicArrow runicArrow){
                         name = runicArrow.getArrowName(stack);
                      }
-                     player.displayClientMessage(Component.literal("")
+                     player.sendSystemMessage(Component.literal("")
                                  .append(Component.literal("Switched Arrows To: ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC))
                                  .append(name.copy().withStyle(ChatFormatting.ITALIC))
                                  .append(Component.literal(" (" + stack.getCount() + ")").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC))
@@ -250,7 +249,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
                      if(arcanaArrow instanceof RunicArrow runicArrow){
                         name = runicArrow.getArrowName(stack);
                      }
-                     player.displayClientMessage(Component.literal("")
+                     player.sendSystemMessage(Component.literal("")
                                  .append(Component.literal("Switched Arrows To: ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))
                                  .append(name.copy().withStyle(ChatFormatting.ITALIC))
                                  .append(Component.literal(" (" + stack.getCount() + ")").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))

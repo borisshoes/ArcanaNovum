@@ -15,9 +15,11 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -50,7 +52,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,10 +78,11 @@ public class TelescopingBeacon extends ArcanaItem {
       item = new TelescopingBeaconItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON, ResearchTasks.OBTAIN_PISTON};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       CompoundTag initBlocks = new CompoundTag();
       initBlocks.putString("id", BuiltInRegistries.BLOCK.getKey(Blocks.IRON_BLOCK).toString());
       initBlocks.putInt("count", 0);
@@ -89,7 +91,7 @@ public class TelescopingBeacon extends ArcanaItem {
       putProperty(stack, BLOCKS_TAG, blocks);
       putProperty(stack, BEACON_TAG, true);
       putProperty(stack, DATA_TAG, new CompoundTag());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -322,8 +324,8 @@ public class TelescopingBeacon extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -376,14 +378,14 @@ public class TelescopingBeacon extends ArcanaItem {
                buildItemLore(stack, player.level().getServer());
                player.getCooldowns().addCooldown(stack, 20);
             }else{
-               playerEntity.displayClientMessage(Component.literal("The Beacon cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Beacon cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, 1);
             }
          }else{ // Capture beacon
             BlockState placeState = world.getBlockState(placePos);
             BlockEntity blockEntity = world.getBlockEntity(placePos);
             if(!placeState.is(Blocks.BEACON) || !(blockEntity instanceof BeaconBlockEntity beaconBlock)){
-               playerEntity.displayClientMessage(Component.literal("No Beacon Present").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("No Beacon Present").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                return InteractionResult.SUCCESS_SERVER;
             }

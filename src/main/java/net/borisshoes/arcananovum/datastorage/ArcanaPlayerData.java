@@ -67,6 +67,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.Level;
@@ -381,17 +382,17 @@ public class ArcanaPlayerData implements StorableData {
             }
          }else{
             for(MutableComponent msg : msgs){
-               player.displayClientMessage(msg, false);
+               player.sendSystemMessage(msg, false);
             }
          }
       }
       
       SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f, 1.5f);
       int resolve = getAugmentLevel(ArcanaAugments.RESOLVE);
-      player.displayClientMessage(Component.literal(""), false);
-      player.displayClientMessage(Component.literal("Your Arcana has levelled up to level " + newLevel + "!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), false);
-      player.displayClientMessage(Component.literal("Max Concentration increased to " + LevelUtils.concFromLevel(newLevel, resolve) + "!").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC), false);
-      player.displayClientMessage(Component.literal(""), false);
+      player.sendSystemMessage(Component.literal(""), false);
+      player.sendSystemMessage(Component.literal("Your Arcana has levelled up to level " + newLevel + "!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), false);
+      player.sendSystemMessage(Component.literal("Max Concentration increased to " + LevelUtils.concFromLevel(newLevel, resolve) + "!").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC), false);
+      player.sendSystemMessage(Component.literal(""), false);
    }
    
    public boolean setXP(int xp){
@@ -426,7 +427,7 @@ public class ArcanaPlayerData implements StorableData {
                   .append(Component.literal(" has crafted their first ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC))
                   .append(arcanaItem.getTranslatedName().withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC, ChatFormatting.UNDERLINE))
                   .append(Component.literal("!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC));
-            server.getPlayerList().broadcastSystemMessage(newCraftMsg.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowItem(stack))), false);
+            server.getPlayerList().broadcastSystemMessage(newCraftMsg.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowItem(ItemStackTemplate.fromNonEmptyStack(stack)))), false);
          }
       }
       return added;
@@ -682,11 +683,14 @@ public class ArcanaPlayerData implements StorableData {
                
                if(item.has(DataComponents.BUNDLE_CONTENTS)){
                   BundleContents bundleComp = item.get(DataComponents.BUNDLE_CONTENTS);
-                  List<ItemStack> newStacks = new ArrayList<>();
-                  for(ItemStack invStack : bundleComp.items()){
-                     invStack.getItem().inventoryTick(invStack, player.level(), player, null);
-                     if(!invStack.isEmpty()){
-                        newStacks.add(invStack);
+                  List<ItemStackTemplate> newStacks = new ArrayList<>();
+                  for(ItemStackTemplate invStack : bundleComp.items()){
+                     ItemStack containedStack = invStack.create();
+                     if(containedStack.is(ArcanaRegistry.ALL_ARCANA_ITEMS)){
+                        containedStack.inventoryTick(player.level(), player, null);
+                     }
+                     if(!containedStack.isEmpty()){
+                        newStacks.add(ItemStackTemplate.fromNonEmptyStack(containedStack));
                      }
                   }
                   item.set(DataComponents.BUNDLE_CONTENTS, new BundleContents(newStacks));
@@ -728,9 +732,9 @@ public class ArcanaPlayerData implements StorableData {
          if(ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG)){
             double eggDialogChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.DRAGON_EGG_DIALOG_CHANCE);
             double zeraiyaEventChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.ZERAIYA_EVENT_CHANCE);
-            if(Math.random() < eggDialogChance){
+            if(player.getRandom().nextDouble() < eggDialogChance){
                dragonEggDialog(player);
-            }else if(Math.random() < zeraiyaEventChance){
+            }else if(player.getRandom().nextDouble() < zeraiyaEventChance){
                if(!completedZeraiya() && getLastZeraiyaAttempt() <= 0 && player.getRandom().nextInt(10) == 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ZERAIYA_EVENT_ENABLED)){
                   startZeraiya(player);
                   setLastZeraiyaAttempt(36000);
@@ -739,7 +743,7 @@ public class ArcanaPlayerData implements StorableData {
             }
          }
          double gaialtusEventChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.GAIALTUS_EVENT_CHANCE);
-         if(Math.random() < gaialtusEventChance){
+         if(player.getRandom().nextDouble() < gaialtusEventChance){
             tryStartGaialtus(player);
          }
          
@@ -802,7 +806,7 @@ public class ArcanaPlayerData implements StorableData {
       if(curConc > maxConc && !player.isCreative() && !player.isSpectator()){
          int concTick = ((IntTag) arcaneProfile.getMiscDataOr(ArcanaPlayerData.CONCENTRATION_TICK_TAG, IntTag.valueOf(0))).intValue() + 1;
          if(ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.DO_CONCENTRATION_DAMAGE)){
-            player.displayClientMessage(Component.literal("Your mind burns as your Arcana overwhelms you!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC, ChatFormatting.BOLD), true);
+            player.sendSystemMessage(Component.literal("Your mind burns as your Arcana overwhelms you!").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC, ChatFormatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL, 2, .1f);
             player.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(), ArcanaDamageTypes.CONCENTRATION), concTick * 2);
          }
@@ -1128,7 +1132,7 @@ public class ArcanaPlayerData implements StorableData {
       ), new int[]{0, 80, 100, 80, 80, 140, 120, 120, 80, 160, 80, 140}, 0, 1, 0b11000));
       
       DialogHelper helper = new DialogHelper(dialogOptions, conditions);
-      DialogHelper.sendDialog(List.of(player), helper.getWeightedResult(), true);
+      DialogHelper.sendDialog(List.of(player), helper.getWeightedResult(player.getRandom()), true);
    }
    
    public void tryStartGaialtus(ServerPlayer player){
@@ -1410,14 +1414,14 @@ public class ArcanaPlayerData implements StorableData {
             gEventFound.setStage(2);
             BorisLib.addTickTimerCallback(new GenericTimer(120, () -> {
                ServerLevel overworld = player.level().getServer().overworld();
-               long timeOfDay = overworld.getDayTime();
+               long timeOfDay = overworld.getGameTime();
                int curTime = (int) (timeOfDay % 24000L);
                int targetTime = 18000;
                int timeDiff = (targetTime - curTime + 24000) % 24000;
                int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
                int curPhase = day % 8;
                int phaseDiff = (4 - curPhase + 8) % 8;
-               overworld.setDayTime(timeOfDay + phaseDiff * 24000L + timeDiff);
+               overworld.clockManager().setTotalTicks(overworld.dimensionType().defaultClock().get(),timeOfDay + phaseDiff * 24000L + timeDiff);
             }));
          }
       }else if(gEventFound != null && gEventFound.getStage() == 2){

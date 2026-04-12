@@ -11,10 +11,7 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.AlgoUtils;
@@ -52,8 +49,11 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -74,13 +74,14 @@ public class ShadowStalkersGlaive extends EnergyItem {
       item = new ShadowStalkersGlaiveItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_SWORD, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.ADVANCEMENT_KILL_A_MOB, ResearchTasks.UNLOCK_STELLAR_CORE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, TETHER_TIME_TAG, -1);
       putProperty(stack, TETHER_TARGET_TAG, "");
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -145,13 +146,13 @@ public class ShadowStalkersGlaive extends EnergyItem {
       }
    }
    
-   public void sendEnergyMessage(Player player, int oldEnergy, int newEnergy, boolean force){
+   public void sendEnergyMessage(ServerPlayer player, int oldEnergy, int newEnergy, boolean force){
       if(oldEnergy / 20 != newEnergy / 20 || force){
          String message = "Glaive Charges: ";
          for(int i = 1; i <= 5; i++){
             message += newEnergy >= i * 20 ? "✦ " : "✧ ";
          }
-         player.displayClientMessage(Component.literal(message).withStyle(ChatFormatting.BLACK), true);
+         player.sendSystemMessage(Component.literal(message).withStyle(ChatFormatting.BLACK), true);
       }
    }
    
@@ -254,7 +255,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
             if(energy >= stalkEnergy){
                Entity target = player.level().getEntity(AlgoUtils.getUUID(tetherTarget));
                if(target == null || !target.isAlive() || player.level().dimension() != target.level().dimension()){
-                  player.displayClientMessage(Component.literal("The Glaive Has No Target").withColor(ArcanaColors.NUL_COLOR), true);
+                  player.sendSystemMessage(Component.literal("The Glaive Has No Target").withColor(ArcanaColors.NUL_COLOR), true);
                }else{
                   Vec3 targetPos = target.position();
                   Vec3 targetView = target.getForward();
@@ -293,7 +294,8 @@ public class ShadowStalkersGlaive extends EnergyItem {
                }
             }else{
                double stalkCharges = stalkEnergy / 20.0;
-               player.displayClientMessage(Component.literal("The Glaive Needs At Least " + TextUtils.readableDouble(stalkCharges, 2) + " Charge(s)").withColor(ArcanaColors.NUL_COLOR), true);
+               DecimalFormat df = new DecimalFormat(stalkCharges % 1 == 0 ? "#,##0" : "#,##0.##", DecimalFormatSymbols.getInstance(Locale.ROOT));
+               player.sendSystemMessage(Component.literal("The Glaive Needs At Least " + df.format(stalkCharges) + " Charge(s)").withColor(ArcanaColors.NUL_COLOR), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
             }
          }else if(player.isShiftKeyDown()){
@@ -319,7 +321,8 @@ public class ShadowStalkersGlaive extends EnergyItem {
                return InteractionResult.SUCCESS_SERVER;
             }else{
                double blinkCharges = blinkEnergy / 20.0;
-               player.displayClientMessage(Component.literal("The Glaive Needs At Least " + TextUtils.readableDouble(blinkCharges, 2) + " Charge(s)").withColor(ArcanaColors.NUL_COLOR), true);
+               DecimalFormat df = new DecimalFormat(blinkCharges % 1 == 0 ? "#,##0" : "#,##0.##", DecimalFormatSymbols.getInstance(Locale.ROOT));
+               player.sendSystemMessage(Component.literal("The Glaive Needs At Least " + df.format(blinkCharges) + " Charge(s)").withColor(ArcanaColors.NUL_COLOR), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
             }
          }

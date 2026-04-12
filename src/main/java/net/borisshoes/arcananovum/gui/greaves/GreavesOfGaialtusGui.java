@@ -7,6 +7,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -47,13 +48,13 @@ public class GreavesOfGaialtusGui extends SimpleGui {
       inv = new SimpleContainer(54);
       for(int i = 0; i < inv.getContainerSize(); i++){
          if(i < slotCount){
-            setSlotRedirect(i, new GreavesSlot(inv, i, i, 0));
+            setSlot(i, new GreavesSlot(inv, i, i, 0));
          }
       }
       
       ItemContainerContents beltItems = greavesStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
-      beltItems.stream().forEachOrdered(stack -> {
+      beltItems.allItemsCopyStream().forEachOrdered(stack -> {
          inv.setItem(i.get(), stack);
          i.getAndIncrement();
       });
@@ -62,10 +63,10 @@ public class GreavesOfGaialtusGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      if(type == ClickType.OFFHAND_SWAP || action == net.minecraft.world.inventory.ClickType.SWAP){
+   public boolean onAnyClick(int index, ClickType type, ContainerInput action){
+      if(type == ClickType.OFFHAND_SWAP || action == ContainerInput.SWAP){
          close();
-      }else if(index > slotCount){
+      }else if(index >= slotCount){
          int invSlot = index >= 27 + slotCount ? index - (27 + slotCount) : index;
          ItemStack stack = player.getInventory().getItem(invSlot);
          if(ItemStack.isSameItemSameComponents(greavesStack, stack)){
@@ -78,7 +79,7 @@ public class GreavesOfGaialtusGui extends SimpleGui {
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       NonNullList<ItemStack> items = NonNullList.withSize(54, ItemStack.EMPTY);
       for(int i = 0; i < inv.getContainerSize(); i++){
          ItemStack itemStack = inv.getItem(i);

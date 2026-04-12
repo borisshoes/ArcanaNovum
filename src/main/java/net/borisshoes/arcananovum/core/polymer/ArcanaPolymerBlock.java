@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.core.polymer;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -14,7 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 public abstract class ArcanaPolymerBlock extends Block implements PolymerBlock {
    protected final ArcanaItem arcanaItem;
@@ -28,8 +28,8 @@ public abstract class ArcanaPolymerBlock extends Block implements PolymerBlock {
    public abstract BlockState getPolymerBlockState(BlockState state, PacketContext context);
    
    @Override
-   public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, PacketContext.NotNullWithPlayer contexts){
-      PolymerBlock.super.onPolymerBlockSend(blockState, pos, contexts);
+   public void onPolymerBlockSend(BlockState blockState, BlockPos.MutableBlockPos pos, ServerPlayer player){
+      PolymerBlock.super.onPolymerBlockSend(blockState, pos, player);
    }
    
    @Override

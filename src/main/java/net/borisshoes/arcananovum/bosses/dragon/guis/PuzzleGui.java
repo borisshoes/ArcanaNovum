@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.bosses.dragon.guis;
 
-import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
@@ -13,6 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -64,9 +64,26 @@ public class PuzzleGui extends SimpleGui {
       for(int i = 0; i < 4; i++){
          for(int j = 0; j < 7; j++){
             if(k < puzzleItems.size()){
-               GuiElementBuilder puzzleItem = new GuiElementBuilder(puzzleItems.get(k)).hideDefaultTooltip();
+               Item selectedItem = puzzleItems.get(k);
+               GuiElementBuilder puzzleItem = new GuiElementBuilder(selectedItem).hideDefaultTooltip();
                puzzleItem.setName((Component.literal("")
                      .append(Component.translatable(puzzleItems.get(k).getDescriptionId()).withStyle(ChatFormatting.YELLOW))));
+               puzzleItem.setCallback((clickType) -> {
+                  if(selectedItem == Items.AIR) return;
+                  
+                  if(selectedItem == curPuzzle.getTargetItem()){
+                     if(level == 7){
+                        complete = true;
+                        close();
+                     }else{
+                        level++;
+                        buildPuzzle();
+                     }
+                  }else{
+                     complete = false;
+                     close();
+                  }
+               });
                
                setSlot((i*9+10)+j,puzzleItem);
             }else{
@@ -78,39 +95,14 @@ public class PuzzleGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
-      int ind = (7*(index/9 - 1) + (index % 9 - 1));
-      
-      if(indexInCenter){
-         Item selected = curPuzzle.getPuzzleItems().get(ind);
-         if(selected == Items.AIR) return true;
-         
-         if(selected == curPuzzle.getTargetItem()){
-            if(level == 7){
-               complete = true;
-               close();
-            }else{
-               level++;
-               buildPuzzle();
-            }
-         }else{
-            complete = false;
-            close();
-         }
-      }
-      return true;
-   }
-   
-   @Override
-   public void onClose(){
+   public void afterRemoval(){
       if(reclaimState != null){
          if(complete){
             reclaimState.playerSolved();
-            player.displayClientMessage(Component.literal("The Tower's Arcana Surges Through You!").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA),true);
+            player.sendSystemMessage(Component.literal("The Tower's Arcana Surges Through You!").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA),true);
          }else{
             reclaimState.setPlayer(null);
-            player.displayClientMessage(Component.literal("You Fail To Channel The Tower's Magic").withStyle(ChatFormatting.ITALIC, ChatFormatting.RED),true);
+            player.sendSystemMessage(Component.literal("You Fail To Channel The Tower's Magic").withStyle(ChatFormatting.ITALIC, ChatFormatting.RED),true);
          }
       }else{
          if(complete){
@@ -132,14 +124,15 @@ public class PuzzleGui extends SimpleGui {
          Item targetItem = targetItems[Mth.clamp(level-1,0,6)];
          int numItems = itemsPerLevel[Mth.clamp(level-1,0,6)];
          ArrayList<Item> puzzleItems = new ArrayList<>();
+         RandomSource random = RandomSource.create();
          
          for(int i = 0; i < 28; i++){
-            Item item = Items.AIR;
+            Item item;
             if(i == 0){
                item = targetItem;
-            }else if(i < numItems){
+            }else{
                do{
-                  item = BuiltInRegistries.ITEM.byId(((int)(Math.random()* BuiltInRegistries.ITEM.size())));
+                  item = BuiltInRegistries.ITEM.byId(random.nextInt(BuiltInRegistries.ITEM.size()));
                }while(item == targetItem || !BuiltInRegistries.ITEM.getKey(item).getNamespace().equals("minecraft"));
             }
             puzzleItems.add(item);

@@ -11,9 +11,8 @@ import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.borislib.utils.MinecraftUtils;
-import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -22,8 +21,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
@@ -39,7 +36,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,11 +59,6 @@ public class OverflowingQuiver extends QuiverItem {
       item = new OverflowingQuiverItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.OBTAIN_TIPPED_ARROW, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -105,7 +96,7 @@ public class OverflowingQuiver extends QuiverItem {
       if(itemStack != null){
          ItemContainerContents arrowItems = itemStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
          SimpleContainer inv = new SimpleContainer(9);
-         List<ItemStack> streamList = arrowItems.nonEmptyStream().toList();
+         List<ItemStack> streamList = arrowItems.nonEmptyItemCopyStream().toList();
          for(int i = 0; i < streamList.size(); i++){
             inv.setItem(i, streamList.get(i));
          }
@@ -179,7 +170,7 @@ public class OverflowingQuiver extends QuiverItem {
       
       @Override
       public Item getPolymerItem(ItemStack itemStack, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return textureItem;
          }
          return super.getPolymerItem(itemStack, context);
@@ -211,53 +202,15 @@ public class OverflowingQuiver extends QuiverItem {
       }
       
       @Override
-      public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player playerEntity, SlotAccess cursorStackReference){
-         if(playerEntity.level().isClientSide() || !(playerEntity instanceof ServerPlayer player)) return false;
-         if(clickType == ClickAction.PRIMARY && otherStack.isEmpty()){
-            return false;
-         }else{
-            ItemContainerContents beltItems = stack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
-            List<ItemStack> beltList = beltItems.stream().toList();
-            
-            if(clickType == ClickAction.PRIMARY && !otherStack.isEmpty()){ // Try insert
-               if(!QuiverSlot.isValidItem(otherStack, false)){
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL, 1f, 1f);
-               }else{
-                  int size = 9;
-                  int count = otherStack.getCount();
-                  Tuple<ItemContainerContents, ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems, size, otherStack);
-                  if(count == addPair.getB().getCount()){
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT_FAIL, 1f, 1f);
-                  }else{
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
-                     stack.set(DataComponents.CONTAINER, addPair.getA());
-                  }
-               }
-               buildItemLore(stack, player.level().getServer());
-               return true;
-            }else if(clickType == ClickAction.SECONDARY && otherStack.isEmpty()){ // Try remove
-               boolean found = false;
-               for(ItemStack itemStack : beltList.reversed()){
-                  if(!itemStack.isEmpty()){
-                     cursorStackReference.set(itemStack.copyAndClear());
-                     SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
-                     found = true;
-                     break;
-                  }
-               }
-               
-               if(found){
-                  stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(beltList));
-                  buildItemLore(stack, player.level().getServer());
-                  return true;
-               }else{
-                  return false;
-               }
-            }else{ // Move item
-               return false;
-            }
-         }
+      public boolean overrideOtherStackedOnMe(final ItemStack self, final ItemStack other, final Slot slot, final ClickAction clickAction, final Player playerEntity, final SlotAccess carriedItem){
+         return super.arcanaBundleOtherStackedOnMe(self, other, slot, clickAction, playerEntity, carriedItem, 9, QuiverSlot.NON_RUNIC_PREDICATE);
       }
+      
+      @Override
+      public boolean overrideStackedOnOther(final ItemStack self, final Slot slot, final ClickAction clickAction, final Player playerEntity){
+         return super.arcanaBundleStackedOnOther(self, slot, clickAction, playerEntity, 9, QuiverSlot.NON_RUNIC_PREDICATE);
+      }
+      
    }
 }
 

@@ -19,7 +19,9 @@ import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -51,7 +53,6 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,12 +77,13 @@ public class SojournerBoots extends EnergyItem {
       item = new SojournerBootsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.SPRINT_TEN_KILOMETERS, ResearchTasks.VISIT_DOZEN_BIOMES, ResearchTasks.ADVANCEMENT_WALK_ON_POWDER_SNOW_WITH_LEATHER_BOOTS, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.EFFECT_SWIFTNESS, ResearchTasks.EFFECT_JUMP_BOOST, ResearchTasks.UNLOCK_STELLAR_CORE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, ACTIVE_TAG, true);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -217,8 +219,8 @@ public class SojournerBoots extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
          Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, ArcanaRegistry.arcanaId(ID))).build();
          baseStack.set(DataComponents.EQUIPPABLE, newComp);
@@ -232,28 +234,27 @@ public class SojournerBoots extends EnergyItem {
       
       @Override
       public InteractionResult use(Level world, Player user, InteractionHand hand){
-         if(user.isShiftKeyDown()){
-            ItemStack stack = user.getItemInHand(hand);
+         if(!(user instanceof ServerPlayer player)) return InteractionResult.PASS;
+         if(player.isShiftKeyDown()){
+            ItemStack stack = player.getItemInHand(hand);
             boolean active = !getBooleanProperty(stack, ACTIVE_TAG);
             putProperty(stack, ACTIVE_TAG, active);
             
             if(active){
-               user.displayClientMessage(Component.literal("The Boots become energized with Arcana").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
-               SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.BEACON_POWER_SELECT, 0.8f, 2f);
+               player.sendSystemMessage(Component.literal("The Boots become energized with Arcana").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_POWER_SELECT, 0.8f, 2f);
             }else{
-               user.displayClientMessage(Component.literal("The Boots' energy fades").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
-               SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.BEACON_DEACTIVATE, 2, .8f);
+               player.sendSystemMessage(Component.literal("The Boots' energy fades").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_DEACTIVATE, 2, .8f);
             }
             
             rebuildAttributes(stack);
-            if(user instanceof ServerPlayer player){
-               Inventory inv = player.getInventory();
-               player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), hand == InteractionHand.MAIN_HAND ? 36 + inv.getSelectedSlot() : 45, stack));
-               player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), 8, player.getItemBySlot(EquipmentSlot.FEET)));
-            }
+            Inventory inv = player.getInventory();
+            player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), hand == InteractionHand.MAIN_HAND ? 36 + inv.getSelectedSlot() : 45, stack));
+            player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), 8, player.getItemBySlot(EquipmentSlot.FEET)));
             return InteractionResult.SUCCESS_SERVER;
          }else{
-            return super.use(world, user, hand);
+            return super.use(world, player, hand);
          }
       }
       
@@ -272,7 +273,7 @@ public class SojournerBoots extends EnergyItem {
                      addEnergy(stack, baseRamp + extraRamp);
                      int newEnergy = getEnergy(stack);
                      if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
-                        player.displayClientMessage(Component.literal("Sojourner Boots Energy: " + newEnergy).withStyle(ChatFormatting.DARK_GREEN), true);
+                        player.sendSystemMessage(Component.literal("Sojourner Boots Energy: " + newEnergy).withStyle(ChatFormatting.DARK_GREEN), true);
                      if(world.getServer().getTickCount() % 20 == 0)
                         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
                      if(newEnergy >= getMaxEnergy(stack)){

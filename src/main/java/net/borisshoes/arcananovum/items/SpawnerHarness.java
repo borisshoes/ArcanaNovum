@@ -12,9 +12,11 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -38,7 +40,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,12 +63,13 @@ public class SpawnerHarness extends ArcanaItem {
       item = new SpawnerHarnessItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SILK_TOUCH, ResearchTasks.BREAK_SPAWNER, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, SPAWNER_TAG, new CompoundTag());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -141,8 +143,8 @@ public class SpawnerHarness extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
@@ -164,8 +166,8 @@ public class SpawnerHarness extends ArcanaItem {
       @Override
       public InteractionResult useOn(UseOnContext context){
          Level world = context.getLevel();
-         Player player = context.getPlayer();
-         if(player == null) return InteractionResult.PASS;
+         Player playerEntity = context.getPlayer();
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          try{
             ItemStack stack = context.getItemInHand();
             CompoundTag spawnerTag = getCompoundProperty(stack, SPAWNER_TAG);
@@ -183,12 +185,12 @@ public class SpawnerHarness extends ArcanaItem {
                   boolean reinforced = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.REINFORCED_CHASSIS) > 0;
                   double breakChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SPAWNER_HARNESS_BREAK_PERCENT);
                   if(player.random.nextFloat() > breakChance || reinforced){ // Chance of the harness breaking after use
-                     player.displayClientMessage(Component.literal("The harness successfully places the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                     player.sendSystemMessage(Component.literal("The harness successfully places the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                      SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.CHAIN_PLACE, 1, .1f);
                      putProperty(stack, SPAWNER_TAG, new CompoundTag());
                      buildItemLore(stack, player.level().getServer());
                   }else{
-                     player.displayClientMessage(Component.literal("The harness shatters upon placing the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                     player.sendSystemMessage(Component.literal("The harness shatters upon placing the spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                      SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.SHIELD_BREAK, 1, .5f);
                      putProperty(stack, SPAWNER_TAG, new CompoundTag());
                      buildItemLore(stack, player.level().getServer());
@@ -198,7 +200,7 @@ public class SpawnerHarness extends ArcanaItem {
                      ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SPAWNER_HARNESS_USE) * 0.15)); // Add xp
                   return InteractionResult.SUCCESS_SERVER;
                }else{
-                  player.displayClientMessage(Component.literal("The harness cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The harness cannot be placed here.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer((ServerPlayer) player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
                }
             }else if(world.getBlockState(context.getClickedPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(context.getClickedPos()) instanceof SpawnerBlockEntity){
@@ -208,7 +210,7 @@ public class SpawnerHarness extends ArcanaItem {
                if(renderedEntity != null){
                   String entityTypeId = EntityType.getKey(renderedEntity.getType()).toString();
                   String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
-                  player.displayClientMessage(Component.literal("The harness captures the " + entityTypeName + " spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The harness captures the " + entityTypeName + " spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                   if(entityTypeId.equals(EntityType.getKey(EntityType.SILVERFISH).toString()))
                      ArcanaAchievements.grant((ServerPlayer) player, ArcanaAchievements.FINALLY_USEFUL);
                }

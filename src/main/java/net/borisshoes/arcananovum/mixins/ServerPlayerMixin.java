@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import eu.pb4.sgui.api.GuiHelpers;
-import eu.pb4.sgui.api.gui.GuiInterface;
+import eu.pb4.sgui.api.SguiUtils;
+import eu.pb4.sgui.api.gui.GuiLike;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -151,7 +151,7 @@ public class ServerPlayerMixin {
    private void arcananovum$teleportDimensionChange(TeleportTransition teleportTarget, CallbackInfoReturnable<Entity> cir){
       ServerPlayer player = (ServerPlayer) (Object) this;
       ArcanaNovum.data(player).setResearchTask(ResearchTasks.DIMENSION_TRAVEL, true);
-      GuiInterface guiInterface = GuiHelpers.getCurrentGui(player);
+      GuiLike guiInterface = SguiUtils.getCurrentGui(player); // TODO This can probably be done better
       if(guiInterface != null){
          guiInterface.close();
       }

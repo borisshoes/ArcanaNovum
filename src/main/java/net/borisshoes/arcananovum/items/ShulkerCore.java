@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -11,13 +10,11 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
-import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
-import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -35,15 +32,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
@@ -75,14 +69,15 @@ public class ShulkerCore extends EnergyItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.SHULKER_CORE_COLOR);
       itemVersion = 1;
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.ADVANCEMENT_LEVITATE, ResearchTasks.EFFECT_SLOW_FALLING, ResearchTasks.UNLOCK_STELLAR_CORE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, SPEED_TAG, 1);
       putProperty(stack, SPEED_CD_TAG, 0);
       putProperty(stack, STONE_TAG, true);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -182,10 +177,10 @@ public class ShulkerCore extends EnergyItem {
          putProperty(stack, SPEED_CD_TAG, 5);
          if(playerEntity instanceof ServerPlayer player){
             if(speed == 11){
-               player.displayClientMessage(Component.literal("Shulker Core Mode: Reabsorption").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("Shulker Core Mode: Reabsorption").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE, 0.5f, 1);
             }else{
-               player.displayClientMessage(Component.literal("Shulker Core Speed: " + (speed / 2 + 1)).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("Shulker Core Speed: " + (speed / 2 + 1)).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
                float pitch = (float) (0.1875 * speed + 0.3125);
                SoundUtils.playSongToPlayer(player, SoundEvents.NOTE_BLOCK_XYLOPHONE, 0.5f, pitch);
             }
@@ -193,34 +188,36 @@ public class ShulkerCore extends EnergyItem {
       }
    }
    
-   private void levitate(Player playerEntity, Level world, InteractionHand hand){
-      ItemStack stack = playerEntity.getItemInHand(hand);
+   private void levitate(ServerPlayer player, Level world, InteractionHand hand){
+      ItemStack stack = player.getItemInHand(hand);
       int speed = getIntProperty(stack, SPEED_TAG);
       final int duration = 100;
       
       if(speed == 11){
-         if(playerEntity.hasEffect(MobEffects.LEVITATION)){
-            playerEntity.removeEffect(MobEffects.LEVITATION);
-            SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
+         if(player.hasEffect(MobEffects.LEVITATION)){
+            player.removeEffect(MobEffects.LEVITATION);
+            SoundUtils.playSound(world, player.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
          }
       }else{
          if(getEnergy(stack) > 0){
-            MobEffectInstance effect = playerEntity.getEffect(MobEffects.LEVITATION);
+            MobEffectInstance effect = player.getEffect(MobEffects.LEVITATION);
             if(!(effect != null && effect.getEffect() == MobEffects.LEVITATION && effect.getAmplifier() >= speed && !(effect.getDuration() < 10 || effect.getDuration() > duration))){
                MobEffectInstance levit = new MobEffectInstance(MobEffects.LEVITATION, duration, speed, false, false, false);
-               if(Math.random() >= (new double[]{0, 0.1, 0.25, 0.5})[ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER)])
+               int efficiency = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER);
+               double efficiencyChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.HARNESS_CORE_RECYCLER_EFFICIENCY).get(efficiency);
+               if(player.getRandom().nextDouble() >= efficiencyChance)
                   addEnergy(stack, -(speed / 2 + 1));
-               playerEntity.addEffect(levit);
-               SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
-               ArcanaNovum.data(playerEntity).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
+               player.addEffect(levit);
+               SoundUtils.playSound(world, player.blockPosition(), SoundEvents.SHULKER_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
+               ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
                if(world instanceof ServerLevel serverWorld){
-                  ArcanaEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
+                  ArcanaEffectUtils.shulkerCoreLevitate(serverWorld, player, duration);
                }
-               buildItemLore(stack, playerEntity.level().getServer());
+               buildItemLore(stack, player.level().getServer());
             }
          }else{
-            playerEntity.displayClientMessage(Component.literal("The Shulker Core is empty.").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
-            SoundUtils.playSongToPlayer((ServerPlayer) playerEntity, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
+            player.sendSystemMessage(Component.literal("The Shulker Core is empty.").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 0.8f);
          }
       }
    }
@@ -228,47 +225,7 @@ public class ShulkerCore extends EnergyItem {
    public void openGui(Player playerEntity, ItemStack stack){
       if(!(playerEntity instanceof ServerPlayer player))
          return;
-      ShulkerCoreGui gui = new ShulkerCoreGui(MenuType.HOPPER, player, this, stack);
-      
-      boolean hasStone = getBooleanProperty(stack, STONE_TAG);
-      
-      for(int i = 0; i < gui.getSize(); i++){
-         gui.clearSlot(i);
-      }
-      
-      GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
-      String paneText = hasStone ? TextUtils.readableInt(getEnergy(stack)) + " Shulker Souls" : "No Soulstone Inserted";
-      ChatFormatting textColor = hasStone ? ChatFormatting.YELLOW : ChatFormatting.RED;
-      
-      gui.setSlot(0, pane.setName(Component.literal(paneText).withStyle(textColor)));
-      gui.setSlot(1, pane.setName(Component.literal(paneText).withStyle(textColor)));
-      gui.setSlot(3, pane.setName(Component.literal(paneText).withStyle(textColor)));
-      gui.setSlot(4, pane.setName(Component.literal(paneText).withStyle(textColor)));
-      
-      SimpleContainer inv = new SimpleContainer(1);
-      ShulkerCoreInventoryListener listener = new ShulkerCoreInventoryListener(this, gui, stack);
-      inv.addListener(listener);
-      listener.setUpdating();
-      
-      gui.setSlotRedirect(2, new Slot(inv, 0, 0, 0));
-      if(hasStone){
-         CompoundTag stoneData = getCompoundProperty(stack, STONE_DATA_TAG);
-         ItemStack stone;
-         if(stoneData == null || stoneData.isEmpty()){
-            stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
-         }else{
-            stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, player.registryAccess()), stoneData).result().orElse(ItemStack.EMPTY);
-         }
-         stone = Soulstone.setSouls(stone, getEnergy(stack));
-         
-         inv.setItem(0, stone);
-         gui.validStone(stone);
-      }else{
-         gui.notValid();
-      }
-      gui.setTitle(Component.literal("Shulker Core"));
-      listener.finishUpdate();
-      
+      ShulkerCoreGui gui = new ShulkerCoreGui(player, this, stack);
       gui.open();
    }
    
@@ -341,29 +298,31 @@ public class ShulkerCore extends EnergyItem {
       @Override
       public InteractionResult useOn(UseOnContext context){
          Player playerEntity = context.getPlayer();
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          ItemStack stack = context.getItemInHand();
-         if(playerEntity != null && playerEntity.isShiftKeyDown()){
+         if(player.isShiftKeyDown()){
             if(context.getHand() == InteractionHand.MAIN_HAND){
-               changeSpeed(playerEntity, context.getLevel(), context.getHand());
+               changeSpeed(player, context.getLevel(), context.getHand());
             }else{
-               openGui(playerEntity, stack);
+               openGui(player, stack);
             }
-         }else if(playerEntity != null){
-            levitate(playerEntity, context.getLevel(), context.getHand());
+         }else{
+            levitate(player, context.getLevel(), context.getHand());
          }
          return InteractionResult.SUCCESS_SERVER;
       }
       
       @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
-         if(playerEntity.isShiftKeyDown()){
+         if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
+         if(player.isShiftKeyDown()){
             if(hand == InteractionHand.MAIN_HAND){
-               changeSpeed(playerEntity, world, hand);
+               changeSpeed(player, world, hand);
             }else{
-               openGui(playerEntity, playerEntity.getItemInHand(hand));
+               openGui(player, player.getItemInHand(hand));
             }
          }else{
-            levitate(playerEntity, world, hand);
+            levitate(player, world, hand);
          }
          return InteractionResult.SUCCESS_SERVER;
       }

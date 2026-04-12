@@ -32,11 +32,6 @@ public class EmpoweredCatalyst extends ArcanaItem {
       item = new EmpoweredCatalystItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_MUNDANE_CATALYST, ResearchTasks.OBTAIN_EMERALD, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override

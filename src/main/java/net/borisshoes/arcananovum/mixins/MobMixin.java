@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.entities.NulGuardianEntity;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.SpawnPile;
+import net.borisshoes.borislib.utils.SpawnPile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
@@ -31,7 +31,8 @@ public class MobMixin {
          ChunkAccess chunk = world.getChunk(mob.blockPosition());
          if(ContinuumAnchor.isChunkLoaded(world, chunk.getPos())){
             //log("Entity: "+entity.getEntityName()+" ("+entity.getPos().toString()+") distSq: "+distToPlayerSq+" imDespSq: "+imDespSq);
-            return 0.1;
+            int noDespawnDistance = mob.getType().getCategory().getNoDespawnDistance();
+            return noDespawnDistance * noDespawnDistance + 1;
          }
       }
       return original;

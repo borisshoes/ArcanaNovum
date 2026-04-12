@@ -12,9 +12,11 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -45,7 +47,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -71,17 +72,18 @@ public class LightCharm extends ArcanaItem {
       item = new LightCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.EFFECT_NIGHT_VISION, ResearchTasks.PLACE_TORCHES, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, VISION_TAG, false);
       putProperty(stack, ACTIVE_TAG, false);
       putProperty(stack, BRIGHTNESS_TAG, 11);
       putProperty(stack, MODE_TAG, 0); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
       putProperty(stack, THRESHOLD_TAG, 1);
       putProperty(stack, NOVA_TAG, 0);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -126,10 +128,10 @@ public class LightCharm extends ArcanaItem {
             active = !active;
             putProperty(item, ACTIVE_TAG, active);
             if(active){
-               player.displayClientMessage(Component.literal("The Charm's Light Brightens").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm's Light Brightens").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_ACTIVATE, 1, 2f);
             }else{
-               player.displayClientMessage(Component.literal("The Charm's Light Dims").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm's Light Dims").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_DEACTIVATE, 1, .5f);
             }
             break;
@@ -137,31 +139,31 @@ public class LightCharm extends ArcanaItem {
             vision = !vision;
             putProperty(item, VISION_TAG, vision);
             if(vision){
-               player.displayClientMessage(Component.literal("You can now see the arcane lights").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("You can now see the arcane lights").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_ACTIVATE, 1, 2f);
             }else{
-               player.displayClientMessage(Component.literal("You can no longer see the arcane lights").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("You can no longer see the arcane lights").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BEACON_DEACTIVATE, 1, .5f);
             }
             break;
          case 2:
             threshold = (threshold + 1) % 16;
-            player.displayClientMessage(Component.literal("Light Threshold: " + threshold).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Light Threshold: " + threshold).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             putProperty(item, THRESHOLD_TAG, threshold);
             break;
          case 3:
             brightness = (brightness + 1) % 16;
-            player.displayClientMessage(Component.literal("Light Brightness: " + brightness).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Light Brightness: " + brightness).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             putProperty(item, BRIGHTNESS_TAG, brightness);
             break;
          case 4:
             if(novaCD == 0){
-               player.displayClientMessage(Component.literal("The Charm's Light Flares!").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm's Light Flares!").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
                nova(player, item);
                int cooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.LIGHT_CHARM_NOVA_COOLDOWN);
                putProperty(item, NOVA_TAG, cooldown);
             }else{
-               player.displayClientMessage(Component.literal("Radiant Nova Cooldown: " + novaCD + " seconds").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("Radiant Nova Cooldown: " + novaCD + " seconds").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             }
             break;
          case 5:
@@ -288,22 +290,22 @@ public class LightCharm extends ArcanaItem {
       mode = possibleModes.get(newInd);
       switch(mode){
          case 0:
-            player.displayClientMessage(Component.literal("Mode: Toggle Light Placement").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Mode: Toggle Light Placement").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             break;
          case 1:
-            player.displayClientMessage(Component.literal("Mode: Toggle Light Visibility").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Mode: Toggle Light Visibility").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             break;
          case 2:
-            player.displayClientMessage(Component.literal("Mode: Threshold Selection").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Mode: Threshold Selection").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             break;
          case 3:
-            player.displayClientMessage(Component.literal("Mode: Brightness Selection").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Mode: Brightness Selection").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             break;
          case 4:
-            player.displayClientMessage(Component.literal("Mode: Radiant Nova").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Mode: Radiant Nova").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             break;
          case 5:
-            player.displayClientMessage(Component.literal("Mode: Manual Placement").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
+            player.sendSystemMessage(Component.literal("Mode: Manual Placement").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), true);
             break;
       }
       putProperty(item, MODE_TAG, mode);
@@ -325,8 +327,8 @@ public class LightCharm extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          

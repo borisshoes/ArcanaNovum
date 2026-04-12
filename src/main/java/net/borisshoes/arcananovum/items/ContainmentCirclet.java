@@ -15,7 +15,9 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -41,7 +43,6 @@ import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,14 +68,15 @@ public class ContainmentCirclet extends ArcanaItem {
       item = new ContainmentCircletItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TAME_AN_ANIMAL, ResearchTasks.USE_ENDER_CHEST};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, CONTENTS_TAG, new CompoundTag());
       putProperty(stack, HP_TAG, 0.0f);
       putProperty(stack, MAX_HP_TAG, 0.0f);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -157,26 +159,27 @@ public class ContainmentCirclet extends ArcanaItem {
    
    // Normal override in item class doesn't work because tamed animals consume the item interaction
    public InteractionResult useOnEntity(Player user, LivingEntity entity, InteractionHand hand){
-      ItemStack stack = user.getItemInHand(hand);
+      if(!(user instanceof ServerPlayer player)) return InteractionResult.PASS;
+      ItemStack stack = player.getItemInHand(hand);
       if(!ArcanaItemUtils.isArcane(stack)) return InteractionResult.PASS;
       CompoundTag contents = getCompoundProperty(stack, CONTENTS_TAG);
       
       if(!contents.isEmpty()){
-         user.displayClientMessage(Component.literal("The Circlet is occupied").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
-         SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+         player.sendSystemMessage(Component.literal("The Circlet is occupied").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+         SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
          return InteractionResult.SUCCESS_SERVER;
       }
-      if(entity.getType().is(ArcanaRegistry.CONTAINMENT_CIRCLET_DISALLOWED) || entity.isDeadOrDying()){
-         user.displayClientMessage(Component.literal("The Circlet cannot contain this creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
-         SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+      if(entity.is(ArcanaRegistry.CONTAINMENT_CIRCLET_DISALLOWED) || entity.isDeadOrDying()){
+         player.sendSystemMessage(Component.literal("The Circlet cannot contain this creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+         SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
          return InteractionResult.SUCCESS_SERVER;
       }
       
       boolean hostiles = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.CONFINEMENT) > 0;
       
       if(entity instanceof Enemy && !hostiles){
-         user.displayClientMessage(Component.literal("This Circlet cannot capture hostile creatures").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
-         SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
+         player.sendSystemMessage(Component.literal("This Circlet cannot capture hostile creatures").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+         SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
       }else if(entity instanceof Mob){
          try(ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(entity.problemPath(), LogUtils.getLogger())){
             TagValueOutput writeView = TagValueOutput.createWithContext(logging, entity.level().registryAccess());
@@ -187,10 +190,10 @@ public class ContainmentCirclet extends ArcanaItem {
             putProperty(stack, HP_TAG, entity.getHealth());
             putProperty(stack, MAX_HP_TAG, entity.getMaxHealth());
             entity.discard();
-            user.displayClientMessage(Component.literal("The Circlet contains the creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
-            SoundUtils.playSongToPlayer((ServerPlayer) user, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
-            ArcanaNovum.data(user).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CONTAINMENT_CIRCLET_USE)); // Add xp
-            buildItemLore(stack, user.level().getServer());
+            player.sendSystemMessage(Component.literal("The Circlet contains the creature").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
+            ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_CONTAINMENT_CIRCLET_USE)); // Add xp
+            buildItemLore(stack, player.level().getServer());
          }
       }
       
@@ -211,8 +214,8 @@ public class ContainmentCirclet extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          CompoundTag contents = getCompoundProperty(itemStack, CONTENTS_TAG);
@@ -262,7 +265,7 @@ public class ContainmentCirclet extends ArcanaItem {
                putProperty(stack, CONTENTS_TAG, new CompoundTag());
                
                if(context.getPlayer() instanceof ServerPlayer player){
-                  player.displayClientMessage(Component.literal("The Circlet releases its captive").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The Circlet releases its captive").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRECHARGE_USE, 1, 1.5f);
                   
                   if(newEntity instanceof TamableAnimal tameable && tameable.isOwnedBy(player)){

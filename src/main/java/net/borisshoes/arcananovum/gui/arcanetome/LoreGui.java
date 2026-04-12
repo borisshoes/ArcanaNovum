@@ -20,7 +20,7 @@ public class LoreGui extends BookGui {
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       if(returnGui != null){
          returnGui.open();
       }

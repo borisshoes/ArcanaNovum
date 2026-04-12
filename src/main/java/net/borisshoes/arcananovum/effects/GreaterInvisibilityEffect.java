@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.effects;
 
-import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
+import eu.pb4.polymer.core.api.other.PolymerMobEffect;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -20,7 +20,7 @@ import net.minecraft.world.scores.Team;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GreaterInvisibilityEffect extends MobEffect implements PolymerStatusEffect {
+public class GreaterInvisibilityEffect extends MobEffect implements PolymerMobEffect {
    
    public GreaterInvisibilityEffect(){
       super(MobEffectCategory.BENEFICIAL, 0xb7dded);

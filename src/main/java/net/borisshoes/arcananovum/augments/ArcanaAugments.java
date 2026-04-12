@@ -151,7 +151,8 @@ public class ArcanaAugments {
    public static final ArcanaAugment CREMATION = ArcanaAugments.register(
          new ArcanaAugment("cremation", new ItemStack(Items.SOUL_CAMPFIRE), ArcanaRegistry.CINDERS_CHARM,
                DIVINE).setRelatedConfigs(
-               new Tuple<>(ArcanaConfig.CINDERS_CHARM_CREMATION_MULTIPLIER, ConfigUnits.PERCENT)
+               new Tuple<>(ArcanaConfig.CINDERS_CHARM_CREMATION_MULTIPLIER, ConfigUnits.PERCENT),
+               new Tuple<>(ArcanaConfig.CINDERS_CHARM_CREMATION_DAMAGE_PER_ENERGY, ConfigUnits.HEARTS)
          ));
    public static final ArcanaAugment FIRESTARTER = ArcanaAugments.register(
          new ArcanaAugment("firestarter", new ItemStack(Items.FLINT_AND_STEEL), ArcanaRegistry.CINDERS_CHARM,
@@ -359,12 +360,12 @@ public class ArcanaAugments {
    public static final ArcanaAugment THERMAL_EXPANSION = ArcanaAugments.register(
          new ArcanaAugment("thermal_expansion", new ItemStack(Items.OBSIDIAN), ArcanaRegistry.IGNEOUS_COLLIDER,
                MUNDANE, EMPOWERED, EXOTIC, EXOTIC, SOVEREIGN).setRelatedConfigs(
-               new Tuple<>(ArcanaConfig.IGNEOUS_COLLIDER_COOLDOWN_PER_LVL, ConfigUnits.SECONDS)
+               new Tuple<>(ArcanaConfig.IGNEOUS_COLLIDER_EFFICIENCY_PER_LVL, ConfigUnits.PERCENT)
          ));
    public static final ArcanaAugment MAGMATIC_INJECTION = ArcanaAugments.register(
          new ArcanaAugment("magmatic_injection", new ItemStack(Items.MAGMA_BLOCK), ArcanaRegistry.IGNEOUS_COLLIDER,
                MUNDANE, EMPOWERED, EXOTIC, EXOTIC, SOVEREIGN).setRelatedConfigs(
-               new Tuple<>(ArcanaConfig.IGNEOUS_COLLIDER_EFFICIENCY_PER_LVL, ConfigUnits.PERCENT)
+               new Tuple<>(ArcanaConfig.IGNEOUS_COLLIDER_COOLDOWN_PER_LVL, ConfigUnits.SECONDS)
          ));
    
    // Levitation Harness
@@ -869,11 +870,11 @@ public class ArcanaAugments {
    
    // Aequalis Scientia
    public static final ArcanaAugment EQUIVALENT_EXCHANGE = ArcanaAugments.register(
-         new ArcanaAugment("equivalent_exchange", ArcanaRegistry.CATALYTIC_MATRIX.getPrefItemNoLore(), ArcanaRegistry.AEQUALIS_SCIENTIA,
+         new ArcanaAugment("equivalent_exchange", ArcanaRegistry.CATALYTIC_MATRIX::getPrefItemNoLore, ArcanaRegistry.AEQUALIS_SCIENTIA,
                SOVEREIGN
          ));
    public static final ArcanaAugment TIMELESS_WISDOM = ArcanaAugments.register(
-         new ArcanaAugment("timeless_wisdom", ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(), ArcanaRegistry.AEQUALIS_SCIENTIA,
+         new ArcanaAugment("timeless_wisdom", ArcanaRegistry.DIVINE_CATALYST::getPrefItemNoLore, ArcanaRegistry.AEQUALIS_SCIENTIA,
                DIVINE
          ));
    public static final ArcanaAugment IMPERMANENT_PERMUTATION = ArcanaAugments.register(
@@ -1069,7 +1070,7 @@ public class ArcanaAugments {
                new Tuple<>(ArcanaConfig.ASTRAL_GATEWAY_STARDUST_PER_LVL, ConfigUnits.PERCENT)
          ));
    public static final ArcanaAugment ASTRAL_STARGATE = ArcanaAugments.register(
-         new ArcanaAugment("astral_stargate", ArcanaRegistry.WAYSTONE.getPrefItemNoLore(), ArcanaRegistry.ASTRAL_GATEWAY,
+         new ArcanaAugment("astral_stargate", ArcanaRegistry.WAYSTONE::getPrefItemNoLore, ArcanaRegistry.ASTRAL_GATEWAY,
                DIVINE
          ));
    

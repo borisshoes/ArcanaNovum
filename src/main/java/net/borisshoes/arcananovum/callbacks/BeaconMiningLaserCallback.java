@@ -24,7 +24,7 @@ public class BeaconMiningLaserCallback extends TickTimerCallback {
    public void onTimer(){
       if(world.getBlockState(beaconPos).is(Blocks.BEACON)){
          BlockState breakState = world.getBlockState(breakPos);
-         if(!(breakState.getLightBlock() < 15 || breakState.is(Blocks.BEDROCK))){
+         if(!(breakState.propagatesSkylightDown() || breakState.is(Blocks.BEDROCK))){
             world.destroyBlock(breakPos, true);
          }
          if(world.isInWorldBounds(breakPos.above())){

@@ -14,9 +14,11 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -45,7 +47,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,13 +70,14 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
       item = new WildGrowthCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.ADVANCEMENT_BREED_AN_ANIMAL, ResearchTasks.ADVANCEMENT_PLANT_ANY_SNIFFER_SEED, ResearchTasks.ADVANCEMENT_PLANT_SEED, ResearchTasks.ADVANCEMENT_OBTAIN_NETHERITE_HOE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, ACTIVE_TAG, false);
       putProperty(stack, HARVEST_TAG, false);
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -133,7 +135,7 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
          passiveTick(stack, world, stele.getBlockPos(), box, null, stele);
       }
       
-      if(world.random.nextFloat() < 0.15){
+      if(world.getRandom().nextFloat() < 0.15){
          world.sendParticles(ParticleTypes.HAPPY_VILLAGER, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, 1);
       }
    }
@@ -263,8 +265,8 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context){
-         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack, ACTIVE_TAG);
          
@@ -312,20 +314,20 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
                harvest = !harvest;
                putProperty(stack, HARVEST_TAG, harvest);
                if(harvest){
-                  player.displayClientMessage(Component.literal("The Charm Begins to Reap").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The Charm Begins to Reap").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f, .7f);
                }else{
-                  player.displayClientMessage(Component.literal("The Charm Ceases Reaping").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The Charm Ceases Reaping").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f, .5f);
                }
             }else{
                active = !active;
                putProperty(stack, ACTIVE_TAG, active);
                if(active){
-                  player.displayClientMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f, .7f);
                }else{
-                  player.displayClientMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+                  player.sendSystemMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f, .5f);
                }
             }
@@ -348,10 +350,10 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
             active = !active;
             putProperty(stack, ACTIVE_TAG, active);
             if(active){
-               playerEntity.displayClientMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm Begins to Bloom").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.GRASS_PLACE, .7f, .7f);
             }else{
-               playerEntity.displayClientMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Charm Recedes").withStyle(ChatFormatting.GREEN, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BONE_MEAL_USE, 2f, .5f);
             }
             return InteractionResult.SUCCESS_SERVER;

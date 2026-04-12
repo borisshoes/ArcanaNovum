@@ -114,13 +114,13 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
          }
          
          if(active && decoalescence){
-            UUID crafterId = AlgoUtils.getUUID(this.getCrafterId());
+            UUID crafterUUID = AlgoUtils.getUUID(this.getCrafterId());
             for(Entity entity : serverWorld.getEntities(null, getInterdictionZone())){
                if(entity instanceof Enemy && entity.isAlive() && !entity.hasCustomName()){
-                  if(!entity.getType().is(ArcanaRegistry.INTERDICTOR_IMMUNE)){
+                  if(!entity.is(ArcanaRegistry.INTERDICTOR_IMMUNE)){
                      entity.discard();
                      if(this.getCrafterId() != null && !this.getCrafterId().isEmpty())
-                        ArcanaAchievements.progress(crafterId, ArcanaAchievements.UNMOBBED, 1);
+                        ArcanaAchievements.progress(crafterUUID, ArcanaAchievements.UNMOBBED, 1);
                   }else if(serverWorld.getServer().getTickCount() % 40 == 0 && entity.getType() == ArcanaRegistry.NUL_GUARDIAN_ENTITY && entity instanceof NulGuardianEntity guardian){
                      guardian.hurtServer(serverWorld, serverWorld.damageSources().magic(), 12.0f);
                   }
@@ -154,17 +154,17 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    public void onSpawn(){
       if(this.crafterId != null && !this.crafterId.isEmpty()){
          ArcanaAchievements.progress(AlgoUtils.getUUID(this.crafterId), ArcanaAchievements.UNMOBBED, 1);
-         if(this.level instanceof ServerLevel && this.level.random.nextFloat() < 0.01)
+         if(this.level instanceof ServerLevel && this.level.getRandom().nextFloat() < 0.01)
             ArcanaNovum.data(AlgoUtils.getUUID(this.crafterId)).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_INTERDICTOR_MOB_BLOCKED_PER_100));
       }
-      if(this.level instanceof ServerLevel serverLevel && this.level.random.nextFloat() < 0.005){
-         Vec3 p1 = this.getBlockPos().getBottomCenter().add(this.level.random.nextBoolean() ? -1 : 1, 1.85, this.level.random.nextBoolean() ? -1 : 1);
+      if(this.level instanceof ServerLevel serverLevel && this.level.getRandom().nextFloat() < 0.005){
+         Vec3 p1 = this.getBlockPos().getBottomCenter().add(this.level.getRandom().nextBoolean() ? -1 : 1, 1.85, this.level.getRandom().nextBoolean() ? -1 : 1);
          Vec3 p2 = MathUtils.randomSpherePoint(p1, 5, 3);
          ParticleEffectUtils.animatedLightningBolt(serverLevel, p1, p2,
-               this.level.random.nextInt(4, 8), 1.0, ParticleTypes.WITCH,
+               this.level.getRandom().nextInt(4, 8), 1.0, ParticleTypes.WITCH,
                8, 1, 0, 0, false, 0, 20);
-         SoundUtils.playSound(this.level, worldPosition, SoundEvents.TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundSource.BLOCKS, 0.3f, 0.5f + this.level.random.nextFloat() * 0.3f);
-         SoundUtils.playSound(this.level, worldPosition, SoundEvents.AMETHYST_BLOCK_STEP, SoundSource.BLOCKS, 0.3f, 1.5f + this.level.random.nextFloat() * 0.3f);
+         SoundUtils.playSound(this.level, worldPosition, SoundEvents.TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundSource.BLOCKS, 0.3f, 0.5f + this.level.getRandom().nextFloat() * 0.3f);
+         SoundUtils.playSound(this.level, worldPosition, SoundEvents.AMETHYST_BLOCK_STEP, SoundSource.BLOCKS, 0.3f, 1.5f + this.level.getRandom().nextFloat() * 0.3f);
       }
    }
    
@@ -232,16 +232,22 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    public void setxRange(int xRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
       this.xRange = Mth.clamp(xRange, 1, getMaxRange(riftLvl));
+      recalculateZone();
+      setChanged();
    }
    
    public void setyRange(int yRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
       this.yRange = Mth.clamp(yRange, 1, getMaxRange(riftLvl));
+      recalculateZone();
+      setChanged();
    }
    
    public void setzRange(int zRange){
       int riftLvl = ArcanaAugments.getAugmentFromMap(this.augments, ArcanaAugments.NATAL_RIFT);
       this.zRange = Mth.clamp(zRange, 1, getMaxRange(riftLvl));
+      recalculateZone();
+      setChanged();
    }
    
    @Override

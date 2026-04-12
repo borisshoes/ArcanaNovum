@@ -11,9 +11,9 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
-import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -59,11 +59,6 @@ public class GravitonArrows extends RunicArrow {
       item = new GravitonArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_SLOWNESS};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
    }
    
    @Override
@@ -95,7 +90,7 @@ public class GravitonArrows extends RunicArrow {
          double addedRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GRAVITON_ARROW_WELL_RANGE_PER_LVL).get(arrow.getAugment(ArcanaAugments.GRAVITY_WELL));
          int maxDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MAX);
          int minDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MIN);
-         float percentage = ArcanaUtils.getArrowPercentage(arrow);
+         float percentage = MinecraftUtils.getArrowPercentage(arrow);
          int duration = (int) Mth.clamp(percentage * maxDur, minDur, maxDur);
          double range = baseRange + addedRange;
          gravitonPulse(arrow, serverWorld, null, entityHitResult.getEntity(), duration, range, 0);
@@ -109,7 +104,7 @@ public class GravitonArrows extends RunicArrow {
          double addedRange = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.GRAVITON_ARROW_WELL_RANGE_PER_LVL).get(arrow.getAugment(ArcanaAugments.GRAVITY_WELL));
          int maxDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MAX);
          int minDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.GRAVITON_ARROW_DURATION_MIN);
-         float percentage = ArcanaUtils.getArrowPercentage(arrow);
+         float percentage = MinecraftUtils.getArrowPercentage(arrow);
          int duration = (int) Mth.clamp(percentage * maxDur, minDur, maxDur);
          double range = baseRange + addedRange;
          gravitonPulse(arrow, serverWorld, blockHitResult.getLocation(), null, duration, range, 0);

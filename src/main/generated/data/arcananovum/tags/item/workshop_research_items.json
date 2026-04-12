@@ -47,6 +47,10 @@
     "arcananovum:cetacea_charm",
     "arcananovum:cleansing_charm",
     "arcananovum:binary_blades",
-    "arcananovum:graviton_arrows"
+    "arcananovum:graviton_arrows",
+    "arcananovum:waystone",
+    "arcananovum:clockwork_multitool",
+    "arcananovum:negotiation_charm",
+    "arcananovum:ender_crate"
   ]
 }

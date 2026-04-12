@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.SpawnPile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -36,7 +36,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.utils.SpawnPile.makeSpawnLocations;
+import static net.borisshoes.borislib.utils.SpawnPile.makeSpawnLocations;
 
 public class DragonAbilities {
    
@@ -181,7 +181,7 @@ public class DragonAbilities {
             if(player.isCreative() || player.isSpectator() || damage < 0.1) continue; // Skip creative and spectator players
             
             player.hurtServer(endWorld, new DamageSource(endWorld.damageSources().magic().typeHolder(), this.dragon,this.dragon),damage);
-            player.displayClientMessage(Component.literal("Your Arcana Items surge with corrupted Arcana!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC),true);
+            player.sendSystemMessage(Component.literal("Your Arcana Items surge with corrupted Arcana!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ILLUSIONER_CAST_SPELL,2,.1f);
          }
          
@@ -292,7 +292,7 @@ public class DragonAbilities {
             player.setDeltaMovement(-vec.x,1,-vec.z);
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
    
-            player.displayClientMessage(Component.literal("The Dragon's Wings Knock You Away!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
+            player.sendSystemMessage(Component.literal("The Dragon's Wings Knock You Away!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC),true);
          }
          gustTicks = 0;
       }else if(ability == DragonAbilityTypes.OVERLOAD_CRYSTALS){
@@ -399,8 +399,8 @@ public class DragonAbilities {
             }
          }
       }
-      if(abilityPool.size() == 0) return null;
-      return abilityPool.get((int)(Math.random() * abilityPool.size()));
+      if(abilityPool.isEmpty()) return null;
+      return abilityPool.get(endWorld.getRandom().nextInt(abilityPool.size()));
    }
    
    private boolean onCD(DragonAbilityTypes action){

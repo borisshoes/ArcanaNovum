@@ -16,6 +16,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -46,7 +47,7 @@ public class ArcanistsBeltGui extends SimpleGui {
       inv = new SimpleContainer(9);
       for(int i = 0; i < inv.getContainerSize(); i++){
          if(i < slotCount){
-            setSlotRedirect(i, new ArcanistsBeltSlot(inv, i, i, 0));
+            setSlot(i, new ArcanistsBeltSlot(inv, i, i, 0));
          }else{
             setSlot(i, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL))
                   .setName(Component.literal("Slot Locked").withStyle(ChatFormatting.DARK_PURPLE))
@@ -57,7 +58,7 @@ public class ArcanistsBeltGui extends SimpleGui {
       
       ItemContainerContents beltItems = beltStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
-      beltItems.stream().forEachOrdered(stack -> {
+      beltItems.allItemsCopyStream().forEachOrdered(stack -> {
          inv.setItem(i.get(), stack);
          i.getAndIncrement();
       });
@@ -66,10 +67,10 @@ public class ArcanistsBeltGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, net.minecraft.world.inventory.ClickType action){
-      if(type == ClickType.OFFHAND_SWAP || action == net.minecraft.world.inventory.ClickType.SWAP){
+   public boolean onAnyClick(int index, ClickType type, ContainerInput action){
+      if(type == ClickType.OFFHAND_SWAP || action == ContainerInput.SWAP){
          close();
-      }else if(index > 9){
+      }else if(index >= 9){
          int invSlot = index >= 36 ? index - 36 : index;
          ItemStack stack = player.getInventory().getItem(invSlot);
          if(ItemStack.isSameItemSameComponents(beltStack, stack)){
@@ -82,7 +83,7 @@ public class ArcanistsBeltGui extends SimpleGui {
    }
    
    @Override
-   public void onClose(){
+   public void afterRemoval(){
       NonNullList<ItemStack> items = NonNullList.withSize(9, ItemStack.EMPTY);
       int charmCount = 0;
       for(int i = 0; i < inv.getContainerSize(); i++){

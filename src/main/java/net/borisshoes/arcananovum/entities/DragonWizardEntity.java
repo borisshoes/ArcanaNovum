@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.CodecUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
@@ -39,7 +40,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.Arrays;
 import java.util.List;
@@ -206,7 +206,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
             skeletons = new Skeleton[4];
             for(int i = 0; i < skeletons.length; i++){
                skeletons[i] = makeSkeleton(endWorld, numPlayers);
-               skeletons[i].setPosRaw(getX() + .5 + (Math.random() * 2 - 1), getY() - 5, getZ() + .5 + (Math.random() * 2 - 1));
+               skeletons[i].setPosRaw(getX() + .5 + (endWorld.getRandom().nextDouble() * 2 - 1), getY() - 5, getZ() + .5 + (endWorld.getRandom().nextDouble() * 2 - 1));
                endWorld.tryAddFreshEntityWithPassengers(skeletons[i]);
             }
          }else if(summonTick == 59){
@@ -241,7 +241,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
                player.setDeltaMovement(-vec.x, 1, -vec.z);
                player.connection.send(new ClientboundSetEntityMotionPacket(player));
                
-               player.displayClientMessage(Component.literal("The Crystal Pulses Violently!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
+               player.sendSystemMessage(Component.literal("The Crystal Pulses Violently!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
             }
          }
       }

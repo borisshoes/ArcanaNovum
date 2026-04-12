@@ -16,21 +16,26 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ArcanaAugment implements Comparable<ArcanaAugment> {
    public final String id;
-   private final ItemStack displayItem;
+   private final Supplier<ItemStack> displayItemSupplier;
    private final ArcanaItem arcanaItem;
    private final ArcanaRarity[] tiers;
    private Tuple<IConfigSetting<?>, ConfigUnits>[] relatedConfigs;
    
-   protected ArcanaAugment(String id, ItemStack displayItem, ArcanaItem arcanaItem, ArcanaRarity... tiers){
+   protected ArcanaAugment(String id, Supplier<ItemStack> displayItemSupplier, ArcanaItem arcanaItem, ArcanaRarity... tiers){
       this.id = id;
-      this.displayItem = displayItem;
+      this.displayItemSupplier = displayItemSupplier;
       this.arcanaItem = arcanaItem;
       this.tiers = tiers;
+   }
+   
+   protected ArcanaAugment(String id, ItemStack displayItem, ArcanaItem arcanaItem, ArcanaRarity... tiers){
+      this(id, () -> displayItem, arcanaItem, tiers);
    }
    
    @SafeVarargs
@@ -52,7 +57,7 @@ public class ArcanaAugment implements Comparable<ArcanaAugment> {
    }
    
    public ItemStack getDisplayItem(){
-      return displayItem;
+      return displayItemSupplier.get();
    }
    
    public ArcanaItem getArcanaItem(){

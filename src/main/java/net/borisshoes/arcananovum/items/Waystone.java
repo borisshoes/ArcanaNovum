@@ -14,9 +14,11 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -41,7 +43,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,13 +66,14 @@ public class Waystone extends ArcanaItem {
       item = new Waystone.WaystoneItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_USE_LODESTONE};
-      
-      ItemStack stack = new ItemStack(item);
-      initializeArcanaTag(stack);
+   }
+   
+   @Override
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      super.initializeArcanaTag(stack);
       putProperty(stack, LOCATION_TAG, getUnattunedTag());
       putProperty(stack, GATEWAY_TAG, false);
-      stack.setCount(item.getDefaultMaxStackSize());
-      setPrefStack(stack);
+      return stack;
    }
    
    @Override
@@ -261,7 +263,7 @@ public class Waystone extends ArcanaItem {
       
       @Override
       public Item getPolymerItem(ItemStack itemStack, PacketContext context){
-         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
+         if(PolymerResourcePackUtils.hasMainPack(context)){
             return getThis().getVanillaItem();
          }else{
             return Items.LODESTONE;
@@ -282,7 +284,7 @@ public class Waystone extends ArcanaItem {
       
       // TODO skin compat
       @Override
-      public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
+      public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
          if(PolymerResourcePackUtils.hasMainPack(context)){
             if(isUnattuned(stack)){
                return ArcanaRegistry.arcanaId("waystone_unattuned");

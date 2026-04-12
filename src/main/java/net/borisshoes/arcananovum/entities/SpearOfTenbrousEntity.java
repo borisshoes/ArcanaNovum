@@ -17,6 +17,7 @@ import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
@@ -56,7 +57,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,7 +145,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
             int trailSize = 3;
             if(this.tickCount % 3 == 0 && !oldPos.isEmpty()){
                Vec3 endPos = MathUtils.randomSpherePoint(oldPos.getLast(), 1.25, 0.4);
-               ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePosition, () -> endPos, (int) (Math.random() * 5 + 5), 0.5, particles,
+               ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePosition, () -> endPos, serverWorld.getRandom().nextInt(5) + 5, 0.5, particles,
                      12, 1, 0, 1, true, 5, 5);
             }
             oldPos.add(position());
@@ -208,16 +208,16 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
          ParticleOptions dust = new DustColorTransitionOptions(particleFadeColor, 0x000000, 2f);
          serverWorld.sendParticles(dust, getX(), getY(), getZ(), 150, 1, 1, 1, 0.02);
          for(int i = 0; i < 18; i++){
-            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), MathUtils.randomSpherePoint(getEyePosition(), 5, 2), (int) (Math.random() * 5 + 5), 0.5, particles,
+            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), MathUtils.randomSpherePoint(getEyePosition(), 5, 2), serverWorld.getRandom().nextInt(5) + 5, 0.5, particles,
                   8, 1, 0, 1, false, 0, 5);
          }
          
          for(LivingEntity affectedEntity : affectedEntities){ // Void Storm
-            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), affectedEntity.getEyePosition(), (int) (Math.random() * 5 + 5), 0.5, particles,
+            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePosition(), affectedEntity.getEyePosition(), serverWorld.getRandom().nextInt(5) + 5, 0.5, particles,
                   8, 1, 0, 1, false, 4, 5);
             DamageSource source = ArcanaDamageTypes.of(serverWorld, ArcanaDamageTypes.ARCANE_LIGHTNING, this, getOwner() == null ? this : getOwner());
             float damage = stormDmg;
-            if(affectedEntity.getType().is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) damage *= 1.25f;
+            if(affectedEntity.is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) damage *= 1.25f;
             affectedEntity.hurtServer(serverWorld, source, damage);
             
             if(blindRage){
@@ -256,7 +256,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
       }
       applyImpactEffects(target, getSurroundingEntities(level(), position()));
       
-      if(target.getType().is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) baseDamage *= 1.25f;
+      if(target.is(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) baseDamage *= 1.25f;
       
       if(target.hurtOrSimulate(damageSource, baseDamage)){
          if(this.level() instanceof ServerLevel serverWorld){
