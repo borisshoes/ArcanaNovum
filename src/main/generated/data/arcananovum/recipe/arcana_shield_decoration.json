@@ -1,0 +1,8 @@
+{
+  "type": "arcananovum:arcana_shield_decoration",
+  "banner": "#minecraft:banners",
+  "result": {
+    "id": "arcananovum:shield_of_fortitude"
+  },
+  "target": "arcananovum:shield_of_fortitude"
+}

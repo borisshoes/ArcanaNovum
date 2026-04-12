@@ -1,0 +1,10 @@
+{
+  "type": "arcananovum:waystone_cleanse",
+  "category": "misc",
+  "cookingtime": 1200,
+  "experience": 10.0,
+  "ingredient": "arcananovum:waystone",
+  "result": {
+    "id": "arcananovum:waystone"
+  }
+}

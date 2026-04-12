@@ -1,0 +1,8 @@
+{
+  "type": "arcananovum:aquatic_eversource_fill",
+  "eversource": "arcananovum:aquatic_eversource",
+  "item": "minecraft:bucket",
+  "result": {
+    "id": "minecraft:water_bucket"
+  }
+}

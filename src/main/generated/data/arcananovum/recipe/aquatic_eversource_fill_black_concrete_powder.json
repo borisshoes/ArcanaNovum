@@ -1,0 +1,8 @@
+{
+  "type": "arcananovum:aquatic_eversource_fill",
+  "eversource": "arcananovum:aquatic_eversource",
+  "item": "minecraft:black_concrete_powder",
+  "result": {
+    "id": "minecraft:black_concrete"
+  }
+}

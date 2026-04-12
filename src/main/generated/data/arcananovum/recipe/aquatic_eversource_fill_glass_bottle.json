@@ -1,0 +1,13 @@
+{
+  "type": "arcananovum:aquatic_eversource_fill",
+  "eversource": "arcananovum:aquatic_eversource",
+  "item": "minecraft:glass_bottle",
+  "result": {
+    "components": {
+      "minecraft:potion_contents": {
+        "potion": "minecraft:water"
+      }
+    },
+    "id": "minecraft:potion"
+  }
+}

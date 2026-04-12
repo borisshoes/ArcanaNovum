@@ -1,0 +1,8 @@
+{
+  "type": "arcananovum:magmatic_eversource_fill",
+  "eversource": "arcananovum:magmatic_eversource",
+  "item": "minecraft:bucket",
+  "result": {
+    "id": "minecraft:lava_bucket"
+  }
+}
