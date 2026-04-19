@@ -106,7 +106,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       
       int phase = this.getPhase();
       int mode = this.getMode();
-      long timeOfDay = serverWorld.getGameTime();
+      long timeOfDay = serverWorld.getOverworldClockTime();
       if(mode == 0){
          int curTime = (int) (timeOfDay % 24000L);
          int targetTime = TIMES[phase];

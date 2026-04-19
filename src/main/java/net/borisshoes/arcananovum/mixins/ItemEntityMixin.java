@@ -97,7 +97,7 @@ public class ItemEntityMixin {
             }
          }
          
-         long timeOfDay = serverWorld.getGameTime();
+         long timeOfDay = serverWorld.getOverworldClockTime();
          int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
          int curTime = (int) (timeOfDay % 24000L);
          int curPhase = day % 8;
