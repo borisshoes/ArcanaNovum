@@ -225,7 +225,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    public int getPlanetCount(){
       int planetCount = 2;
       if(ArcanaAugments.getAugmentFromMap(getAugments(), ArcanaAugments.MOONLIT_FORGE) >= 1){
-         long timeOfDay = level.getGameTime();
+         long timeOfDay = level.getOverworldClockTime();
          int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
          int influence = Math.abs(-curPhase + 4);
@@ -248,7 +248,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    public int getStarCount(){
       int starCount = 2;
       if(ArcanaAugments.getAugmentFromMap(getAugments(), ArcanaAugments.MOONLIT_FORGE) >= 1){
-         long timeOfDay = level.getGameTime();
+         long timeOfDay = level.getOverworldClockTime();
          int day = (int) (timeOfDay / 24000L % Integer.MAX_VALUE);
          int curPhase = day % 8;
          int influence = Math.abs(-curPhase + 4);
