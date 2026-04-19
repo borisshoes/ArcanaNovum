@@ -1414,7 +1414,7 @@ public class ArcanaPlayerData implements StorableData {
             gEventFound.setStage(2);
             BorisLib.addTickTimerCallback(new GenericTimer(120, () -> {
                ServerLevel overworld = player.level().getServer().overworld();
-               long timeOfDay = overworld.getOverorldClockTime();
+               long timeOfDay = overworld.getOverworldClockTime();
                int curTime = (int) (timeOfDay % 24000L);
                int targetTime = 18000;
                int timeDiff = (targetTime - curTime + 24000) % 24000;
