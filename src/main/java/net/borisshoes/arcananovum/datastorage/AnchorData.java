@@ -21,11 +21,22 @@ public class AnchorData implements StorableData {
    
    private final ResourceKey<Level> worldKey;
    public final List<BlockPos> anchors = new ArrayList<>();
+   private Runnable dirtyCallback = () -> {};
    
    public static final DataKey<AnchorData> KEY = DataRegistry.register(DataKey.ofWorld(ArcanaRegistry.arcanaId("anchors"), AnchorData::new));
    
    public AnchorData(ResourceKey<Level> worldKey){
       this.worldKey = worldKey;
+   }
+   
+   @Override
+   public void setDirtyCallback(Runnable callback){
+      this.dirtyCallback = callback == null ? () -> {} : callback;
+   }
+   
+   @Override
+   public void markDirty(){
+      dirtyCallback.run();
    }
    
    @Override
@@ -49,11 +60,15 @@ public class AnchorData implements StorableData {
    
    public boolean addAnchor(BlockPos anchor){
       if(anchors.contains(anchor)) return false;
-      return anchors.add(anchor);
+      anchors.add(anchor);
+      markDirty();
+      return true;
    }
    
    public boolean removeAnchor(BlockPos anchor){
       if(!anchors.contains(anchor)) return false;
-      return anchors.remove(anchor);
+      boolean removed = anchors.remove(anchor);
+      if(removed) markDirty();
+      return removed;
    }
 }

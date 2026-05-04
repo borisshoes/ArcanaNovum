@@ -58,6 +58,12 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
       this.setChanged();
    }
    
+   @Override
+   public void setChanged(){
+      super.setChanged();
+      if(this.channel != null) this.channel.markDirty();
+   }
+   
    public EnderCrateChannel getChannel(){
       return channel;
    }

@@ -22,8 +22,20 @@ public class EnderCrateChannels implements StorableData {
    public static final DataKey<EnderCrateChannels> KEY = DataRegistry.register(DataKey.ofGlobal(ArcanaRegistry.arcanaId("ender_crates"), EnderCrateChannels::new));
    
    private final Map<ChannelKey, EnderCrateChannel> channels = new HashMap<>();
+   private Runnable dirtyCallback = () -> {};
    
    public EnderCrateChannels(){
+   }
+   
+   @Override
+   public void setDirtyCallback(Runnable callback){
+      this.dirtyCallback = callback == null ? () -> {} : callback;
+      channels.values().forEach(this::attachChannelDirtyCallback);
+   }
+   
+   @Override
+   public void markDirty(){
+      dirtyCallback.run();
    }
    
    @Override
@@ -32,6 +44,7 @@ public class EnderCrateChannels implements StorableData {
       view.listOrEmpty("channels", EnderCrateChannel.CODEC).forEach(channel -> {
          if(!channel.getInventory().isEmpty()){
             ChannelKey key = ChannelKey.of(channel.getIdLock(), channel.getColors());
+            attachChannelDirtyCallback(channel);
             channels.put(key, channel);
          }
       });
@@ -60,7 +73,15 @@ public class EnderCrateChannels implements StorableData {
    
    public EnderCrateChannel getCrateChannel(@Nullable UUID lock, DyeColor... colors){
       ChannelKey key = ChannelKey.of(lock, colors);
-      return channels.computeIfAbsent(key, k -> new EnderCrateChannel(lock, colors));
+      return channels.computeIfAbsent(key, k -> {
+         EnderCrateChannel channel = new EnderCrateChannel(lock, colors);
+         attachChannelDirtyCallback(channel);
+         return channel;
+      });
+   }
+   
+   private void attachChannelDirtyCallback(EnderCrateChannel channel){
+      channel.setDirtyCallback(this::markDirty);
    }
    
    public static EnderCrateChannel getChannel(@Nullable UUID lock, DyeColor... colors){

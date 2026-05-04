@@ -41,6 +41,8 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSources;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -325,7 +327,7 @@ public class GravitonMaul extends ArcanaItem {
             if(affectedEntity instanceof LivingEntity livingEntity){
                ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ID), 10, vortexAmp, true, true, true, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
                Conditions.addCondition(player.level().getServer(), livingEntity, vulnerability);
-               livingEntity.hurtServer(player.level(), player.damageSources().cramming(), vortexDmg);
+               livingEntity.hurtServer(player.level(), player.damageSources().source(DamageTypes.CRAMMING,player), vortexDmg);
             }
          }
          ArcanaEffectUtils.gravitonMaulMaelstrom(player, player.getTicksUsingItem());

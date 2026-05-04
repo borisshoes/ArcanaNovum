@@ -30,9 +30,20 @@ public class InterdictionZones implements StorableData {
    private final ResourceKey<Level> worldKey;
    private final List<InterdictionZone> zones = new ArrayList<>();
    private final Map<Long, List<InterdictionZone>> spatialIndex = new HashMap<>();
+   private Runnable dirtyCallback = () -> {};
    
    public InterdictionZones(ResourceKey<Level> worldKey){
       this.worldKey = worldKey;
+   }
+   
+   @Override
+   public void setDirtyCallback(Runnable callback){
+      this.dirtyCallback = callback == null ? () -> {} : callback;
+   }
+   
+   @Override
+   public void markDirty(){
+      dirtyCallback.run();
    }
    
    @Override
@@ -128,6 +139,7 @@ public class InterdictionZones implements StorableData {
       for(InterdictionZone zone : zones){
          if(zone.sourcePos.equals(source)){
             zone.refreshKeepAlive(keepAlive);
+            markDirty();
             return;
          }
       }
@@ -135,6 +147,7 @@ public class InterdictionZones implements StorableData {
       InterdictionZone zone = new InterdictionZone(box, source, keepAlive, redirect);
       zones.add(zone);
       indexZone(zone);
+      markDirty();
    }
    
    /**
@@ -339,6 +352,7 @@ public class InterdictionZones implements StorableData {
     * Ticks all zones and removes expired ones
     */
    public void tick(){
+      boolean changed = !zones.isEmpty();
       Iterator<InterdictionZone> iterator = zones.iterator();
       while(iterator.hasNext()){
          InterdictionZone zone = iterator.next();
@@ -347,6 +361,7 @@ public class InterdictionZones implements StorableData {
             iterator.remove();
          }
       }
+      if(changed) markDirty();
    }
    
    /**
@@ -359,6 +374,7 @@ public class InterdictionZones implements StorableData {
          if(zone.sourcePos.equals(source)){
             unindexZone(zone);
             iterator.remove();
+            markDirty();
             return;
          }
       }

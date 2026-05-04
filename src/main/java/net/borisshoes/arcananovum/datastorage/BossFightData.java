@@ -15,11 +15,22 @@ public class BossFightData implements StorableData {
    
    public Tuple<BossFights, CompoundTag> bossFight;
    private final ResourceKey<Level> worldKey;
+   private Runnable dirtyCallback = () -> {};
    
    public static final DataKey<BossFightData> KEY = DataRegistry.register(DataKey.ofWorld(ArcanaRegistry.arcanaId("boss_fight"), BossFightData::new));
    
    public BossFightData(ResourceKey<Level> worldKey){
       this.worldKey = worldKey;
+   }
+   
+   @Override
+   public void setDirtyCallback(Runnable callback){
+      this.dirtyCallback = callback == null ? () -> {} : callback;
+   }
+   
+   @Override
+   public void markDirty(){
+      dirtyCallback.run();
    }
    
    @Override
@@ -52,6 +63,7 @@ public class BossFightData implements StorableData {
    public boolean setBossFight(BossFights boss, CompoundTag data){
       if(bossFight == null || bossFight.getA() == boss){
          bossFight = new Tuple<>(boss, data);
+         markDirty();
          return true;
       }else{
          return false;
@@ -63,11 +75,13 @@ public class BossFightData implements StorableData {
          return false;
       }else{
          bossFight = null;
+         markDirty();
          return true;
       }
    }
    
    public Tuple<BossFights, CompoundTag> getBossFight(){
+      if(bossFight != null) markDirty();
       return bossFight;
    }
 }

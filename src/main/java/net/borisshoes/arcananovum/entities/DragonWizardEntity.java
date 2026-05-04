@@ -41,10 +41,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class DragonWizardEntity extends Illusioner implements PolymerEntity {
    private final int laserCD = 600; // 30 Seconds
@@ -294,7 +291,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
       view.putInt("numPlayers", numPlayers);
       if(crystalId != null) view.putString("crystalId", crystalId.toString());
       if(skeletons != null)
-         view.storeNullable("skeletons", CodecUtils.STRING_LIST, Arrays.stream(skeletons).map(Entity::getStringUUID).toList());
+         view.storeNullable("skeletons", CodecUtils.STRING_LIST, Arrays.stream(skeletons).filter(Objects::nonNull).map(Entity::getStringUUID).toList());
    }
    
    @Override

@@ -26,8 +26,9 @@ import java.util.*;
 public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContainerHaver {
    private final UUID idLock;
    private final DyeColor[] colors = new DyeColor[9];
-   private final SimpleContainer inventory = new WatchedContainer(54);
+   private final WatchedContainer inventory = new WatchedContainer(54);
    private final int color;
+   private Runnable dirtyCallback = () -> {};
    
    public static final Codec<EnderCrateChannel> CODEC = RecordCodecBuilder.create(instance -> instance.group(
          CodecUtils.UUID_CODEC.optionalFieldOf("idLock").forGetter(channel -> Optional.ofNullable(channel.idLock)),
@@ -62,6 +63,7 @@ public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContaine
    
    public EnderCrateChannel(@Nullable UUID lock, DyeColor... colors){
       this.idLock = lock;
+      this.inventory.addWatcher(container -> markDirty());
       for(int i = 0; i < 9; i++){
          if(i >= colors.length){
             this.colors[i] = null;
@@ -82,6 +84,14 @@ public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContaine
          ItemStack dyedStack = DyedItemColor.applyDyes(testStack, Arrays.stream(this.colors).filter(Objects::nonNull).toList());
          this.color = dyedStack.has(DataComponents.DYED_COLOR) ? dyedStack.get(DataComponents.DYED_COLOR).rgb() : 0xFFFFFF;
       }
+   }
+   
+   public void setDirtyCallback(Runnable callback){
+      this.dirtyCallback = callback == null ? () -> {} : callback;
+   }
+   
+   public void markDirty(){
+      dirtyCallback.run();
    }
    
    public DyeColor[] getColors(){
