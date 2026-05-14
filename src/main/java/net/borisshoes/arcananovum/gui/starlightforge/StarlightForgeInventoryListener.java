@@ -1,14 +1,17 @@
 package net.borisshoes.arcananovum.gui.starlightforge;
 
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.gui.ContainerWatcher;
 import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -113,7 +116,35 @@ public class StarlightForgeInventoryListener implements ContainerWatcher {
             gui.setSlot(25, table);
             gui.setLoadedRecipe(null);
          }else{
-            gui.setSlot(25, GuiElementBuilder.from(recipe.getDisplayStack()).addLoreLine(Component.literal("")).addLoreLine(TextUtils.removeItalics(Component.literal("Click to Forge!").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))).glow());
+            GuiElementBuilder table = GuiElementBuilder.from(recipe.getDisplayStack()).addLoreLine(Component.literal("")).addLoreLine(TextUtils.removeItalics(Component.literal("Click to Forge!").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))).glow();
+            table.setCallback((clickType) -> {
+               if(gui.isOnClickCooldown()) return;
+               ArcanaRecipe foundRecipe = RecipeManager.getMatchingRecipe(gui.getInventory(), blockEntity);
+               if(foundRecipe == null) return;
+               ItemStack showStack = foundRecipe.getDisplayStack();
+               
+               if(ArcanaItemUtils.isArcane(showStack)){
+                  ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(showStack);
+                  
+                  if(!ArcanaNovum.data(gui.getPlayer()).hasResearched(arcanaItem)){
+                     gui.getPlayer().sendSystemMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED), false);
+                     return;
+                  }
+                  
+                  boolean canApplySkilled = gui.getSkilledOptions(arcanaItem, gui.getPlayer()).entrySet().stream().anyMatch(entry -> entry.getValue() > 0);
+                  if(canApplySkilled){
+                     gui.resetClickCooldown();
+                     gui.buildSkilledGui(arcanaItem, foundRecipe);
+                  }else{
+                     gui.resetClickCooldown();
+                     gui.forgeItem(arcanaItem, foundRecipe, null, clickType == ClickType.MOUSE_LEFT_SHIFT);
+                  }
+               }else{
+                  gui.resetClickCooldown();
+                  gui.forgeItem(showStack.copy(), foundRecipe, clickType == ClickType.MOUSE_LEFT_SHIFT);
+               }
+            });
+            gui.setSlot(25, table);
             gui.setLoadedRecipe(recipe);
          }
       }else if(gui.getMode() == 2 && world != null){
@@ -128,6 +159,27 @@ public class StarlightForgeInventoryListener implements ContainerWatcher {
                   .append(Component.literal("to begin forging this ").withStyle(ChatFormatting.DARK_AQUA))
                   .append(Component.translatable(output.getItem().getDescriptionId()).withStyle(ChatFormatting.YELLOW))
                   .append(Component.literal("!").withStyle(ChatFormatting.DARK_AQUA)))));
+            craftingItem.setCallback((clickType) -> {
+               ItemStack stack = getEnhancedStack(inv);
+               if(!stack.isEmpty()){
+                  setUpdating();
+                  NonNullList<ItemStack> remainders = getRemainders(inv);
+                  NonNullList<ItemStack> ingredients = NonNullList.create();
+                  for(int i = 0; i < inv.getContainerSize(); i++){
+                     if(i < 9){
+                        ingredients.add(inv.removeItem(i, 1)); // Remove 1 from ingredients
+                     }else{
+                        inv.setItem(i, ItemStack.EMPTY); // Clear other slots
+                     }
+                  }
+                  
+                  MinecraftUtils.returnItems(inv, gui.getPlayer());
+                  inv.clearContent();
+                  EnhancedForgingGui efg = new EnhancedForgingGui(gui.getPlayer(), this.blockEntity, stack, ingredients, remainders);
+                  efg.buildGui();
+                  efg.open();
+               }
+            });
             gui.setSlot(15, craftingItem);
          }else{
             GuiElementBuilder craftingItem = new GuiElementBuilder(Items.CRAFTING_TABLE);

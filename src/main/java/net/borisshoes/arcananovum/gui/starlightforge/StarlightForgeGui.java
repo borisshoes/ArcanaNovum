@@ -125,7 +125,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       tomeGui.buildAndOpen();
    }
    
-   private void forgeItem(ItemStack item, ArcanaRecipe recipe, boolean fastAnim){
+   void forgeItem(ItemStack item, ArcanaRecipe recipe, boolean fastAnim){
       if(!(blockEntity.getLevel() instanceof ServerLevel world)) return;
       
       ItemStack newItem = item.copy();
@@ -153,7 +153,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       }
    }
    
-   private void forgeItem(ArcanaItem arcanaItem, ArcanaRecipe recipe, @Nullable Tuple<ArcanaAugment, Integer> skillPair, boolean fastAnim){
+   void forgeItem(ArcanaItem arcanaItem, ArcanaRecipe recipe, @Nullable Tuple<ArcanaAugment, Integer> skillPair, boolean fastAnim){
       if(!(blockEntity.getLevel() instanceof ServerLevel world)) return;
       ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, recipe.getCenterpieces(), blockEntity), player.getStringUUID(), 0, world.getServer());
       if(selectedSkin != null){
@@ -205,7 +205,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       }
    }
    
-   private HashMap<ArcanaAugment, Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayer player){
+   HashMap<ArcanaAugment, Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayer player){
       List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
       HashMap<ArcanaAugment, Integer> options = new HashMap<>();
       if(skillLvl == 0) return options;
@@ -264,27 +264,6 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
             .append(Component.literal("").withStyle(ChatFormatting.DARK_AQUA)))));
       craftingItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("This slot will show an item once a valid recipe is loaded.").withStyle(ChatFormatting.LIGHT_PURPLE)))));
-      craftingItem.setCallback((clickType) -> {
-         ItemStack stack = listener.getEnhancedStack(inventory);
-         if(!stack.isEmpty()){
-            listener.setUpdating();
-            NonNullList<ItemStack> remainders = listener.getRemainders(inventory);
-            NonNullList<ItemStack> ingredients = NonNullList.create();
-            for(int i = 0; i < inventory.getContainerSize(); i++){
-               if(i < 9){
-                  ingredients.add(inventory.removeItem(i, 1)); // Remove 1 from ingredients
-               }else{
-                  inventory.setItem(i, ItemStack.EMPTY); // Clear other slots
-               }
-            }
-            
-            MinecraftUtils.returnItems(inventory, player);
-            this.inventory.clearContent();
-            EnhancedForgingGui efg = new EnhancedForgingGui(player, this.blockEntity, stack, ingredients, remainders);
-            efg.buildGui();
-            efg.open();
-         }
-      });
       setSlot(15, craftingItem);
       
       for(int i = 0; i < FORGE_SLOTS.length; i++){
@@ -363,33 +342,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
             .append(Component.literal(" to forge an Arcana Item once a recipe is loaded!").withStyle(ChatFormatting.LIGHT_PURPLE))));
       table.addLoreLine(TextUtils.removeItalics(Component.literal("")));
       table.addLoreLine(TextUtils.removeItalics(Component.literal("This slot will show an Arcana Item once a valid recipe is loaded.").withStyle(ChatFormatting.ITALIC, ChatFormatting.AQUA)));
-      table.setCallback((clickType) -> {
-         if(isOnClickCooldown()) return;
-         ArcanaRecipe foundRecipe = RecipeManager.getMatchingRecipe(inventory, blockEntity);
-         if(foundRecipe == null) return;
-         ItemStack showStack = foundRecipe.getDisplayStack();
-         
-         if(ArcanaItemUtils.isArcane(showStack)){
-            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(showStack);
-            
-            if(!ArcanaNovum.data(player).hasResearched(arcanaItem)){
-               player.sendSystemMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED), false);
-               return;
-            }
-            
-            boolean canApplySkilled = getSkilledOptions(arcanaItem, player).entrySet().stream().anyMatch(entry -> entry.getValue() > 0);
-            if(canApplySkilled){
-               resetClickCooldown();
-               buildSkilledGui(arcanaItem, foundRecipe);
-            }else{
-               resetClickCooldown();
-               forgeItem(arcanaItem, foundRecipe, null, clickType == ClickType.MOUSE_LEFT_SHIFT);
-            }
-         }else{
-            resetClickCooldown();
-            forgeItem(showStack.copy(), foundRecipe, clickType == ClickType.MOUSE_LEFT_SHIFT);
-         }
-      });
+      
       setSlot(25, table);
       
       for(int i = 0; i < 25; i++){

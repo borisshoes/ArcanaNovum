@@ -735,10 +735,9 @@ public class ArcanaPlayerData implements StorableData {
             if(player.getRandom().nextDouble() < eggDialogChance){
                dragonEggDialog(player);
             }else if(player.getRandom().nextDouble() < zeraiyaEventChance){
-               if(!completedZeraiya() && getLastZeraiyaAttempt() <= 0 && player.getRandom().nextInt(10) == 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ZERAIYA_EVENT_ENABLED)){
+               if(!completedZeraiya() && getLastZeraiyaAttempt() <= 0 && ArcanaNovum.CONFIG.getBoolean(ArcanaConfig.ZERAIYA_EVENT_ENABLED)){
                   startZeraiya(player);
                   setLastZeraiyaAttempt(36000);
-                  return;
                }
             }
          }

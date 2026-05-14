@@ -71,6 +71,12 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
       gui.buildAndOpen();
    }
    
+   @Override
+   public void afterOpen(){
+      super.afterOpen();
+      buildGui();
+   }
+   
    public void buildGui(){
       if(mode == 0){
          buildMenuGui();
