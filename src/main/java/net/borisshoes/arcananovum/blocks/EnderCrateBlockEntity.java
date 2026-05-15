@@ -27,12 +27,14 @@ import java.util.TreeMap;
 import java.util.stream.IntStream;
 
 public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, PolymerObject, ArcanaBlockEntity {
-   private TreeMap<ArcanaAugment, Integer> augments;
-   private String crafterId;
-   private String uuid;
+   private final NonNullList<ItemStack> uninitializedItems = NonNullList.withSize(54, ItemStack.EMPTY);
+
+   private TreeMap<ArcanaAugment, Integer> augments = new TreeMap<>();
+   private String crafterId = "";
+   private String uuid = "";
    private int origin;
    private ArcanaSkin skin;
-   private String customName;
+   private String customName = "";
    private EnderCrateChannel channel;
    private int slotCount = 27;
    private int[] slots = IntStream.range(0, slotCount).toArray();
@@ -54,8 +56,12 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    }
    
    public void setChannel(EnderCrateChannel channel){
-      this.channel = channel;
+      this.channel = channel == null ? getDefaultChannel() : channel;
       this.setChanged();
+   }
+   
+   private EnderCrateChannel getDefaultChannel(){
+      return EnderCrateChannels.getChannel(EnderCrate.DEFAULT_CHANNEL);
    }
    
    @Override
@@ -65,6 +71,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    }
    
    public EnderCrateChannel getChannel(){
+      if(this.channel == null) this.channel = getDefaultChannel();
       return channel;
    }
    
@@ -107,13 +114,13 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    
    @Override
    protected NonNullList<ItemStack> getItems(){
-      return this.channel == null ? NonNullList.create() : this.channel.getInventory().getItems();
+      return this.channel == null ? uninitializedItems : this.channel.getInventory().getItems();
    }
    
    @Override
    protected void setItems(NonNullList<ItemStack> list){
       if(this.channel == null) return;
-      for(int i = 0; i < list.size(); i++){
+      for(int i = 0; i < Math.min(list.size(), this.channel.getInventory().getContainerSize()); i++){
          this.channel.getInventory().setItem(i, list.get(i));
       }
    }
@@ -130,7 +137,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    
    @Override
    public boolean canPlaceItemThroughFace(int i, ItemStack itemStack, @Nullable Direction direction){
-      if(!this.channel.isLocked() && itemStack.is(ArcanaRegistry.ALL_ARCANA_ITEMS)) return false;
+      if(!this.getChannel().isLocked() && itemStack.is(ArcanaRegistry.ALL_ARCANA_ITEMS)) return false;
       return true;
    }
    
@@ -178,6 +185,6 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
       view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
-      view.storeNullable("channel", EnderCrateChannel.CODEC, this.channel);
+      view.storeNullable("channel", EnderCrateChannel.CODEC, this.getChannel());
    }
 }
