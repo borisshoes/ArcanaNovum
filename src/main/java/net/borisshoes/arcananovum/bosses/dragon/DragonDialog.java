@@ -153,7 +153,7 @@ public class DragonDialog {
                   .append(Component.literal("Equayus").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD)));
             subMessage2.add(Component.literal("")
-                  .append(Component.literal("   It isn't too late to change ").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
+                  .append(Component.literal("   It isn't too late to change, ").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
                   .append(Component.literal("Sister").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC))
                   .append(Component.literal(". Join our cause and return to the path you started on long ago.").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC)));
             subMessage2.add(Component.literal(""));

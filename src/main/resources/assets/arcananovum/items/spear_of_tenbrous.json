@@ -38,5 +38,5 @@
 			"model": "arcananovum:item/spear_of_tenbrous"
 		}
 	},
-	"hand_animation_on_swap": false
+	"hand_animation_on_swap": true
 }

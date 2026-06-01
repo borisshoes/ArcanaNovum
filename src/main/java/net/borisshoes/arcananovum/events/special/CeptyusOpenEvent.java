@@ -210,9 +210,9 @@ public class CeptyusOpenEvent extends Event {
                   .append(Component.literal(" and pull back.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)),
             Component.literal("\n")
                   .append(Component.literal("Another blast ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
-                  .append(Component.literal("surges").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC))
+                  .append(Component.literal("surges").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))
                   .append(Component.literal(" through the ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
-                  .append(Component.literal("rift").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC))
+                  .append(Component.literal("rift").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC))
                   .append(Component.literal(" before it seals itself.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)),
             Component.literal("\n")
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))

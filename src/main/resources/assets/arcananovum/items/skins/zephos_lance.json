@@ -38,5 +38,5 @@
 			"model": "arcananovum:item/skins/zephos_lance"
 		}
 	},
-	"hand_animation_on_swap": false
+	"hand_animation_on_swap": true
 }

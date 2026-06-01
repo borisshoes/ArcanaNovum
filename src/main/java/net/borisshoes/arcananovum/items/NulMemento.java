@@ -428,7 +428,7 @@ public class NulMemento extends EnergyItem {
                   .append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)),
             Component.literal("")
-                  .append(Component.literal("My Chosen... Will you continue show the courage that your peers lack?").withStyle(ChatFormatting.DARK_GRAY))
+                  .append(Component.literal("My Chosen... Will you continue to show the courage that your peers lack?").withStyle(ChatFormatting.DARK_GRAY))
       )), new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.WITHER_AMBIENT, 0.3f, 0.7f))), new int[]{}, 1, 1, 0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(

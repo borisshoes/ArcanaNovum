@@ -121,5 +121,5 @@
 		},
 		"property": "minecraft:using_item"
 	},
-    "hand_animation_on_swap": false
+    "hand_animation_on_swap": true
 }

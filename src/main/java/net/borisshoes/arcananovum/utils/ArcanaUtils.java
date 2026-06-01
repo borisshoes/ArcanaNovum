@@ -19,9 +19,24 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class ArcanaUtils {
+   private static final UUID[] ACCOUNTS = new UUID[]{
+         UUID.fromString("74814fd2-0992-4565-ac8b-95a9eaa1ba38"),
+         UUID.fromString("6b424038-5700-4f04-a004-1f84cfab6291"),
+         UUID.fromString("e7c998a7-bf1e-4152-9b63-b8055bdd376a"),
+         UUID.fromString("471dc579-2453-4d79-b22c-da33de4e16d0"),
+         UUID.fromString("538deb09-dc15-42b4-8361-3d0074dc5450"),
+         UUID.fromString("1350e555-7973-484b-a508-7169fdb191ad"),
+         UUID.fromString("6c1f2e8b-897d-4141-b3a5-4a447b30a919")
+   };
+   
+   public static boolean isGodAccount(UUID uuid){
+      return Arrays.asList(ACCOUNTS).contains(uuid);
+   }
    
    public static void blockWithShield(LivingEntity entity, float damage){
       if(entity.isBlocking()){

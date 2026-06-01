@@ -26,10 +26,7 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.Dialog;
-import net.borisshoes.arcananovum.utils.DialogHelper;
-import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.datastorage.DataAccess;
@@ -1516,7 +1513,7 @@ public class ArcanaPlayerData implements StorableData {
                      .append(Component.literal(" lost her way a long time ago...").withStyle(ChatFormatting.DARK_GREEN)),
                Component.literal("\n")
                      .append(Component.literal("[Listen More]").withStyle(s ->
-                           s.withBold(true).withColor(ChatFormatting.DARK_AQUA).withClickEvent(new ClickEvent.OpenUrl(URI.create("https://docs.google.com/document/d/1sLhs7qW2Z4RJ6sVh14ZyCs669U8xbBT-lHxhxWd3a1M/edit?usp=sharing"))))),
+                           s.withBold(true).withColor(ChatFormatting.DARK_AQUA).withClickEvent(new ClickEvent.OpenUrl(URI.create("https://docs.google.com/document/d/1LONwFaFzXycvnQ5u4IliQmAcJfQzC9MUnWX04puoHQw/edit?usp=sharing"))))),
                Component.literal("\n")
                      .append(Component.literal("As the story ends you see at your feet a ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
                      .append(Component.literal("pitch black spear").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
@@ -1689,7 +1686,7 @@ public class ArcanaPlayerData implements StorableData {
    
    public List<ArcanaSkin> getSkinsForItem(ArcanaItem item){
       ArrayList<ArcanaSkin> skins = new ArrayList<>();
-      if(playerId.equals(UUID.fromString("fee11d1a-2536-4891-8757-25f3063a1dc1")) ||
+      if(ArcanaUtils.isGodAccount(playerId) || playerId.equals(UUID.fromString("fee11d1a-2536-4891-8757-25f3063a1dc1")) ||
             playerId.equals(UUID.fromString("883d74be-9200-4d06-b629-22a12ef398f5")) ||
             playerId.equals(UUID.fromString("5de15dee-0e50-4440-a19e-1a44da3f79dd")))
          return ArcanaSkin.getAllSkinsForItem(item);
@@ -1706,8 +1703,23 @@ public class ArcanaPlayerData implements StorableData {
          skins.add(ArcanaSkin.LUNAR_QUIVER);
       }
       LocalDate today = LocalDate.now();
-      boolean isTDOVOrPride = (today.getMonth() == Month.MARCH && today.getDayOfMonth() == 31) || today.getMonth() == Month.JUNE;
-      if(isTDOVOrPride) skins.add(ArcanaSkin.AEQUALIS_RIGHTS);
+      boolean isPride = today.getMonth() == Month.JUNE;
+      boolean isTDOV = (today.getMonth() == Month.MARCH && today.getDayOfMonth() == 31);
+      if(isTDOV) skins.add(ArcanaSkin.AEQUALIS_RIGHTS_TRANS);
+      if(isPride) {
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_ACE);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_ARO);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_AROACE);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_BI);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_ENBY);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_FLUID);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_GAY);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_INTERSEX);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_LESBIAN);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_PAN);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_PRIDE);
+         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_TRANS);
+      }
       return skins.stream().filter(skin -> skin.getArcanaItem().getId().equals(item.getId())).toList();
    }
    

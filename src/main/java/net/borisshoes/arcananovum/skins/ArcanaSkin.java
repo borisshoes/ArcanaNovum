@@ -22,7 +22,19 @@ public enum ArcanaSkin implements StringRepresentable {
    RESPLENDENT_HARNESS(ArcanaRegistry.LEVITATION_HARNESS, 0x7f31ff, 0x4747FF, ArcanaRegistry.arcanaId("resplendent_harness"), new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))}),
    CATGIRL_MEMENTO(ArcanaRegistry.NUL_MEMENTO, 0xFF55FF, 0x8B2E8B, ArcanaRegistry.arcanaId("catgirl_memento")),
    ZEPHOS_LANCE(ArcanaRegistry.SPEAR_OF_TENBROUS, 0x18ceff, 0x0015e3, ArcanaRegistry.arcanaId("zephos_lance")),
-   AEQUALIS_RIGHTS(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF87C7, 0xBFEEFF, ArcanaRegistry.arcanaId("aequalis_rights"));
+   AEQUALIS_RIGHTS(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF87C7, 0xBFEEFF, ArcanaRegistry.arcanaId("aequalis_rights")),
+   AEQUALIS_RIGHTS_ACE(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xBCB2C5, 0x946CFF, ArcanaRegistry.arcanaId("aequalis_rights_ace")),
+   AEQUALIS_RIGHTS_ARO(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xBCB2C5, 0x27AD43, ArcanaRegistry.arcanaId("aequalis_rights_aro")),
+   AEQUALIS_RIGHTS_AROACE(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFFC55A, 0x5EC1FF, ArcanaRegistry.arcanaId("aequalis_rights_aroace")),
+   AEQUALIS_RIGHTS_BI(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF41D8, 0x152cd6, ArcanaRegistry.arcanaId("aequalis_rights_bi")),
+   AEQUALIS_RIGHTS_ENBY(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFFF318, 0x7E33BF, ArcanaRegistry.arcanaId("aequalis_rights_enby")),
+   AEQUALIS_RIGHTS_FLUID(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF49F1, 0x5F37FF, ArcanaRegistry.arcanaId("aequalis_rights_fluid")),
+   AEQUALIS_RIGHTS_GAY(ArcanaRegistry.AEQUALIS_SCIENTIA, 0x53FF9B, 0x946CFF, ArcanaRegistry.arcanaId("aequalis_rights_gay")),
+   AEQUALIS_RIGHTS_INTERSEX(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFFCF16, 0x7E33BF, ArcanaRegistry.arcanaId("aequalis_rights_intersex")),
+   AEQUALIS_RIGHTS_LESBIAN(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xff5c9c, 0xFF9A30, ArcanaRegistry.arcanaId("aequalis_rights_lesbian")),
+   AEQUALIS_RIGHTS_PAN(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xff5c9c, 0x3C67FF, ArcanaRegistry.arcanaId("aequalis_rights_pan")),
+   AEQUALIS_RIGHTS_PRIDE(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xff5c9c, 0x33F3FF, ArcanaRegistry.arcanaId("aequalis_rights_pride")),
+   AEQUALIS_RIGHTS_TRANS(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF87C7, 0xBFEEFF, ArcanaRegistry.arcanaId("aequalis_rights_trans"));
    
    private final ArcanaItem arcanaItem;
    private final Identifier id;

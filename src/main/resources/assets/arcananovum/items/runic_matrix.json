@@ -3,5 +3,5 @@
         "type": "minecraft:model",
         "model": "arcananovum:item/runic_matrix"
     },
-    "hand_animation_on_swap": false
+    "hand_animation_on_swap": true
 }

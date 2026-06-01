@@ -65,5 +65,5 @@
             "model": "arcananovum:item/soulstone_unattuned"
         }
     },
-    "hand_animation_on_swap": false
+    "hand_animation_on_swap": true
 }

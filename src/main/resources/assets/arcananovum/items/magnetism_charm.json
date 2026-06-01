@@ -51,5 +51,5 @@
             "model": "arcananovum:item/magnetism_charm_off"
         }
     },
-    "hand_animation_on_swap": false
+    "hand_animation_on_swap": true
 }
