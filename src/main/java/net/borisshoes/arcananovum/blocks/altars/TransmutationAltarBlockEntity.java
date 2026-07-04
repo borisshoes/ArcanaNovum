@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -29,8 +30,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Tuple;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -106,7 +106,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       }
       @Nullable ServerPlayer finalPlayer = player;
       
-      ArcanaEffectUtils.transmutationAltarAnim(serverWorld, this.getBlockPos().getCenter(), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING), speedMod);
+      ArcanaEffectUtils.transmutationAltarAnim(serverWorld, Vec3.atCenterOf(this.getBlockPos()), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING), speedMod);
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> this.transmute(finalPlayer, false)));
       return true;
    }
@@ -143,12 +143,12 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       TransmutationRecipe recipe = RecipeManager.findMatchingRecipe(positiveStack, negativeStack, reagent1Stack, reagent2Stack, aequalisStack, this);
       this.setActive(false);
       if(recipe != null){
-         List<Tuple<ItemStack, String>> outputs = recipe.doTransmutation(positiveEntity, negativeEntity, reagent1Entity, reagent2Entity, aequalisEntity, this, player);
+         List<Pair<ItemStack, String>> outputs = recipe.doTransmutation(positiveEntity, negativeEntity, reagent1Entity, reagent2Entity, aequalisEntity, this, player);
          
          int transmuteCount = 0;
-         for(Tuple<ItemStack, String> outputPair : outputs){
-            ItemStack output = outputPair.getA();
-            Vec3 outputPos = this.getOutputPos(outputPair.getB());
+         for(Pair<ItemStack, String> outputPair : outputs){
+            ItemStack output = outputPair.getFirst();
+            Vec3 outputPos = this.getOutputPos(outputPair.getSecond());
             transmuteCount += output.getCount();
             if(output.is(ArcanaRegistry.DIVINE_CATALYST.getItem()) && player != null){
                ArcanaNovum.data(player).addCraftedSilent(output);
@@ -173,7 +173,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
             double speedMod = hastyBargain ? 2 : 1;
             int castTime = (int) (500.0 / speedMod);
             this.setActive(true);
-            ArcanaEffectUtils.transmutationAltarAnim(serverWorld, this.getBlockPos().getCenter(), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING), speedMod);
+            ArcanaEffectUtils.transmutationAltarAnim(serverWorld, Vec3.atCenterOf(this.getBlockPos()), 0, this.getLevel().getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING), speedMod);
             BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> transmute(player, true)));
          }
          
@@ -190,18 +190,18 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       HashMap<String, ItemEntity> stacks = new HashMap<>();
       if(this.level == null || this.worldPosition == null) return stacks;
       Direction direction = level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING);
-      Vec3 centerPos = getBlockPos().getCenter();
+      Vec3 centerPos = Vec3.atCenterOf(getBlockPos());
       Vec3 aequalisPos = centerPos.add(new Vec3(0, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       Vec3 negativePos = centerPos.add(new Vec3(3, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       Vec3 positivePos = centerPos.add(new Vec3(-3, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       Vec3 reagent1Pos = centerPos.add(new Vec3(0, 0.6, -3).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       Vec3 reagent2Pos = centerPos.add(new Vec3(0, 0.6, 3).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       
-      ItemEntity aequalisEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(aequalisPos)), e -> true));
-      ItemEntity positiveEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(positivePos)), e -> true));
-      ItemEntity negativeEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(negativePos)), e -> true));
-      ItemEntity reagent1Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(reagent1Pos)), e -> true));
-      ItemEntity reagent2Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityType.ITEM, new AABB(BlockPos.containing(reagent2Pos)), e -> true));
+      ItemEntity aequalisEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityTypes.ITEM, new AABB(BlockPos.containing(aequalisPos)), e -> true));
+      ItemEntity positiveEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityTypes.ITEM, new AABB(BlockPos.containing(positivePos)), e -> true));
+      ItemEntity negativeEntity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityTypes.ITEM, new AABB(BlockPos.containing(negativePos)), e -> true));
+      ItemEntity reagent1Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityTypes.ITEM, new AABB(BlockPos.containing(reagent1Pos)), e -> true));
+      ItemEntity reagent2Entity = MinecraftUtils.getLargestItemEntity(this.level.getEntities(EntityTypes.ITEM, new AABB(BlockPos.containing(reagent2Pos)), e -> true));
       
       stacks.put("aequalis", aequalisEntity);
       stacks.put("positive", positiveEntity);
@@ -215,7 +215,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    public Vec3 getOutputPos(String outputString){
       if(this.level == null || this.worldPosition == null) return null;
       Direction direction = level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING);
-      Vec3 centerPos = getBlockPos().getCenter();
+      Vec3 centerPos = Vec3.atCenterOf(getBlockPos());
       Vec3 aequalisPos = centerPos.add(new Vec3(0, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       Vec3 negativePos = centerPos.add(new Vec3(3, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
       Vec3 positivePos = centerPos.add(new Vec3(-3, 0.6, 0).yRot((float) -(direction.get2DDataValue() * (Math.PI / 2.0f))));
@@ -264,7 +264,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
       
       boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(TransmutationAltar.TransmutationAltarBlock.ACTIVATABLE).orElse(false);

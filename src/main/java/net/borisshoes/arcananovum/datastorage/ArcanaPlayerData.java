@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.datastorage;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import io.github.ladysnake.pal.VanillaAbilities;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -56,9 +57,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.projectile.FishingHook;
@@ -265,6 +265,7 @@ public class ArcanaPlayerData implements StorableData {
       }else{
          researchTasks.removeIf(s -> s.equals(id));
       }
+      markDirty();
    }
    
    public Tag getMiscData(String id){
@@ -400,6 +401,7 @@ public class ArcanaPlayerData implements StorableData {
    
    public boolean setLevel(int lvl){
       this.level = lvl;
+      markDirty();
       return true;
    }
    
@@ -409,6 +411,7 @@ public class ArcanaPlayerData implements StorableData {
       String itemId = arcanaItem.getId();
       if(crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
       addXP(ArcanaRarity.getFirstCraftXp(arcanaItem.getRarity()));
+      markDirty();
       return crafted.add(itemId);
    }
    
@@ -426,6 +429,7 @@ public class ArcanaPlayerData implements StorableData {
                   .append(Component.literal("!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC));
             server.getPlayerList().broadcastSystemMessage(newCraftMsg.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowItem(ItemStackTemplate.fromNonEmptyStack(stack)))), false);
          }
+         markDirty();
       }
       return added;
    }
@@ -451,17 +455,19 @@ public class ArcanaPlayerData implements StorableData {
          itemAchs.add(achievement);
          achievements.put(item, itemAchs);
       }
-      
+      markDirty();
       return true;
    }
    
    public boolean addResearchedItem(String item){
       if(researchedItems.stream().anyMatch(i -> i.equalsIgnoreCase(item))) return false;
+      markDirty();
       return researchedItems.add(item);
    }
    
    public boolean removeCrafted(String item){
       if(crafted.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
+      markDirty();
       return crafted.removeIf(i -> i.equalsIgnoreCase(item));
    }
    
@@ -481,21 +487,24 @@ public class ArcanaPlayerData implements StorableData {
             }
          }
       }
-      
+      markDirty();
       return found;
    }
    
    public boolean removeResearchedItem(String item){
       if(researchedItems.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
+      markDirty();
       return researchedItems.removeIf(i -> i.equalsIgnoreCase(item));
    }
    
    public void addMiscData(String id, Tag data){
       miscData.put(id, data);
+      markDirty();
    }
    
    public void removeMiscData(String id){
       miscData.remove(id);
+      markDirty();
    }
    
    public boolean hasAcheivement(ArcanaAchievement ach){
@@ -590,6 +599,7 @@ public class ArcanaPlayerData implements StorableData {
          }
       }
       augments.put(augment, level);
+      markDirty();
       return false;
    }
    
@@ -616,17 +626,20 @@ public class ArcanaPlayerData implements StorableData {
          }
       }
       
+      markDirty();
       return had;
    }
    
    // Returns if the operation was successful or not
    public boolean removeAugment(ArcanaAugment augment){
       if(augments.entrySet().stream().noneMatch(e -> e.getKey() == augment)) return false;
+      markDirty();
       return augments.entrySet().removeIf(e -> e.getKey() == augment);
    }
    
    public void removeAllAugments(){
       augments.clear();
+      markDirty();
    }
    
    public int getArcanePaperRequirement(ArcanaRarity rarity){
@@ -643,6 +656,7 @@ public class ArcanaPlayerData implements StorableData {
       if(!offHand.isEmpty() && !BinaryBlades.isFakeBlade(offHand)){
          player.getInventory().placeItemBackInInventory(offHand);
       }
+      markDirty();
       return true;
    }
    
@@ -651,6 +665,7 @@ public class ArcanaPlayerData implements StorableData {
       if(!storedOffhand.isEmpty()) return false;
       storedOffhand = player.getOffhandItem();
       player.getInventory().setItem(Inventory.SLOT_OFFHAND, replacement);
+      markDirty();
       return true;
    }
    
@@ -843,8 +858,8 @@ public class ArcanaPlayerData implements StorableData {
       
       // Dragon Tower Check
       boolean dragonTowerFly = false;
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
-      if(bossFight != null && bossFight.getA() == BossFights.DRAGON){
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      if(bossFight != null && bossFight.getFirst() == BossFights.DRAGON){
          List<DragonBossFight.ReclaimState> reclaimStates = DragonBossFight.getReclaimStates();
          if(reclaimStates != null){
             for(DragonBossFight.ReclaimState reclaimState : reclaimStates){
@@ -960,7 +975,7 @@ public class ArcanaPlayerData implements StorableData {
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                   .append(Component.literal("Enderia").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
                   .append(Component.literal(" ~ ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
-                  .append(Component.literal("\nI hoped to never see that dreaded storm ever again. Do your self a favor and throw that Spear into the void.").withStyle(ChatFormatting.DARK_PURPLE))
+                  .append(Component.literal("\nI hoped to never see that dreaded storm ever again. Do yourself a favor and throw that Spear into the void.").withStyle(ChatFormatting.DARK_PURPLE))
       )), new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.3f, 1.4f))
       ), new int[]{}, 0, 1, 0b1000000));
@@ -1136,7 +1151,7 @@ public class ArcanaPlayerData implements StorableData {
       if(completedGaialtus() || getLastGaialtusAttempt() > 0) return;
       if(!player.level().equals(player.level().getServer().overworld())) return;
       if(player.level().getBrightness(LightLayer.SKY, player.blockPosition()) == 0) return;
-      List<FishingHook> list = player.level().getEntities(EntityType.FISHING_BOBBER, player.getBoundingBox().inflate(20.0, 8.0, 20.0), (hook) -> player.equals(hook.getPlayerOwner()));
+      List<FishingHook> list = player.level().getEntities(EntityTypes.FISHING_BOBBER, player.getBoundingBox().inflate(20.0, 8.0, 20.0), (hook) -> player.equals(hook.getPlayerOwner()));
       if(list.isEmpty()) return;
       AtomicInteger mined = new AtomicInteger();
       AtomicInteger placed = new AtomicInteger();

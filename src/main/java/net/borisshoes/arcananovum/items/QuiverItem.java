@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -26,7 +27,6 @@ import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -131,43 +131,43 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
       return true;
    }
    
-   public static Tuple<String, Integer> getArrowOption(ServerPlayer player, boolean runic, boolean display){
+   public static Pair<String, Integer> getArrowOption(ServerPlayer player, boolean runic, boolean display){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
       String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString().orElse("");
       int invSlot = ((IntTag) profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
       
-      List<Tuple<String, Integer>> options = getArrowOptions(player, runic);
+      List<Pair<String, Integer>> options = getArrowOptions(player, runic);
       if(options.isEmpty()){
          return null;
       }
-      for(Tuple<String, Integer> option : options){
-         if(invId.equals(option.getA()) && invSlot == option.getB()){
+      for(Pair<String, Integer> option : options){
+         if(invId.equals(option.getFirst()) && invSlot == option.getSecond()){
             return option;
          }
       }
       return switchArrowOption(player, runic, display);
    }
    
-   public static Tuple<String, Integer> switchArrowOption(ServerPlayer player, boolean runic, boolean display){
+   public static Pair<String, Integer> switchArrowOption(ServerPlayer player, boolean runic, boolean display){
       ArcanaPlayerData profile = ArcanaNovum.data(player);
       String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString().orElse("");
       int invSlot = ((IntTag) profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
       
-      List<Tuple<String, Integer>> options = getArrowOptions(player, runic);
+      List<Pair<String, Integer>> options = getArrowOptions(player, runic);
       if(options.isEmpty()){
          return null;
       }
       
       int ind = 0;
       boolean found = false;
-      for(Tuple<String, Integer> option : options){
-         if(invId.equals(option.getA()) && invSlot == option.getB()){
+      for(Pair<String, Integer> option : options){
+         if(invId.equals(option.getFirst()) && invSlot == option.getSecond()){
             found = true;
             break;
          }
          ind++;
       }
-      Tuple<String, Integer> option;
+      Pair<String, Integer> option;
       int add = player.isShiftKeyDown() ? -1 : 1;
       if(found){
          ind = (ind + add) % options.size();
@@ -176,22 +176,22 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
       }else{
          option = options.get(0);
       }
-      profile.addMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG, StringTag.valueOf(option.getA()));
-      profile.addMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG, IntTag.valueOf(option.getB()));
+      profile.addMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG, StringTag.valueOf(option.getFirst()));
+      profile.addMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG, IntTag.valueOf(option.getSecond()));
       getArrowStack(player, runic, display);
       return option;
    }
    
    public static ItemStack getArrowStack(ServerPlayer player, boolean runic, boolean display){
-      Tuple<String, Integer> option = getArrowOption(player, runic, display);
+      Pair<String, Integer> option = getArrowOption(player, runic, display);
       Predicate<ItemStack> PROJECTILES = runic ? RunicBow.RunicBowItem.RUNIC_BOW_PROJECTILES : ARROW_ONLY;
       if(option == null){ // No arrows accessible
          if(display)
             player.sendSystemMessage(Component.literal("No Arrows Available").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
          return null;
       }else{ // getArrowOption always returns a verified slot, but just in case...
-         String invId = option.getA();
-         int invSlot = option.getB();
+         String invId = option.getFirst();
+         int invSlot = option.getSecond();
          
          Inventory inv = player.getInventory();
          if(invId.equals("inventory")){
@@ -268,8 +268,8 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
       return null;
    }
    
-   public static List<Tuple<String, Integer>> getArrowOptions(ServerPlayer player, boolean runic){
-      List<Tuple<String, Integer>> options = new ArrayList<>();
+   public static List<Pair<String, Integer>> getArrowOptions(ServerPlayer player, boolean runic){
+      List<Pair<String, Integer>> options = new ArrayList<>();
       Predicate<ItemStack> PROJECTILES = runic ? RunicBow.RunicBowItem.RUNIC_BOW_PROJECTILES : ARROW_ONLY;
       // Makes a list of available arrows with the UUID of the quiver containing them or "inventory" and the slot of the inventory they are in
       
@@ -289,7 +289,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
                ItemStack arrow = arrows.get(j);
                if(arrow.isEmpty()) continue;
                if(ArcanaItemUtils.isRunicArrow(arrow) && !runic) continue;
-               options.add(new Tuple<>(getUUID(item), j));
+               options.add(Pair.of(getUUID(item), j));
             }
             
          }else if(arcanaItem instanceof OverflowingQuiver quiver){
@@ -299,7 +299,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
             for(int j = 0; j < arrows.size(); j++){
                ItemStack arrow = arrows.get(j);
                if(arrow.isEmpty()) continue;
-               options.add(new Tuple<>(getUUID(item), j));
+               options.add(Pair.of(getUUID(item), j));
             }
          }
          
@@ -307,7 +307,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
             if(!runic && arcanaItem instanceof RunicArrow){
                continue;
             }
-            options.add(new Tuple<>("inventory", i));
+            options.add(Pair.of("inventory", i));
          }
       }
       

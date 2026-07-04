@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
@@ -36,7 +37,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -123,14 +123,14 @@ public class FractalSponge extends ArcanaBlock {
       int maxDepth = baseDepth + extraDepth;
       int maxBlocks = baseBlocks + extraBlocks;
       
-      Queue<Tuple<BlockPos, Integer>> queue = Lists.newLinkedList();
-      queue.add(new Tuple<>(pos, 0));
+      Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
+      queue.add(Pair.of(pos, 0));
       int blocksAbsorbed = 0;
       
       while(!queue.isEmpty()){
-         Tuple<BlockPos, Integer> pair = queue.poll();
-         BlockPos blockPos = pair.getA();
-         int depth = pair.getB();
+         Pair<BlockPos, Integer> pair = queue.poll();
+         BlockPos blockPos = pair.getFirst();
+         int depth = pair.getSecond();
          Direction[] dirs = Direction.values();
          int numDirs = dirs.length;
          
@@ -143,13 +143,13 @@ public class FractalSponge extends ArcanaBlock {
                if(blockState.getBlock() instanceof BucketPickup && !((BucketPickup) blockState.getBlock()).pickupBlock(null, world, blockPos2, blockState).isEmpty()){
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Tuple<>(blockPos2, depth + 1));
+                     queue.add(Pair.of(blockPos2, depth + 1));
                   }
                }else if(blockState.getBlock() instanceof LiquidBlock){
                   world.setBlock(blockPos2, Blocks.AIR.defaultBlockState(), 3);
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Tuple<>(blockPos2, depth + 1));
+                     queue.add(Pair.of(blockPos2, depth + 1));
                   }
                }else if(blockState.is(Blocks.KELP) || blockState.is(Blocks.KELP_PLANT) || blockState.is(Blocks.SEAGRASS) || blockState.is(Blocks.TALL_SEAGRASS)){
                   BlockEntity blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockPos2) : null;
@@ -157,20 +157,20 @@ public class FractalSponge extends ArcanaBlock {
                   world.setBlock(blockPos2, Blocks.AIR.defaultBlockState(), 3);
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Tuple<>(blockPos2, depth + 1));
+                     queue.add(Pair.of(blockPos2, depth + 1));
                   }
                }
             }else if(fluidState.is(FluidTags.LAVA)){
                if(blockState.getBlock() instanceof BucketPickup && !((BucketPickup) blockState.getBlock()).pickupBlock(null, world, blockPos2, blockState).isEmpty()){
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Tuple<>(blockPos2, depth + 1));
+                     queue.add(Pair.of(blockPos2, depth + 1));
                   }
                }else if(blockState.getBlock() instanceof LiquidBlock){
                   world.setBlock(blockPos2, Blocks.AIR.defaultBlockState(), 3);
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Tuple<>(blockPos2, depth + 1));
+                     queue.add(Pair.of(blockPos2, depth + 1));
                   }
                }
             }

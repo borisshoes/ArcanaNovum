@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -22,7 +23,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -88,7 +88,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
       if(cooldown > 0) cooldown--;
       
       if(serverWorld.getServer().getTickCount() % 20 == 0){ // Block is active
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
       
       if(cooldown <= 0 && serverWorld.getServer().getTickCount() % 2 == 0){

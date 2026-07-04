@@ -77,6 +77,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
 import net.minecraft.world.damagesource.DamageType;
@@ -93,7 +94,6 @@ import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -116,6 +116,8 @@ public class ArcanaRegistry {
    public static final Registry<Item> ITEMS = new MappedRegistry<>(ResourceKey.createRegistryKey(arcanaId("item")), Lifecycle.stable());
    public static final Registry<AreaEffectTracker> AREA_EFFECTS = new MappedRegistry<>(ResourceKey.createRegistryKey(arcanaId("area_effect")), Lifecycle.stable());
    public static final ArrayList<CompendiumEntry> RECOMMENDED_LIST = new ArrayList<>();
+   public static final HashMap<Item, ResourceKey<Item>> ARCANA_ITEM_KEY_MAP = new HashMap<>();
+   public static final HashMap<Block, ResourceKey<Block>> ARCANA_BLOCK_KEY_MAP = new HashMap<>();
    
    // Custom Tags
    public static final TagKey<Item> ALL_ARCANA_ITEMS = TagKey.create(Registries.ITEM, arcanaId("arcana_items"));
@@ -190,7 +192,7 @@ public class ArcanaRegistry {
          EntityType.Builder.of(NulConstructEntity::new, MobCategory.MISC).sized(0.9f, 3.5f).clientTrackingRange(10).fireImmune()
    );
    public static final EntityType<NulGuardianEntity> NUL_GUARDIAN_ENTITY = registerEntity("nul_guardian",
-         EntityType.Builder.<NulGuardianEntity>of(NulGuardianEntity::new, MobCategory.MISC).sized(0.7F, 2.4F).clientTrackingRange(10).fireImmune().immuneTo(Blocks.WITHER_ROSE).eyeHeight(2.1F).ridingOffset(-0.875F)
+         EntityType.Builder.<NulGuardianEntity>of(NulGuardianEntity::new, MobCategory.MISC).sized(0.7F, 2.4F).clientTrackingRange(10).fireImmune().immuneTo(BlockTags.WITHER_IMMUNE_TO).eyeHeight(2.1F).ridingOffset(-0.875F)
    );
    public static final EntityType<SpearOfTenbrousEntity> SPEAR_OF_TENBROUS_ENTITY = registerEntity("spear_of_tenbrous",
          EntityType.Builder.<SpearOfTenbrousEntity>of(SpearOfTenbrousEntity::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.13F).clientTrackingRange(4).updateInterval(20)
@@ -210,33 +212,33 @@ public class ArcanaRegistry {
    public static final GraphicalItem.GraphicElement TRANSMUTATION_BOOK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("transmutation_book"), Items.KNOWLEDGE_BOOK, false));
    public static final GraphicalItem.GraphicElement CASINO_CHIP = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("casino_chip"), Items.DIAMOND, true));
    public static final GraphicalItem.GraphicElement STAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("star"), Items.NETHER_STAR, false));
-   public static final GraphicalItem.GraphicElement GAS = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("gas"), Items.GRAY_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement PLASMA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("plasma"), Items.ORANGE_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement GAS = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("gas"), Items.STAINED_GLASS_PANE.gray(), false));
+   public static final GraphicalItem.GraphicElement PLASMA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("plasma"), Items.STAINED_GLASS_PANE.orange(), false));
    public static final GraphicalItem.GraphicElement BLACK_HOLE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("black_hole"), Items.ENDER_PEARL, false));
    public static final GraphicalItem.GraphicElement NOVA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("nova"), Items.BLAZE_POWDER, false));
    public static final GraphicalItem.GraphicElement SUPERNOVA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("supernova"), Items.MAGMA_CREAM, false));
    public static final GraphicalItem.GraphicElement QUASAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("quasar"), Items.ENDER_EYE, false));
    public static final GraphicalItem.GraphicElement PULSAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("pulsar"), Items.END_CRYSTAL, false));
-   public static final GraphicalItem.GraphicElement NEBULA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("nebula"), Items.PURPLE_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement NEBULA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("nebula"), Items.STAINED_GLASS_PANE.purple(), false));
    public static final GraphicalItem.GraphicElement PLANET = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("planet"), Items.HEAVY_CORE, false));
    public static final GraphicalItem.GraphicElement CHANNEL_FREQUENCY = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_frequency"), Items.GLASS_PANE, true));
    public static final GraphicalItem.GraphicElement CHANNEL_BLANK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_blank"), Items.GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_WHITE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_white"), Items.WHITE_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_ORANGE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_orange"), Items.ORANGE_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_MAGENTA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_magenta"), Items.MAGENTA_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_LIGHT_BLUE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_light_blue"), Items.LIGHT_BLUE_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_YELLOW = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_yellow"), Items.YELLOW_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_LIME = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_lime"), Items.LIME_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_PINK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_pink"), Items.PINK_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_GRAY = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_gray"), Items.GRAY_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_LIGHT_GRAY = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_light_gray"), Items.LIGHT_GRAY_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_CYAN = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_cyan"), Items.CYAN_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_PURPLE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_purple"), Items.PURPLE_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_BLUE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_blue"), Items.BLUE_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_BROWN = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_brown"), Items.BROWN_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_GREEN = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_green"), Items.GREEN_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_RED = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_red"), Items.RED_STAINED_GLASS_PANE, false));
-   public static final GraphicalItem.GraphicElement CHANNEL_BLACK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_black"), Items.BLACK_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement CHANNEL_WHITE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_white"), Items.STAINED_GLASS_PANE.white(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_ORANGE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_orange"), Items.STAINED_GLASS_PANE.orange(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_MAGENTA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_magenta"), Items.STAINED_GLASS_PANE.magenta(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_LIGHT_BLUE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_light_blue"), Items.STAINED_GLASS_PANE.lightBlue(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_YELLOW = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_yellow"), Items.STAINED_GLASS_PANE.yellow(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_LIME = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_lime"), Items.STAINED_GLASS_PANE.lime(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_PINK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_pink"), Items.STAINED_GLASS_PANE.pink(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_GRAY = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_gray"), Items.STAINED_GLASS_PANE.gray(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_LIGHT_GRAY = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_light_gray"), Items.STAINED_GLASS_PANE.lightGray(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_CYAN = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_cyan"), Items.STAINED_GLASS_PANE.cyan(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_PURPLE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_purple"), Items.STAINED_GLASS_PANE.purple(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_BLUE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_blue"), Items.STAINED_GLASS_PANE.blue(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_BROWN = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_brown"), Items.STAINED_GLASS_PANE.brown(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_GREEN = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_green"), Items.STAINED_GLASS_PANE.green(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_RED = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_red"), Items.STAINED_GLASS_PANE.red(), false));
+   public static final GraphicalItem.GraphicElement CHANNEL_BLACK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(arcanaId("channel_black"), Items.STAINED_GLASS_PANE.black(), false));
    
    
    // Normal Items
@@ -704,12 +706,14 @@ public class ArcanaRegistry {
    
    private static Item registerItem(String id, Item item){
       Identifier identifier = arcanaId(id);
+      ARCANA_ITEM_KEY_MAP.put(item, ResourceKey.create(Registries.ITEM, identifier));
       Registry.register(ITEMS, identifier, Registry.register(BuiltInRegistries.ITEM, identifier, item));
       return item;
    }
    
    private static Block registerBlock(String id, Block block){
       Identifier identifier = arcanaId(id);
+      ARCANA_BLOCK_KEY_MAP.put(block, ResourceKey.create(Registries.BLOCK, identifier));
       Registry.register(BLOCKS, identifier, Registry.register(BuiltInRegistries.BLOCK, identifier, block));
       return block;
    }

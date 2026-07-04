@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
@@ -29,7 +30,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -77,7 +77,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       item = new StarlightForgeItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_ARCANE_TOME, ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
-      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("SnivyXXY")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("SnivyXXY"))};
+      attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("SnivyXXY")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("SnivyXXY"))};
    }
    
    @Override

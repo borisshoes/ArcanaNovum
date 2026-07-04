@@ -16,11 +16,14 @@ import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,6 +31,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -106,8 +110,9 @@ public class SpawnerHarness extends ArcanaItem {
                CompoundTag entity = spawnData.getCompoundOrEmpty("entity");
                if(!entity.isEmpty()){
                   String entityTypeId = entity.getStringOr("id", "");
-                  Optional<EntityType<?>> entityType = EntityType.byString(entityTypeId);
-                  type = entityType.isPresent() ? entityType.get().getDescription().getString() : "Unknown";
+                  Identifier parsedId = Identifier.parse(entityTypeId);
+                  Optional<Holder.Reference<EntityType<?>>> entityType = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+                  type = entityType.map(entityTypeReference -> entityTypeReference.value().getDescription().getString()).orElse("Unknown");
                }
             }
          }
@@ -209,10 +214,16 @@ public class SpawnerHarness extends ArcanaItem {
                Entity renderedEntity = spawner.getSpawner().getOrCreateDisplayEntity(world, context.getClickedPos());
                if(renderedEntity != null){
                   String entityTypeId = EntityType.getKey(renderedEntity.getType()).toString();
-                  String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
-                  player.sendSystemMessage(Component.literal("The harness captures the " + entityTypeName + " spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
-                  if(entityTypeId.equals(EntityType.getKey(EntityType.SILVERFISH).toString()))
-                     ArcanaAchievements.grant((ServerPlayer) player, ArcanaAchievements.FINALLY_USEFUL);
+                  Identifier parsedId = Identifier.parse(entityTypeId);
+                  Optional<Holder.Reference<EntityType<?>>> type = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+                  if(type.isPresent()){
+                     String entityTypeName = type.get().value().getDescription().getString();
+                     player.sendSystemMessage(Component.literal("The harness captures the " + entityTypeName + " spawner.").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                     if(entityTypeId.equals(EntityType.getKey(EntityTypes.SILVERFISH).toString()))
+                        ArcanaAchievements.grant((ServerPlayer) player, ArcanaAchievements.FINALLY_USEFUL);
+                  }
+                  
+                  
                }
                
                putProperty(stack, SPAWNER_TAG, spawnerNbt);

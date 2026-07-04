@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ManualAttachment;
@@ -26,7 +27,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.ChunkPos;
@@ -132,7 +132,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
       }
       
       if(serverWorld.getServer().getTickCount() % REFRESH_DUR == 0){
-         if(this.editor != null && (this.editor.distanceToSqr(this.getBlockPos().getCenter()) > (maxRange * maxRange * 2) || this.editor.isDeadOrDying() || !this.editor.level().dimension().identifier().equals(serverWorld.dimension().identifier()))){
+         if(this.editor != null && (this.editor.distanceToSqr(Vec3.atCenterOf(this.getBlockPos())) > (maxRange * maxRange * 2) || this.editor.isDeadOrDying() || !this.editor.level().dimension().identifier().equals(serverWorld.dimension().identifier()))){
             setEditor(null);
          }
          if(editor != null){
@@ -148,12 +148,12 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
             }
             
             if(this.selectedPos != null){
-               createDisplayForBlockSet(serverWorld, Set.of(this.selectedPos), this.blocks.contains(this.selectedPos) ? Blocks.RED_CONCRETE : (this.selectedPos.equals(getBlockPos()) ? Blocks.MAGENTA_CONCRETE : Blocks.WHITE_CONCRETE), 0.07f);
+               createDisplayForBlockSet(serverWorld, Set.of(this.selectedPos), this.blocks.contains(this.selectedPos) ? Blocks.CONCRETE.red() : (this.selectedPos.equals(getBlockPos()) ? Blocks.CONCRETE.magenta() : Blocks.CONCRETE.white()), 0.07f);
             }
             int dispCount = blocks.size();
             if(this.highlightedPos != null){
                if(selectedPos == null){
-                  createDisplayForBlockSet(serverWorld, Set.of(this.highlightedPos), this.blocks.contains(this.highlightedPos) ? Blocks.RED_CONCRETE : (this.highlightedPos.equals(getBlockPos()) ? Blocks.MAGENTA_CONCRETE : Blocks.WHITE_CONCRETE), 0.07f);
+                  createDisplayForBlockSet(serverWorld, Set.of(this.highlightedPos), this.blocks.contains(this.highlightedPos) ? Blocks.CONCRETE.red() : (this.highlightedPos.equals(getBlockPos()) ? Blocks.CONCRETE.magenta() : Blocks.CONCRETE.white()), 0.07f);
                }else{
                   Set<BlockPos> otherSet = calculateEncompassedBlocks(this.highlightedPos, this.selectedPos);
                   if(this.blocks.contains(this.selectedPos)){
@@ -162,11 +162,11 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
                      dispCount += otherSet.size();
                   }
                   if(dispCount <= maxBlocks){
-                     createDisplayForBlockSet(serverWorld, otherSet, this.blocks.contains(this.selectedPos) ? Blocks.RED_CONCRETE : Blocks.GOLD_BLOCK, 0.06f);
+                     createDisplayForBlockSet(serverWorld, otherSet, this.blocks.contains(this.selectedPos) ? Blocks.CONCRETE.red() : Blocks.GOLD_BLOCK, 0.06f);
                   }
                }
             }
-            createDisplayForBlockSet(serverWorld, this.blocks, Blocks.YELLOW_CONCRETE, 0.05f);
+            createDisplayForBlockSet(serverWorld, this.blocks, Blocks.CONCRETE.yellow(), 0.05f);
             editor.sendSystemMessage(Component.literal("Blocks: " + dispCount + "/" + maxBlocks).withStyle(dispCount > maxBlocks ? ChatFormatting.RED : ChatFormatting.GOLD), true);
          }
       }
@@ -181,7 +181,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
                currentZone = new ItineranteurZone(this.blocks, serverWorld.dimension(), this.speedBoost, this.keepFed, this);
                registerZone(currentZone);
             }
-            ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+            ArcanaNovum.addActiveBlock(Pair.of(this, this));
          }else if(currentZone != null){ // No blocks, unregister zone
             unregisterZone(currentZone);
             currentZone = null;
@@ -505,8 +505,8 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          return this;
       }
       
-      private Tuple<Vec3, Vec3> toTuple(){
-         return new Tuple<>(new Vec3(x1, y1, z1), new Vec3(x2, y2, z2));
+      private Pair<Vec3, Vec3> toPair(){
+         return Pair.of(new Vec3(x1, y1, z1), new Vec3(x2, y2, z2));
       }
       
       private Vec3 middlePos(){

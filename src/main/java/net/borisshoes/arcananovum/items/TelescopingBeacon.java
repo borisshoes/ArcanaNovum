@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -34,7 +35,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -157,8 +157,8 @@ public class TelescopingBeacon extends ArcanaItem {
       return buildItemLore(newStack, server);
    }
    
-   private static List<Tuple<BlockPos, BlockState>> getBaseBlocks(Level world, BlockPos pos){
-      ArrayList<Tuple<BlockPos, BlockState>> blocks = new ArrayList<>();
+   private static List<Pair<BlockPos, BlockState>> getBaseBlocks(Level world, BlockPos pos){
+      ArrayList<Pair<BlockPos, BlockState>> blocks = new ArrayList<>();
       int beaconX = pos.getX();
       int beaconY = pos.getY();
       int beaconZ = pos.getZ();
@@ -175,7 +175,7 @@ public class TelescopingBeacon extends ArcanaItem {
                BlockPos blockPos = new BlockPos(curX, curY, curZ);
                BlockState blockState = world.getBlockState(blockPos);
                if(blockState.is(BlockTags.BEACON_BASE_BLOCKS)){
-                  blocks.add(index, new Tuple<>(blockPos, blockState));
+                  blocks.add(index, Pair.of(blockPos, blockState));
                   index++;
                }
             }
@@ -391,7 +391,7 @@ public class TelescopingBeacon extends ArcanaItem {
             }
             
             // Scan for support blocks
-            List<Tuple<BlockPos, BlockState>> baseBlocks = getBaseBlocks(world, placePos);
+            List<Pair<BlockPos, BlockState>> baseBlocks = getBaseBlocks(world, placePos);
             int tier = blocksToTier(baseBlocks.size());
             boolean careful = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.CAREFUL_RECONSTRUCTION) >= 1;
             // Remove support blocks and add them to NBT
@@ -400,7 +400,7 @@ public class TelescopingBeacon extends ArcanaItem {
                HashMap<Block, Integer> blockTypes = new HashMap<>();
                ArrayList<Block> orderedBlocks = new ArrayList<>();
                for(int i = 0; i < tiers[tier - 1]; i++){
-                  BlockState blockState = baseBlocks.get(i).getB();
+                  BlockState blockState = baseBlocks.get(i).getSecond();
                   Block blockType = blockState.getBlock();
                   if(blockTypes.containsKey(blockType)){
                      blockTypes.put(blockType, blockTypes.get(blockType) + 1);
@@ -408,7 +408,7 @@ public class TelescopingBeacon extends ArcanaItem {
                      blockTypes.put(blockType, 1);
                   }
                   orderedBlocks.add(blockType);
-                  world.setBlock(baseBlocks.get(i).getA(), Blocks.AIR.defaultBlockState(), 3);
+                  world.setBlock(baseBlocks.get(i).getFirst(), Blocks.AIR.defaultBlockState(), 3);
                }
                
                if(careful){

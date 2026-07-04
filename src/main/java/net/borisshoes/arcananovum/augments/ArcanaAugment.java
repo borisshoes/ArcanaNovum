@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.augments;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -10,7 +11,6 @@ import net.borisshoes.borislib.config.IConfigSetting;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +25,7 @@ public class ArcanaAugment implements Comparable<ArcanaAugment> {
    private final Supplier<ItemStack> displayItemSupplier;
    private final ArcanaItem arcanaItem;
    private final ArcanaRarity[] tiers;
-   private Tuple<IConfigSetting<?>, ConfigUnits>[] relatedConfigs;
+   private Pair<IConfigSetting<?>, ConfigUnits>[] relatedConfigs;
    
    protected ArcanaAugment(String id, Supplier<ItemStack> displayItemSupplier, ArcanaItem arcanaItem, ArcanaRarity... tiers){
       this.id = id;
@@ -39,7 +39,7 @@ public class ArcanaAugment implements Comparable<ArcanaAugment> {
    }
    
    @SafeVarargs
-   public final ArcanaAugment setRelatedConfigs(Tuple<IConfigSetting<?>, ConfigUnits>... configs){
+   public final ArcanaAugment setRelatedConfigs(Pair<IConfigSetting<?>, ConfigUnits>... configs){
       relatedConfigs = configs;
       return this;
    }
@@ -69,8 +69,8 @@ public class ArcanaAugment implements Comparable<ArcanaAugment> {
       if(relatedConfigs != null && relatedConfigs.length > 0){
          args = new Component[relatedConfigs.length];
          for(int i = 0; i < relatedConfigs.length; i++){
-            IConfigSetting<?> setting = relatedConfigs[i].getA();
-            ConfigUnits displayUnits = relatedConfigs[i].getB();
+            IConfigSetting<?> setting = relatedConfigs[i].getFirst();
+            ConfigUnits displayUnits = relatedConfigs[i].getSecond();
             ConfigUnits nativeUnits = ArcanaConfig.CONFIG_UNITS.getOrDefault(ArcanaRegistry.arcanaId(setting.getId()), ConfigUnits.NONE);
             ConfigUnits targetUnits;
             double conversionFactor;
@@ -115,14 +115,14 @@ public class ArcanaAugment implements Comparable<ArcanaAugment> {
       
       for(int i = 0; i < tiers.length; i++){
          ArcanaRarity tierRarity = tiers[i];
-         text.append(Component.literal("❖").withStyle(ArcanaRarity.getColor(tierRarity)));
+         text.append(Component.literal("❖").withColor(ArcanaRarity.getColor(tierRarity)));
       }
       text.append(Component.literal(")").withStyle(ChatFormatting.DARK_AQUA));
       
       return text;
    }
    
-   public Tuple<IConfigSetting<?>, ConfigUnits>[] getRelatedConfigs(){
+   public Pair<IConfigSetting<?>, ConfigUnits>[] getRelatedConfigs(){
       return relatedConfigs;
    }
    

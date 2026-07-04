@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.gui.arcanetome;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
@@ -39,13 +40,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
@@ -690,10 +687,10 @@ public class ArcaneTomeGui extends PagedMultiGui {
             .append(Component.literal("to read about this Arcana Item").withStyle(ChatFormatting.LIGHT_PURPLE))));
       if(selectedArcanaItem.getAttributions().length > 0){
          book.addLoreLine(Component.literal(""));
-         for(Tuple<MutableComponent, MutableComponent> attribution : selectedArcanaItem.getAttributions()){
+         for(Pair<MutableComponent, MutableComponent> attribution : selectedArcanaItem.getAttributions()){
             book.addLoreLine(TextUtils.removeItalics(Component.literal("")
-                  .append(attribution.getA().withStyle(ChatFormatting.DARK_PURPLE))
-                  .append(attribution.getB().withStyle(ChatFormatting.LIGHT_PURPLE))));
+                  .append(attribution.getFirst().withStyle(ChatFormatting.DARK_PURPLE))
+                  .append(attribution.getSecond().withStyle(ChatFormatting.LIGHT_PURPLE))));
          }
       }
       book.setCallback((type) -> {
@@ -764,7 +761,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
          MutableComponent titleText = augmentLvl == 0 ? Component.literal("Unlock Level 1").withStyle(ChatFormatting.LIGHT_PURPLE) : Component.literal("Current Level: ").withStyle(ChatFormatting.DARK_PURPLE).append(Component.literal("" + augmentLvl).withStyle(ChatFormatting.LIGHT_PURPLE));
          ArcanaRarity[] tiers = augment.getTiers();
-         Item concrete = augmentLvl == tiers.length ? Items.WHITE_CONCRETE : ArcanaRarity.getColoredConcrete(tiers[augmentLvl]);
+         Item concrete = augmentLvl == tiers.length ? Items.CONCRETE.white() : ArcanaRarity.getColoredConcrete(tiers[augmentLvl]);
          
          GuiElementBuilder augmentItem2 = new GuiElementBuilder(concrete);
          
@@ -901,10 +898,10 @@ public class ArcaneTomeGui extends PagedMultiGui {
                .append(Component.literal("to read about this Arcana Item.").withStyle(ChatFormatting.LIGHT_PURPLE))));
          if(arcanaItem.getAttributions().length > 0){
             book.addLoreLine(Component.literal(""));
-            for(Tuple<MutableComponent, MutableComponent> attribution : arcanaItem.getAttributions()){
+            for(Pair<MutableComponent, MutableComponent> attribution : arcanaItem.getAttributions()){
                book.addLoreLine(TextUtils.removeItalics(Component.literal("")
-                     .append(attribution.getA().withStyle(ChatFormatting.DARK_PURPLE))
-                     .append(attribution.getB().withStyle(ChatFormatting.LIGHT_PURPLE))));
+                     .append(attribution.getFirst().withStyle(ChatFormatting.DARK_PURPLE))
+                     .append(attribution.getSecond().withStyle(ChatFormatting.LIGHT_PURPLE))));
             }
          }
          book.setCallback((type) -> {
@@ -955,10 +952,10 @@ public class ArcaneTomeGui extends PagedMultiGui {
       }
       
       GuiElementBuilder recipeItem = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
-      HashMap<String, Tuple<Integer, ItemStack>> ingredList = selectedRecipe.getIngredientList();
+      HashMap<String, Pair<Integer, ItemStack>> ingredList = selectedRecipe.getIngredientList();
       recipeItem.setName(Component.literal("Total Ingredients").withStyle(ChatFormatting.DARK_PURPLE));
       recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("-----------------------").withStyle(ChatFormatting.LIGHT_PURPLE)));
-      for(Map.Entry<String, Tuple<Integer, ItemStack>> ingred : ingredList.entrySet()){
+      for(Map.Entry<String, Pair<Integer, ItemStack>> ingred : ingredList.entrySet()){
          recipeItem.addLoreLine(TextUtils.removeItalics(getIngredStr(ingred)));
       }
       recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
@@ -985,7 +982,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
       recipeItem.setCallback((type) -> {
          if(!forTome) return;
          StringBuilder copyString = new StringBuilder();
-         for(Map.Entry<String, Tuple<Integer, ItemStack>> ingred : ingredList.entrySet()){
+         for(Map.Entry<String, Pair<Integer, ItemStack>> ingred : ingredList.entrySet()){
             copyString.append(getIngredStr(ingred).getString()).append("\n");
          }
          player.sendSystemMessage(Component.translatable("text.arcananovum.materials_copy_message").withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(Component.translatable("text.arcananovum.materials_copy_message"))).withClickEvent(new ClickEvent.CopyToClipboard(copyString.toString()))));
@@ -1033,13 +1030,13 @@ public class ArcaneTomeGui extends PagedMultiGui {
       int allTaskPages = (int) (Math.ceil(allTasks.size() / (double) pageSize()));
       int uncompletedPages = (int) (Math.ceil(uncompletedOnly.size() / (double) pageSize()));
       
-      List<Tuple<ResearchTask, Integer>> taskPair;
+      List<Pair<ResearchTask, Integer>> taskPair;
       List<ResearchTask> tasks = hideCompletedResearch ? uncompletedOnly : allTasks;
       int numPages = Math.max(1, (int) (Math.ceil(tasks.size() / (double) pageSize())));
       if(allTaskPages == uncompletedPages){
          taskPair = AlgoUtils.randomlySpace(allTasks, allTaskPages * pageSize(), WorldOptions.parseSeed(selectedArcanaItem.getId()).orElse(WorldOptions.randomSeed()));
          if(hideCompletedResearch){
-            taskPair = taskPair.stream().filter(pair -> !pair.getA().isAcquired(player)).toList();
+            taskPair = taskPair.stream().filter(pair -> !pair.getFirst().isAcquired(player)).toList();
          }
       }else{
          taskPair = AlgoUtils.randomlySpace(tasks, numPages * pageSize(), WorldOptions.parseSeed(selectedArcanaItem.getId()).orElse(WorldOptions.randomSeed()));
@@ -1048,8 +1045,8 @@ public class ArcaneTomeGui extends PagedMultiGui {
       for(int i = 0; i < numPages * pageSize(); i++){
          paddedTasks.add(i, null);
       }
-      for(Tuple<ResearchTask, Integer> pair : taskPair){
-         paddedTasks.set(pair.getB(), pair.getA());
+      for(Pair<ResearchTask, Integer> pair : taskPair){
+         paddedTasks.set(pair.getSecond(), pair.getFirst());
       }
       GuiMode<ResearchTask> config = getMode(3);
       config.setItems(paddedTasks);
@@ -1087,7 +1084,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          notes.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("Costs ").withStyle(ChatFormatting.DARK_PURPLE))
                .append(Component.literal(paperCost + " ").withStyle(ChatFormatting.YELLOW))
-               .append(Component.translatable(paperType.getDescriptionId()).withStyle(ArcanaRarity.getColor(rarity))))));
+               .append(Component.translatable(paperType.getDescriptionId()).withColor(ArcanaRarity.getColor(rarity))))));
          notes.setCallback((type) -> {
             if(MinecraftUtils.removeItems(player, paperType, paperCost)){
                ItemStack newNotes = new ItemStack(ArcanaRegistry.ARCANE_NOTES);
@@ -1102,7 +1099,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 2);
             }else{
                player.sendSystemMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                     .append(Component.translatable(paperType.getDescriptionId()).withStyle(ChatFormatting.ITALIC, ArcanaRarity.getColor(rarity))), false);
+                     .append(Component.translatable(paperType.getDescriptionId()).withStyle(ChatFormatting.ITALIC).withColor(ArcanaRarity.getColor(rarity))), false);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             }
          });
@@ -1128,7 +1125,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
          notes.addLoreLine(TextUtils.removeItalics((Component.literal("")
                .append(Component.literal("(Costs ").withStyle(ChatFormatting.DARK_PURPLE))
                .append(Component.literal(paperCost + " ").withStyle(ChatFormatting.YELLOW))
-               .append(Component.translatable(ArcanaRarity.getArcanePaper(selectedArcanaItem.getRarity()).getDescriptionId()).withStyle(ArcanaRarity.getColor(selectedArcanaItem.getRarity())))
+               .append(Component.translatable(ArcanaRarity.getArcanePaper(selectedArcanaItem.getRarity()).getDescriptionId()).withColor(ArcanaRarity.getColor(selectedArcanaItem.getRarity())))
                .append(Component.literal(")").withStyle(ChatFormatting.DARK_PURPLE)))));
          notes.addLoreLine(Component.literal(""));
          notes.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -1161,7 +1158,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1, 2);
             }else{
                player.sendSystemMessage(Component.literal("You do not have enough ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                     .append(Component.translatable(paperType.getDescriptionId()).withStyle(ChatFormatting.ITALIC, ArcanaRarity.getColor(rarity))), false);
+                     .append(Component.translatable(paperType.getDescriptionId()).withStyle(ChatFormatting.ITALIC).withColor(ArcanaRarity.getColor(rarity))), false);
                SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
             }
          }
@@ -1264,10 +1261,10 @@ public class ArcaneTomeGui extends PagedMultiGui {
       return selectedRecipes.get(index);
    }
    
-   public static MutableComponent getIngredStr(Map.Entry<String, Tuple<Integer, ItemStack>> ingred){
-      ItemStack ingredStack = ingred.getValue().getB();
+   public static MutableComponent getIngredStr(Map.Entry<String, Pair<Integer, ItemStack>> ingred){
+      ItemStack ingredStack = ingred.getValue().getSecond();
       int maxCount = ingredStack.getMaxStackSize();
-      int num = ingred.getValue().getA();
+      int num = ingred.getValue().getFirst();
       int stacks = num / maxCount;
       int rem = num % maxCount;
       MutableComponent text = Component.literal("")
@@ -1304,39 +1301,39 @@ public class ArcaneTomeGui extends PagedMultiGui {
       
       public static final List<TomeFilter> FILTERS = new ArrayList<>();
       
-      public static final TomeFilter NONE = new TomeFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor(),
+      public static final TomeFilter NONE = new TomeFilter("gui.arcananovum.none", TextColor.WHITE.getValue(),
             (entry) -> true);
       public static final TomeFilter RESEARCHED = new TomeFilter("gui.arcananovum.researched", ArcanaColors.ARCANE_PAGE_COLOR,
             (entry) -> entry instanceof ArcanaItemCompendiumEntry arcanaEntry && ArcanaNovum.data(getPlayer()).hasResearched(arcanaEntry.getArcanaItem()));
       public static final TomeFilter NOT_RESEARCHED = new TomeFilter("gui.arcananovum.not_researched", ArcanaColors.STARLIGHT_FORGE_COLOR,
             (entry) -> entry instanceof ArcanaItemCompendiumEntry arcanaEntry && !ArcanaNovum.data(getPlayer()).hasResearched(arcanaEntry.getArcanaItem()));
-      public static final TomeFilter MUNDANE = new TomeFilter("gui.arcananovum.mundane", ChatFormatting.GRAY.getColor(),
+      public static final TomeFilter MUNDANE = new TomeFilter("gui.arcananovum.mundane", TextColor.GRAY.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.MUNDANE));
-      public static final TomeFilter EMPOWERED = new TomeFilter("gui.arcananovum.empowered", ChatFormatting.GREEN.getColor(),
+      public static final TomeFilter EMPOWERED = new TomeFilter("gui.arcananovum.empowered", TextColor.GREEN.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.EMPOWERED));
-      public static final TomeFilter EXOTIC = new TomeFilter("gui.arcananovum.exotic", ChatFormatting.AQUA.getColor(),
+      public static final TomeFilter EXOTIC = new TomeFilter("gui.arcananovum.exotic", TextColor.AQUA.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.EXOTIC));
-      public static final TomeFilter SOVEREIGN = new TomeFilter("gui.arcananovum.sovereign", ChatFormatting.GOLD.getColor(),
+      public static final TomeFilter SOVEREIGN = new TomeFilter("gui.arcananovum.sovereign", TextColor.GOLD.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.SOVEREIGN));
-      public static final TomeFilter DIVINE = new TomeFilter("gui.arcananovum.divine", ChatFormatting.LIGHT_PURPLE.getColor(),
+      public static final TomeFilter DIVINE = new TomeFilter("gui.arcananovum.divine", TextColor.LIGHT_PURPLE.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.DIVINE));
-      public static final TomeFilter ITEMS = new TomeFilter("gui.arcananovum.items", ChatFormatting.DARK_AQUA.getColor(),
+      public static final TomeFilter ITEMS = new TomeFilter("gui.arcananovum.items", TextColor.DARK_AQUA.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.ITEMS));
-      public static final TomeFilter BLOCKS = new TomeFilter("gui.arcananovum.blocks", ChatFormatting.DARK_PURPLE.getColor(),
+      public static final TomeFilter BLOCKS = new TomeFilter("gui.arcananovum.blocks", TextColor.DARK_PURPLE.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.BLOCKS));
-      public static final TomeFilter FORGE = new TomeFilter("gui.arcananovum.forge", ChatFormatting.DARK_GREEN.getColor(),
+      public static final TomeFilter FORGE = new TomeFilter("gui.arcananovum.forge", TextColor.DARK_GREEN.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.FORGE));
-      public static final TomeFilter ARROWS = new TomeFilter("gui.arcananovum.arrows", ChatFormatting.RED.getColor(),
+      public static final TomeFilter ARROWS = new TomeFilter("gui.arcananovum.arrows", TextColor.RED.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.ARROWS));
-      public static final TomeFilter ALTARS = new TomeFilter("gui.arcananovum.altars", ChatFormatting.BLUE.getColor(),
+      public static final TomeFilter ALTARS = new TomeFilter("gui.arcananovum.altars", TextColor.BLUE.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.ALTARS));
-      public static final TomeFilter EQUIPMENT = new TomeFilter("gui.arcananovum.equipment", ChatFormatting.DARK_RED.getColor(),
+      public static final TomeFilter EQUIPMENT = new TomeFilter("gui.arcananovum.equipment", TextColor.DARK_RED.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.EQUIPMENT));
-      public static final TomeFilter CHARMS = new TomeFilter("gui.arcananovum.charms", ChatFormatting.YELLOW.getColor(),
+      public static final TomeFilter CHARMS = new TomeFilter("gui.arcananovum.charms", TextColor.YELLOW.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.CHARMS));
-      public static final TomeFilter CATALYSTS = new TomeFilter("gui.arcananovum.catalysts", ChatFormatting.DARK_BLUE.getColor(),
+      public static final TomeFilter CATALYSTS = new TomeFilter("gui.arcananovum.catalysts", TextColor.DARK_BLUE.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.CATALYSTS));
-      public static final TomeFilter INGREDIENT = new TomeFilter("gui.arcananovum.ingredient", ChatFormatting.DARK_GRAY.getColor(),
+      public static final TomeFilter INGREDIENT = new TomeFilter("gui.arcananovum.ingredient", TextColor.DARK_GRAY.getValue(),
             (entry) -> hasCategory(entry, TomeFilter.INGREDIENT));
       
       private TomeFilter(String key, int color, java.util.function.Predicate<CompendiumEntry> filter){
@@ -1376,16 +1373,16 @@ public class ArcaneTomeGui extends PagedMultiGui {
    public static class TomeSort extends GuiSort<CompendiumEntry> {
       public static final List<TomeSort> SORTS = new ArrayList<>();
       
-      public static final TomeSort RECOMMENDED = new TomeSort("gui.arcananovum.recommended", ChatFormatting.YELLOW.getColor(),
+      public static final TomeSort RECOMMENDED = new TomeSort("gui.arcananovum.recommended", TextColor.YELLOW.getValue(),
             Comparator.<CompendiumEntry>comparingInt(entry -> {
                int index = RECOMMENDED_LIST.indexOf(entry);
                return index == -1 ? Integer.MAX_VALUE : index;
             }));
-      public static final TomeSort RARITY_ASC = new TomeSort("gui.arcananovum.rarity_ascending", ChatFormatting.LIGHT_PURPLE.getColor(),
+      public static final TomeSort RARITY_ASC = new TomeSort("gui.arcananovum.rarity_ascending", TextColor.LIGHT_PURPLE.getValue(),
             Comparator.<CompendiumEntry>comparingInt(CompendiumEntry::getRarityValue).thenComparing((entry) -> entry.getName().getString()));
-      public static final TomeSort RARITY_DESC = new TomeSort("gui.arcananovum.rarity_descending", ChatFormatting.DARK_PURPLE.getColor(),
+      public static final TomeSort RARITY_DESC = new TomeSort("gui.arcananovum.rarity_descending", TextColor.DARK_PURPLE.getValue(),
             Comparator.<CompendiumEntry>comparingInt((entry) -> -entry.getRarityValue()).thenComparing((entry) -> entry.getName().getString()));
-      public static final TomeSort ALPHABETICAL = new TomeSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor(),
+      public static final TomeSort ALPHABETICAL = new TomeSort("gui.borislib.alphabetical", TextColor.GREEN.getValue(),
             Comparator.comparing((entry) -> entry.getName().getString()));
       
       private TomeSort(String key, int color, Comparator<CompendiumEntry> comparator){
@@ -1411,11 +1408,11 @@ public class ArcaneTomeGui extends PagedMultiGui {
       public static final List<AchievementFilter> FILTERS = new ArrayList<>();
       private static ServerPlayer player;
       
-      public static final AchievementFilter NONE = new AchievementFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor(),
+      public static final AchievementFilter NONE = new AchievementFilter("gui.arcananovum.none", TextColor.WHITE.getValue(),
             (ach) -> true);
-      public static final AchievementFilter ACQUIRED = new AchievementFilter("gui.arcananovum.acquired", ChatFormatting.AQUA.getColor(),
+      public static final AchievementFilter ACQUIRED = new AchievementFilter("gui.arcananovum.acquired", TextColor.AQUA.getValue(),
             (ach) -> ArcanaNovum.data(getPlayer()).hasAcheivement(ach));
-      public static final AchievementFilter NOT_ACQUIRED = new AchievementFilter("gui.arcananovum.not_acquired", ChatFormatting.RED.getColor(),
+      public static final AchievementFilter NOT_ACQUIRED = new AchievementFilter("gui.arcananovum.not_acquired", TextColor.RED.getValue(),
             (ach) -> !ArcanaNovum.data(getPlayer()).hasAcheivement(ach));
       
       private AchievementFilter(String key, int color, java.util.function.Predicate<ArcanaAchievement> filter){
@@ -1446,15 +1443,15 @@ public class ArcaneTomeGui extends PagedMultiGui {
    public static class AchievementSort extends GuiSort<ArcanaAchievement> {
       public static final List<AchievementSort> SORTS = new ArrayList<>();
       
-      public static final AchievementSort RECOMMENDED = new AchievementSort("gui.arcananovum.item_recommended", ChatFormatting.YELLOW.getColor(),
+      public static final AchievementSort RECOMMENDED = new AchievementSort("gui.arcananovum.item_recommended", TextColor.YELLOW.getValue(),
             Comparator.comparingInt(ach ->
                   (RECOMMENDED_LIST.stream().map(entry -> entry instanceof ArcanaItemCompendiumEntry arcanaEntry ? arcanaEntry.getArcanaItem() : null).toList())
                         .indexOf(ach.getArcanaItem())));
-      public static final AchievementSort XP_ASC = new AchievementSort("gui.arcananovum.xp_ascending", ChatFormatting.LIGHT_PURPLE.getColor(),
+      public static final AchievementSort XP_ASC = new AchievementSort("gui.arcananovum.xp_ascending", TextColor.LIGHT_PURPLE.getValue(),
             Comparator.<ArcanaAchievement>comparingInt(ach -> ach.pointsReward).thenComparingInt(ach -> ach.xpReward));
-      public static final AchievementSort XP_DESC = new AchievementSort("gui.arcananovum.xp_descending", ChatFormatting.DARK_PURPLE.getColor(),
+      public static final AchievementSort XP_DESC = new AchievementSort("gui.arcananovum.xp_descending", TextColor.DARK_PURPLE.getValue(),
             Comparator.<ArcanaAchievement>comparingInt(ach -> -ach.pointsReward).thenComparingInt(ach -> -ach.xpReward));
-      public static final AchievementSort ALPHABETICAL = new AchievementSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor(),
+      public static final AchievementSort ALPHABETICAL = new AchievementSort("gui.borislib.alphabetical", TextColor.GREEN.getValue(),
             Comparator.comparing(ach -> ach.getTranslatedName().getString()));
       
       private AchievementSort(String key, int color, Comparator<ArcanaAchievement> comparator){
@@ -1479,15 +1476,15 @@ public class ArcaneTomeGui extends PagedMultiGui {
    public static class LeaderboardFilter extends GuiFilter<ArcanaPlayerData> {
       public static final List<LeaderboardFilter> FILTERS = new ArrayList<>();
       
-      public static final LeaderboardFilter NONE = new LeaderboardFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor(),
+      public static final LeaderboardFilter NONE = new LeaderboardFilter("gui.arcananovum.none", TextColor.WHITE.getValue(),
             (data) -> true);
-      public static final LeaderboardFilter ARCANIST = new LeaderboardFilter("gui.arcananovum.arcanist", ChatFormatting.AQUA.getColor(),
+      public static final LeaderboardFilter ARCANIST = new LeaderboardFilter("gui.arcananovum.arcanist", TextColor.AQUA.getValue(),
             (data) -> data.getXP() > 1);
-      public static final LeaderboardFilter MAX_LVL = new LeaderboardFilter("gui.arcananovum.max_level_player", ChatFormatting.GREEN.getColor(),
+      public static final LeaderboardFilter MAX_LVL = new LeaderboardFilter("gui.arcananovum.max_level_player", TextColor.GREEN.getValue(),
             (data) -> LevelUtils.levelFromXp(data.getXP()) >= 100);
-      public static final LeaderboardFilter ABYSS = new LeaderboardFilter("gui.arcananovum.abyssal_arcanist", ChatFormatting.DARK_PURPLE.getColor(),
+      public static final LeaderboardFilter ABYSS = new LeaderboardFilter("gui.arcananovum.abyssal_arcanist", TextColor.DARK_PURPLE.getValue(),
             (data) -> data.hasAcheivement(ArcanaAchievements.ALL_ACHIEVEMENTS));
-      public static final LeaderboardFilter ACOLYTE = new LeaderboardFilter("gui.arcananovum.abyssal_acolyte", ChatFormatting.LIGHT_PURPLE.getColor(),
+      public static final LeaderboardFilter ACOLYTE = new LeaderboardFilter("gui.arcananovum.abyssal_acolyte", TextColor.LIGHT_PURPLE.getValue(),
             (data) -> data.hasAcheivement(ArcanaAchievements.MOST_ACHIEVEMENTS));
       
       private LeaderboardFilter(String key, int color, Predicate<ArcanaPlayerData> filter){
@@ -1510,15 +1507,15 @@ public class ArcaneTomeGui extends PagedMultiGui {
    public static class LeaderboardSort extends GuiSort<ArcanaPlayerData> {
       public static final List<LeaderboardSort> SORTS = new ArrayList<>();
       
-      public static final LeaderboardSort XP_DESC = new LeaderboardSort("gui.arcananovum.xp_descending_recommended", ChatFormatting.LIGHT_PURPLE.getColor(),
+      public static final LeaderboardSort XP_DESC = new LeaderboardSort("gui.arcananovum.xp_descending_recommended", TextColor.LIGHT_PURPLE.getValue(),
             Comparator.<ArcanaPlayerData>comparingInt(data -> -data.getXP()));
-      public static final LeaderboardSort XP_ASC = new LeaderboardSort("gui.arcananovum.xp_ascending", ChatFormatting.DARK_PURPLE.getColor(),
+      public static final LeaderboardSort XP_ASC = new LeaderboardSort("gui.arcananovum.xp_ascending", TextColor.DARK_PURPLE.getValue(),
             Comparator.<ArcanaPlayerData>comparingInt(ArcanaPlayerData::getXP));
-      public static final LeaderboardSort ACHIEVES_DESC = new LeaderboardSort("gui.arcananovum.achievements_descending", ChatFormatting.GREEN.getColor(),
+      public static final LeaderboardSort ACHIEVES_DESC = new LeaderboardSort("gui.arcananovum.achievements_descending", TextColor.GREEN.getValue(),
             Comparator.<ArcanaPlayerData>comparingInt(data -> -data.totalAcquiredAchievements()));
-      public static final LeaderboardSort SKILL_POINTS_DESC = new LeaderboardSort("gui.arcananovum.skill_points_descending", ChatFormatting.DARK_GREEN.getColor(),
+      public static final LeaderboardSort SKILL_POINTS_DESC = new LeaderboardSort("gui.arcananovum.skill_points_descending", TextColor.DARK_GREEN.getValue(),
             Comparator.<ArcanaPlayerData>comparingInt(data -> -data.getTotalSkillPoints()));
-      public static final LeaderboardSort ALPHABETICAL = new LeaderboardSort("gui.borislib.alphabetical", ChatFormatting.AQUA.getColor(),
+      public static final LeaderboardSort ALPHABETICAL = new LeaderboardSort("gui.borislib.alphabetical", TextColor.AQUA.getValue(),
             Comparator.comparing(ArcanaPlayerData::getUsername));
       
       private LeaderboardSort(String key, int color, Comparator<ArcanaPlayerData> comparator){

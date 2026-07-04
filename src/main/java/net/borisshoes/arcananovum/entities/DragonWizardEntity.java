@@ -22,6 +22,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -86,7 +87,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
    
    @Override
    public EntityType<?> getPolymerEntityType(PacketContext context){
-      return EntityType.ILLUSIONER;
+      return EntityTypes.ILLUSIONER;
    }
    
    @Override
@@ -163,7 +164,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
             if(player != null){
                double dist = player.position().distanceTo(this.position());
                if(dist <= 15 && summonTick == summonCD){
-                  List<Skeleton> skeles = level().getEntities(EntityType.SKELETON, new AABB(getX() - 15, 40, getZ() - 15, getX() + 15, 160, getZ() + 15), e -> true);
+                  List<Skeleton> skeles = level().getEntities(EntityTypes.SKELETON, new AABB(getX() - 15, 40, getZ() - 15, getX() + 15, 160, getZ() + 15), e -> true);
                   if(skeles.size() < 8)
                      summonTick = 0;
                }else if(dist <= 7 && pulseTick == pulseCD){
@@ -245,7 +246,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
    }
    
    private Skeleton makeSkeleton(ServerLevel endWorld, int numPlayers){
-      Skeleton skeleton = new Skeleton(EntityType.SKELETON, endWorld);
+      Skeleton skeleton = new Skeleton(EntityTypes.SKELETON, endWorld);
       float skeletonHP = Mth.clamp(20 + numPlayers * 2, 20, 80);
       skeleton.getAttribute(Attributes.MAX_HEALTH).setBaseValue(skeletonHP);
       skeleton.setHealth(skeletonHP);

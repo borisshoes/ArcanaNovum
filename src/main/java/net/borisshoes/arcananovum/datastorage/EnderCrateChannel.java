@@ -76,7 +76,7 @@ public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContaine
       testStack.remove(DataComponents.DYED_COLOR);
       ArrayList<Item> colorList = new ArrayList<>();
       for(DyeColor dyeColor : this.colors){
-         if(dyeColor != null) colorList.add(MinecraftUtils.getVanillaDyeItem(dyeColor));
+         if(dyeColor != null) colorList.add(Items.DYE.pick(dyeColor));
       }
       if(colorList.isEmpty()){
          this.color = 0xFFFFFF; // Default white when no colors specified
@@ -139,7 +139,7 @@ public class EnderCrateChannel implements ArcanaItemContainer.ArcanaItemContaine
       
       MutableComponent name = ArcanaRegistry.ENDER_CRATE.getTranslatedName().append(" ");
       for(DyeColor color : colors){
-         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(MinecraftUtils.getVanillaDyeItem(color));
+         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(Items.DYE.pick(color));
          name.append(dyeComp.withStyle(ChatFormatting.WHITE));
       }
       

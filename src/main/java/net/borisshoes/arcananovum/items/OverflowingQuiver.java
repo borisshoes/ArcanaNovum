@@ -18,6 +18,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -113,7 +114,7 @@ public class OverflowingQuiver extends QuiverItem {
                ItemStack stack = inv.getItem(i);
                if(stack.isEmpty()) continue;
                Style style = stack.getHoverName().getStyle();
-               boolean keepStyle = style.isBold() || style.isItalic() || style.isObfuscated() || style.isUnderlined() || style.isStrikethrough() || (style.getColor() != null && style.getColor().getValue() != ChatFormatting.WHITE.getColor());
+               boolean keepStyle = style.isBold() || style.isItalic() || style.isObfuscated() || style.isUnderlined() || style.isStrikethrough() || (style.getColor() != null && style.getColor().getValue() != TextColor.WHITE.getValue());
                MutableComponent name = stack.getHoverName().copy();
                if(!keepStyle) name = name.withStyle(ChatFormatting.AQUA);
                

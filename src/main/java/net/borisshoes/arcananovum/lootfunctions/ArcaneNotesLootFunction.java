@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.lootfunctions;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -14,7 +15,6 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -64,7 +64,7 @@ public class ArcaneNotesLootFunction extends LootItemConditionalFunction {
       RandomSource random = context.getRandom();
       if(!stack.is(ArcanaRegistry.ARCANE_NOTES)) return stack;
       
-      List<Tuple<ArcanaRarity, Integer>> weights = List.of(new Tuple<>(ArcanaRarity.MUNDANE, mundaneWeight), new Tuple<>(ArcanaRarity.EMPOWERED, empoweredWeight), new Tuple<>(ArcanaRarity.EXOTIC, exoticWeight), new Tuple<>(ArcanaRarity.SOVEREIGN, sovereignWeight), new Tuple<>(ArcanaRarity.DIVINE, divineWeight));
+      List<Pair<ArcanaRarity, Integer>> weights = List.of(Pair.of(ArcanaRarity.MUNDANE, mundaneWeight), Pair.of(ArcanaRarity.EMPOWERED, empoweredWeight), Pair.of(ArcanaRarity.EXOTIC, exoticWeight), Pair.of(ArcanaRarity.SOVEREIGN, sovereignWeight), Pair.of(ArcanaRarity.DIVINE, divineWeight));
       ArcanaRarity rarity = AlgoUtils.getWeightedOption(weights, random.nextLong());
       List<Holder<Item>> items = this.itemTag.stream().filter(entry -> {
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(entry.getRegisteredName());

@@ -22,6 +22,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
@@ -66,7 +67,7 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
    
    @Override
    public EntityType<?> getPolymerEntityType(PacketContext context){
-      return EntityType.ENDER_PEARL;
+      return EntityTypes.ENDER_PEARL;
    }
    
    public void setStasis(boolean stasis){

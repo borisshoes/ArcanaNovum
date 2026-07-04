@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -24,7 +25,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.Unit;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -111,15 +111,15 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       int maxDepth = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_RANGE_PER_LVL).get(veinLevel);
       int maxBlocks = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_BLOCKS_PER_LVL).get(veinLevel);
       
-      Queue<Tuple<BlockPos, Integer>> queue = Lists.newLinkedList();
+      Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
       Queue<BlockPos> visited = Lists.newLinkedList();
-      queue.add(new Tuple<>(pos, 0));
+      queue.add(Pair.of(pos, 0));
       ArrayList<BlockPos> toMine = new ArrayList<>();
       
       while(!queue.isEmpty()){
-         Tuple<BlockPos, Integer> pair = queue.poll();
-         BlockPos blockPos = pair.getA();
-         int depth = pair.getB();
+         Pair<BlockPos, Integer> pair = queue.poll();
+         BlockPos blockPos = pair.getFirst();
+         int depth = pair.getSecond();
          visited.add(blockPos);
          Block curType = world.getBlockState(blockPos).getBlock();
          
@@ -133,8 +133,8 @@ public class PickaxeOfCeptyus extends ArcanaItem {
                   for(int k = -1; k <= 1; k++){
                      if(!(i == 0 && j == 0 && k == 0) && depth < maxDepth){
                         BlockPos pos2 = blockPos.offset(i, j, k);
-                        if(queue.stream().noneMatch(p -> p.getA().equals(pos2)) && !visited.contains(pos2)){
-                           queue.add(new Tuple<>(pos2, depth + 1));
+                        if(queue.stream().noneMatch(p -> p.getFirst().equals(pos2)) && !visited.contains(pos2)){
+                           queue.add(Pair.of(pos2, depth + 1));
                         }
                      }
                   }

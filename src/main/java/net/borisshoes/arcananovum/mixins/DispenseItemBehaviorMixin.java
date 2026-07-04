@@ -10,13 +10,16 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -208,11 +211,19 @@ public interface DispenseItemBehaviorMixin {
             new OptionalDispenseItemBehavior() {
                @Override
                public ItemStack execute(BlockSource pointer, ItemStack stack){
-                  if(!(ArcanaItemUtils.identifyItem(stack) instanceof EssenceEgg egg) || EntityType.byString(EssenceEgg.getType(stack)).isEmpty()){
+                  if(!(ArcanaItemUtils.identifyItem(stack) instanceof EssenceEgg egg)){
                      this.setSuccess(false);
                      return stack;
                   }
                   
+                  Identifier parsedId = Identifier.parse(EssenceEgg.getType(stack));
+                  Optional<Holder.Reference<EntityType<?>>> eType = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+                  if(eType.isEmpty()){
+                     this.setSuccess(false);
+                     return stack;
+                  }
+                  
+                  EntityType<?> entityType = eType.get().value();
                   Direction direction = pointer.state().getValue(DispenserBlock.FACING);
                   
                   try{
@@ -227,7 +238,7 @@ public interface DispenseItemBehaviorMixin {
                         int spawns = serverWorld.getRandom().nextDouble() >= 0.1 * splitLevel ? 1 : 2;
                         
                         for(int i = 0; i < spawns; i++){
-                           Entity newEntity = EntityType.loadEntityRecursive(nbtCompound, serverWorld, EntitySpawnReason.DISPENSER, entity -> {
+                           Entity newEntity = EntityType.loadEntityRecursive(entityType, nbtCompound, serverWorld, EntitySpawnReason.DISPENSER, entity -> {
                               entity.snapTo(summonPos.x(), summonPos.y(), summonPos.z(), entity.getYRot(), entity.getXRot());
                               return entity;
                            });
@@ -296,7 +307,7 @@ public interface DispenseItemBehaviorMixin {
                      try{
                         try(ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(pointer.blockEntity().problemPath(), LogUtils.getLogger())){
                            ValueInput newNbtReadView = TagValueInput.create(logging, pointer.level().registryAccess(), contents);
-                           Optional<Entity> optional = EntityType.create(newNbtReadView, pointer.level(), EntitySpawnReason.DISPENSER);
+                           Optional<Entity> optional = EntityType.create(newNbtReadView, pointer.level(), new EntitySpawnRequest(EntitySpawnReason.DISPENSER, true));
                            Vec3 summonPos = Vec3.atBottomCenterOf(pointer.pos().relative(direction));
                            
                            if(optional.isPresent()){

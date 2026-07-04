@@ -29,6 +29,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -155,7 +156,7 @@ public class WingsOfEnderia extends EnergyItem {
             CompoundTag leftShoulder = player.getShoulderEntityLeft();
             CompoundTag rightShoulder = player.getShoulderEntityRight();
             if(leftShoulder.contains("id") && rightShoulder.contains("id")){
-               if(leftShoulder.getStringOr("id", "").equals(EntityType.getKey(EntityType.PARROT).toString()) && rightShoulder.getStringOr("id", "").equals(EntityType.getKey(EntityType.PARROT).toString())){
+               if(leftShoulder.getStringOr("id", "").equals(EntityType.getKey(EntityTypes.PARROT).toString()) && rightShoulder.getStringOr("id", "").equals(EntityType.getKey(EntityTypes.PARROT).toString())){
                   ArcanaAchievements.grant(player, ArcanaAchievements.CROW_FATHER);
                }
             }

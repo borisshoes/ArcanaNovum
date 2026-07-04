@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
@@ -16,7 +17,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.ArrayList;
@@ -31,8 +31,8 @@ public class TickCallback {
       try{
          bossTickCheck(server);
          
-         ArrayList<Tuple<BlockEntity, ArcanaBlockEntity>> toRemoveBlocks = new ArrayList<>();
-         for(Map.Entry<Tuple<BlockEntity, ArcanaBlockEntity>, Integer> pair : ACTIVE_ARCANA_BLOCKS.entrySet()){
+         ArrayList<Pair<BlockEntity, ArcanaBlockEntity>> toRemoveBlocks = new ArrayList<>();
+         for(Map.Entry<Pair<BlockEntity, ArcanaBlockEntity>, Integer> pair : ACTIVE_ARCANA_BLOCKS.entrySet()){
             if(pair.getValue() - 1 > 0){
                ACTIVE_ARCANA_BLOCKS.put(pair.getKey(), pair.getValue() - 1);
             }else{
@@ -67,10 +67,10 @@ public class TickCallback {
    
    private static void bossTickCheck(MinecraftServer server){
       for(ServerLevel world : server.getAllLevels()){
-         Tuple<BossFights, CompoundTag> fight = DataAccess.getWorld(world.dimension(), BossFightData.KEY).getBossFight();
+         Pair<BossFights, CompoundTag> fight = DataAccess.getWorld(world.dimension(), BossFightData.KEY).getBossFight();
          if(fight != null){
-            if(fight.getA() == BossFights.DRAGON){
-               DragonBossFight.tick(server, fight.getB());
+            if(fight.getFirst() == BossFights.DRAGON){
+               DragonBossFight.tick(server, fight.getSecond());
             }
          }
       }

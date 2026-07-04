@@ -2,13 +2,13 @@ package net.borisshoes.arcananovum.world.structures;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.worldgen.ProcessorLists;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.pools.ListPoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
@@ -25,9 +25,9 @@ public class FabricStructurePoolRegistry {
    // Code used under MIT License from
    // https://github.com/fzzyhmstrs/structurized-reborn/tree/master
    
-   private static final Multimap<String, Quintuple<String, String, ResourceKey<StructureProcessorList>, String, Integer>> structuresInfo = LinkedHashMultimap.create();
+   private static final Multimap<String, QuinPair<String, String, ResourceKey<StructureProcessorList>, String, Integer>> structuresInfo = LinkedHashMultimap.create();
    private static final Map<String, String> structuresKeyRef = new HashMap<>();
-   private static final Multimap<String, Tuple<String, Holder<PlacedFeature>>> featureStructures = LinkedHashMultimap.create();
+   private static final Multimap<String, Pair<String, Holder<PlacedFeature>>> featureStructures = LinkedHashMultimap.create();
    private static final Multimap<String, ListPoolElement> listStructures = LinkedHashMultimap.create();
    public static HolderGetter<StructureProcessorList> registryEntryLookup;
    
@@ -50,13 +50,13 @@ public class FabricStructurePoolRegistry {
    public static void register(Identifier poolId, Identifier structureId, int weight, ResourceKey<StructureProcessorList> processor, StructureTemplatePool.Projection projection, StructurePoolElementType<?> type){
       String poolType = Objects.requireNonNull(BuiltInRegistries.STRUCTURE_POOL_ELEMENT.getKey(type)).toString();
       String projectionId = projection.getName();
-      structuresInfo.put(poolId.toString(), new Quintuple<>(structureId.toString(), poolType, processor, projectionId, weight));
+      structuresInfo.put(poolId.toString(), new QuinPair<>(structureId.toString(), poolType, processor, projectionId, weight));
       structuresKeyRef.put(structureId.toString(), poolId.toString());
    }
    
    public static void registerFeature(Identifier poolId, Identifier structureId, int weight, StructureTemplatePool.Projection projection, Holder<PlacedFeature> entry){
       register(poolId, structureId, weight, ProcessorLists.EMPTY, projection, StructurePoolElementType.FEATURE);
-      featureStructures.put(poolId.toString(), new Tuple<>(structureId.toString(), entry));
+      featureStructures.put(poolId.toString(), Pair.of(structureId.toString(), entry));
    }
    
    public static void registerList(Identifier poolId, int weight, ListPoolElement listPoolElement){
@@ -66,7 +66,7 @@ public class FabricStructurePoolRegistry {
    
    public static @Nullable Triple<String, String, String> getPoolStructureElementInfo(String id){
       String poolId = structuresKeyRef.get(id);
-      for(Quintuple<String, String, ResourceKey<StructureProcessorList>, String, Integer> quint : structuresInfo.get(poolId)){
+      for(QuinPair<String, String, ResourceKey<StructureProcessorList>, String, Integer> quint : structuresInfo.get(poolId)){
          if(quint.a.equals(id)){
             return Triple.of(quint.b, quint.c.identifier().toString(), quint.d);
          }
@@ -83,7 +83,7 @@ public class FabricStructurePoolRegistry {
       }
    }
    
-   private static void addToPool(FabricStructurePool structurePool, Quintuple<String, String, ResourceKey<StructureProcessorList>, String, Integer> quint, String key, HolderGetter<StructureProcessorList> registryEntryLookup){
+   private static void addToPool(FabricStructurePool structurePool, QuinPair<String, String, ResourceKey<StructureProcessorList>, String, Integer> quint, String key, HolderGetter<StructureProcessorList> registryEntryLookup){
       List<StructurePoolElement> spe = new LinkedList<>();
       StructurePoolElementType<?> type = BuiltInRegistries.STRUCTURE_POOL_ELEMENT.getValue(Identifier.parse(quint.b));
       if(type == StructurePoolElementType.SINGLE){
@@ -98,8 +98,8 @@ public class FabricStructurePoolRegistry {
          List<StructurePoolElement> finalSpe = new LinkedList<>();
          featureStructures.get(key).forEach(
                value -> {
-                  if(value.getA().equals(quint.a)){
-                     finalSpe.add(StructurePoolElement.feature(value.getB()).apply(StructureTemplatePool.Projection.byName(quint.d)));
+                  if(value.getFirst().equals(quint.a)){
+                     finalSpe.add(StructurePoolElement.feature(value.getSecond()).apply(StructureTemplatePool.Projection.byName(quint.d)));
                   }
                }
          );
@@ -110,6 +110,6 @@ public class FabricStructurePoolRegistry {
       spe.forEach(value -> structurePool.addStructurePoolElement(value, quint.e));
    }
    
-   private record Quintuple<A, B, C, D, E>(A a, B b, C c, D d, E e) {
+   private record QuinPair<A, B, C, D, E>(A a, B b, C c, D d, E e) {
    }
 }

@@ -215,8 +215,8 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction {
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
-      Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      AABB box = new AABB(Vec3.atCenterOf(stele.getBlockPos()).subtract(range), Vec3.atCenterOf(stele.getBlockPos()).add(range));
+      Vec3 stackPos = Vec3.atCenterOf(stele.getBlockPos()).add(0, 1, 0);
       
       if(world.getRandom().nextFloat() < 0.25){
          world.sendParticles(ParticleTypes.SCRAPE, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);

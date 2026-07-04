@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.SpawnPile;
 import net.minecraft.ChatFormatting;
@@ -11,7 +12,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -127,7 +127,7 @@ public class DragonLairActions {
             int i = 0;
             for(ServerPlayer player : nearbyPlayers){
                BlockPos pos = locations.get(i);
-               player.teleport(new TeleportTransition(endWorld, pos.getCenter(), player.getDeltaMovement(), endWorld.getRandom().nextFloat()*360-180, endWorld.getRandom().nextFloat()*360-180, TeleportTransition.DO_NOTHING));
+               player.teleport(new TeleportTransition(endWorld, Vec3.atCenterOf(pos), player.getDeltaMovement(), endWorld.getRandom().nextFloat()*360-180, endWorld.getRandom().nextFloat()*360-180, TeleportTransition.DO_NOTHING));
                endWorld.sendParticles(ParticleTypes.REVERSE_PORTAL,pos.getX(),pos.getY()+1.5,pos.getZ(),300,.3,1,.3,3);
                player.sendSystemMessage(Component.literal("Ender Energy Surges Through You!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC),true);
                i++;
@@ -277,32 +277,32 @@ public class DragonLairActions {
    }
    
    public DragonLairActionTypes rollAction(int phase){
-      ArrayList<Tuple<DragonLairActionTypes,Integer>> actions = new ArrayList<>();
+      ArrayList<Pair<DragonLairActionTypes,Integer>> actions = new ArrayList<>();
       ArrayList<DragonLairActionTypes> weighted = new ArrayList<>();
       
       if(phase == 1){
-         actions.add(new Tuple<>(DragonLairActionTypes.TERRAIN_SHIFT,8));
-         actions.add(new Tuple<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
-         actions.add(new Tuple<>(DragonLairActionTypes.DIMENSION_SHIFT,3));
-         actions.add(new Tuple<>(DragonLairActionTypes.QUAKE,3));
-         actions.add(new Tuple<>(DragonLairActionTypes.STARFALL,1));
+         actions.add(Pair.of(DragonLairActionTypes.TERRAIN_SHIFT,8));
+         actions.add(Pair.of(DragonLairActionTypes.GRAVITY_LAPSE,1));
+         actions.add(Pair.of(DragonLairActionTypes.DIMENSION_SHIFT,3));
+         actions.add(Pair.of(DragonLairActionTypes.QUAKE,3));
+         actions.add(Pair.of(DragonLairActionTypes.STARFALL,1));
       }else if(phase == 2){
-         actions.add(new Tuple<>(DragonLairActionTypes.TERRAIN_SHIFT,6));
-         actions.add(new Tuple<>(DragonLairActionTypes.GRAVITY_LAPSE,6));
-         actions.add(new Tuple<>(DragonLairActionTypes.DIMENSION_SHIFT,2));
-         actions.add(new Tuple<>(DragonLairActionTypes.QUAKE,2));
-         actions.add(new Tuple<>(DragonLairActionTypes.STARFALL,3));
+         actions.add(Pair.of(DragonLairActionTypes.TERRAIN_SHIFT,6));
+         actions.add(Pair.of(DragonLairActionTypes.GRAVITY_LAPSE,6));
+         actions.add(Pair.of(DragonLairActionTypes.DIMENSION_SHIFT,2));
+         actions.add(Pair.of(DragonLairActionTypes.QUAKE,2));
+         actions.add(Pair.of(DragonLairActionTypes.STARFALL,3));
       }else if(phase == 3){
-         actions.add(new Tuple<>(DragonLairActionTypes.TERRAIN_SHIFT,4));
-         actions.add(new Tuple<>(DragonLairActionTypes.GRAVITY_LAPSE,2));
-         actions.add(new Tuple<>(DragonLairActionTypes.DIMENSION_SHIFT,5));
-         actions.add(new Tuple<>(DragonLairActionTypes.QUAKE,1));
-         actions.add(new Tuple<>(DragonLairActionTypes.STARFALL,5));
+         actions.add(Pair.of(DragonLairActionTypes.TERRAIN_SHIFT,4));
+         actions.add(Pair.of(DragonLairActionTypes.GRAVITY_LAPSE,2));
+         actions.add(Pair.of(DragonLairActionTypes.DIMENSION_SHIFT,5));
+         actions.add(Pair.of(DragonLairActionTypes.QUAKE,1));
+         actions.add(Pair.of(DragonLairActionTypes.STARFALL,5));
       }
    
-      for(Tuple<DragonLairActionTypes, Integer> action : actions){
-         for(int i = 0; i < action.getB(); i++){
-            weighted.add(action.getA());
+      for(Pair<DragonLairActionTypes, Integer> action : actions){
+         for(int i = 0; i < action.getSecond(); i++){
+            weighted.add(action.getFirst());
          }
       }
       

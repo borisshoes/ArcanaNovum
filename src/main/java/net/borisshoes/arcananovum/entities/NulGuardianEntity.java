@@ -218,7 +218,7 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    
    @Override
    public EntityType<?> getPolymerEntityType(PacketContext context){
-      return EntityType.WITHER_SKELETON;
+      return EntityTypes.WITHER_SKELETON;
    }
    
    @Override

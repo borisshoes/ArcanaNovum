@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -9,7 +10,6 @@ import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +35,7 @@ public class WanderingTraderMixin {
          Registry<Item> itemRegistry = trader.registryAccess().lookupOrThrow(Registries.ITEM);
          itemRegistry.getTagOrEmpty(ArcanaRegistry.WORKSHOP_ITEMS).forEach(items::add);
          
-         List<Tuple<ArcanaRarity, Integer>> weights = List.of(new Tuple<>(ArcanaRarity.MUNDANE, 10), new Tuple<>(ArcanaRarity.EMPOWERED, 25), new Tuple<>(ArcanaRarity.EXOTIC, 15), new Tuple<>(ArcanaRarity.SOVEREIGN, 5), new Tuple<>(ArcanaRarity.DIVINE, 1));
+         List<Pair<ArcanaRarity, Integer>> weights = List.of(Pair.of(ArcanaRarity.MUNDANE, 10), Pair.of(ArcanaRarity.EMPOWERED, 25), Pair.of(ArcanaRarity.EXOTIC, 15), Pair.of(ArcanaRarity.SOVEREIGN, 5), Pair.of(ArcanaRarity.DIVINE, 1));
          ArcanaRarity rarity = AlgoUtils.getWeightedOption(weights, trader.getRandom().nextLong());
          items = items.stream().filter(entry -> {
             ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(entry.getRegisteredName());

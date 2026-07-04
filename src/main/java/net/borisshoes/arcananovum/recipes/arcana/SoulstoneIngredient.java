@@ -4,10 +4,14 @@ import com.google.gson.JsonObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public class SoulstoneIngredient extends ArcanaIngredient {
    
@@ -40,8 +44,12 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          }
          
          if(!ignoreEssenceEggTypes){
-            EntityType<?> eType = EntityType.byString(Soulstone.getType(stack)).orElse(null);
-            if(eType != null && BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(eType).is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)) return false;
+            Identifier parsedId = Identifier.parse(Soulstone.getType(stack));
+            Optional<Holder.Reference<EntityType<?>>> type = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+            if(type.isPresent()){
+               EntityType<?> eType = type.get().value();
+               if(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(eType).is(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)) return false;
+            }
          }
          return Soulstone.getSouls(stack) >= souls;
       }else{
@@ -81,7 +89,12 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          name += " (Not Consumed)";
       }
       if(type != null){
-         name += " (" + souls + "+ " + EntityType.byString(type).get().getDescription().getString() + ")";
+         Identifier parsedId = Identifier.parse(type);
+         Optional<Holder.Reference<EntityType<?>>> type = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+         if(type.isPresent()){
+            String entityTypeName = type.get().value().getDescription().getString();
+            name += " (" + souls + "+ " + entityTypeName + ")";
+         }
       }
       return name;
    }

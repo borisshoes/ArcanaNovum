@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.core;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
@@ -20,7 +21,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.*;
@@ -43,11 +43,11 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class Multiblock {
    private final int[][][] statePattern;
-   private final List<Tuple<BlockState, Predicate<BlockState>>> predicates;
+   private final List<Pair<BlockState, Predicate<BlockState>>> predicates;
    
    private static final HashMap<ServerPlayer, List<HolderAttachment>> MULTIBLOCK_DISPLAYS = new HashMap<>();
    
-   private Multiblock(int[][][] statePattern, List<Tuple<BlockState, Predicate<BlockState>>> predicates){
+   private Multiblock(int[][][] statePattern, List<Pair<BlockState, Predicate<BlockState>>> predicates){
       this.statePattern = statePattern;
       this.predicates = predicates;
    }
@@ -64,8 +64,8 @@ public class Multiblock {
             for(int z = 0; z < length; z++){
                int pattern = statePattern[x][y][z];
                if(pattern == -1) continue;
-               Tuple<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
-               Item item = pair.getA().getBlock().asItem();
+               Pair<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
+               Item item = pair.getFirst().getBlock().asItem();
                if(item == Items.AIR) continue;
                if(mats.containsKey(item)){
                   mats.put(item, mats.get(item) + 1);
@@ -153,13 +153,13 @@ public class Multiblock {
                
                BlockPos pos = corner.offset(x, y, z);
                BlockState state = checkParams.world.getBlockState(pos);
-               Tuple<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
-               BlockState rotatedRawState = pair.getA();
+               Pair<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
+               BlockState rotatedRawState = pair.getFirst();
                for(int i = 0; i < numRotations; i++){
                   rotatedRawState = rotatedRawState.rotate(Rotation.COUNTERCLOCKWISE_90);
                }
                
-               Predicate<BlockState> predicate = pair.getB();
+               Predicate<BlockState> predicate = pair.getSecond();
                Predicate<BlockState> rotatedPred = bs -> {
                   for(int i = 0; i < numRotations; i++){
                      bs = bs.rotate(Rotation.CLOCKWISE_90);
@@ -181,7 +181,7 @@ public class Multiblock {
       Direction direction = checkParams.direction();
       if(direction == null) return 0;
       BlockPos offset = checkParams.cornerOffset();
-      BlockState storedCore = predicates.get(statePattern[-offset.getX()][-offset.getY()][-offset.getZ()]).getA();
+      BlockState storedCore = predicates.get(statePattern[-offset.getX()][-offset.getY()][-offset.getZ()]).getFirst();
       Direction storedDir = storedCore.getValue(BlockStateProperties.HORIZONTAL_FACING);
       int numRotations = 0;
       Direction testDir = storedDir;
@@ -266,7 +266,7 @@ public class Multiblock {
          
          // Build predicates for checking block states
          ListTag palette = compound.getListOrEmpty("palette");
-         List<Tuple<BlockState, Predicate<BlockState>>> preds = new ArrayList<>();
+         List<Pair<BlockState, Predicate<BlockState>>> preds = new ArrayList<>();
          for(Tag e : palette){
             // Get the actual block
             CompoundTag blockTag = (CompoundTag) e;
@@ -277,7 +277,7 @@ public class Multiblock {
             Optional<Holder.Reference<Block>> optional = BuiltInRegistries.BLOCK.get(ResourceKey.create(Registries.BLOCK, identifier));
             if(optional.isEmpty()){ // If block isn't found, let any block work
                pred = blockState -> true;
-               preds.add(new Tuple<>(rawState, pred));
+               preds.add(Pair.of(rawState, pred));
                continue;
             }
             
@@ -346,7 +346,7 @@ public class Multiblock {
                }
                return true;
             };
-            preds.add(new Tuple<>(rawState, pred)); // Add predicate
+            preds.add(Pair.of(rawState, pred)); // Add predicate
          }
          
          return new Multiblock(pattern, preds);
@@ -426,13 +426,13 @@ public class Multiblock {
                
                BlockPos pos = corner.offset(x, y, z);
                BlockState state = checkParams.world.getBlockState(pos);
-               Tuple<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
-               BlockState rotatedRawState = pair.getA();
+               Pair<BlockState, Predicate<BlockState>> pair = predicates.get(pattern);
+               BlockState rotatedRawState = pair.getFirst();
                for(int i = 0; i < numRotations; i++){
                   rotatedRawState = rotatedRawState.rotate(Rotation.COUNTERCLOCKWISE_90);
                }
                
-               Predicate<BlockState> predicate = pair.getB();
+               Predicate<BlockState> predicate = pair.getSecond();
                Predicate<BlockState> rotatedPred = bs -> {
                   for(int i = 0; i < numRotations; i++){
                      bs = bs.rotate(Rotation.CLOCKWISE_90);

@@ -5,8 +5,10 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.ColorCollection;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
@@ -48,41 +50,39 @@ public enum ArcanaRarity {
       if(bold) text = text.withStyle(ChatFormatting.BOLD);
       if(rarity == null) return text;
       
-      return switch(rarity){
-         case MUNDANE -> text.withStyle(ChatFormatting.GRAY);
-         case EMPOWERED -> text.withStyle(ChatFormatting.GREEN);
-         case EXOTIC -> text.withStyle(ChatFormatting.AQUA);
-         case SOVEREIGN -> text.withStyle(ChatFormatting.GOLD);
-         case DIVINE -> text.withStyle(ChatFormatting.LIGHT_PURPLE);
-      };
+      return text.withColor(getColor(rarity));
    }
    
-   public static ChatFormatting getColor(ArcanaRarity rarity){
+   public static TextColor getColor(ArcanaRarity rarity){
       if(rarity == null){
          return null;
       }
       
       return switch(rarity){
-         case MUNDANE -> ChatFormatting.GRAY;
-         case EMPOWERED -> ChatFormatting.GREEN;
-         case EXOTIC -> ChatFormatting.AQUA;
-         case SOVEREIGN -> ChatFormatting.GOLD;
-         case DIVINE -> ChatFormatting.LIGHT_PURPLE;
+         case MUNDANE -> TextColor.GRAY;
+         case EMPOWERED -> TextColor.GREEN;
+         case EXOTIC -> TextColor.AQUA;
+         case SOVEREIGN -> TextColor.GOLD;
+         case DIVINE -> TextColor.LIGHT_PURPLE;
+      };
+   }
+   
+   public static Item getColoredCollection(ArcanaRarity rarity, ColorCollection<Item> collection){
+      if(rarity == null){
+         return collection.black();
+      }
+      
+      return switch(rarity){
+         case MUNDANE -> collection.lightGray();
+         case EMPOWERED -> collection.lime();
+         case EXOTIC -> collection.lightBlue();
+         case SOVEREIGN -> collection.orange();
+         case DIVINE -> collection.magenta();
       };
    }
    
    public static Item getColoredConcrete(ArcanaRarity rarity){
-      if(rarity == null){
-         return Items.BLACK_CONCRETE;
-      }
-      
-      return switch(rarity){
-         case MUNDANE -> Items.LIGHT_GRAY_CONCRETE;
-         case EMPOWERED -> Items.LIME_CONCRETE;
-         case EXOTIC -> Items.LIGHT_BLUE_CONCRETE;
-         case SOVEREIGN -> Items.ORANGE_CONCRETE;
-         case DIVINE -> Items.MAGENTA_CONCRETE;
-      };
+      return getColoredCollection(rarity, Items.CONCRETE);
    }
    
    public static ArcanaItem getAugmentCatalyst(ArcanaRarity rarity){

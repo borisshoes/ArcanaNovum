@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.core;
 
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -29,7 +30,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.tags.EnchantmentTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.Unit;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -84,9 +84,9 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    protected int maxCount = 1;
    protected Component displayName;
    protected ResourceKey<ResearchTask>[] researchTasks = new ResourceKey[0];
-   protected Tuple<MutableComponent, MutableComponent>[] attributions = new Tuple[0];
+   protected Pair<MutableComponent, MutableComponent>[] attributions = new Pair[0];
    
-   public Tuple<MutableComponent, MutableComponent>[] getAttributions(){
+   public Pair<MutableComponent, MutableComponent>[] getAttributions(){
       return attributions;
    }
    

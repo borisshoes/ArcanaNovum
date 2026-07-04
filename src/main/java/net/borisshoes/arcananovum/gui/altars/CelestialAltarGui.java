@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.gui.altars;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -16,7 +17,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -127,7 +127,7 @@ public class CelestialAltarGui extends SimpleGui {
       
       
       GuiElementBuilder activateItem = new GuiElementBuilder(mode == 0 ? Items.GLOWSTONE : Items.SEA_LANTERN);
-      Tuple<Item, Integer> cost = CelestialAltarBlockEntity.getCost();
+      Pair<Item, Integer> cost = CelestialAltarBlockEntity.getCost();
       activateItem.setName((Component.literal("")
             .append(Component.literal("Activate Altar").withStyle(mode == 0 ? ChatFormatting.GOLD : ChatFormatting.BLUE))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -139,21 +139,21 @@ public class CelestialAltarGui extends SimpleGui {
             .append(Component.literal("Right Click to switch modes").withStyle(ChatFormatting.DARK_GRAY)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("The Altar Requires " + cost.getB() + " ").withStyle(ChatFormatting.AQUA))
-            .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+            .append(Component.literal("The Altar Requires " + cost.getSecond() + " ").withStyle(ChatFormatting.AQUA))
+            .append(Component.translatable(cost.getFirst().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
       activateItem.setCallback((clickType) -> {
          int curMode = blockEntity.getMode();
          if(clickType == ClickType.MOUSE_RIGHT || clickType == ClickType.MOUSE_RIGHT_SHIFT){
             blockEntity.setMode((curMode + 1) % 2);
          }else{
             if(blockEntity.getCooldown() <= 0 && blockEntity.getLevel() instanceof ServerLevel serverWorld){
-               Tuple<Item, Integer> curCost = CelestialAltarBlockEntity.getCost();
-               if(MinecraftUtils.removeItems(player, curCost.getA(), curCost.getB())){
+               Pair<Item, Integer> curCost = CelestialAltarBlockEntity.getCost();
+               if(MinecraftUtils.removeItems(player, curCost.getFirst(), curCost.getSecond())){
                   blockEntity.startStarChange(player);
                   close();
                }else{
-                  player.sendSystemMessage(Component.literal("You do not have " + curCost.getB() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                        .append(Component.translatable(curCost.getA().getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
+                  player.sendSystemMessage(Component.literal("You do not have " + curCost.getSecond() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(curCost.getFirst().getDescriptionId()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
                         .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                   close();

@@ -1,12 +1,12 @@
 package net.borisshoes.arcananovum.skins;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.Tuple;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +19,7 @@ public enum ArcanaSkin implements StringRepresentable {
    FEATHER_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x4FD6FF, 0x33988f, ArcanaRegistry.arcanaId("feather_wings")),
    LUNAR_BOW(ArcanaRegistry.RUNIC_BOW, 0x074bde, 0x152cd6, ArcanaRegistry.arcanaId("lunar_bow")),
    LUNAR_QUIVER(ArcanaRegistry.RUNIC_QUIVER, 0x074bde, 0x152cd6, ArcanaRegistry.arcanaId("lunar_quiver")),
-   RESPLENDENT_HARNESS(ArcanaRegistry.LEVITATION_HARNESS, 0x7f31ff, 0x4747FF, ArcanaRegistry.arcanaId("resplendent_harness"), new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))}),
+   RESPLENDENT_HARNESS(ArcanaRegistry.LEVITATION_HARNESS, 0x7f31ff, 0x4747FF, ArcanaRegistry.arcanaId("resplendent_harness"), new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))}),
    CATGIRL_MEMENTO(ArcanaRegistry.NUL_MEMENTO, 0xFF55FF, 0x8B2E8B, ArcanaRegistry.arcanaId("catgirl_memento")),
    ZEPHOS_LANCE(ArcanaRegistry.SPEAR_OF_TENBROUS, 0x18ceff, 0x0015e3, ArcanaRegistry.arcanaId("zephos_lance")),
    AEQUALIS_RIGHTS(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF87C7, 0xBFEEFF, ArcanaRegistry.arcanaId("aequalis_rights")),
@@ -40,17 +40,17 @@ public enum ArcanaSkin implements StringRepresentable {
    private final Identifier id;
    private final int primaryColor;
    private final int secondaryColor;
-   private final Tuple<MutableComponent, MutableComponent>[] attributions;
+   private final Pair<MutableComponent, MutableComponent>[] attributions;
    
    ArcanaSkin(ArcanaItem arcanaItem, int primaryColor, int secondaryColor, Identifier id){
       this.arcanaItem = arcanaItem;
       this.id = id;
       this.primaryColor = primaryColor;
       this.secondaryColor = secondaryColor;
-      this.attributions = new Tuple[0];
+      this.attributions = new Pair[0];
    }
    
-   ArcanaSkin(ArcanaItem arcanaItem, int primaryColor, int secondaryColor, Identifier id, Tuple<MutableComponent, MutableComponent>[] attributions){
+   ArcanaSkin(ArcanaItem arcanaItem, int primaryColor, int secondaryColor, Identifier id, Pair<MutableComponent, MutableComponent>[] attributions){
       this.arcanaItem = arcanaItem;
       this.id = id;
       this.primaryColor = primaryColor;
@@ -100,7 +100,7 @@ public enum ArcanaSkin implements StringRepresentable {
       return components;
    }
    
-   public Tuple<MutableComponent, MutableComponent>[] getAttributions(){
+   public Pair<MutableComponent, MutableComponent>[] getAttributions(){
       return attributions;
    }
    

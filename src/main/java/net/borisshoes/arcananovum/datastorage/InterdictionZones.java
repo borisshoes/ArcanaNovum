@@ -422,7 +422,7 @@ public class InterdictionZones implements StorableData {
       }
       
       public boolean zoneContains(BlockPos pos){
-         return box.contains(pos.getCenter());
+         return box.contains(Vec3.atCenterOf(pos));
       }
       
       public boolean zoneContains(Vec3 pos){

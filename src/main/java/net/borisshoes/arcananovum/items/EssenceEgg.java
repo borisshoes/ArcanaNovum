@@ -17,9 +17,12 @@ import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -100,9 +103,11 @@ public class EssenceEgg extends ArcanaItem {
       if(itemStack != null){
          String type = getType(itemStack);
          uses = getUses(itemStack);
-         Optional<EntityType<?>> opt = EntityType.byString(type);
-         if(!type.equals("unattuned") && opt.isPresent()){
-            String entityTypeName = opt.get().getDescription().getString();
+         
+         Identifier parsedId = Identifier.parse(type);
+         Optional<Holder.Reference<EntityType<?>>> eType = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+         if(!type.equals("unattuned") && eType.isPresent()){
+            String entityTypeName = eType.get().value().getDescription().getString();
             attunedString = "Attuned - " + entityTypeName;
          }
       }
@@ -216,19 +221,23 @@ public class EssenceEgg extends ArcanaItem {
                   int decrease = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.ESSENCE_EGG_WILLING_CAPTIVE_DECREASE).get(captiveLevel);
                   int cost = Math.max(0, baseConvertCost - decrease);
                   if(getUses(stack) >= cost){
-                     EntityType<?> entityType = EntityType.byString(getType(stack)).get();
-                     spawner.setEntityId(entityType, world.getRandom());
-                     world.sendBlockUpdated(blockPos, blockState, blockState, Block.UPDATE_ALL);
-                     blockEntity.setChanged();
-                     
-                     if(playerEntity instanceof ServerPlayer player){
-                        player.sendSystemMessage(Component.literal("The Spawner Assumes the Essence of " + EntityType.byString(getType(stack)).get().getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
-                        SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
-                        int xp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ESSENCE_EGG_CONVERT);
-                        ArcanaNovum.data(playerEntity).addXP(Math.min(0, xp * cost / Math.max(1, baseConvertCost))); // Add xp
-                        ArcanaAchievements.grant(player, ArcanaAchievements.SOUL_CONVERSION);
+                     Identifier parsedId = Identifier.parse(getType(stack));
+                     Optional<Holder.Reference<EntityType<?>>> eType = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+                     if(eType.isPresent()){
+                        EntityType<?> entityType = eType.get().value();
+                        spawner.setEntityId(entityType, world.getRandom());
+                        world.sendBlockUpdated(blockPos, blockState, blockState, Block.UPDATE_ALL);
+                        blockEntity.setChanged();
+                        
+                        if(playerEntity instanceof ServerPlayer player){
+                           player.sendSystemMessage(Component.literal("The Spawner Assumes the Essence of " + entityType.getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
+                           SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
+                           int xp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ESSENCE_EGG_CONVERT);
+                           ArcanaNovum.data(playerEntity).addXP(Math.min(0, xp * cost / Math.max(1, baseConvertCost))); // Add xp
+                           ArcanaAchievements.grant(player, ArcanaAchievements.SOUL_CONVERSION);
+                        }
+                        addUses(stack, -cost);
                      }
-                     addUses(stack, -cost);
                   }
                }else{
                   int splitLevel = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SOUL_SPLIT);
@@ -239,12 +248,19 @@ public class EssenceEgg extends ArcanaItem {
                      ServerLevel serverWorld = world.getServer().getLevel(world.dimension());
                      Vec3 summonPos = context.getClickLocation().add(0, 0.5, 0);
                      
+                     Identifier parsedId = Identifier.parse(EssenceEgg.getType(stack));
+                     Optional<Holder.Reference<EntityType<?>>> eType = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+                     if(eType.isEmpty()){
+                        return InteractionResult.PASS;
+                     }
+                     EntityType<?> entityType = eType.get().value();
+                     
                      CompoundTag nbtCompound = new CompoundTag();
                      nbtCompound.putString("id", getType(stack));
-                      int spawns = serverWorld.getRandom().nextDouble() >= splitChance ? 1 : 2;
+                     int spawns = serverWorld.getRandom().nextDouble() >= splitChance ? 1 : 2;
                      
                      for(int i = 0; i < spawns; i++){
-                        Entity newEntity = EntityType.loadEntityRecursive(nbtCompound, serverWorld, EntitySpawnReason.SPAWN_ITEM_USE, entity -> {
+                        Entity newEntity = EntityType.loadEntityRecursive(entityType, nbtCompound, serverWorld, EntitySpawnReason.SPAWN_ITEM_USE, entity -> {
                            entity.snapTo(summonPos.x(), summonPos.y(), summonPos.z(), entity.getYRot(), entity.getXRot());
                            return entity;
                         });
@@ -296,10 +312,13 @@ public class EssenceEgg extends ArcanaItem {
                   player.sendSystemMessage(Component.literal("The Essence Egg cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
                }else{
                   String entityTypeId = EntityType.getKey(attackedEntity.getType()).toString();
-                  String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
-                  
+                  Identifier parsedId = Identifier.parse(entityTypeId);
+                  Optional<Holder.Reference<EntityType<?>>> eType = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+                  if(eType.isPresent()){
+                     String entityTypeName = eType.get().value().getDescription().getString();
+                     player.sendSystemMessage(Component.literal("The Essence Egg attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
+                  }
                   setType(stack, entityTypeId);
-                  player.sendSystemMessage(Component.literal("The Essence Egg attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1, .5f);
                }
             }

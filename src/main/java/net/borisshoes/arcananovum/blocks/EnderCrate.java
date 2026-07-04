@@ -67,7 +67,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -190,7 +190,7 @@ public class EnderCrate extends ArcanaBlock {
             channelComp.append(Component.literal("\uD83D\uDD13 Public Channel: ").withStyle(ChatFormatting.LIGHT_PURPLE));
          }
          for(DyeColor color : colors){
-            MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(MinecraftUtils.getVanillaDyeItem(color));
+            MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(Items.DYE.pick(color));
             channelComp.append(dyeComp.withStyle(ChatFormatting.WHITE));
             channelComp.append(" ");
          }
@@ -358,7 +358,7 @@ public class EnderCrate extends ArcanaBlock {
             main.putInt("x", pos.getX());
             main.putInt("y", pos.getY());
             main.putInt("z", pos.getZ());
-            player.connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityType.ENDER_CHEST, main));
+            player.connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityTypes.ENDER_CHEST, main));
          }
       }
       

@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -51,7 +52,7 @@ public class AstralGatewayPortalBlock extends BaseEntityBlock implements Polymer
       main.putInt("y", pos.getY());
       main.putInt("z", pos.getZ());
       main.putLong("Age", Long.MIN_VALUE);
-      player.connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityType.END_GATEWAY, main));
+      player.connection.send(PolymerBlockUtils.createBlockEntityPacket(pos.immutable(), BlockEntityTypes.END_GATEWAY, main));
    }
    
    @Nullable

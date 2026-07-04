@@ -20,6 +20,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
@@ -95,7 +96,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
    
    @Override
    public EntityType<?> getPolymerEntityType(PacketContext context){
-      return this.pickupItemStack.has(DataComponents.POTION_CONTENTS) ? EntityType.ARROW : EntityType.SPECTRAL_ARROW;
+      return this.pickupItemStack.has(DataComponents.POTION_CONTENTS) ? EntityTypes.ARROW : EntityTypes.SPECTRAL_ARROW;
    }
    
    @Override
@@ -110,7 +111,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
       }
       super.onHitEntity(entityHitResult);
       
-      if(entityHitResult.getEntity().getType() == EntityType.PHANTOM && !entityHitResult.getEntity().isAlive()){
+      if(entityHitResult.getEntity().getType() == EntityTypes.PHANTOM && !entityHitResult.getEntity().isAlive()){
          if(getOwner() instanceof ServerPlayer player){
             ArcanaAchievements.progress(player, ArcanaAchievements.MANY_BIRDS_MANY_ARROWS, 1);
          }

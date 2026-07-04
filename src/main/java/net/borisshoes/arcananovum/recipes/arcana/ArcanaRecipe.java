@@ -3,13 +3,13 @@ package net.borisshoes.arcananovum.recipes.arcana;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -103,20 +103,20 @@ public class ArcanaRecipe {
       return forgeRequirement;
    }
    
-   public HashMap<String, Tuple<Integer, ItemStack>> getIngredientList(){
-      HashMap<String, Tuple<Integer, ItemStack>> map = new HashMap<>();
+   public HashMap<String, Pair<Integer, ItemStack>> getIngredientList(){
+      HashMap<String, Pair<Integer, ItemStack>> map = new HashMap<>();
       ArcanaIngredient[][] ingredients = getAlteredIngredients();
       for(int i = 0; i < ingredients.length; i++){
          for(int j = 0; j < ingredients[0].length; j++){
             ItemStack stack = ingredients[i][j].ingredientAsStack();
             if(!stack.isEmpty()){
                String ingred = ingredients[i][j].getName();
-               Tuple<Integer, ItemStack> pair;
+               Pair<Integer, ItemStack> pair;
                if(map.containsKey(ingred)){
-                  int oldCount = map.get(ingred).getA();
-                  pair = new Tuple<>(ingredients[i][j].count + oldCount, stack);
+                  int oldCount = map.get(ingred).getFirst();
+                  pair = Pair.of(ingredients[i][j].count + oldCount, stack);
                }else{
-                  pair = new Tuple<>(ingredients[i][j].count, stack);
+                  pair = Pair.of(ingredients[i][j].count, stack);
                }
                map.put(ingred, pair);
             }

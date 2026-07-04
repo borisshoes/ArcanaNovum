@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -33,7 +34,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.EnchantmentTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -105,7 +105,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       
       if(assembled && seenForge){
          Direction dir = serverWorld.getBlockState(worldPosition).getValue(ArcaneSingularity.ArcaneSingularityBlock.HORIZONTAL_FACING);
-         Vec3 center = worldPosition.offset(dir.getUnitVec3i().multiply(-1)).getCenter().add(0, 2.5, 0);
+         Vec3 center = Vec3.atCenterOf(worldPosition.offset(dir.getUnitVec3i().multiply(-1))).add(0, 2.5, 0);
          double fillPercent = (0.75 + 0.05 * ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.SUPERMASSIVE)) * ((double) getNumBooks() / getCapacity());
          ArcanaEffectUtils.arcaneSingularityAnim(serverWorld, center, ticks % 300, dir, fillPercent);
          
@@ -118,7 +118,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
       
       watchingPlayers.entrySet().removeIf(entry -> entry.getKey().containerMenu == entry.getKey().inventoryMenu);

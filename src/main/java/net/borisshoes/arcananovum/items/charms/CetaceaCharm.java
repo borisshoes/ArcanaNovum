@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -25,7 +26,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -62,7 +62,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
       item = new CetaceaCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CONDUIT, ResearchTasks.CATCH_FISH, ResearchTasks.EFFECT_DOLPHINS_GRACE, ResearchTasks.DROWNING_DAMAGE};
-      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Rookodzol"))};
+      attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Rookodzol"))};
    }
    
    @Override
@@ -123,7 +123,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
+      AABB box = new AABB(Vec3.atCenterOf(stele.getBlockPos()).subtract(range), Vec3.atCenterOf(stele.getBlockPos()).add(range));
       List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class, box);
       boolean delphinidae = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.DELPHINIDAE) > 0;
       boolean gills = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.GILLS) > 0;
@@ -145,7 +145,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
       }
       
       if(world.getRandom().nextFloat() < 0.15){
-         Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+         Vec3 stackPos = Vec3.atCenterOf(stele.getBlockPos()).add(0, 1, 0);
          world.sendParticles(ParticleTypes.NAUTILUS, stackPos.x(), stackPos.y() + 1, stackPos.z(), 5, 0.25, 0.25, 0.25, 1);
          world.sendParticles(ParticleTypes.DRIPPING_WATER, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, 1);
       }

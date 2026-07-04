@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
@@ -36,7 +37,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -146,7 +146,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       for(int i = 0; i < targets.size(); i++){
          Entity target = targets.get(i);
          BlockPos location = locations.get(i);
-         target.teleport(new TeleportTransition(destWorld, location.getCenter(), Vec3.ZERO, target.getYRot(), target.getXRot(), TeleportTransition.PLACE_PORTAL_TICKET));
+         target.teleport(new TeleportTransition(destWorld, Vec3.atCenterOf(location), Vec3.ZERO, target.getYRot(), target.getXRot(), TeleportTransition.PLACE_PORTAL_TICKET));
          ArcanaEffectUtils.recallTeleport(destWorld, target.position());
          
          if(target instanceof ServerPlayer p && Math.sqrt(this.getBlockPos().distSqr(this.getTarget())) >= 100000){
@@ -167,7 +167,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       
       this.setActiveTicks(500);
       this.resetCooldown();
-      ArcanaEffectUtils.starpathAltarAnim(serverWorld, this.getBlockPos().getCenter());
+      ArcanaEffectUtils.starpathAltarAnim(serverWorld, Vec3.atCenterOf(this.getBlockPos()));
       BorisLib.addTickTimerCallback(new GenericTimer(500, () -> {
          teleport(player);
          if(player == null && getCrafterId() != null && !getCrafterId().isEmpty()){
@@ -236,7 +236,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
       
       boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(StarpathAltar.StarpathAltarBlock.ACTIVATABLE).orElse(false);

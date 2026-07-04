@@ -89,7 +89,7 @@ public class EnderCrateChannelGui extends SimpleGui implements ClickCooldown {
          setSlot(i + 18, bottom.setCallback(click));
          
          GuiElementBuilder dye = GuiElementBuilder.from(GraphicalItem.with(EnderCrateChannel.colorToGraphicElement(color))).hideDefaultTooltip();
-         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(MinecraftUtils.getVanillaDyeItem(color));
+         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(Items.DYE.pick(color));
          dye.setName(Component.literal("")
                .append(Component.literal("Frequency " + (i + 1) + ": ").withStyle(ChatFormatting.DARK_PURPLE))
                .append(dyeComp));

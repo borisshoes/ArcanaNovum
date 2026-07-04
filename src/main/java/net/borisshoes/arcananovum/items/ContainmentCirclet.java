@@ -250,7 +250,7 @@ public class ContainmentCirclet extends ArcanaItem {
          
          try(ProblemReporter.ScopedCollector logging = new ProblemReporter.ScopedCollector(context.getPlayer().problemPath(), LogUtils.getLogger())){
             ValueInput readView = TagValueInput.create(logging, context.getLevel().registryAccess(), contents);
-            Optional<Entity> optional = EntityType.create(readView, context.getLevel(), EntitySpawnReason.MOB_SUMMONED);
+            Optional<Entity> optional = EntityType.create(readView, context.getLevel(), new EntitySpawnRequest(EntitySpawnReason.MOB_SUMMONED, true));
             Vec3 summonPos = context.getClickLocation().add(0, 0.5, 0);
             
             if(optional.isPresent() && context.getLevel() instanceof ServerLevel serverWorld){

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.areaeffects;
 
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.borislib.conditions.ConditionInstance;
@@ -11,13 +12,13 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -40,47 +41,47 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
       if(sources.isEmpty()) return;
       
       for(ServerLevel world : server.getAllLevels()){
-         HashMap<BlockPos, List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> affectedBlocks = new HashMap<>();
-         HashMap<Entity, List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> affectedEntities = new HashMap<>();
+         HashMap<BlockPos, List<Pair<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> affectedBlocks = new HashMap<>();
+         HashMap<Entity, List<Pair<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> affectedEntities = new HashMap<>();
          for(AlchemicalArrowSource source : sources){
             for(BlockPos affectedBlock : source.getAffectedBlocks(world)){
                if(affectedBlocks.containsKey(affectedBlock)){
-                  affectedBlocks.get(affectedBlock).addAll(source.getEffects().stream().map(e -> new Tuple<>(e, source)).toList());
+                  affectedBlocks.get(affectedBlock).addAll(source.getEffects().stream().map(e -> Pair.of(e, source)).toList());
                }else{
-                  affectedBlocks.put(affectedBlock, source.getEffects().stream().map(e -> new Tuple<>(e, source)).collect(Collectors.toCollection(ArrayList::new)));
+                  affectedBlocks.put(affectedBlock, source.getEffects().stream().map(e -> Pair.of(e, source)).collect(Collectors.toCollection(ArrayList::new)));
                }
             }
             
             for(Entity affectedEntity : source.getAffectedEntities(world)){
                if(affectedEntities.containsKey(affectedEntity)){
-                  affectedEntities.get(affectedEntity).addAll(source.getEffects().stream().map(e -> new Tuple<>(e, source)).toList());
+                  affectedEntities.get(affectedEntity).addAll(source.getEffects().stream().map(e -> Pair.of(e, source)).toList());
                }else{
-                  affectedEntities.put(affectedEntity, source.getEffects().stream().map(e -> new Tuple<>(e, source)).collect(Collectors.toCollection(ArrayList::new)));
+                  affectedEntities.put(affectedEntity, source.getEffects().stream().map(e -> Pair.of(e, source)).collect(Collectors.toCollection(ArrayList::new)));
                }
             }
          }
          
-         for(Map.Entry<Entity, List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> entry : affectedEntities.entrySet()){
+         for(Map.Entry<Entity, List<Pair<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> entry : affectedEntities.entrySet()){
             Entity entity = entry.getKey();
             if(!(entity instanceof LivingEntity living)) continue;
-            List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>> effects = entry.getValue();
-            HashMap<MobEffect, Tuple<Integer, AlchemicalArrowSource>> instantEffects = new HashMap<>();
+            List<Pair<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>> effects = entry.getValue();
+            HashMap<MobEffect, Pair<Integer, AlchemicalArrowSource>> instantEffects = new HashMap<>();
             
-            for(Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource> pair : effects){
-               Either<MobEffectInstance, ConditionInstance> either = pair.getA();
-               AlchemicalArrowSource source = pair.getB();
+            for(Pair<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource> pair : effects){
+               Either<MobEffectInstance, ConditionInstance> either = pair.getFirst();
+               AlchemicalArrowSource source = pair.getSecond();
                
                if(either.left().isPresent()){
                   MobEffectInstance effect = either.left().get();
-                  if(effect.getEffect().value().isInstantenous() && server.getTickCount() % 20 == 0){
+                  if(effect.getEffect().value().isInstantaneous() && server.getTickCount() % 20 == 0){
                      if(instantEffects.containsKey(effect.getEffect().value())){
-                        if(effect.getAmplifier() > instantEffects.get(effect.getEffect().value()).getA()){
-                           instantEffects.put(effect.getEffect().value(), new Tuple<>(effect.getAmplifier(), source));
+                        if(effect.getAmplifier() > instantEffects.get(effect.getEffect().value()).getFirst()){
+                           instantEffects.put(effect.getEffect().value(), Pair.of(effect.getAmplifier(), source));
                         }
                      }else{
-                        instantEffects.put(effect.getEffect().value(), new Tuple<>(effect.getAmplifier(), source));
+                        instantEffects.put(effect.getEffect().value(), Pair.of(effect.getAmplifier(), source));
                      }
-                  }else if(!effect.getEffect().value().isInstantenous()){
+                  }else if(!effect.getEffect().value().isInstantaneous()){
                      source.applyEffect(world, living, effect);
                   }
                }else if(either.right().isPresent()){
@@ -89,16 +90,16 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
                
             }
             
-            for(Map.Entry<MobEffect, Tuple<Integer, AlchemicalArrowSource>> instantEntry : instantEffects.entrySet()){
-               instantEntry.getValue().getB().applyEffect(world, living, new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(instantEntry.getKey()), 1, instantEntry.getValue().getA()));
+            for(Map.Entry<MobEffect, Pair<Integer, AlchemicalArrowSource>> instantEntry : instantEffects.entrySet()){
+               instantEntry.getValue().getSecond().applyEffect(world, living, new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(instantEntry.getKey()), 1, instantEntry.getValue().getFirst()));
             }
          }
          
-         for(Map.Entry<BlockPos, List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> entry : affectedBlocks.entrySet()){
+         for(Map.Entry<BlockPos, List<Pair<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>>> entry : affectedBlocks.entrySet()){
             BlockPos pos = entry.getKey();
-            List<Tuple<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>> eithers = entry.getValue();
+            List<Pair<Either<MobEffectInstance, ConditionInstance>, AlchemicalArrowSource>> eithers = entry.getValue();
             List<MobEffectInstance> effects = new ArrayList<>();
-            eithers.forEach(t -> t.getA().ifLeft(effects::add));
+            eithers.forEach(t -> t.getFirst().ifLeft(effects::add));
             
             int random = world.getRandom().nextInt(effects.size());
             if(world.getRandom().nextDouble() < 0.03){
@@ -187,7 +188,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
          if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             ArrayList<BlockPos> blocks = new ArrayList<>();
             for(BlockPos block : BlockPos.withinManhattan(getBlockPos(), (int) range + 4, (int) range + 4, (int) range + 4)){
-               if(block.getCenter().distanceTo(getBlockPos().getCenter()) <= range + 0.4){
+               if(Vec3.atCenterOf(block).distanceTo(Vec3.atCenterOf(getBlockPos())) <= range + 0.4){
                   blocks.add(block.mutable());
                }
             }
@@ -201,8 +202,8 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
       public List<Entity> getAffectedEntities(ServerLevel world){
          if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             BlockPos blockPos = getBlockPos();
-            AABB rangeBox = AABB.unitCubeFromLowerCorner(blockPos.getCenter()).inflate(range + 4);
-            return world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(blockPos.getCenter()) < range * range && e instanceof LivingEntity);
+            AABB rangeBox = AABB.unitCubeFromLowerCorner(Vec3.atCenterOf(blockPos)).inflate(range + 4);
+            return world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(Vec3.atCenterOf(blockPos)) < range * range && e instanceof LivingEntity);
          }else{
             return new ArrayList<>();
          }

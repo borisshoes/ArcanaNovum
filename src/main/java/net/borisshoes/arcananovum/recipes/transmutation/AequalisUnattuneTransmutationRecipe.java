@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -11,7 +12,6 @@ import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -37,7 +37,7 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe {
    }
    
    @Override
-   public List<Tuple<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
+   public List<Pair<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
       ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getItem() : ItemStack.EMPTY;
@@ -63,7 +63,7 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe {
       boolean cross = !straight && m12 && m21;
       if(!straight && !cross) return new ArrayList<>(); // should be impossible
       
-      List<Tuple<ItemStack, String>> outputs = new ArrayList<>();
+      List<Pair<ItemStack, String>> outputs = new ArrayList<>();
       int consumedInput = 1;
       
       if(ArcanaItemUtils.identifyItem(inputStack) instanceof AequalisScientia aeq){
@@ -71,7 +71,7 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe {
          aeq.buildItemLore(inputStack, altar.getLevel().getServer());
       }
       
-      outputs.add(new Tuple<>(inputStack, outputPos));
+      outputs.add(Pair.of(inputStack, outputPos));
       
       if(inputStack.getCount() == consumedInput){
          inputEntity.discard();

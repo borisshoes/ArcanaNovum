@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -23,7 +24,6 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -45,6 +45,14 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe {
       super(id, reagent1, reagent2);
       this.input.add(Either.left(input.getItem()));
       this.inputCount = input.getCount();
+      this.output = output;
+      this.outputCount = output.getCount();
+   }
+   
+   public InfusionTransmutationRecipe(String id, Either<Item, TagKey<Item>> input, int inputCount, ItemStack output, ItemStack reagent1, ItemStack reagent2){
+      super(id, reagent1, reagent2);
+      this.input.add(input);
+      this.inputCount = inputCount;
       this.output = output;
       this.outputCount = output.getCount();
    }
@@ -79,7 +87,7 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe {
    }
    
    @Override
-   public List<Tuple<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
+   public List<Pair<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       ItemStack reagent1Stack = reagent1Entity != null ? reagent1Entity.getItem() : ItemStack.EMPTY;
       ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getItem() : ItemStack.EMPTY;
@@ -100,7 +108,7 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe {
       if(!canTransmute(inputStack, ItemStack.EMPTY, reagent1Stack, reagent2Stack, ItemStack.EMPTY, altar))
          return new ArrayList<>();
       
-      List<Tuple<ItemStack, String>> outputs = new ArrayList<>();
+      List<Pair<ItemStack, String>> outputs = new ArrayList<>();
       int iterations = inputStack.getCount() / inputCount;
       int consumedInput = iterations * inputCount;
       
@@ -111,7 +119,7 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe {
             outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(), player == null ? null : player.getStringUUID(), 0, BorisLib.SERVER);
          }
          
-         outputs.add(new Tuple<>(outputStack, outputPos));
+         outputs.add(Pair.of(outputStack, outputPos));
       }
       
       if(inputStack.getCount() == consumedInput){

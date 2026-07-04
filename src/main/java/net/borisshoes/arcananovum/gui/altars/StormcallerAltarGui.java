@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.gui.altars;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -14,7 +15,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -108,8 +108,8 @@ public class StormcallerAltarGui extends SimpleGui {
          case 2 -> "Charge the Clouds";
          default -> "-";
       };
-      Tuple<Item, Integer> cost = StormcallerAltarBlockEntity.getCost();
-      GuiElementBuilder activateItem = new GuiElementBuilder(Items.LIGHTNING_ROD);
+      Pair<Item, Integer> cost = StormcallerAltarBlockEntity.getCost();
+      GuiElementBuilder activateItem = new GuiElementBuilder(Items.LIGHTNING_ROD.weathering().unaffected());
       activateItem.setName((Component.literal("")
             .append(Component.literal("Activate Altar").withStyle(ChatFormatting.BLUE))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -121,21 +121,21 @@ public class StormcallerAltarGui extends SimpleGui {
             .append(Component.literal("Right Click to switch modes").withStyle(ChatFormatting.GOLD)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal(""))));
       activateItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
-            .append(Component.literal("The Altar Requires " + cost.getB() + " ").withStyle(ChatFormatting.AQUA))
-            .append(Component.translatable(cost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
+            .append(Component.literal("The Altar Requires " + cost.getSecond() + " ").withStyle(ChatFormatting.AQUA))
+            .append(Component.translatable(cost.getFirst().getDescriptionId()).withStyle(ChatFormatting.AQUA)))));
       activateItem.setCallback((clickType) -> {
          int curMode = blockEntity.getMode();
          if(clickType == ClickType.MOUSE_RIGHT || clickType == ClickType.MOUSE_RIGHT_SHIFT){
             blockEntity.setMode((curMode + 1) % 3);
          }else{
             if(blockEntity.getCooldown() <= 0){
-               Tuple<Item, Integer> curCost = StormcallerAltarBlockEntity.getCost();
-               if(MinecraftUtils.removeItems(player, curCost.getA(), curCost.getB())){
+               Pair<Item, Integer> curCost = StormcallerAltarBlockEntity.getCost();
+               if(MinecraftUtils.removeItems(player, curCost.getFirst(), curCost.getSecond())){
                   blockEntity.startWeatherChange(player);
                   close();
                }else{
-                  player.sendSystemMessage(Component.literal("You do not have " + curCost.getB() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
-                        .append(Component.translatable(curCost.getA().getDescriptionId()).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
+                  player.sendSystemMessage(Component.literal("You do not have " + curCost.getSecond() + " ").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+                        .append(Component.translatable(curCost.getFirst().getDescriptionId()).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
                         .append(Component.literal(" to power the Altar").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)), false);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, .5f);
                   close();

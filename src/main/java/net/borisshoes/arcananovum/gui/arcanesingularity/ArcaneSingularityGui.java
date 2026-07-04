@@ -17,6 +17,7 @@ import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.SimpleContainer;
@@ -202,41 +203,41 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
    private static class BookFilter extends GuiFilter<ItemStack> {
       public static final List<BookFilter> FILTERS = new ArrayList<>();
       
-      public static final BookFilter NONE = new BookFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor().intValue(),
+      public static final BookFilter NONE = new BookFilter("gui.arcananovum.none", TextColor.WHITE.getValue(),
             (stack) -> true);
-      public static final BookFilter SINGLE_ENCHANT = new BookFilter("gui.arcananovum.single_enchant", ChatFormatting.GREEN.getColor().intValue(),
+      public static final BookFilter SINGLE_ENCHANT = new BookFilter("gui.arcananovum.single_enchant", TextColor.GREEN.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).size() == 1);
-      public static final BookFilter MULTIPLE_ENCHANT = new BookFilter("gui.arcananovum.multiple_enchants", ChatFormatting.AQUA.getColor().intValue(),
+      public static final BookFilter MULTIPLE_ENCHANT = new BookFilter("gui.arcananovum.multiple_enchants", TextColor.AQUA.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).size() > 1);
-      public static final BookFilter MAX_LEVEL = new BookFilter("gui.arcananovum.max_level", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+      public static final BookFilter MAX_LEVEL = new BookFilter("gui.arcananovum.max_level", TextColor.LIGHT_PURPLE.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().getMaxLevel() == e.getIntValue()));
-      public static final BookFilter SWORDS = new BookFilter("gui.arcananovum.sword_enchants", ChatFormatting.RED.getColor().intValue(),
+      public static final BookFilter SWORDS = new BookFilter("gui.arcananovum.sword_enchants", TextColor.RED.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_SWORD))));
-      public static final BookFilter BOWS = new BookFilter("gui.arcananovum.bow_enchants", ChatFormatting.GOLD.getColor().intValue(),
+      public static final BookFilter BOWS = new BookFilter("gui.arcananovum.bow_enchants", TextColor.GOLD.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.BOW))));
-      public static final BookFilter AXES = new BookFilter("gui.arcananovum.axe_enchants", ChatFormatting.DARK_RED.getColor().intValue(),
+      public static final BookFilter AXES = new BookFilter("gui.arcananovum.axe_enchants", TextColor.DARK_RED.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_AXE))));
-      public static final BookFilter TOOLS = new BookFilter("gui.arcananovum.tool_enchants", ChatFormatting.BLUE.getColor().intValue(),
+      public static final BookFilter TOOLS = new BookFilter("gui.arcananovum.tool_enchants", TextColor.BLUE.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_PICKAXE))));
-      public static final BookFilter CROSSBOWS = new BookFilter("gui.arcananovum.crossbow_enchants", ChatFormatting.GRAY.getColor().intValue(),
+      public static final BookFilter CROSSBOWS = new BookFilter("gui.arcananovum.crossbow_enchants", TextColor.GRAY.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.CROSSBOW))));
-      public static final BookFilter TRIDENTS = new BookFilter("gui.arcananovum.trident_enchants", ChatFormatting.DARK_AQUA.getColor().intValue(),
+      public static final BookFilter TRIDENTS = new BookFilter("gui.arcananovum.trident_enchants", TextColor.DARK_AQUA.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.TRIDENT))));
-      public static final BookFilter FISHING = new BookFilter("gui.arcananovum.fishing_rod_enchants", ChatFormatting.DARK_GRAY.getColor().intValue(),
+      public static final BookFilter FISHING = new BookFilter("gui.arcananovum.fishing_rod_enchants", TextColor.DARK_GRAY.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.FISHING_ROD))));
-      public static final BookFilter ARMOR = new BookFilter("gui.arcananovum.armor_enchants", ChatFormatting.DARK_GREEN.getColor().intValue(),
+      public static final BookFilter ARMOR = new BookFilter("gui.arcananovum.armor_enchants", TextColor.DARK_GREEN.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e ->
                   e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_HELMET)) ||
                         e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_CHESTPLATE)) ||
                         e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_LEGGINGS)) ||
                         e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_BOOTS))));
-      public static final BookFilter MACES = new BookFilter("gui.arcananovum.mace_enchants", ChatFormatting.DARK_BLUE.getColor().intValue(),
+      public static final BookFilter MACES = new BookFilter("gui.arcananovum.mace_enchants", TextColor.DARK_BLUE.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.MACE))));
       public static final BookFilter SPEARS = new BookFilter("gui.arcananovum.spear_enchants", 0xa0ffec,
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().value().isSupportedItem(new ItemStack(Items.GOLDEN_SPEAR))));
-      public static final BookFilter TREASURE = new BookFilter("gui.arcananovum.treasure_enchants", ChatFormatting.YELLOW.getColor().intValue(),
+      public static final BookFilter TREASURE = new BookFilter("gui.arcananovum.treasure_enchants", TextColor.YELLOW.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().is(net.minecraft.tags.EnchantmentTags.TREASURE) && !e.getKey().is(net.minecraft.tags.EnchantmentTags.CURSE)));
-      public static final BookFilter CURSES = new BookFilter("gui.arcananovum.curses", ChatFormatting.DARK_PURPLE.getColor().intValue(),
+      public static final BookFilter CURSES = new BookFilter("gui.arcananovum.curses", TextColor.DARK_PURPLE.getValue(),
             (stack) -> EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().anyMatch(e -> e.getKey().is(net.minecraft.tags.EnchantmentTags.CURSE)));
       
       private BookFilter(String key, int color, java.util.function.Predicate<ItemStack> filter){
@@ -257,7 +258,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
    private static class BookSort extends GuiSort<ItemStack> {
       public static final List<BookSort> SORTS = new ArrayList<>();
       
-      public static final BookSort TOTAL_LEVELS = new BookSort("gui.arcananovum.total_levels", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+      public static final BookSort TOTAL_LEVELS = new BookSort("gui.arcananovum.total_levels", TextColor.LIGHT_PURPLE.getValue(),
             Comparator.<ItemStack>comparingInt(stack -> {
                int count = 0;
                for(Object2IntMap.Entry<Holder<Enchantment>> e : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()){
@@ -265,7 +266,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                }
                return -count;
             }));
-      public static final BookSort HIGHEST_LEVEL = new BookSort("gui.arcananovum.highest_level", ChatFormatting.AQUA.getColor().intValue(),
+      public static final BookSort HIGHEST_LEVEL = new BookSort("gui.arcananovum.highest_level", TextColor.AQUA.getValue(),
             Comparator.<ItemStack>comparingInt(stack -> {
                int highest = 0;
                for(Object2IntMap.Entry<Holder<Enchantment>> e : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()){
@@ -273,7 +274,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                }
                return -highest;
             }));
-      public static final BookSort LEAST_LEVELS = new BookSort("gui.arcananovum.least_levels", ChatFormatting.RED.getColor().intValue(),
+      public static final BookSort LEAST_LEVELS = new BookSort("gui.arcananovum.least_levels", TextColor.RED.getValue(),
             Comparator.<ItemStack>comparingInt(stack -> {
                int count = 0;
                for(Object2IntMap.Entry<Holder<Enchantment>> e : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()){
@@ -281,7 +282,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                }
                return count;
             }));
-      public static final BookSort FIRST_ALPHABETICAL = new BookSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor().intValue(),
+      public static final BookSort FIRST_ALPHABETICAL = new BookSort("gui.borislib.alphabetical", TextColor.GREEN.getValue(),
             Comparator.comparing(stack -> {
                java.util.Iterator<Holder<Enchantment>> iter = EnchantmentHelper.getEnchantmentsForCrafting(stack).keySet().iterator();
                if(iter.hasNext()){

@@ -172,7 +172,7 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      Vec3 stackPos = Vec3.atCenterOf(stele.getBlockPos()).add(0, 1, 0);
       
       if(world.getRandom().nextFloat() < 0.15){
          world.sendParticles(ParticleTypes.DRIPPING_LAVA, stackPos.x(), stackPos.y(), stackPos.z(), 5, 0.25, 0.25, 0.25, .02);

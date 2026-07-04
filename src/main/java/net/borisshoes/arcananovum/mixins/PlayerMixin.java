@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.mixins;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -21,8 +22,8 @@ import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -128,8 +129,8 @@ public class PlayerMixin {
    
    // Remove all absorption callbacks when shield gets disabled
    @Inject(method = "blockUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/component/BlocksAttacks;disable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;FLnet/minecraft/world/item/ItemStack;)V"))
-   private void arcananovum$disableFortitudeShield(ServerLevel world, LivingEntity attacker, CallbackInfo ci, @Local ItemStack shield){
-      if(!(shield.getItem() instanceof ShieldOfFortitude.ShieldOfFortitudeItem)) return;
+   private void arcananovum$disableFortitudeShield(ServerLevel level, LivingEntity attacker, DamageSource source, float damage, CallbackInfo ci, @Local(name = "itemBlockingWith") ItemStack itemBlockingWith){
+      if(!(itemBlockingWith.getItem() instanceof ShieldOfFortitude.ShieldOfFortitudeItem)) return;
       Player player = (Player) (Object) this;
       ArrayList<ShieldTimerCallback> toRemove = new ArrayList<>();
       for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
@@ -153,11 +154,11 @@ public class PlayerMixin {
       
       if(player instanceof ServerPlayer serverPlayer){
          ItemStack arrowStack = QuiverItem.getArrowStack(serverPlayer, runic, false);
-         Tuple<String, Integer> option = QuiverItem.getArrowOption(serverPlayer, runic, false);
+         Pair<String, Integer> option = QuiverItem.getArrowOption(serverPlayer, runic, false);
          if(arrowStack != null && option != null){
             ItemStack returnStack = arrowStack.copy();
-            ArcanaItem.putProperty(returnStack, QuiverItem.QUIVER_SLOT_TAG, option.getB());
-            ArcanaItem.putProperty(returnStack, QuiverItem.QUIVER_ID_TAG, option.getA());
+            ArcanaItem.putProperty(returnStack, QuiverItem.QUIVER_SLOT_TAG, option.getSecond());
+            ArcanaItem.putProperty(returnStack, QuiverItem.QUIVER_ID_TAG, option.getFirst());
             cir.setReturnValue(returnStack);
          }else if(runicArbalest){
             Predicate<ItemStack> predicate = ((ProjectileWeaponItem) bow.getItem()).getAllSupportedProjectiles();

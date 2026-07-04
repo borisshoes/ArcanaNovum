@@ -554,14 +554,14 @@ public class RecipeManager {
       
       ItemStack oxidizedItineranteur = ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore().copy();
       ArcanaItem.putProperty(oxidizedItineranteur, Itineranteur.COLOR_TAG, Itineranteur.LanternType.GREEN.getId());
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_oxidized", oxidizedItineranteur, MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.oxidized(), 1), (stack, minecraftServer) -> {
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_oxidized", oxidizedItineranteur, MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.weathering().oxidized(), 1), (stack, minecraftServer) -> {
          ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.GREEN.getId());
          return stack;
       }, Component.literal("An Oxidized ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));
       
       ItemStack unoxidizedItineranteur = ArcanaRegistry.ITINERANTEUR.getPrefItemNoLore().copy();
       ArcanaItem.putProperty(unoxidizedItineranteur, Itineranteur.COLOR_TAG, Itineranteur.LanternType.COPPER.getId());
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_unoxidized", unoxidizedItineranteur, MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.unaffected(), 1), (stack, minecraftServer) -> {
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("itineranteur_unoxidized", unoxidizedItineranteur, MinecraftUtils.removeLore(new ItemStack(Items.GLOWSTONE_DUST, 24)), new ItemStack(Items.COPPER_LANTERN.weathering().unaffected(), 1), (stack, minecraftServer) -> {
          ArcanaItem.putProperty(stack, Itineranteur.COLOR_TAG, Itineranteur.LanternType.COPPER.getId());
          return stack;
       }, Component.literal("An Unoxidized ").append(ArcanaRegistry.ITINERANTEUR.getTranslatedName())));

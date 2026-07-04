@@ -6,6 +6,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.TeamColor;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +28,10 @@ public class DamageSourceMixin {
       
       if(source.getMsgId().contains("arcananovum.concentration")){
          Team abstractTeam = killed.getTeam();
-         ChatFormatting playerColor = abstractTeam != null && abstractTeam.getColor() != null ? abstractTeam.getColor() : ChatFormatting.WHITE;
+         TeamColor playerColor = TeamColor.WHITE;
+         if(abstractTeam != null && abstractTeam.getColor().isPresent()){
+            playerColor = abstractTeam.getColor().get();
+         }
          String[] deathStrings = {
                " lost concentration on their Arcana",
                "'s mind was consumed by their Arcana",
@@ -36,7 +40,7 @@ public class DamageSourceMixin {
                " couldn't channel enough Arcana to their items"
          };
          final Component deathMsg = Component.literal("")
-               .append(Component.literal(killed.getScoreboardName()).withStyle(playerColor).withStyle())
+               .append(Component.literal(killed.getScoreboardName()).withColor(playerColor.rgb()))
                .append(Component.literal(deathStrings[killed.getRandom().nextInt(deathStrings.length)]).withStyle(ChatFormatting.WHITE));
          cir.setReturnValue(deathMsg);
       }

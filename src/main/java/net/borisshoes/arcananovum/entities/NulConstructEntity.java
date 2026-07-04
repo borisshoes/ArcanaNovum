@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.entities;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -47,7 +48,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.CombatEntry;
@@ -56,10 +56,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -134,7 +131,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    private HashMap<ConstructAdaptations, Boolean> adaptations;
    private HashMap<BlockPos, Integer> blockDamage;
    private List<ServerPlayer> players;
-   private List<Tuple<BlockPos, Integer>> blockPacketQueue;
+   private List<Pair<BlockPos, Integer>> blockPacketQueue;
    
    private ConstructMovementType movementType = ConstructMovementType.WAIT;
    public Vec3 targetPosition;
@@ -200,7 +197,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    
    @Override
    public EntityType<?> getPolymerEntityType(PacketContext context){
-      return EntityType.WITHER;
+      return EntityTypes.WITHER;
    }
    
    // ========== Tracking Data ==========
@@ -809,7 +806,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                destructiveAura();
             }
             if(isExalted){
-               List<Player> players = level().getEntities(EntityType.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
+               List<Player> players = level().getEntities(EntityTypes.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
                
                for(Player player : players){
                   ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId("nul_construct"), 100, 0.50f, true, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
@@ -942,7 +939,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          double attackRange = (double) (this.getBbWidth() * 2.0F * this.getBbWidth() * 2.0F);
          
          if(this.isExalted){
-            List<Player> players = level().getEntities(EntityType.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
+            List<Player> players = level().getEntities(EntityTypes.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
             ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_exalted"), 30, 32.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
             players.forEach(p -> Conditions.addCondition(level().getServer(), p, nearsight));
          }
@@ -989,7 +986,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          
          this.strafeYaw = Mth.wrapDegrees(this.strafeYaw + this.strafeRate);
          Vec3 circleOffset = new Vec3(Math.cos(Math.toRadians(this.strafeYaw)), 0, Math.sin(Math.toRadians(this.strafeYaw))).scale(this.strafeRadius);
-         this.targetPosition = circleOffset.add(this.circlingCenter.getCenter());
+         this.targetPosition = circleOffset.add(Vec3.atCenterOf(this.circlingCenter));
          
          double sqrDistToTarget = this.distanceToSqr(this.getTarget().getX(), this.getTarget().getY(), this.getTarget().getZ());
          if(sqrDistToTarget < (RAY_RANGE * RAY_RANGE) && this.getSensing().hasLineOfSight(this.getTarget())){
@@ -1164,7 +1161,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       boolean blocked = true;
       for(Direction direction : Direction.values()){
          Vec3 vec3d3 = this.position().relative(direction, 1.0E-5F);
-         if(level().isBlockInLine(new ClipBlockStateContext(vec3d3, pos.getCenter(), state -> state.is(BlockTags.WITHER_IMMUNE))).getType() != HitResult.Type.BLOCK){
+         if(level().isBlockInLine(new ClipBlockStateContext(vec3d3, Vec3.atCenterOf(pos), state -> state.is(BlockTags.WITHER_IMMUNE))).getType() != HitResult.Type.BLOCK){
             blocked = false;
             break;
          }
@@ -1182,12 +1179,12 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          if(broken){
             this.level().levelEvent(null, LevelEvent.SOUND_WITHER_BLOCK_BREAK, this.blockPosition(), 0);
             blockDamage.remove(new BlockPos(pos.getX(), pos.getY(), pos.getZ()));
-            blockPacketQueue.add(new Tuple<>(pos, 0));
+            blockPacketQueue.add(Pair.of(pos, 0));
             return true;
          }
       }else{
          int dmgLvl = (int) Math.ceil(9.0 * (double) (curDmg + damage) / maxDmg); // Breaking range 0 - 9
-         blockPacketQueue.add(new Tuple<>(pos, dmgLvl));
+         blockPacketQueue.add(Pair.of(pos, dmgLvl));
          blockDamage.put(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), curDmg + damage);
       }
       
@@ -1206,8 +1203,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          if(serverPlayerEntity != null && serverPlayerEntity.level() == serverWorld && serverPlayerEntity.getId() != this.getId() && serverPlayerEntity.distanceTo(this) <= FIGHT_RANGE){
             List<Packet<? super ClientGamePacketListener>> list = new ArrayList<>();
             for(int i = 0; i < toSend; i++){
-               BlockPos pos = blockPacketQueue.get(i).getA();
-               int prog = blockPacketQueue.get(i).getB();
+               BlockPos pos = blockPacketQueue.get(i).getFirst();
+               int prog = blockPacketQueue.get(i).getSecond();
                list.add(new ClientboundBlockDestructionPacket(this.random.nextInt(), pos, prog));
             }
             serverPlayerEntity.connection.send(new ClientboundBundlePacket(list));
@@ -1290,7 +1287,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          ArcanaEffectUtils.nulConstructNecroticShroud(world, tpPos);
          
          if(this.isExalted){
-            List<Player> players = level().getEntities(EntityType.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
+            List<Player> players = level().getEntities(EntityTypes.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
             ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_blast"), 60, 16.0f, false, true, false, AttributeModifier.Operation.ADD_VALUE, getUUID());
             players.forEach(p -> Conditions.addCondition(level().getServer(), p, nearsight));
          }
@@ -1314,11 +1311,11 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       }else if(spell.spellType == ConstructSpellType.CURSE_OF_DECAY){ // AoE Damage
          // Nothing special at cast time
       }else if(spell.spellType == ConstructSpellType.FORGOTTEN_ARMY){ // Summon Skeletons
-         List<BlockPos> poses = SpawnPile.makeSpawnLocations(32, (int) BLAST_RANGE, world, EntityType.WITHER_SKELETON, blockPosition());
+         List<BlockPos> poses = SpawnPile.makeSpawnLocations(32, (int) BLAST_RANGE, world, EntityTypes.WITHER_SKELETON, blockPosition());
          int numWarriors = this.isExalted ? this.random.nextIntBetweenInclusive(6, 10) : this.random.nextIntBetweenInclusive(3, 6);
          int numMages = this.isExalted ? this.random.nextIntBetweenInclusive(4, 6) : this.random.nextIntBetweenInclusive(2, 4);
          for(int i = 0; i < numWarriors + numMages; i++){
-            Vec3 spawnPos = poses.get(i).getCenter();
+            Vec3 spawnPos = Vec3.atCenterOf(poses.get(i));
             NulGuardianEntity skeleton = new NulGuardianEntity(world, this, i < numMages);
             skeleton.finalizeSpawn(world, world.getCurrentDifficultyAt(this.blockPosition()), EntitySpawnReason.MOB_SUMMONED, null);
             skeleton.setPosRaw(spawnPos.x(), spawnPos.y(), spawnPos.z());

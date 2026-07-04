@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.borisshoes.arcananovum.blocks.ItineranteurBlockEntity;
@@ -28,7 +29,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.apache.logging.log4j.LogManager;
@@ -45,7 +45,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final String MOD_ID = "arcananovum";
    public static final ConfigManager CONFIG = new ConfigManager(MOD_ID, "Arcana Novum", ArcanaConfig.CONFIG_NAME, ArcanaConfig.CONFIG_SETTINGS);
    public static final HashMap<ServerLevel, Long2IntOpenHashMap> ANCHOR_CHUNKS = new HashMap<>();
-   public static final HashMap<Tuple<BlockEntity, ArcanaBlockEntity>, Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
+   public static final HashMap<Pair<BlockEntity, ArcanaBlockEntity>, Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
    public static final HashMap<ServerPlayer, ItineranteurBlockEntity> ITINERANTEUR_USERS = new HashMap<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
@@ -92,9 +92,9 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       return DataAccess.getWorld(world.dimension(), AnchorData.KEY).removeAnchor(pos);
    }
    
-   public static boolean addActiveBlock(Tuple<BlockEntity, ArcanaBlockEntity> pair){
-      if(pair.getB().getUuid() == null) return false;
-      List<Tuple<BlockEntity, ArcanaBlockEntity>> existing = ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(p -> p.getB().getUuid().equals(pair.getB().getUuid())).toList();
+   public static boolean addActiveBlock(Pair<BlockEntity, ArcanaBlockEntity> pair){
+      if(pair.getSecond().getUuid() == null) return false;
+      List<Pair<BlockEntity, ArcanaBlockEntity>> existing = ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(p -> p.getSecond().getUuid().equals(pair.getSecond().getUuid())).toList();
       existing.forEach(ACTIVE_ARCANA_BLOCKS::remove);
       ACTIVE_ARCANA_BLOCKS.put(pair, 30);
       return existing.isEmpty();

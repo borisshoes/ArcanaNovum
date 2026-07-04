@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -24,7 +25,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
@@ -197,7 +197,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.active){
          ContinuumAnchor.loadChunks(serverWorld, ChunkPos.containing(worldPosition));
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
    }
    

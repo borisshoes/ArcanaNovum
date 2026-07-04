@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.astralgateway;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
@@ -41,7 +42,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
@@ -169,7 +169,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       
       GatewayState state = getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
       if(serverWorld.getServer().getTickCount() % 20 == 0 && state != GatewayState.CLOSED){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
       
       if(serverWorld.getServer().getTickCount() % 200 == 0 && state != GatewayState.CLOSED){
@@ -376,16 +376,16 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       
       // Extract the 2D offset components based on source portal axis
       double sourceU, sourceV; // U and V are the two axes perpendicular to the portal's normal (0-1)
-      Tuple<Integer, Integer> sourceBounds = getPortalBounds(sourceEnclosed, sourceAxis);
+      Pair<Integer, Integer> sourceBounds = getPortalBounds(sourceEnclosed, sourceAxis);
       if(sourceAxis == Direction.Axis.X){
-         sourceU = (double) offset.getZ() / sourceBounds.getA();
-         sourceV = (double) offset.getY() / sourceBounds.getB();
+         sourceU = (double) offset.getZ() / sourceBounds.getFirst();
+         sourceV = (double) offset.getY() / sourceBounds.getSecond();
       }else if(sourceAxis == Direction.Axis.Y){
-         sourceU = (double) offset.getX() / sourceBounds.getA();
-         sourceV = (double) offset.getZ() / sourceBounds.getB();
+         sourceU = (double) offset.getX() / sourceBounds.getFirst();
+         sourceV = (double) offset.getZ() / sourceBounds.getSecond();
       }else{ // Z axis
-         sourceU = (double) offset.getX() / sourceBounds.getA();
-         sourceV = (double) offset.getY() / sourceBounds.getB();
+         sourceU = (double) offset.getX() / sourceBounds.getFirst();
+         sourceV = (double) offset.getY() / sourceBounds.getSecond();
       }
       
       int minDestX = Integer.MAX_VALUE, minDestY = Integer.MAX_VALUE, minDestZ = Integer.MAX_VALUE;
@@ -398,9 +398,9 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       
       
       // Scale to destination bounds
-      Tuple<Integer, Integer> destBounds = getPortalBounds(destEnclosed, destAxis);
-      double destU = sourceU * destBounds.getA();
-      double destV = sourceV * destBounds.getB();
+      Pair<Integer, Integer> destBounds = getPortalBounds(destEnclosed, destAxis);
+      double destU = sourceU * destBounds.getFirst();
+      double destV = sourceV * destBounds.getSecond();
       
       // Convert back to world coordinates based on destination axis
       Vec3 destOffset;
@@ -462,10 +462,10 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    
    /**
     * Gets the integer length of a portal's U and V axes in its local 2D space.
-    * Returns Tuple(uLength, vLength) where U and V are the two axes perpendicular to the portal normal.
+    * Returns Pair(uLength, vLength) where U and V are the two axes perpendicular to the portal normal.
     */
-   private Tuple<Integer, Integer> getPortalBounds(Set<BlockPos> enclosed, Direction.Axis axis){
-      if(enclosed.isEmpty()) return new Tuple<>(0, 0);
+   private Pair<Integer, Integer> getPortalBounds(Set<BlockPos> enclosed, Direction.Axis axis){
+      if(enclosed.isEmpty()) return Pair.of(0, 0);
       
       int minU = Integer.MAX_VALUE, maxU = Integer.MIN_VALUE;
       int minV = Integer.MAX_VALUE, maxV = Integer.MIN_VALUE;
@@ -491,7 +491,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       int lengthU = maxU - minU + 1;
       int lengthV = maxV - minV + 1;
       
-      return new Tuple<>(lengthU, lengthV);
+      return Pair.of(lengthU, lengthV);
    }
    
    private AstralGatewayBlockEntity dialGateway(ServerLevel level){
@@ -672,7 +672,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    }
    
    private Vec3 getHologramPos(){
-      return this.getBlockPos().getCenter();
+      return Vec3.atCenterOf(this.getBlockPos());
    }
    
    private ElementHolder getNewHologram(ServerLevel world){

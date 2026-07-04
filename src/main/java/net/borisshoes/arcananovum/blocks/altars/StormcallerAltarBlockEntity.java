@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -28,7 +29,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -39,6 +39,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -76,14 +77,14 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       resetCooldown();
    }
    
-   public static Tuple<Item, Integer> getCost(){
+   public static Pair<Item, Integer> getCost(){
       try{
          String itemId = ArcanaNovum.CONFIG.getValue(ArcanaConfig.STORMCALLER_ALTAR_ITEM).toString();
          Optional<Holder.Reference<Item>> opt = BuiltInRegistries.ITEM.get(Identifier.parse(itemId));
          assert opt.isPresent();
-         return new Tuple<>(opt.get().value(), 1);
+         return Pair.of(opt.get().value(), 1);
       }catch(Exception e){
-         return new Tuple<>(Items.DIAMOND_BLOCK, 1);
+         return Pair.of(Items.DIAMOND_BLOCK, 1);
       }
    }
    
@@ -127,7 +128,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       
       this.resetCooldown();
       this.setActive(true);
-      ArcanaEffectUtils.stormcallerAltarAnim(serverWorld, this.getBlockPos().getCenter(), 0);
+      ArcanaEffectUtils.stormcallerAltarAnim(serverWorld, Vec3.atCenterOf(this.getBlockPos()), 0);
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
          changeWeather(finalPlayer);
          if(finalPlayer != null)
@@ -176,7 +177,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
       
       boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(StormcallerAltar.StormcallerAltarBlock.ACTIVATABLE).orElse(false);

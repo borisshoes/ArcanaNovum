@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.datastorage;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.borislib.datastorage.DataKey;
@@ -7,13 +8,12 @@ import net.borisshoes.borislib.datastorage.DataRegistry;
 import net.borisshoes.borislib.datastorage.StorableData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 
 public class BossFightData implements StorableData {
    
-   public Tuple<BossFights, CompoundTag> bossFight;
+   public Pair<BossFights, CompoundTag> bossFight;
    private final ResourceKey<Level> worldKey;
    private Runnable dirtyCallback = () -> {};
    
@@ -41,7 +41,7 @@ public class BossFightData implements StorableData {
             BossFights boss = BossFights.fromLabel(bossLabel);
             if(boss != null){
                CompoundTag data = bossFightTag.getCompoundOrEmpty("data");
-               this.bossFight = new Tuple<>(boss, data);
+               this.bossFight = Pair.of(boss, data);
             }
          });
       }
@@ -52,8 +52,8 @@ public class BossFightData implements StorableData {
       tag.putBoolean("hasBossFight", bossFight != null);
       if(bossFight != null){
          CompoundTag bossFightTag = new CompoundTag();
-         bossFightTag.putString("boss", bossFight.getA().label);
-         bossFightTag.put("data", bossFight.getB());
+         bossFightTag.putString("boss", bossFight.getFirst().label);
+         bossFightTag.put("data", bossFight.getSecond());
          tag.put("bossFight", bossFightTag);
       }else{
          tag.remove("bossFight");
@@ -61,8 +61,8 @@ public class BossFightData implements StorableData {
    }
    
    public boolean setBossFight(BossFights boss, CompoundTag data){
-      if(bossFight == null || bossFight.getA() == boss){
-         bossFight = new Tuple<>(boss, data);
+      if(bossFight == null || bossFight.getFirst() == boss){
+         bossFight = Pair.of(boss, data);
          markDirty();
          return true;
       }else{
@@ -80,7 +80,7 @@ public class BossFightData implements StorableData {
       }
    }
    
-   public Tuple<BossFights, CompoundTag> getBossFight(){
+   public Pair<BossFights, CompoundTag> getBossFight(){
       if(bossFight != null) markDirty();
       return bossFight;
    }

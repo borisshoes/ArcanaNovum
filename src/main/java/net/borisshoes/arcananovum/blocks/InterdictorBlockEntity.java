@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -26,7 +27,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.Level;
@@ -129,7 +129,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
             }
          }
          if(active && assembled){
-            ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+            ArcanaNovum.addActiveBlock(Pair.of(this, this));
             DataAccess.getWorld(this.level.dimension(), InterdictionZones.KEY).addOrRefreshZone(getInterdictionZone(), blockPos, 25, this.redirect);
          }
       }
@@ -158,7 +158,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
             ArcanaNovum.data(AlgoUtils.getUUID(this.crafterId)).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_INTERDICTOR_MOB_BLOCKED_PER_100));
       }
       if(this.level instanceof ServerLevel serverLevel && this.level.getRandom().nextFloat() < 0.005){
-         Vec3 p1 = this.getBlockPos().getBottomCenter().add(this.level.getRandom().nextBoolean() ? -1 : 1, 1.85, this.level.getRandom().nextBoolean() ? -1 : 1);
+         Vec3 p1 = Vec3.atBottomCenterOf(this.getBlockPos()).add(this.level.getRandom().nextBoolean() ? -1 : 1, 1.85, this.level.getRandom().nextBoolean() ? -1 : 1);
          Vec3 p2 = MathUtils.randomSpherePoint(p1, 5, 3);
          ParticleEffectUtils.animatedLightningBolt(serverLevel, p1, p2,
                this.level.getRandom().nextInt(4, 8), 1.0, ParticleTypes.WITCH,

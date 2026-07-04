@@ -16,10 +16,13 @@ import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -29,6 +32,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
@@ -105,9 +109,11 @@ public class Soulstone extends ArcanaItem {
          String type = getType(itemStack);
          souls = getSouls(itemStack);
          tier = soulsToTier(souls);
-         Optional<EntityType<?>> opt = EntityType.byString(type);
-         if(!type.equals("unattuned") && opt.isPresent()){
-            String entityTypeName = opt.get().getDescription().getString();
+         
+         Identifier parsedId = Identifier.parse(type);
+         Optional<Holder.Reference<EntityType<?>>> eType = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+         if(!type.equals("unattuned") && eType.isPresent()){
+            String entityTypeName = eType.get().value().getDescription().getString();
             attunedString = "Attuned - " + entityTypeName;
          }
       }
@@ -164,7 +170,7 @@ public class Soulstone extends ArcanaItem {
             }
          }
          if(tier == 5) ArcanaAchievements.grant(player, ArcanaAchievements.PHILOSOPHER_STONE);
-         if(tier == 3 && entityTypeId.equals(EntityType.getKey(EntityType.VILLAGER).toString()))
+         if(tier == 3 && entityTypeId.equals(EntityType.getKey(EntityTypes.VILLAGER).toString()))
             ArcanaAchievements.grant(player, ArcanaAchievements.TOOK_A_VILLAGE);
       }
       putProperty(stone, SOULS_FROM_SPEAR_TAG, soulsFromSpear);
@@ -222,9 +228,14 @@ public class Soulstone extends ArcanaItem {
    public static ItemStack getShowcaseItem(int souls, @Nullable String typeId){
       ItemStack item = ArcanaRegistry.SOULSTONE.getItem().getDefaultInstance().copy();
       
-      if(typeId != null && EntityType.byString(typeId).isPresent()){
-         EntityType<?> type = EntityType.byString(typeId).get();
-         item = setType(item, type);
+      if(typeId != null){
+         Identifier parsedId = Identifier.parse(typeId);
+         Optional<Holder.Reference<EntityType<?>>> type = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+         if(type.isPresent()){
+            EntityType<?> eType = type.get().value();
+            item = setType(item, eType);
+         }
+         
       }
       item = setSouls(item, souls);
       return ArcanaRegistry.SOULSTONE.buildItemLore(item, BorisLib.SERVER);
@@ -298,11 +309,15 @@ public class Soulstone extends ArcanaItem {
                player.sendSystemMessage(Component.literal("The Soulstone cannot attune to this creature.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
             }else{
                String entityTypeId = EntityType.getKey(attackedEntity.getType()).toString();
-               String entityTypeName = EntityType.byString(entityTypeId).get().getDescription().getString();
+               Identifier parsedId = Identifier.parse(entityTypeId);
+               Optional<Holder.Reference<EntityType<?>>> eType = BuiltInRegistries.ENTITY_TYPE.get(parsedId);
+               if(eType.isPresent()){
+                  String entityTypeName = eType.get().value().getDescription().getString();
+                  player.sendSystemMessage(Component.literal("The Soulstone attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
+               }
                
                putProperty(stack, TYPE_TAG, entityTypeId);
                buildItemLore(stack, player.level().getServer());
-               player.sendSystemMessage(Component.literal("The Soulstone attunes to the essence of " + entityTypeName).withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), true);
                SoundUtils.playSongToPlayer(player, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, 1, .5f);
             }
          }

@@ -375,8 +375,8 @@ public class Itineranteur extends ArcanaBlock {
    public enum LanternType implements StringRepresentable {
       YELLOW("yellow", Items.LANTERN, Blocks.LANTERN),
       BLUE("blue", Items.SOUL_LANTERN, Blocks.SOUL_LANTERN),
-      COPPER("copper", Items.COPPER_LANTERN.waxed(), ((BlockItem) Items.COPPER_LANTERN.waxed()).getBlock()),
-      GREEN("green", Items.COPPER_LANTERN.waxedOxidized(), ((BlockItem) Items.COPPER_LANTERN.waxedOxidized()).getBlock());
+      COPPER("copper", Items.COPPER_LANTERN.waxed().unaffected(), ((BlockItem) Items.COPPER_LANTERN.waxed().unaffected()).getBlock()),
+      GREEN("green", Items.COPPER_LANTERN.waxed().oxidized(), ((BlockItem) Items.COPPER_LANTERN.waxed().oxidized()).getBlock());
       
       public static final LazyItemStack ITINERANTEUR_NORMAL = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_normal"));
       public static final LazyItemStack ITINERANTEUR_NORMAL_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_normal_hanging"));
@@ -427,11 +427,11 @@ public class Itineranteur extends ArcanaBlock {
       
       public static LanternType fromItemStack(ItemStack stack){
          if(stack.is(Items.SOUL_LANTERN)) return BLUE;
-         if(stack.is(Items.COPPER_LANTERN.oxidized()) || stack.is(Items.COPPER_LANTERN.weathered()) ||
-               stack.is(Items.COPPER_LANTERN.waxedOxidized()) || stack.is(Items.COPPER_LANTERN.waxedWeathered()))
+         if(stack.is(Items.COPPER_LANTERN.weathering().oxidized()) || stack.is(Items.COPPER_LANTERN.weathering().weathered()) ||
+               stack.is(Items.COPPER_LANTERN.waxed().oxidized()) || stack.is(Items.COPPER_LANTERN.waxed().weathered()))
             return GREEN;
-         if(stack.is(Items.COPPER_LANTERN.exposed()) || stack.is(Items.COPPER_LANTERN.unaffected()) ||
-               stack.is(Items.COPPER_LANTERN.waxedExposed()) || stack.is(Items.COPPER_LANTERN.waxed())) return COPPER;
+         if(stack.is(Items.COPPER_LANTERN.weathering().exposed()) || stack.is(Items.COPPER_LANTERN.weathering().unaffected()) ||
+               stack.is(Items.COPPER_LANTERN.waxed().exposed()) || stack.is(Items.COPPER_LANTERN.waxed().unaffected())) return COPPER;
          return YELLOW;
       }
       

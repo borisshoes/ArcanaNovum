@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -14,7 +15,6 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -33,8 +33,8 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
       return List.of(positiveInput, negativeInput, reagent1, reagent2, aequalisInput);
    }
    
-   private Tuple<ArrayList<Tuple<ArcanaAugment, Integer>>, Integer> getCanSell(List<ArcanaAugment> item1Augments, ArcanaItem otherItem, ArcanaPlayerData profile){
-      ArrayList<Tuple<ArcanaAugment, Integer>> canSell = new ArrayList<>();
+   private Pair<ArrayList<Pair<ArcanaAugment, Integer>>, Integer> getCanSell(List<ArcanaAugment> item1Augments, ArcanaItem otherItem, ArcanaPlayerData profile){
+      ArrayList<Pair<ArcanaAugment, Integer>> canSell = new ArrayList<>();
       int sellingPower = 0;
       for(ArcanaAugment i1aug : item1Augments){
          boolean linked = false;
@@ -49,7 +49,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
          
          int curLvl = profile.getAugmentLevel(i1aug);
          if(curLvl > 0){
-            canSell.add(new Tuple<>(i1aug, curLvl));
+            canSell.add(Pair.of(i1aug, curLvl));
             for(int i = 1; i <= i1aug.getTiers().length; i++){
                sellingPower += i1aug.getTiers()[i - 1].rarity + 1;
             }
@@ -57,11 +57,11 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
       }
       Collections.shuffle(canSell);
       
-      return new Tuple<>(canSell, sellingPower);
+      return Pair.of(canSell, sellingPower);
    }
    
    @Override
-   public List<Tuple<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
+   public List<Pair<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       ItemStack input1Stack = input1Entity != null ? input1Entity.getItem() : ItemStack.EMPTY;
       ItemStack input2Stack = input2Entity != null ? input2Entity.getItem() : ItemStack.EMPTY;
@@ -88,7 +88,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
          
          while(cycles < 100){
             cycles++;
-            ArrayList<Tuple<ArcanaAugment, Integer>> canBuy = new ArrayList<>();
+            ArrayList<Pair<ArcanaAugment, Integer>> canBuy = new ArrayList<>();
             int cheapestBuy = Integer.MAX_VALUE;
             for(ArcanaAugment i2aug : item2Augments){
                int maxLvl = i2aug.getTiers().length;
@@ -105,7 +105,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
                if(linked) continue;
                
                if(curLvl < maxLvl){
-                  canBuy.add(new Tuple<>(i2aug, curLvl + 1));
+                  canBuy.add(Pair.of(i2aug, curLvl + 1));
                   if(i2aug.getTiers()[curLvl].rarity + 1 < cheapestBuy){
                      cheapestBuy = i2aug.getTiers()[curLvl].rarity + 1;
                   }
@@ -113,28 +113,28 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
             }
             Collections.shuffle(canBuy);
             
-            Tuple<ArrayList<Tuple<ArcanaAugment, Integer>>, Integer> canSellRet = getCanSell(item1Augments, arcanaItem2, profile);
-            ArrayList<Tuple<ArcanaAugment, Integer>> canSell = canSellRet.getA();
-            sellingPower = canSellRet.getB();
+            Pair<ArrayList<Pair<ArcanaAugment, Integer>>, Integer> canSellRet = getCanSell(item1Augments, arcanaItem2, profile);
+            ArrayList<Pair<ArcanaAugment, Integer>> canSell = canSellRet.getFirst();
+            sellingPower = canSellRet.getSecond();
             
             if(cheapestBuy > sellingPower + liquidated) break;
             
-            for(Tuple<ArcanaAugment, Integer> buyPair : canBuy){
-               ArcanaAugment buyAug = buyPair.getA();
-               int buyLvl = buyPair.getB();
+            for(Pair<ArcanaAugment, Integer> buyPair : canBuy){
+               ArcanaAugment buyAug = buyPair.getFirst();
+               int buyLvl = buyPair.getSecond();
                int cost = buyAug.getTiers()[buyLvl - 1].rarity + 1;
                if(cost > sellingPower + liquidated) continue;
                
                boolean cantSell = false;
                while(cost > liquidated){
-                  Tuple<ArcanaAugment, Integer> toSell = canSell.getFirst();
-                  ArcanaAugment sellAug = toSell.getA();
-                  int sellLvl = toSell.getB();
+                  Pair<ArcanaAugment, Integer> toSell = canSell.getFirst();
+                  ArcanaAugment sellAug = toSell.getFirst();
+                  int sellLvl = toSell.getSecond();
                   profile.setAugmentLevel(sellAug, sellLvl - 1);
                   liquidated += sellAug.getTiers()[sellLvl - 1].rarity + 1;
                   
                   canSellRet = getCanSell(item1Augments, arcanaItem2, profile);
-                  canSell = canSellRet.getA();
+                  canSell = canSellRet.getFirst();
                   if(canSell.isEmpty()){
                      cantSell = true;
                      break;

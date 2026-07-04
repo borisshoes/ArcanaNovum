@@ -133,7 +133,7 @@ public class ServerPlayerMixin {
       }
    }
    
-   @Inject(method = "onEffectAdded", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/criterion/EffectsChangedTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/Entity;)V"))
+   @Inject(method = "onEffectAdded", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/triggers/EffectsChangedTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/Entity;)V"))
    private void arcananovum$effectApplied(MobEffectInstance effect, Entity source, CallbackInfo ci){
       // Effect Research Task Check
       for(Map.Entry<ResourceKey<ResearchTask>, ResearchTask> entry : ResearchTasks.RESEARCH_TASKS.entrySet()){
@@ -147,7 +147,7 @@ public class ServerPlayerMixin {
       }
    }
    
-   @Inject(method = "teleport", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getLevelData()Lnet/minecraft/world/level/storage/LevelData;"))
+   @Inject(method = "teleport*", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getLevelData()Lnet/minecraft/world/level/storage/LevelData;"))
    private void arcananovum$teleportDimensionChange(TeleportTransition teleportTarget, CallbackInfoReturnable<Entity> cir){
       ServerPlayer player = (ServerPlayer) (Object) this;
       ArcanaNovum.data(player).setResearchTask(ResearchTasks.DIMENSION_TRAVEL, true);

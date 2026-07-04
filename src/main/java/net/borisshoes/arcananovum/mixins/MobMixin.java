@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.utils.SpawnPile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.portal.TeleportTransition;
@@ -43,10 +43,10 @@ public class MobMixin {
       Mob mob = (Mob) (Object) this;
       if(mob instanceof NulGuardianEntity guardian){
          if(guardian.getConstruct() != null){
-            List<BlockPos> poses = SpawnPile.makeSpawnLocations(1, 16, (ServerLevel) guardian.getConstruct().level(), EntityType.WITHER_SKELETON, guardian.getConstruct().blockPosition());
+            List<BlockPos> poses = SpawnPile.makeSpawnLocations(1, 16, (ServerLevel) guardian.getConstruct().level(), EntityTypes.WITHER_SKELETON, guardian.getConstruct().blockPosition());
             if(poses.isEmpty() || poses.getFirst() == null) return;
             ArcanaEffectUtils.shadowGlaiveTp((ServerLevel) guardian.level(), guardian.position());
-            guardian.teleport(new TeleportTransition((ServerLevel) guardian.getConstruct().level(), poses.getFirst().getCenter(), Vec3.ZERO, guardian.getYRot(), guardian.getXRot(), TeleportTransition.DO_NOTHING));
+            guardian.teleport(new TeleportTransition((ServerLevel) guardian.getConstruct().level(), Vec3.atCenterOf(poses.getFirst()), Vec3.ZERO, guardian.getYRot(), guardian.getXRot(), TeleportTransition.DO_NOTHING));
             ArcanaEffectUtils.shadowGlaiveTp((ServerLevel) guardian.level(), guardian.position());
             ci.cancel();
          }

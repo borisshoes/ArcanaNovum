@@ -74,7 +74,7 @@ public class StarpathAltarGui extends SimpleGui {
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("Z: " + target.getZ()).withStyle(ChatFormatting.YELLOW)))));
       if(stargate){
-         locationItem.addLoreLine(Component.literal("Dimension: ").withStyle(ChatFormatting.YELLOW).append(MinecraftUtils.getFormattedDimName(blockEntity.getTargetDimension())));
+         locationItem.addLoreLine(Component.literal("Dimension: ").withStyle(ChatFormatting.YELLOW).append(TextUtils.getFormattedDimName(blockEntity.getTargetDimension())));
       }
       locationItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
             .append(Component.literal("").withStyle(ChatFormatting.YELLOW)))));

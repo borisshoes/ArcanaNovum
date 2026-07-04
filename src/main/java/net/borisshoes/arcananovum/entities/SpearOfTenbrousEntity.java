@@ -34,10 +34,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityReference;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -113,7 +110,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
    
    @Override
    public EntityType<?> getPolymerEntityType(PacketContext context){
-      return EntityType.TRIDENT;
+      return EntityTypes.TRIDENT;
    }
    
    @Override

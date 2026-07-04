@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -27,7 +28,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -196,20 +196,20 @@ public class LightCharm extends ArcanaItem {
          }
       }
       
-      List<Tuple<BlockPos, Integer>> pairTree = new ArrayList<>();
+      List<Pair<BlockPos, Integer>> pairTree = new ArrayList<>();
       int limit = threshold == 15 ? 1 : (15 - threshold);
       
       while(!possiblePositions.isEmpty()){
          BlockPos root = possiblePositions.iterator().next();
-         iterativeNovaSearch(limit, new Tuple<>(root, 0), possiblePositions, pairTree);
+         iterativeNovaSearch(limit, Pair.of(root, 0), possiblePositions, pairTree);
       }
       
       
       int placedCount = 0;
-      for(Tuple<BlockPos, Integer> pair : pairTree){
-         if(pair.getB() == 0){
-            world.setBlock(pair.getA(), Blocks.LIGHT.defaultBlockState().setValue(LEVEL, 15), Block.UPDATE_ALL);
-            world.gameEvent(player, GameEvent.BLOCK_PLACE, pair.getA());
+      for(Pair<BlockPos, Integer> pair : pairTree){
+         if(pair.getSecond() == 0){
+            world.setBlock(pair.getFirst(), Blocks.LIGHT.defaultBlockState().setValue(LEVEL, 15), Block.UPDATE_ALL);
+            world.gameEvent(player, GameEvent.BLOCK_PLACE, pair.getFirst());
             
             placedCount++;
          }
@@ -220,8 +220,8 @@ public class LightCharm extends ArcanaItem {
    }
    
    // TODO maybe make this async in the future?
-   private void iterativeNovaSearch(int limit, Tuple<BlockPos, Integer> startPair, Set<BlockPos> posSet, List<Tuple<BlockPos, Integer>> pairTree){
-      Queue<Tuple<BlockPos, Integer>> queue = new LinkedList<>();
+   private void iterativeNovaSearch(int limit, Pair<BlockPos, Integer> startPair, Set<BlockPos> posSet, List<Pair<BlockPos, Integer>> pairTree){
+      Queue<Pair<BlockPos, Integer>> queue = new LinkedList<>();
       queue.add(startPair);
       
       Vec3i[] diagonals = new Vec3i[]{
@@ -240,23 +240,23 @@ public class LightCharm extends ArcanaItem {
       };
       
       while(!queue.isEmpty()){
-         Tuple<BlockPos, Integer> pair = queue.poll();
-         BlockPos pos = pair.getA();
+         Pair<BlockPos, Integer> pair = queue.poll();
+         BlockPos pos = pair.getFirst();
          
          if(posSet.remove(pos)){
             pairTree.add(pair);
             
             for(Direction direction : Direction.values()){
                BlockPos offset = pos.relative(direction);
-               if(posSet.contains(offset) && pair.getB() + 1 <= limit){
-                  queue.add(new Tuple<>(offset, pair.getB() + 1));
+               if(posSet.contains(offset) && pair.getSecond() + 1 <= limit){
+                  queue.add(Pair.of(offset, pair.getSecond() + 1));
                }
             }
             
             for(Vec3i diagonal : diagonals){
                BlockPos offset = pos.mutable().offset(diagonal);
-               if(posSet.contains(offset) && pair.getB() + 2 <= limit){
-                  queue.add(new Tuple<>(offset, pair.getB() + 2));
+               if(posSet.contains(offset) && pair.getSecond() + 2 <= limit){
+                  queue.add(Pair.of(offset, pair.getSecond() + 2));
                }
             }
          }

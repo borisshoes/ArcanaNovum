@@ -33,7 +33,7 @@ public class TowerGui extends HotbarGui {
       this.setSlot(7, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.EQUAYUS_COLOR)).setName(Component.literal("")).hideTooltip());
    
       this.setSlot(2, new GuiElementBuilder(Items.TWISTING_VINES).setName(Component.literal("Channel Laser").withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA)).glow());
-      this.setSlot(5, new GuiElementBuilder(Items.LIGHT_BLUE_STAINED_GLASS).setName(Component.literal("Protect Allies").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA)).glow());
+      this.setSlot(5, new GuiElementBuilder(Items.STAINED_GLASS.lightBlue()).setName(Component.literal("Protect Allies").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA)).glow());
       this.setSlot(8, new GuiElementBuilder(Items.BARRIER).setName(Component.literal("Exit").withStyle(ChatFormatting.BOLD, ChatFormatting.RED)));
    }
    
@@ -60,10 +60,10 @@ public class TowerGui extends HotbarGui {
    public void onTick(){
       if(shieldTicks > 0){
          shieldTicks--;
-         this.setSlot(5, new GuiElementBuilder(Items.LIGHT_BLUE_STAINED_GLASS).setName(Component.literal("Protect Allies").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA)).setCount(shieldTicks/20 + 1));
+         this.setSlot(5, new GuiElementBuilder(Items.STAINED_GLASS.lightBlue()).setName(Component.literal("Protect Allies").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA)).setCount(shieldTicks/20 + 1));
       }
       if(shieldTicks == 0){
-         this.setSlot(5, new GuiElementBuilder(Items.LIGHT_BLUE_STAINED_GLASS).setName(Component.literal("Protect Allies").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA)).glow());
+         this.setSlot(5, new GuiElementBuilder(Items.STAINED_GLASS.lightBlue()).setName(Component.literal("Protect Allies").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA)).glow());
       }
       super.onTick();
    }

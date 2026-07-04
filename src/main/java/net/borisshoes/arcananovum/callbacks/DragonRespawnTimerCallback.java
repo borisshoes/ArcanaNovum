@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
@@ -11,7 +12,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
 
 public class DragonRespawnTimerCallback extends TickTimerCallback {
@@ -25,15 +25,15 @@ public class DragonRespawnTimerCallback extends TickTimerCallback {
    @Override
    public void onTimer(){
       try{
-         Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
-         if(bossFight != null && bossFight.getA() == BossFights.DRAGON){
-            CompoundTag data = bossFight.getB();
+         Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+         if(bossFight != null && bossFight.getFirst() == BossFights.DRAGON){
+            CompoundTag data = bossFight.getSecond();
             String state = data.getStringOr("State", "");
             ServerPlayer gm = server.getPlayerList().getPlayer(AlgoUtils.getUUID(data.getStringOr("GameMaster", "")));
             if(DragonBossFight.States.valueOf(state) == DragonBossFight.States.WAITING_RESPAWN){
                //Check for alive Dragon
                if(!server.getLevel(Level.END).getDragons().isEmpty()){
-                  bossFight.getB().putString("State", DragonBossFight.States.WAITING_START.name());
+                  bossFight.getSecond().putString("State", DragonBossFight.States.WAITING_START.name());
                   // Confirm message
                   if(gm != null){
                      gm.sendSystemMessage(Component.literal("Dragon Respawned Successfully"));

@@ -71,6 +71,7 @@
     "WitherBossMixin"
   ],
   "client": [
+    "SplashManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

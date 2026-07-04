@@ -15,6 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -135,7 +136,7 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker {
          if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             ArrayList<BlockPos> blocks = new ArrayList<>();
             for(BlockPos block : BlockPos.withinManhattan(getBlockPos(), (int) range + 4, (int) range + 4, (int) range + 4)){
-               if(block.getCenter().distanceTo(getBlockPos().getCenter()) <= range + 1){
+               if(Vec3.atCenterOf(block).distanceTo(Vec3.atCenterOf(getBlockPos())) <= range + 1){
                   blocks.add(block.mutable());
                }
             }
@@ -149,8 +150,8 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker {
       public List<Entity> getAffectedEntities(ServerLevel world){
          if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             BlockPos blockPos = getBlockPos();
-            AABB rangeBox = AABB.unitCubeFromLowerCorner(blockPos.getCenter()).inflate(range + 4);
-            return world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(blockPos.getCenter()) < 1.25 * range * range && e instanceof LivingEntity);
+            AABB rangeBox = AABB.unitCubeFromLowerCorner(Vec3.atCenterOf(blockPos)).inflate(range + 4);
+            return world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(Vec3.atCenterOf(blockPos)) < 1.25 * range * range && e instanceof LivingEntity);
          }else{
             return new ArrayList<>();
          }

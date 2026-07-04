@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -34,19 +34,19 @@ public class ExplainRecipe extends ArcanaRecipe {
    }
    
    @Override
-   public HashMap<String, Tuple<Integer, ItemStack>> getIngredientList(){
-      HashMap<String, Tuple<Integer, ItemStack>> map = new HashMap<>();
+   public HashMap<String, Pair<Integer, ItemStack>> getIngredientList(){
+      HashMap<String, Pair<Integer, ItemStack>> map = new HashMap<>();
       for(int i = 0; i < explainIngredients.length; i++){
          for(int j = 0; j < explainIngredients[0].length; j++){
             ItemStack stack = explainIngredients[i][j].ingredientAsStack();
             if(!stack.isEmpty() && explainIngredients[i][j].show){
                String ingred = explainIngredients[i][j].getName();
-               Tuple<Integer, ItemStack> pair;
+               Pair<Integer, ItemStack> pair;
                if(map.containsKey(ingred)){
-                  int oldCount = map.get(ingred).getA();
-                  pair = new Tuple<>(explainIngredients[i][j].count + oldCount, stack);
+                  int oldCount = map.get(ingred).getFirst();
+                  pair = Pair.of(explainIngredients[i][j].count + oldCount, stack);
                }else{
-                  pair = new Tuple<>(explainIngredients[i][j].count, stack);
+                  pair = Pair.of(explainIngredients[i][j].count, stack);
                }
                map.put(ingred, pair);
             }

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.gui.starlightforge;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -27,7 +28,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
@@ -277,20 +277,20 @@ public class EnhancedForgingGui extends SimpleGui {
       });
       setSlot(26, placementItem);
       
-      Tuple<EFItem, Integer>[][] board = game.getBoard();
+      Pair<EFItem, Integer>[][] board = game.getBoard();
       
       for(int x = 0; x < game.width; x++){
          for(int y = 0; y < game.height; y++){
-            Tuple<EFItem, Integer> tile = board[x][y];
-            GuiElementBuilder elem = EFItem.getGuiElement(tile.getA());
-            if(tile.getA() != EFItem.PLANET){
+            Pair<EFItem, Integer> tile = board[x][y];
+            GuiElementBuilder elem = EFItem.getGuiElement(tile.getFirst());
+            if(tile.getFirst() != EFItem.PLANET){
                elem.addLoreLine(Component.literal(""));
-               if(tile.getA() == this.selectedItem){
+               if(tile.getFirst() == this.selectedItem){
                   elem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Shift Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to reset this tile.").withStyle(ChatFormatting.LIGHT_PURPLE))));
                }else{
                   elem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Shift Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to change tile type to ").withStyle(ChatFormatting.LIGHT_PURPLE)).append(this.selectedItem.name)));
                }
-               if(EFItem.hasTurn(tile.getA())){
+               if(EFItem.hasTurn(tile.getFirst())){
                   elem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Left Click").withStyle(ChatFormatting.GREEN)).append(Component.literal(" to hasten this tile's turn.").withStyle(ChatFormatting.LIGHT_PURPLE))));
                   elem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Right Click").withStyle(ChatFormatting.GREEN)).append(Component.literal(" to delay this tile's turn.").withStyle(ChatFormatting.LIGHT_PURPLE))));
                }
@@ -298,7 +298,7 @@ public class EnhancedForgingGui extends SimpleGui {
             
             if(turnMode){
                elem.setMaxCount(99);
-               elem.setCount(tile.getB() + 1);
+               elem.setCount(tile.getSecond() + 1);
             }
             
             if(cinematicMode){
@@ -360,7 +360,7 @@ public class EnhancedForgingGui extends SimpleGui {
             ArcanaAchievements.grant(player, ArcanaAchievements.MASTER_CRAFTSMAN);
          }
          ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STARDUST_INFUSION_PER_STARDUST) * finalCost);
-         Vec3 pos = blockEntity.getBlockPos().getCenter().add(0, 2, 0);
+         Vec3 pos = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 2, 0);
          Containers.dropItemStack(world, pos.x, pos.y, pos.z, enhancedStack);
       }));
       
@@ -571,15 +571,15 @@ class EnhancedForgingGame {
    public static final int PLAY_COST = 10;
    public final int width = 7;
    public final int height = 6;
-   private final Tuple<EFItem, Integer>[][] board = new Tuple[width][height];
-   private final Tuple<EFItem, Integer>[][] originalBoard;
+   private final Pair<EFItem, Integer>[][] board = new Pair[width][height];
+   private final Pair<EFItem, Integer>[][] originalBoard;
    private final List<EFChange> changes;
    private int turn;
    private final RandomSource random = RandomSource.create();
    
    public EnhancedForgingGame(int startingValue, int planetCount, int starCount, long seed){
       random.setSeed(seed);
-      originalBoard = new Tuple[width][height];
+      originalBoard = new Pair[width][height];
       createNewBoard(startingValue, planetCount, starCount);
       changes = new ArrayList<>();
    }
@@ -587,30 +587,30 @@ class EnhancedForgingGame {
    private void createNewBoard(int startingValue, int planetCount, int starCount){
       turn = 0;
       
-      ArrayList<Tuple<Integer, Integer>> eligible = new ArrayList<>();
+      ArrayList<Pair<Integer, Integer>> eligible = new ArrayList<>();
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            board[x][y] = new Tuple<>(EFItem.GAS, 0);
-            eligible.add(new Tuple<>(x, y));
+            board[x][y] = Pair.of(EFItem.GAS, 0);
+            eligible.add(Pair.of(x, y));
          }
       }
       
       for(int i = 0; i < planetCount && !eligible.isEmpty(); i++){
-         Tuple<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
-         board[tile.getA()][tile.getB()] = new Tuple<>(EFItem.PLANET, 0);
+         Pair<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
+         board[tile.getFirst()][tile.getSecond()] = Pair.of(EFItem.PLANET, 0);
          eligible.remove(tile);
       }
       
       for(int i = 0; i < starCount && !eligible.isEmpty(); i++){
-         Tuple<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
-         board[tile.getA()][tile.getB()] = new Tuple<>(random.nextFloat() < 0.66 ? EFItem.STAR : EFItem.PULSAR, 0);
+         Pair<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
+         board[tile.getFirst()][tile.getSecond()] = Pair.of(random.nextFloat() < 0.66 ? EFItem.STAR : EFItem.PULSAR, 0);
          eligible.remove(tile);
       }
       
       EFItem placeItem = EFItem.randomPlacementItem(startingValue, random);
       while(placeItem != null && !eligible.isEmpty()){
-         Tuple<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
-         board[tile.getA()][tile.getB()] = new Tuple<>(placeItem, 0);
+         Pair<Integer, Integer> tile = eligible.get(random.nextInt(eligible.size()));
+         board[tile.getFirst()][tile.getSecond()] = Pair.of(placeItem, 0);
          eligible.remove(tile);
          startingValue -= placeItem.startingValue;
          placeItem = EFItem.randomPlacementItem(startingValue, random);
@@ -619,8 +619,8 @@ class EnhancedForgingGame {
       eligible.clear();
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            if(EFItem.hasTurn(board[x][y].getA())){
-               eligible.add(new Tuple<>(x, y));
+            if(EFItem.hasTurn(board[x][y].getFirst())){
+               eligible.add(Pair.of(x, y));
             }
          }
       }
@@ -628,19 +628,20 @@ class EnhancedForgingGame {
       int itemTurn = 1;
       while(!eligible.isEmpty()){
          int index = random.nextInt(eligible.size());
-         Tuple<Integer, Integer> tile = eligible.get(index);
-         board[tile.getA()][tile.getB()].setB(itemTurn);
+         Pair<Integer, Integer> tile = eligible.get(index);
+         Pair<EFItem, Integer> existing = board[tile.getFirst()][tile.getSecond()];
+         board[tile.getFirst()][tile.getSecond()] = new Pair<>(existing.getFirst(),itemTurn);
          itemTurn++;
          eligible.remove(tile);
       }
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            originalBoard[x][y] = new Tuple<>(board[x][y].getA(), board[x][y].getB());
+            originalBoard[x][y] = Pair.of(board[x][y].getFirst(), board[x][y].getSecond());
          }
       }
    }
    
-   public Tuple<EFItem, Integer>[][] getBoard(){
+   public Pair<EFItem, Integer>[][] getBoard(){
       return this.board;
    }
    
@@ -650,19 +651,19 @@ class EnhancedForgingGame {
       while(true){
          turn++;
          
-         Tuple<EFItem, Integer> turnPair = null;
+         Pair<EFItem, Integer> turnPair = null;
          int itemX = -1;
          int itemY = -1;
          int highestTurn = 0;
          for(int x = 0; x < width; x++){
             for(int y = 0; y < height; y++){
-               if(board[x][y].getB() == turn){
+               if(board[x][y].getSecond() == turn){
                   turnPair = board[x][y];
                   itemX = x;
                   itemY = y;
                }
-               if(board[x][y].getB() > highestTurn){
-                  highestTurn = board[x][y].getB();
+               if(board[x][y].getSecond() > highestTurn){
+                  highestTurn = board[x][y].getSecond();
                }
             }
          }
@@ -673,63 +674,63 @@ class EnhancedForgingGame {
             return false;
          }
          
-         EFItem turnItem = turnPair.getA();
+         EFItem turnItem = turnPair.getFirst();
       
          if(turnItem == EFItem.NOVA){
             int count = 0;
-            for(Tuple<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
-               EFItem slotItem = board[slot.getA()][slot.getB()].getA();
+            for(Pair<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
+               EFItem slotItem = board[slot.getFirst()][slot.getSecond()].getFirst();
                if(slotItem == EFItem.PLASMA){
                   count++;
                }
             }
-            board[itemX][itemY] = new Tuple<>(count >= 3 ? EFItem.STAR : EFItem.PLASMA, count >= 3 ? ++highestTurn : 0);
+            board[itemX][itemY] = Pair.of(count >= 3 ? EFItem.STAR : EFItem.PLASMA, count >= 3 ? ++highestTurn : 0);
             tileChanged = true;
          }else if(turnItem == EFItem.QUASAR || turnItem == EFItem.PULSAR || turnItem == EFItem.STAR){
-            for(Tuple<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
-               EFItem slotItem = board[slot.getA()][slot.getB()].getA();
+            for(Pair<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
+               EFItem slotItem = board[slot.getFirst()][slot.getSecond()].getFirst();
                if(slotItem == EFItem.GAS || slotItem == EFItem.PLASMA){
-                  EFItem before = board[slot.getA()][slot.getB()].getA();
-                  board[slot.getA()][slot.getB()] = new Tuple<>(EFItem.PLASMA, 0);
-                  if(board[slot.getA()][slot.getB()].getA() != before) tileChanged = true;
+                  EFItem before = board[slot.getFirst()][slot.getSecond()].getFirst();
+                  board[slot.getFirst()][slot.getSecond()] = Pair.of(EFItem.PLASMA, 0);
+                  if(board[slot.getFirst()][slot.getSecond()].getFirst() != before) tileChanged = true;
                }
             }
          }else if(turnItem == EFItem.SUPERNOVA){
-            for(Tuple<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
-               EFItem slotItem = board[slot.getA()][slot.getB()].getA();
+            for(Pair<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
+               EFItem slotItem = board[slot.getFirst()][slot.getSecond()].getFirst();
                if(slotItem == EFItem.GAS || slotItem == EFItem.PLASMA){
-                  board[slot.getA()][slot.getB()] = new Tuple<>(EFItem.PLASMA, 0);
+                  board[slot.getFirst()][slot.getSecond()] = Pair.of(EFItem.PLASMA, 0);
                }
             }
-            board[itemX][itemY] = new Tuple<>(EFItem.QUASAR, ++highestTurn);
+            board[itemX][itemY] = Pair.of(EFItem.QUASAR, ++highestTurn);
             tileChanged = true;
          }else if(turnItem == EFItem.NEBULA){
             int count = 0;
-            for(Tuple<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
-               EFItem slotItem = board[slot.getA()][slot.getB()].getA();
+            for(Pair<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
+               EFItem slotItem = board[slot.getFirst()][slot.getSecond()].getFirst();
                if(slotItem == EFItem.PLASMA){
                   count++;
                }
             }
             if(count >= 4){
-               board[itemX][itemY] = new Tuple<>(EFItem.NOVA, ++highestTurn);
+               board[itemX][itemY] = Pair.of(EFItem.NOVA, ++highestTurn);
                tileChanged = true;
             }
          }else if(turnItem == EFItem.BLACK_HOLE){
             boolean convert = false;
-            for(Tuple<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
-               EFItem slotItem = board[slot.getA()][slot.getB()].getA();
+            for(Pair<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
+               EFItem slotItem = board[slot.getFirst()][slot.getSecond()].getFirst();
                if(slotItem == EFItem.STAR || slotItem == EFItem.QUASAR || slotItem == EFItem.PULSAR || slotItem == EFItem.BLACK_HOLE){
                   convert = true;
                }
                if(slotItem != EFItem.NEBULA){
-                  EFItem before = board[slot.getA()][slot.getB()].getA();
-                  board[slot.getA()][slot.getB()] = new Tuple<>(EFItem.PLASMA, 0);
-                  if(board[slot.getA()][slot.getB()].getA() != before) tileChanged = true;
+                  EFItem before = board[slot.getFirst()][slot.getSecond()].getFirst();
+                  board[slot.getFirst()][slot.getSecond()] = Pair.of(EFItem.PLASMA, 0);
+                  if(board[slot.getFirst()][slot.getSecond()].getFirst() != before) tileChanged = true;
                }
             }
             if(convert){
-               board[itemX][itemY] = new Tuple<>(EFItem.QUASAR, ++highestTurn);
+               board[itemX][itemY] = Pair.of(EFItem.QUASAR, ++highestTurn);
                tileChanged = true;
             }
          }
@@ -737,12 +738,12 @@ class EnhancedForgingGame {
       }
    }
    
-   private List<Tuple<Integer, Integer>> getValidEffectedSlots(int x, int y, EFItem item){
-      List<Tuple<Integer, Integer>> list = new ArrayList<>();
+   private List<Pair<Integer, Integer>> getValidEffectedSlots(int x, int y, EFItem item){
+      List<Pair<Integer, Integer>> list = new ArrayList<>();
       
-      List<Tuple<Integer, Integer>> touching = new ArrayList<>();
-      List<Tuple<Integer, Integer>> diagonal = new ArrayList<>();
-      List<Tuple<Integer, Integer>> surrounding = new ArrayList<>();
+      List<Pair<Integer, Integer>> touching = new ArrayList<>();
+      List<Pair<Integer, Integer>> diagonal = new ArrayList<>();
+      List<Pair<Integer, Integer>> surrounding = new ArrayList<>();
       addIfValid(touching, x - 1, y);
       addIfValid(touching, x + 1, y);
       addIfValid(touching, x, y - 1);
@@ -781,9 +782,9 @@ class EnhancedForgingGame {
       return x >= 0 && y >= 0 && x < width && y < height;
    }
    
-   private boolean addIfValid(List<Tuple<Integer, Integer>> list, int x, int y){
+   private boolean addIfValid(List<Pair<Integer, Integer>> list, int x, int y){
       if(validSlot(x, y)){
-         list.add(new Tuple<>(x, y));
+         list.add(Pair.of(x, y));
          return true;
       }
       return false;
@@ -793,7 +794,7 @@ class EnhancedForgingGame {
       int starCount = 0;
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            if(board[x][y].getA() == EFItem.STAR || board[x][y].getA() == EFItem.PULSAR){
+            if(board[x][y].getFirst() == EFItem.STAR || board[x][y].getFirst() == EFItem.PULSAR){
                starCount++;
             }
          }
@@ -802,7 +803,7 @@ class EnhancedForgingGame {
    }
    
    public boolean hasNextTurn(){
-      return Arrays.stream(board).anyMatch(subboard -> Arrays.stream(subboard).anyMatch(pair -> pair.getB() > turn)) && turn < 99;
+      return Arrays.stream(board).anyMatch(subboard -> Arrays.stream(subboard).anyMatch(pair -> pair.getSecond() > turn)) && turn < 99;
    }
    
    public int getTurn(){
@@ -813,8 +814,8 @@ class EnhancedForgingGame {
       int highestTurn = 0;
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            if(board[x][y].getB() > highestTurn){
-               highestTurn = board[x][y].getB();
+            if(board[x][y].getSecond() > highestTurn){
+               highestTurn = board[x][y].getSecond();
             }
          }
       }
@@ -825,8 +826,8 @@ class EnhancedForgingGame {
       int lowestTurn = 999;
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            if(board[x][y].getB() < lowestTurn && board[x][y].getB() > 0){
-               lowestTurn = board[x][y].getB();
+            if(board[x][y].getSecond() < lowestTurn && board[x][y].getSecond() > 0){
+               lowestTurn = board[x][y].getSecond();
             }
          }
       }
@@ -836,40 +837,40 @@ class EnhancedForgingGame {
    public void applyChanges(){
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            Tuple<EFItem, Integer> pair = originalBoard[x][y];
-            board[x][y] = new Tuple<>(pair.getA(), pair.getB());
+            Pair<EFItem, Integer> pair = originalBoard[x][y];
+            board[x][y] = Pair.of(pair.getFirst(), pair.getSecond());
          }
       }
       
       for(EFChange change : changes){ // Apply all tile changes
-         int turn = board[change.x][change.y].getB();
+         int turn = board[change.x][change.y].getSecond();
          if(change.type == EFChangeType.TILE_CHANGE){
             EFItem newTile = change.newTile.get();
             if(EFItem.hasTurn(newTile)){
                if(turn == 0){
-                  board[change.x][change.y] = new Tuple<>(newTile, getHighestTurn() + 1);
+                  board[change.x][change.y] = Pair.of(newTile, getHighestTurn() + 1);
                }else{
-                  board[change.x][change.y] = new Tuple<>(newTile, turn);
+                  board[change.x][change.y] = Pair.of(newTile, turn);
                }
             }else{
-               board[change.x][change.y] = new Tuple<>(newTile, 0);
+               board[change.x][change.y] = Pair.of(newTile, 0);
             }
          }
       }
-      ArrayList<Tuple<Integer, Tuple<Integer, Integer>>> turnArray = new ArrayList<>(); // Build turn order array
+      ArrayList<Pair<Integer, Pair<Integer, Integer>>> turnArray = new ArrayList<>(); // Build turn order array
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            if(EFItem.hasTurn(board[x][y].getA())){
-               int turn = board[x][y].getB();
-               turnArray.add(new Tuple<>(turn, new Tuple<>(x, y)));
+            if(EFItem.hasTurn(board[x][y].getFirst())){
+               int turn = board[x][y].getSecond();
+               turnArray.add(Pair.of(turn, Pair.of(x, y)));
             }
          }
       }
-      Comparator<Tuple<Integer, Tuple<Integer, Integer>>> turnComparator = Comparator.comparingInt(Tuple::getA);
+      Comparator<Pair<Integer, Pair<Integer, Integer>>> turnComparator = Comparator.comparingInt(Pair::getFirst);
       turnArray.sort(turnComparator); // Sort turn order array and then build into ordered list
-      ArrayList<Tuple<Integer, Integer>> turnlessArray = new ArrayList<>();
-      for(Tuple<Integer, Tuple<Integer, Integer>> majorPair : turnArray){
-         turnlessArray.add(majorPair.getB());
+      ArrayList<Pair<Integer, Integer>> turnlessArray = new ArrayList<>();
+      for(Pair<Integer, Pair<Integer, Integer>> majorPair : turnArray){
+         turnlessArray.add(majorPair.getSecond());
       }
       
       for(EFChange change : changes){ // Apply turn changes
@@ -881,8 +882,8 @@ class EnhancedForgingGame {
          }
          
          for(int i = 0; i < turnlessArray.size(); i++){
-            int x = turnlessArray.get(i).getA();
-            int y = turnlessArray.get(i).getB();
+            int x = turnlessArray.get(i).getFirst();
+            int y = turnlessArray.get(i).getSecond();
             if(change.x != x || change.y != y) continue;
             if(!increase && i == 0) continue;
             if(increase && i == turnlessArray.size() - 1) continue;
@@ -897,17 +898,17 @@ class EnhancedForgingGame {
       }
       
       for(int i = 0; i < turnlessArray.size(); i++){ // Rebuild turn numbers
-         int x = turnlessArray.get(i).getA();
-         int y = turnlessArray.get(i).getB();
-         board[x][y] = new Tuple<>(board[x][y].getA(), i + 1);
+         int x = turnlessArray.get(i).getFirst();
+         int y = turnlessArray.get(i).getSecond();
+         board[x][y] = Pair.of(board[x][y].getFirst(), i + 1);
       }
    }
    
    public void addChange(EFChange change){
       Iterator<EFChange> iter = changes.iterator();
-      if(change.type == EFChangeType.TILE_CHANGE && board[change.x][change.y].getA() == EFItem.PLANET)
+      if(change.type == EFChangeType.TILE_CHANGE && board[change.x][change.y].getFirst() == EFItem.PLANET)
          return; // Planets are unchangeable
-      if((change.type == EFChangeType.TURN_INCREASE || change.type == EFChangeType.TURN_DECREASE) && !EFItem.hasTurn(board[change.x][change.y].getA()))
+      if((change.type == EFChangeType.TURN_INCREASE || change.type == EFChangeType.TURN_DECREASE) && !EFItem.hasTurn(board[change.x][change.y].getFirst()))
          return; // Cant change turn of tile of different type
       
       while(iter.hasNext()){
@@ -931,10 +932,10 @@ class EnhancedForgingGame {
       }
       
       // Cases with no change from original (set tile to original, move lowest turn lower, move highest turn higher)
-      if(change.type == EFChangeType.TILE_CHANGE && originalBoard[change.x][change.y].getA() == change.newTile.get())
+      if(change.type == EFChangeType.TILE_CHANGE && originalBoard[change.x][change.y].getFirst() == change.newTile.get())
          return;
-      if(change.type == EFChangeType.TURN_INCREASE && board[change.x][change.y].getB() == getHighestTurn()) return;
-      if(change.type == EFChangeType.TURN_DECREASE && board[change.x][change.y].getB() == getLowestTurn()) return;
+      if(change.type == EFChangeType.TURN_INCREASE && board[change.x][change.y].getSecond() == getHighestTurn()) return;
+      if(change.type == EFChangeType.TURN_DECREASE && board[change.x][change.y].getSecond() == getLowestTurn()) return;
       
       changes.add(change);
    }
@@ -946,7 +947,7 @@ class EnhancedForgingGame {
    
    public EFItem getItemAt(int x, int y){
       if(!validSlot(x, y)) return null;
-      return board[x][y].getA();
+      return board[x][y].getFirst();
    }
    
    public void resetBoard(){
@@ -977,7 +978,7 @@ class EnhancedForgingGame {
       return getTurnChangeCost() + getTileChangeCost() + PLAY_COST;
    }
    
-   private static String boardToCode(Tuple<EFItem, Integer>[][] board){
+   private static String boardToCode(Pair<EFItem, Integer>[][] board){
       StringBuilder binaryString = new StringBuilder();
       binaryString.append("0001"); // Version #
       
@@ -988,7 +989,7 @@ class EnhancedForgingGame {
       
       for(int x = 0; x < width; x++){
          for(int y = 0; y < height; y++){
-            EFItem item = board[x][y].getA();
+            EFItem item = board[x][y].getFirst();
             
             // Gas bit
             if(item == EFItem.GAS){
@@ -1003,7 +1004,7 @@ class EnhancedForgingGame {
             
             // Turn bits
             if(EFItem.hasTurn(item)){
-               int turn = board[x][y].getB();
+               int turn = board[x][y].getSecond();
                binaryString.append("1");
                binaryString.append(String.format("%7s", Integer.toBinaryString(turn & ((1 << 7) - 1))).replace(' ', '0'));
             }else{

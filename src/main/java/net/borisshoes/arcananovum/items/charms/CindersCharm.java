@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -34,7 +35,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -82,7 +82,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem, Geomantic
       item = new CindersCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.KILL_BLAZE, ResearchTasks.KILL_MAGMA_CUBE, ResearchTasks.EFFECT_FIRE_RESISTANCE, ResearchTasks.USE_FLINT_AND_STEEL, ResearchTasks.UNLOCK_STELLAR_CORE};
-      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("sarhecker"))};
+      attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("sarhecker"))};
    }
    
    @Override
@@ -527,8 +527,8 @@ public class CindersCharm extends EnergyItem implements LeftClickItem, Geomantic
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
-      Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      AABB box = new AABB(Vec3.atCenterOf(stele.getBlockPos()).subtract(range), Vec3.atCenterOf(stele.getBlockPos()).add(range));
+      Vec3 stackPos = Vec3.atCenterOf(stele.getBlockPos()).add(0, 1, 0);
       
       boolean active = getBooleanProperty(stack, ACTIVE_TAG);
       boolean cremation = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.CREMATION) >= 1;

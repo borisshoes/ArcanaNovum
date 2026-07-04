@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -27,7 +28,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -53,7 +53,9 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -73,7 +75,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
       item = new GreavesOfGaialtusItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_GREAVES_OF_GAIALTUS};
-      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("tcmEcho")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("tcmEcho"))};
+      attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("tcmEcho")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("tcmEcho"))};
    }
    
    @Override
@@ -148,7 +150,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
             .append(Component.literal(" auto-refill.").withStyle(ChatFormatting.DARK_GREEN)));
       
       if(itemStack != null){
-         List<Tuple<Item, Integer>> cargo = getCargoList(itemStack);
+         List<Pair<Item, Integer>> cargo = getCargoList(itemStack);
          
          if(cargo.isEmpty()){
             lore.add(Component.literal(""));
@@ -160,13 +162,13 @@ public class GreavesOfGaialtus extends ArcanaItem {
             lore.add(Component.literal("").append(Component.literal("Contents: ").withStyle(ChatFormatting.DARK_GREEN)));
             int leftOverCount = 0;
             for(int i = 0; i < cargo.size(); i++){
-               int count = cargo.get(i).getB();
+               int count = cargo.get(i).getSecond();
                if(i >= 10){
                   leftOverCount += count;
                   continue;
                }
                
-               Item item = cargo.get(i).getA();
+               Item item = cargo.get(i).getFirst();
                int stacks = count / item.getDefaultMaxStackSize();
                int leftover = count % item.getDefaultMaxStackSize();
                
@@ -237,26 +239,19 @@ public class GreavesOfGaialtus extends ArcanaItem {
       return stack;
    }
    
-   public List<Tuple<Item, Integer>> getCargoList(ItemStack greaves){
-      List<Tuple<Item, Integer>> list = new ArrayList<>();
-      if(!(ArcanaItemUtils.identifyItem(greaves) instanceof GreavesOfGaialtus)) return list;
+   public List<Pair<Item, Integer>> getCargoList(ItemStack greaves) {
+      List<Pair<Item, Integer>> list = new ArrayList<>();
+      if (!(ArcanaItemUtils.identifyItem(greaves) instanceof GreavesOfGaialtus)) return list;
+      
       ItemContainerContents containerItems = greaves.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      Map<Item, Integer> counts = new LinkedHashMap<>();
       containerItems.nonEmptyItemCopyStream().forEach(stack -> {
-         if(stack.isEmpty()) return;
-         Item item = stack.getItem();
-         boolean found = false;
-         for(Tuple<Item, Integer> pair : list){
-            if(pair.getA() == item){
-               pair.setB(pair.getB() + stack.getCount());
-               found = true;
-               break;
-            }
-         }
-         if(!found){
-            list.add(new Tuple<>(item, stack.getCount()));
-         }
+         if (stack.isEmpty()) return;
+         counts.merge(stack.getItem(), stack.getCount(), Integer::sum);
       });
-      list.sort((pair1, pair2) -> pair2.getB().compareTo(pair1.getB()));
+      
+      counts.forEach((item, count) -> list.add(Pair.of(item, count)));
+      list.sort((pair1, pair2) -> pair2.getSecond().compareTo(pair1.getSecond()));
       return list;
    }
    

@@ -17,6 +17,7 @@ import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.inventory.MenuType;
@@ -45,11 +46,11 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
       this.costMode = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       setTitle(Component.literal("Transmutation Altar"));
       
-      action1TextColor(ChatFormatting.LIGHT_PURPLE.getColor().intValue());
-      action2TextColor(ChatFormatting.AQUA.getColor().intValue());
-      action3TextColor(ChatFormatting.DARK_AQUA.getColor().intValue());
-      primaryTextColor(ChatFormatting.AQUA.getColor().intValue());
-      secondaryTextColor(ChatFormatting.DARK_PURPLE.getColor().intValue());
+      action1TextColor(TextColor.LIGHT_PURPLE.getValue());
+      action2TextColor(TextColor.AQUA.getValue());
+      action3TextColor(TextColor.DARK_AQUA.getValue());
+      primaryTextColor(TextColor.AQUA.getValue());
+      secondaryTextColor(TextColor.DARK_PURPLE.getValue());
       
       blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, 0x9af7ff)).hideTooltip());
       
@@ -339,7 +340,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
    private static class ItemSort extends GuiSort<ItemStack> {
       public static final List<ItemSort> SORTS = new ArrayList<>();
       
-      public static final ItemSort ALPHABETICAL = new ItemSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor().intValue(),
+      public static final ItemSort ALPHABETICAL = new ItemSort("gui.borislib.alphabetical", TextColor.GREEN.getValue(),
             Comparator.comparing((stack) -> stack.getDisplayName().getString()));
       
       private ItemSort(String key, int color, Comparator<ItemStack> comparator){
@@ -360,11 +361,11 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
    private static class TransmutationFilter extends GuiFilter<TransmutationRecipe> {
       public static final List<TransmutationFilter> FILTERS = new ArrayList<>();
       
-      public static final TransmutationFilter NONE = new TransmutationFilter("gui.borislib.none", ChatFormatting.WHITE.getColor().intValue(), entry -> true);
-      public static final TransmutationFilter COMMUTATIVE = new TransmutationFilter("gui.arcananovum.commutative", ChatFormatting.GREEN.getColor().intValue(), entry -> entry instanceof CommutativeTransmutationRecipe);
-      public static final TransmutationFilter INFUSION = new TransmutationFilter("gui.arcananovum.infusion", ChatFormatting.DARK_PURPLE.getColor().intValue(), entry -> entry instanceof InfusionTransmutationRecipe);
-      public static final TransmutationFilter PERMUTATION = new TransmutationFilter("gui.arcananovum.permutation", ChatFormatting.DARK_AQUA.getColor().intValue(), entry -> entry instanceof PermutationTransmutationRecipe);
-      public static final TransmutationFilter AEQUALIS = new TransmutationFilter("gui.arcananovum.aequalis", ChatFormatting.AQUA.getColor().intValue(), entry -> (entry instanceof AequalisSkillTransmutationRecipe) || (entry instanceof AequalisCatalystTransmutationRecipe) || (entry instanceof AequalisUnattuneTransmutationRecipe));
+      public static final TransmutationFilter NONE = new TransmutationFilter("gui.borislib.none", TextColor.WHITE.getValue(), entry -> true);
+      public static final TransmutationFilter COMMUTATIVE = new TransmutationFilter("gui.arcananovum.commutative", TextColor.GREEN.getValue(), entry -> entry instanceof CommutativeTransmutationRecipe);
+      public static final TransmutationFilter INFUSION = new TransmutationFilter("gui.arcananovum.infusion", TextColor.DARK_PURPLE.getValue(), entry -> entry instanceof InfusionTransmutationRecipe);
+      public static final TransmutationFilter PERMUTATION = new TransmutationFilter("gui.arcananovum.permutation", TextColor.DARK_AQUA.getValue(), entry -> entry instanceof PermutationTransmutationRecipe);
+      public static final TransmutationFilter AEQUALIS = new TransmutationFilter("gui.arcananovum.aequalis", TextColor.AQUA.getValue(), entry -> (entry instanceof AequalisSkillTransmutationRecipe) || (entry instanceof AequalisCatalystTransmutationRecipe) || (entry instanceof AequalisUnattuneTransmutationRecipe));
       
       private TransmutationFilter(String key, int color, Predicate<TransmutationRecipe> predicate){
          super(key, color, predicate);
@@ -384,7 +385,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
    private static class TransmutationSort extends GuiSort<TransmutationRecipe> {
       public static final List<TransmutationSort> SORTS = new ArrayList<>();
       
-      public static final TransmutationSort CATEGORY = new TransmutationSort("gui.arcananovum.category", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+      public static final TransmutationSort CATEGORY = new TransmutationSort("gui.arcananovum.category", TextColor.LIGHT_PURPLE.getValue(),
             Comparator.<TransmutationRecipe>comparingInt((recipe) -> {
                if(recipe instanceof CommutativeTransmutationRecipe) return 1;
                if(recipe instanceof InfusionTransmutationRecipe) return 2;
@@ -394,7 +395,7 @@ public class TransmutationAltarRecipeGui extends PagedMultiGui {
                if(recipe instanceof AequalisUnattuneTransmutationRecipe) return 6;
                return 7;
             }).thenComparing(TransmutationRecipe::getId));
-      public static final TransmutationSort ALPHABETICAL = new TransmutationSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor().intValue(),
+      public static final TransmutationSort ALPHABETICAL = new TransmutationSort("gui.borislib.alphabetical", TextColor.GREEN.getValue(),
             Comparator.comparing(TransmutationRecipe::getId));
       
       private TransmutationSort(String key, int color, Comparator<TransmutationRecipe> comparator){

@@ -194,7 +194,7 @@ public class Planeshifter extends EnergyItem {
       Vec3 destPos = worldBorder.clampVec3ToBound(player.getX() * scale, player.getY(), player.getZ() * scale);
       Optional<BlockPos> portalRect = destWorld.getPortalForcer().findClosestPortalPosition(BlockPos.containing(destPos), destIsNether, worldBorder);
       if(portalRect.isPresent()){
-         player.teleport(new TeleportTransition(destWorld, portalRect.get().getCenter(), player.getDeltaMovement(), player.getYRot(), player.getXRot(), TeleportTransition.PLAY_PORTAL_SOUND.then(entityx -> entityx.placePortalTicket(portalRect.get()))));
+         player.teleport(new TeleportTransition(destWorld, Vec3.atCenterOf(portalRect.get()), player.getDeltaMovement(), player.getYRot(), player.getXRot(), TeleportTransition.PLAY_PORTAL_SOUND.then(entityx -> entityx.placePortalTicket(portalRect.get()))));
          player.setPortalCooldown();
          player.sendSystemMessage(Component.literal("The Planeshifter syncs up with a Nether Portal").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
       }else{

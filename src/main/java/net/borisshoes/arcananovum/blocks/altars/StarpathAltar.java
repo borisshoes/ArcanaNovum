@@ -268,7 +268,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
             if(waystone.isPresent()){
                Waystone.WaystoneTarget target = Waystone.getTarget(waystone.get().getItem());
                altar.setTarget(new StarpathAltarBlockEntity.TargetEntry(
-                     MinecraftUtils.getFormattedDimName(target.world()).getString() + " " + BlockPos.containing(target.position()).toShortString(),
+                     TextUtils.getFormattedDimName(target.world()).getString() + " " + BlockPos.containing(target.position()).toShortString(),
                      target.world().identifier().toString(),
                      (int) target.position().x(),
                      (int) target.position().y(),

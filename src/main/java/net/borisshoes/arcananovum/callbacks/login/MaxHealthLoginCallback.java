@@ -24,7 +24,7 @@ public class MaxHealthLoginCallback extends LoginCallback {
    public void onLogin(ServerGamePacketListenerImpl netHandler, MinecraftServer server){
       ServerPlayer player = netHandler.player;
       if(player.getStringUUID().equals(playerUUID)){
-         player.collectEquipmentChanges();
+         player.detectEquipmentUpdates();
          player.setHealth(hp);
       }
    }

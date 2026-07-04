@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.research;
 
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -9,10 +10,10 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -316,8 +317,8 @@ public class ResearchTasks {
       ));
       
       ResearchTasks.register(OBTAIN_LIGHTNING_ROD, new ObtainResearchTask(
-            OBTAIN_LIGHTNING_ROD.identifier().getPath(), Items.LIGHTNING_ROD,
-            new ItemStack(Items.LIGHTNING_ROD)
+            OBTAIN_LIGHTNING_ROD.identifier().getPath(), BlockItemTags.LIGHTNING_RODS.item(),
+            new ItemStack(Items.LIGHTNING_ROD.weathering().unaffected())
       ));
       
       ResearchTasks.register(OBTAIN_AMETHYST_CLUSTER, new ObtainResearchTask(
@@ -411,32 +412,32 @@ public class ResearchTasks {
       ));
       
       ResearchTasks.register(OBTAIN_LANTERN, new ObtainResearchTask(
-            OBTAIN_LANTERN.identifier().getPath(), ItemTags.LANTERNS,
+            OBTAIN_LANTERN.identifier().getPath(), BlockItemTags.LANTERNS.item(),
             new ItemStack(Items.LANTERN)
       ));
       
       ResearchTasks.register(BREAK_SCULK, new StatisticResearchTask<>(
-            BREAK_SCULK.identifier().getPath(), Either.right(new Tuple<>(Stats.BLOCK_MINED, Blocks.SCULK)), 1,
+            BREAK_SCULK.identifier().getPath(), Either.right(Pair.of(Stats.BLOCK_MINED, Blocks.SCULK)), 1,
             new ItemStack(Items.SCULK)
       ));
       
       ResearchTasks.register(BREAK_SPAWNER, new StatisticResearchTask<>(
-            BREAK_SPAWNER.identifier().getPath(), Either.right(new Tuple<>(Stats.BLOCK_MINED, Blocks.SPAWNER)), 1,
+            BREAK_SPAWNER.identifier().getPath(), Either.right(Pair.of(Stats.BLOCK_MINED, Blocks.SPAWNER)), 1,
             new ItemStack(Items.SPAWNER), FIND_SPAWNER
       ));
       
       ResearchTasks.register(BREAK_OBSIDIAN, new StatisticResearchTask<>(
-            BREAK_OBSIDIAN.identifier().getPath(), Either.right(new Tuple<>(Stats.BLOCK_MINED, Blocks.OBSIDIAN)), 256,
+            BREAK_OBSIDIAN.identifier().getPath(), Either.right(Pair.of(Stats.BLOCK_MINED, Blocks.OBSIDIAN)), 256,
             new ItemStack(Items.OBSIDIAN)
       ));
       
       ResearchTasks.register(PLACE_TORCHES, new StatisticResearchTask<>(
-            PLACE_TORCHES.identifier().getPath(), Either.right(new Tuple<>(Stats.ITEM_USED, Items.TORCH)), 128,
+            PLACE_TORCHES.identifier().getPath(), Either.right(Pair.of(Stats.ITEM_USED, Items.TORCH)), 128,
             new ItemStack(Items.TORCH)
       ));
       
       ResearchTasks.register(USE_FIREWORK, new StatisticResearchTask<>(
-            USE_FIREWORK.identifier().getPath(), Either.right(new Tuple<>(Stats.ITEM_USED, Items.FIREWORK_ROCKET)), 1,
+            USE_FIREWORK.identifier().getPath(), Either.right(Pair.of(Stats.ITEM_USED, Items.FIREWORK_ROCKET)), 1,
             new ItemStack(Items.FIREWORK_ROCKET)
       ));
       
@@ -446,17 +447,17 @@ public class ResearchTasks {
       ));
       
       ResearchTasks.register(USE_FLINT_AND_STEEL, new StatisticResearchTask<>(
-            USE_FLINT_AND_STEEL.identifier().getPath(), Either.right(new Tuple<>(Stats.ITEM_USED, Items.FLINT_AND_STEEL)), 1,
+            USE_FLINT_AND_STEEL.identifier().getPath(), Either.right(Pair.of(Stats.ITEM_USED, Items.FLINT_AND_STEEL)), 1,
             new ItemStack(Items.FLINT_AND_STEEL)
       ));
       
       ResearchTasks.register(USE_ENDER_PEARL, new StatisticResearchTask<>(
-            USE_ENDER_PEARL.identifier().getPath(), Either.right(new Tuple<>(Stats.ITEM_USED, Items.ENDER_PEARL)), 1,
+            USE_ENDER_PEARL.identifier().getPath(), Either.right(Pair.of(Stats.ITEM_USED, Items.ENDER_PEARL)), 1,
             new ItemStack(Items.ENDER_PEARL)
       ));
       
       ResearchTasks.register(USE_ENDER_EYE, new StatisticResearchTask<>(
-            USE_ENDER_EYE.identifier().getPath(), Either.right(new Tuple<>(Stats.ITEM_USED, Items.ENDER_EYE)), 1,
+            USE_ENDER_EYE.identifier().getPath(), Either.right(Pair.of(Stats.ITEM_USED, Items.ENDER_EYE)), 1,
             new ItemStack(Items.ENDER_EYE), OBTAIN_EYE_OF_ENDER
       ));
       
@@ -466,37 +467,37 @@ public class ResearchTasks {
       ));
       
       ResearchTasks.register(USE_ENCHANTED_GOLDEN_APPLE, new StatisticResearchTask<>(
-            USE_ENCHANTED_GOLDEN_APPLE.identifier().getPath(), Either.right(new Tuple<>(Stats.ITEM_USED, Items.ENCHANTED_GOLDEN_APPLE)), 1,
+            USE_ENCHANTED_GOLDEN_APPLE.identifier().getPath(), Either.right(Pair.of(Stats.ITEM_USED, Items.ENCHANTED_GOLDEN_APPLE)), 1,
             new ItemStack(Items.ENCHANTED_GOLDEN_APPLE), OBTAIN_ENCHANTED_GOLDEN_APPLE
       ));
       
       ResearchTasks.register(KILL_SLIME, new StatisticResearchTask<>(
-            KILL_SLIME.identifier().getPath(), Either.right(new Tuple<>(Stats.ENTITY_KILLED, EntityType.SLIME)), 100,
+            KILL_SLIME.identifier().getPath(), Either.right(Pair.of(Stats.ENTITY_KILLED, EntityTypes.SLIME)), 100,
             new ItemStack(Items.SLIME_BALL), ADVANCEMENT_KILL_A_MOB
       ));
       
       ResearchTasks.register(KILL_SQUID, new StatisticResearchTask<>(
-            KILL_SQUID.identifier().getPath(), Either.right(new Tuple<>(Stats.ENTITY_KILLED, EntityType.SQUID)), 25,
+            KILL_SQUID.identifier().getPath(), Either.right(Pair.of(Stats.ENTITY_KILLED, EntityTypes.SQUID)), 25,
             new ItemStack(Items.INK_SAC), ADVANCEMENT_KILL_A_MOB
       ));
       
       ResearchTasks.register(KILL_CONSTRUCT, new StatisticResearchTask<>(
-            KILL_CONSTRUCT.identifier().getPath(), Either.right(new Tuple<>(Stats.ENTITY_KILLED, ArcanaRegistry.NUL_CONSTRUCT_ENTITY)), 1,
+            KILL_CONSTRUCT.identifier().getPath(), Either.right(Pair.of(Stats.ENTITY_KILLED, ArcanaRegistry.NUL_CONSTRUCT_ENTITY)), 1,
             ArcanaRegistry.NUL_MEMENTO.getPrefItemNoLore(), UNLOCK_SOVEREIGN_CATALYST, OBTAIN_NETHER_STAR, OBTAIN_NETHERITE_INGOT, ADVANCEMENT_KILL_A_MOB
       ));
       
       ResearchTasks.register(KILL_BLAZE, new StatisticResearchTask<>(
-            KILL_BLAZE.identifier().getPath(), Either.right(new Tuple<>(Stats.ENTITY_KILLED, EntityType.BLAZE)), 100,
+            KILL_BLAZE.identifier().getPath(), Either.right(Pair.of(Stats.ENTITY_KILLED, EntityTypes.BLAZE)), 100,
             new ItemStack(Items.BLAZE_ROD), ADVANCEMENT_KILL_A_MOB
       ));
       
       ResearchTasks.register(KILL_MAGMA_CUBE, new StatisticResearchTask<>(
-            KILL_MAGMA_CUBE.identifier().getPath(), Either.right(new Tuple<>(Stats.ENTITY_KILLED, EntityType.MAGMA_CUBE)), 100,
+            KILL_MAGMA_CUBE.identifier().getPath(), Either.right(Pair.of(Stats.ENTITY_KILLED, EntityTypes.MAGMA_CUBE)), 100,
             new ItemStack(Items.MAGMA_CREAM), ADVANCEMENT_KILL_A_MOB
       ));
       
       ResearchTasks.register(KILL_EVOKER, new StatisticResearchTask<>(
-            KILL_EVOKER.identifier().getPath(), Either.right(new Tuple<>(Stats.ENTITY_KILLED, EntityType.EVOKER)), 10,
+            KILL_EVOKER.identifier().getPath(), Either.right(Pair.of(Stats.ENTITY_KILLED, EntityTypes.EVOKER)), 10,
             new ItemStack(Items.TOTEM_OF_UNDYING), ADVANCEMENT_KILL_A_MOB
       ));
       
@@ -689,7 +690,7 @@ public class ResearchTasks {
       
       ResearchTasks.register(ADVANCEMENT_SLEEP_IN_BED, new AdvancementResearchTask(
             ADVANCEMENT_SLEEP_IN_BED.identifier().getPath(), "adventure/sleep_in_bed",
-            new ItemStack(Items.RED_BED)
+            new ItemStack(Items.BED.red())
       ));
       
       ResearchTasks.register(ADVANCEMENT_SHOOT_ARROW, new AdvancementResearchTask(
@@ -729,7 +730,7 @@ public class ResearchTasks {
       
       ResearchTasks.register(ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE, new AdvancementResearchTask(
             ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE.identifier().getPath(), "adventure/lightning_rod_with_villager_no_fire",
-            new ItemStack(Items.LIGHTNING_ROD), OBTAIN_LIGHTNING_ROD
+            new ItemStack(Items.LIGHTNING_ROD.weathering().unaffected()), OBTAIN_LIGHTNING_ROD
       ));
       
       ResearchTasks.register(ADVANCEMENT_TAME_AN_ANIMAL, new AdvancementResearchTask(

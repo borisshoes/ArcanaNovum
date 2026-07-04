@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -37,11 +38,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -192,15 +191,15 @@ public class GravitonMaul extends ArcanaItem {
       
       int maxBlocks = 128;
       
-      Queue<Tuple<BlockPos, Integer>> queue = Lists.newLinkedList();
+      Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
       Queue<BlockPos> visited = Lists.newLinkedList();
-      queue.add(new Tuple<>(pos, 0));
+      queue.add(Pair.of(pos, 0));
       ArrayList<BlockPos> toMine = new ArrayList<>();
       
       while(!queue.isEmpty()){
-         Tuple<BlockPos, Integer> pair = queue.poll();
-         BlockPos blockPos = pair.getA();
-         int depth = pair.getB();
+         Pair<BlockPos, Integer> pair = queue.poll();
+         BlockPos blockPos = pair.getFirst();
+         int depth = pair.getSecond();
          visited.add(blockPos);
          Block curType = world.getBlockState(blockPos).getBlock();
          
@@ -214,8 +213,8 @@ public class GravitonMaul extends ArcanaItem {
                   for(int k = -1; k <= 1; k++){
                      if(!(i == 0 && j == 0 && k == 0)){
                         BlockPos pos2 = blockPos.offset(i, j, k);
-                        if(queue.stream().noneMatch(p -> p.getA().equals(pos2)) && !visited.contains(pos2)){
-                           queue.add(new Tuple<>(pos2, depth + 1));
+                        if(queue.stream().noneMatch(p -> p.getFirst().equals(pos2)) && !visited.contains(pos2)){
+                           queue.add(Pair.of(pos2, depth + 1));
                         }
                      }
                   }

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.SpawnPile;
@@ -14,11 +15,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityReference;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -84,29 +84,29 @@ public class DragonAbilities {
       corruptArcanaTicks = corruptArcanaCD;
    }
    
-   public ArrayList<Tuple<DragonAbilityTypes,Integer>> getCooldowns(int phase){
-      ArrayList<Tuple<DragonAbilityTypes,Integer>> cooldowns = new ArrayList<>();
+   public ArrayList<Pair<DragonAbilityTypes,Integer>> getCooldowns(int phase){
+      ArrayList<Pair<DragonAbilityTypes,Integer>> cooldowns = new ArrayList<>();
       
       if(phase == 1){
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }else if(phase == 2){
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.OVERLOAD_CRYSTALS,overloadCD-overloadTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.GRAVITY_AMP,ampCD-ampTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.OVERLOAD_CRYSTALS,overloadCD-overloadTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.GRAVITY_AMP,ampCD-ampTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }else if(phase == 3){
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.CONSCRIPT_ARMY,conscriptCD-conscriptTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.OBLITERATE_TOWER,obliterateCD-obliterateTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.DRACONIC_RESILIENCE,resilienceCD-resilienceTicks));
-         cooldowns.add(new Tuple<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.CONSCRIPT_ARMY,conscriptCD-conscriptTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.OBLITERATE_TOWER,obliterateCD-obliterateTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.DRACONIC_RESILIENCE,resilienceCD-resilienceTicks));
+         cooldowns.add(Pair.of(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }
       return cooldowns;
    }
@@ -315,7 +315,7 @@ public class DragonAbilities {
          EnderMan[] goons = new EnderMan[25];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
-            goons[i] = new EnderMan(EntityType.ENDERMAN, endWorld);
+            goons[i] = new EnderMan(EntityTypes.ENDERMAN, endWorld);
             goons[i].getAttribute(Attributes.MAX_HEALTH).setBaseValue(Mth.clamp(20 + 4*nearbyPlayers300.size(),40,100));
             goons[i].setHealth(Mth.clamp(20 + 4*nearbyPlayers300.size(),40,100));
             goons[i].getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(8f);
@@ -325,7 +325,7 @@ public class DragonAbilities {
             endWorld.addFreshEntityWithPassengers(goons[i]);
          }
          
-         List<EnderMan> endermen = endWorld.getEntities(EntityType.ENDERMAN, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,115,300).getCenter()), e -> true);
+         List<EnderMan> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,115,300))), e -> true);
    
          for(EnderMan enderman : endermen){
             Player closestPlayer = endWorld.getNearestPlayer(enderman,30);

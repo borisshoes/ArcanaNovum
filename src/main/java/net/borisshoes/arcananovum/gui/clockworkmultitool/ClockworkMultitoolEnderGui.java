@@ -69,7 +69,7 @@ public class ClockworkMultitoolEnderGui extends SimpleGui {
          channelComp.append(Component.literal("\uD83D\uDD13 Public Channel: ").withStyle(ChatFormatting.LIGHT_PURPLE));
       }
       for(DyeColor color : colors){
-         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(MinecraftUtils.getVanillaDyeItem(color));
+         MutableComponent dyeComp = color == null ? MinecraftUtils.getAtlasedTexture(Blocks.GLASS) : MinecraftUtils.getAtlasedTexture(Items.DYE.pick(color));
          channelComp.append(dyeComp);
          channelComp.append(" ");
       }

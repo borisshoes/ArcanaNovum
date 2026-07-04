@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -31,7 +32,7 @@ public class DragonPhantomEntity extends Phantom implements PolymerEntity {
    
    @Override
    public EntityType<?> getPolymerEntityType(PacketContext context){
-      return EntityType.PHANTOM;
+      return EntityTypes.PHANTOM;
    }
    
    public void setNumPlayers(int numPlayers){

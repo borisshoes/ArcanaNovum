@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -28,7 +29,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -39,6 +39,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -78,14 +79,14 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       resetCooldown();
    }
    
-   public static Tuple<Item, Integer> getCost(){
+   public static Pair<Item, Integer> getCost(){
       try{
          String itemId = ArcanaNovum.CONFIG.getValue(ArcanaConfig.CELESTIAL_ALTAR_ITEM).toString();
          Optional<Holder.Reference<Item>> opt = BuiltInRegistries.ITEM.get(Identifier.parse(itemId));
          assert opt.isPresent();
-         return new Tuple<>(opt.get().value(), 1);
+         return Pair.of(opt.get().value(), 1);
       }catch(Exception e){
-         return new Tuple<>(Items.NETHER_STAR, 1);
+         return Pair.of(Items.NETHER_STAR, 1);
       }
    }
    
@@ -141,7 +142,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       
       this.resetCooldown();
       this.setActive(true);
-      ArcanaEffectUtils.celestialAltarAnim(serverWorld, this.getBlockPos().getCenter(), 0, serverWorld.getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING));
+      ArcanaEffectUtils.celestialAltarAnim(serverWorld, Vec3.atCenterOf(this.getBlockPos()), 0, serverWorld.getBlockState(this.getBlockPos()).getValue(HORIZONTAL_FACING));
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(400, () -> {
          changeTime(finalPlayer);
          if(finalPlayer != null)
@@ -180,7 +181,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       }
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.isAssembled()){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
       
       boolean activatable = serverWorld.getBlockState(worldPosition).getOptionalValue(CelestialAltar.CelestialAltarBlock.ACTIVATABLE).orElse(false);

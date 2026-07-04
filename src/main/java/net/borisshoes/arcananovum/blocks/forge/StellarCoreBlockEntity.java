@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -30,7 +31,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
@@ -107,7 +107,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       
       if(assembled && seenForge){
          Direction dir = blockState.getValue(HORIZONTAL_FACING);
-         ArcanaEffectUtils.stellarCoreAnim(serverWorld, worldPosition.offset(dir.getUnitVec3i().multiply(-2)).getCenter().add(0, 1, 0), ticks % 300, dir);
+         ArcanaEffectUtils.stellarCoreAnim(serverWorld, Vec3.atCenterOf(worldPosition.offset(dir.getUnitVec3i().multiply(-2))).add(0, 1, 0), ticks % 300, dir);
       }
       
       
@@ -120,7 +120,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       watchingPlayers.removeIf(player -> player.containerMenu == player.inventoryMenu);
       
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled && this.seenForge){
-         ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+         ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
    }
    
@@ -401,7 +401,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          boolean moltenCore = ArcanaAugments.getAugmentFromMap(getAugments(), ArcanaAugments.MOLTEN_CORE) >= 1;
          BlockState blockState = serverWorld.getBlockState(worldPosition);
          Direction dir = blockState.getValue(HORIZONTAL_FACING);
-         Vec3 itemSpawnPos = worldPosition.offset(dir.getUnitVec3i()).getCenter();
+         Vec3 itemSpawnPos = Vec3.atCenterOf(worldPosition.offset(dir.getUnitVec3i()));
          
          ItemStack stack = inv.getItem(0);
          List<ItemStack> salvage = salvageItem(stack, serverWorld.getServer());

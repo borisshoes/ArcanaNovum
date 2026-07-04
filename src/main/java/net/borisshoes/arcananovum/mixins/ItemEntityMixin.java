@@ -25,7 +25,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -84,7 +84,7 @@ public class ItemEntityMixin {
          if(ArcanaItem.hasProperty(stack, ArcaneTome.FORGE_TAG)){
             craftTick = ArcanaItem.getIntProperty(stack, ArcaneTome.FORGE_TAG);
          }
-         List<ItemEntity> otherEntities = world.getEntities(EntityType.ITEM, itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && !ArcanaItemUtils.isArcane(e.getItem())));
+         List<ItemEntity> otherEntities = world.getEntities(EntityTypes.ITEM, itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && !ArcanaItemUtils.isArcane(e.getItem())));
          
          boolean proceed = false;
          ItemEntity gappleEntity = null;
@@ -170,7 +170,7 @@ public class ItemEntityMixin {
             allowedBlocks.add(Blocks.ENCHANTING_TABLE);
          }
          if(allowedBlocks.contains(state.getBlock())){
-            List<ItemEntity> otherEntities = world.getEntities(EntityType.ITEM, itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && !ArcanaItemUtils.isArcane(e.getItem())));
+            List<ItemEntity> otherEntities = world.getEntities(EntityTypes.ITEM, itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && !ArcanaItemUtils.isArcane(e.getItem())));
             for(ItemEntity other : otherEntities){
                ItemStack otherStack = other.getItem();
                if(otherStack.is(Items.ENDER_EYE)){
@@ -242,7 +242,7 @@ public class ItemEntityMixin {
       }
       
       if(!ArcanaItemUtils.isArcane(stack) && stack.is(Items.OBSIDIAN) && itemEntity.isInWater()){
-         List<ItemEntity> otherEntities = world.getEntities(EntityType.ITEM, itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && e.isInWater() && !ArcanaItemUtils.isArcane(e.getItem())));
+         List<ItemEntity> otherEntities = world.getEntities(EntityTypes.ITEM, itemEntity.getBoundingBox().inflate(1.25), e -> (!e.getUUID().equals(itemEntity.getUUID()) && e.isInWater() && !ArcanaItemUtils.isArcane(e.getItem())));
          
          boolean create = false;
          for(ItemEntity other : otherEntities){

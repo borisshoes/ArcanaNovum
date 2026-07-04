@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
@@ -28,7 +29,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -75,7 +75,7 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       item = new StormcallerAltarItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE, ResearchTasks.OBTAIN_HEART_OF_THE_SEA, ResearchTasks.OBTAIN_LIGHTNING_ROD, ResearchTasks.ADVANCEMENT_WAX_ON, ResearchTasks.ADVANCEMENT_WAX_OFF, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
-      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("tcmEcho")), new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("tcmEcho"))};
+      attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("tcmEcho")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("tcmEcho"))};
    }
    
    @Override
@@ -209,8 +209,8 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       private void tryActivate(BlockState state, Level world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof StormcallerAltarBlockEntity altar && world instanceof ServerLevel serverWorld){
-            Tuple<Item, Integer> cost = StormcallerAltarBlockEntity.getCost();
-            boolean paid = MinecraftUtils.removeItemEntities(serverWorld, new AABB(pos.above()), (itemStack) -> itemStack.is(cost.getA()), cost.getB());
+            Pair<Item, Integer> cost = StormcallerAltarBlockEntity.getCost();
+            boolean paid = MinecraftUtils.removeItemEntities(serverWorld, new AABB(pos.above()), (itemStack) -> itemStack.is(cost.getFirst()), cost.getSecond());
             if(paid) altar.startWeatherChange(null);
          }
       }

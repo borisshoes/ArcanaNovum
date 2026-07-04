@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -20,7 +21,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -145,9 +145,9 @@ public class ArcanaItemUtils {
    public static List<ArcanaInvItem> getActiveArcanaBlocks(ServerPlayer player){
       List<ArcanaInvItem> arcanaInv = new ArrayList<>();
       
-      for(Tuple<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getStringUUID().equals(pair.getB().getCrafterId()) && pair.getA().hasLevel() && pair.getA().getLevel().getBlockEntity(pair.getA().getBlockPos()) == pair.getA()).toList()){
-         BlockEntity blockEntity = pair.getA();
-         ArcanaBlockEntity arcanaBlockEntity = pair.getB();
+      for(Pair<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getStringUUID().equals(pair.getSecond().getCrafterId()) && pair.getFirst().hasLevel() && pair.getFirst().getLevel().getBlockEntity(pair.getFirst().getBlockPos()) == pair.getFirst()).toList()){
+         BlockEntity blockEntity = pair.getFirst();
+         ArcanaBlockEntity arcanaBlockEntity = pair.getSecond();
          
          String dim = blockEntity.getLevel().dimension().identifier().toString();
          String dimensionName = "Unknown";
@@ -199,7 +199,7 @@ public class ArcanaItemUtils {
          if(item.isEmpty())
             continue;
          boolean isArcane = ArcanaItemUtils.isArcane(item);
-         boolean isBox = item.is(Items.SHULKER_BOX) || item.is(Items.WHITE_SHULKER_BOX) || item.is(Items.BLACK_SHULKER_BOX) || item.is(Items.BLUE_SHULKER_BOX) || item.is(Items.BROWN_SHULKER_BOX) || item.is(Items.CYAN_SHULKER_BOX) || item.is(Items.GRAY_SHULKER_BOX) || item.is(Items.GREEN_SHULKER_BOX) || item.is(Items.LIGHT_BLUE_SHULKER_BOX) || item.is(Items.LIGHT_GRAY_SHULKER_BOX) || item.is(Items.LIME_SHULKER_BOX) || item.is(Items.MAGENTA_SHULKER_BOX) || item.is(Items.ORANGE_SHULKER_BOX) || item.is(Items.PINK_SHULKER_BOX) || item.is(Items.PURPLE_SHULKER_BOX) || item.is(Items.RED_SHULKER_BOX) || item.is(Items.YELLOW_SHULKER_BOX);
+         boolean isBox = item.is(Items.SHULKER_BOX) || item.is(Items.DYED_SHULKER_BOX.white()) || item.is(Items.DYED_SHULKER_BOX.black()) || item.is(Items.DYED_SHULKER_BOX.blue()) || item.is(Items.DYED_SHULKER_BOX.brown()) || item.is(Items.DYED_SHULKER_BOX.cyan()) || item.is(Items.DYED_SHULKER_BOX.gray()) || item.is(Items.DYED_SHULKER_BOX.green()) || item.is(Items.DYED_SHULKER_BOX.lightBlue()) || item.is(Items.DYED_SHULKER_BOX.lightGray()) || item.is(Items.DYED_SHULKER_BOX.lime()) || item.is(Items.DYED_SHULKER_BOX.magenta()) || item.is(Items.DYED_SHULKER_BOX.orange()) || item.is(Items.DYED_SHULKER_BOX.pink()) || item.is(Items.DYED_SHULKER_BOX.purple()) || item.is(Items.DYED_SHULKER_BOX.red()) || item.is(Items.DYED_SHULKER_BOX.yellow());
          boolean isBundle = item.has(DataComponents.BUNDLE_CONTENTS);
          if(isBundle && !isArcane){
             BundleContents bundleComp = item.get(DataComponents.BUNDLE_CONTENTS);
@@ -346,7 +346,7 @@ public class ArcanaItemUtils {
       private int count;
       public final ArcanaItem item;
       public final String hash;
-      private final ArrayList<Tuple<String, ItemStack>> stacks;
+      private final ArrayList<Pair<String, ItemStack>> stacks;
       private final TreeMap<ArcanaAugment, Integer> augments;
       private final List<ArcanaItemContainer> containers;
       private double concMod;
@@ -390,10 +390,10 @@ public class ArcanaItemUtils {
       }
       
       public void addItem(ItemStack stack){
-         stacks.add(new Tuple<>(ArcanaItem.getUUID(stack), stack));
+         stacks.add(Pair.of(ArcanaItem.getUUID(stack), stack));
       }
       
-      public ArrayList<Tuple<String, ItemStack>> getStacks(){
+      public ArrayList<Pair<String, ItemStack>> getStacks(){
          return stacks;
       }
       

@@ -11,7 +11,6 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.BorisLib;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -239,7 +238,7 @@ public class Waystone extends ArcanaItem {
                WaystoneTarget target = getTarget(stack);
                if(target != null && ArcanaAugments.getAugmentFromMap(sabe.getAugments(), ArcanaAugments.STARGATE) > 0 || target.world.identifier().equals(context.getLevel().dimension().identifier())){
                   sabe.setTarget(new StarpathAltarBlockEntity.TargetEntry(
-                        MinecraftUtils.getFormattedDimName(target.world).getString() + " " + BlockPos.containing(target.position()).toShortString(),
+                        TextUtils.getFormattedDimName(target.world).getString() + " " + BlockPos.containing(target.position()).toShortString(),
                         target.world.identifier().toString(),
                         (int) target.position().x(),
                         (int) target.position().y(),
@@ -251,7 +250,7 @@ public class Waystone extends ArcanaItem {
             }
          }else if(isUnattuned(stack) && context.getLevel().getBlockEntity(context.getClickedPos()) instanceof AstralGatewayBlockEntity gateway){
             BlockPos pos = context.getClickedPos();
-            saveTarget(stack, new WaystoneTarget(context.getLevel().dimension(), pos.getCenter(), 0, 0));
+            saveTarget(stack, new WaystoneTarget(context.getLevel().dimension(), Vec3.atCenterOf(pos), 0, 0));
             setForGateway(stack);
             buildItemLore(stack, context.getLevel().getServer());
             if(context.getPlayer() instanceof ServerPlayer player)

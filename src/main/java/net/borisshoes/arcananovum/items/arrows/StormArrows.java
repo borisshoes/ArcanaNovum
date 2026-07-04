@@ -29,7 +29,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
@@ -107,7 +107,7 @@ public class StormArrows extends RunicArrow {
       double stormChance = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.STORM_ARROW_STRIKE_CHANCE).get(stableLevel);
       float damage = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.STORM_ARROW_STRIKE_DMG);
       if(arrow.isCritArrow() && (world.isRaining() || world.isThundering() || arrow.random.nextFloat() < stormChance)){
-         LightningBolt lightning = new LightningBolt(EntityType.LIGHTNING_BOLT, arrow.level());
+         LightningBolt lightning = new LightningBolt(EntityTypes.LIGHTNING_BOLT, arrow.level());
          lightning.setPos(pos);
          world.addFreshEntity(lightning);
          

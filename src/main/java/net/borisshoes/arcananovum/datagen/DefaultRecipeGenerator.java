@@ -16,9 +16,11 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -107,7 +109,7 @@ public class DefaultRecipeGenerator {
       e = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.LONG_SWIFTNESS);
       f = new ArcanaIngredient(Items.GLASS, 4);
       g = new ArcanaIngredient(Items.BLAZE_POWDER, 4);
-      h = new ArcanaIngredient(ItemTags.LANTERNS, 4);
+      h = new ArcanaIngredient(BlockItemTags.LANTERNS.item(), 4);
       i = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.STRONG_SWIFTNESS);
       
       ingredients = new ArcanaIngredient[][]{
@@ -891,7 +893,7 @@ public class DefaultRecipeGenerator {
       a = new ArcanaIngredient(Items.GLOWSTONE, 4);
       b = new ArcanaIngredient(Items.LANTERN, 4);
       c = new ArcanaIngredient(Items.SOUL_LANTERN, 4);
-      d = new ArcanaIngredient(Items.COPPER_LANTERN.unaffected(), 4);
+      d = new ArcanaIngredient(Items.COPPER_LANTERN.weathering().unaffected(), 4);
       e = new ArcanaIngredient(Items.VERDANT_FROGLIGHT, 4);
       f = new ArcanaIngredient(Items.SEA_LANTERN, 2);
       g = new ArcanaIngredient(Items.CANDLE, 4);
@@ -902,7 +904,7 @@ public class DefaultRecipeGenerator {
       l = new ArcanaIngredient(Items.SHROOMLIGHT, 4);
       m = new ArcanaIngredient(Items.OCHRE_FROGLIGHT, 4);
       n = new ArcanaIngredient(Items.JACK_O_LANTERN, 4);
-      o = new ArcanaIngredient(Items.COPPER_BULB, 4);
+      o = new ArcanaIngredient(Items.COPPER_BULB.weathering().unaffected(), 4);
       p = new ArcanaIngredient(Items.TORCH, 4);
       q = new ArcanaIngredient(Items.SOUL_TORCH, 4);
       r = new ArcanaIngredient(Items.COPPER_TORCH, 4);
@@ -941,7 +943,7 @@ public class DefaultRecipeGenerator {
       // ===================================
       //          MAGNETISM CHARM
       // ===================================
-      a = new ArcanaIngredient(Items.LIGHTNING_ROD, 4);
+      a = new ArcanaIngredient(Items.LIGHTNING_ROD.weathering().unaffected(), 4);
       b = new ArcanaIngredient(Items.IRON_INGOT, 2);
       c = new ArcanaIngredient(Items.IRON_BARS, 4);
       d = new ArcanaIngredient(Items.IRON_BLOCK, 1);
@@ -1221,7 +1223,7 @@ public class DefaultRecipeGenerator {
       d = new ArcanaIngredient(Items.GLOWSTONE_DUST, 4);
       e = new ArcanaIngredient(Items.NETHER_STAR, 1);
       f = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.LONG_SLOW_FALLING);
-      g = new SoulstoneIngredient(100, false, true, false, EntityType.getKey(EntityType.SHULKER).toString());
+      g = new SoulstoneIngredient(100, false, true, false, EntityType.getKey(EntityTypes.SHULKER).toString());
       
       ingredients = new ArcanaIngredient[][]{
             {a, b, c, b, a},
@@ -1447,11 +1449,11 @@ public class DefaultRecipeGenerator {
       // ===================================
       //          STORMCALLER ALTAR
       // ===================================
-      a = new ArcanaIngredient(Items.LIGHTNING_ROD, 4);
-      b = new ArcanaIngredient(Items.OXIDIZED_COPPER, 4);
+      a = new ArcanaIngredient(Items.LIGHTNING_ROD.weathering().unaffected(), 4);
+      b = new ArcanaIngredient(Items.COPPER_BLOCK.weathering().oxidized(), 4);
       c = new ArcanaIngredient(Items.DIAMOND, 3);
       d = new ArcanaIngredient(Items.RAW_COPPER_BLOCK, 1);
-      e = new ArcanaIngredient(Items.COPPER_BULB, 2);
+      e = new ArcanaIngredient(Items.COPPER_BULB.weathering().unaffected(), 2);
       f = new ArcanaIngredient(Items.HEART_OF_THE_SEA, 1);
       
       ingredients = new ArcanaIngredient[][]{
@@ -1467,7 +1469,7 @@ public class DefaultRecipeGenerator {
       // ===================================
       //          STORM ARROWS
       // ===================================
-      a = new ArcanaIngredient(Items.LIGHTNING_ROD, 4);
+      a = new ArcanaIngredient(Items.LIGHTNING_ROD.weathering().unaffected(), 4);
       b = new ArcanaIngredient(Items.ENCHANTED_BOOK, 1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.CHANNELING, 1));
       c = new ArcanaIngredient(Items.SPECTRAL_ARROW, 16);
       d = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX, 1);
@@ -1661,24 +1663,24 @@ public class DefaultRecipeGenerator {
       // ===================================
       //           TRANSMOGRIFICATION CATALYST
       // ===================================
-      a = new ArcanaIngredient(Items.WHITE_DYE, 2);
+      a = new ArcanaIngredient(Items.DYE.white(), 2);
       b = new ArcanaIngredient(Items.AMETHYST_SHARD, 2);
-      c = new ArcanaIngredient(Items.LIME_DYE, 2);
-      d = new ArcanaIngredient(Items.GRAY_DYE, 2);
-      e = new ArcanaIngredient(Items.LIGHT_BLUE_DYE, 2);
-      f = new ArcanaIngredient(Items.MAGENTA_DYE, 2);
-      g = new ArcanaIngredient(Items.CYAN_DYE, 2);
-      h = new ArcanaIngredient(Items.RED_DYE, 2);
-      i = new ArcanaIngredient(Items.PINK_DYE, 2);
+      c = new ArcanaIngredient(Items.DYE.lime(), 2);
+      d = new ArcanaIngredient(Items.DYE.gray(), 2);
+      e = new ArcanaIngredient(Items.DYE.lightBlue(), 2);
+      f = new ArcanaIngredient(Items.DYE.magenta(), 2);
+      g = new ArcanaIngredient(Items.DYE.cyan(), 2);
+      h = new ArcanaIngredient(Items.DYE.red(), 2);
+      i = new ArcanaIngredient(Items.DYE.pink(), 2);
       j = new GenericArcanaIngredient(ArcanaRegistry.CATALYTIC_MATRIX, 1);
-      k = new ArcanaIngredient(Items.BROWN_DYE, 2);
-      l = new ArcanaIngredient(Items.ORANGE_DYE, 2);
-      m = new ArcanaIngredient(Items.GREEN_DYE, 2);
-      n = new ArcanaIngredient(Items.PURPLE_DYE, 2);
-      o = new ArcanaIngredient(Items.BLUE_DYE, 2);
-      p = new ArcanaIngredient(Items.LIGHT_GRAY_DYE, 2);
-      q = new ArcanaIngredient(Items.YELLOW_DYE, 2);
-      r = new ArcanaIngredient(Items.BLACK_DYE, 2);
+      k = new ArcanaIngredient(Items.DYE.brown(), 2);
+      l = new ArcanaIngredient(Items.DYE.orange(), 2);
+      m = new ArcanaIngredient(Items.DYE.green(), 2);
+      n = new ArcanaIngredient(Items.DYE.purple(), 2);
+      o = new ArcanaIngredient(Items.DYE.blue(), 2);
+      p = new ArcanaIngredient(Items.DYE.lightGray(), 2);
+      q = new ArcanaIngredient(Items.DYE.yellow(), 2);
+      r = new ArcanaIngredient(Items.DYE.black(), 2);
       
       ingredients = new ArcanaIngredient[][]{
             {a, b, c, b, d},
@@ -1721,21 +1723,21 @@ public class DefaultRecipeGenerator {
             .withViewStack(new ItemStack(Items.SANDSTONE)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("copper", new ItemStack(Items.REDSTONE, 6), new ItemStack(Items.AMETHYST_SHARD, 4))
-            .with(Items.OXIDIZED_COPPER, Items.WEATHERED_COPPER, Items.EXPOSED_COPPER, Items.COPPER_BLOCK,
-                  Items.OXIDIZED_CUT_COPPER, Items.WEATHERED_CUT_COPPER, Items.EXPOSED_CUT_COPPER, Items.CUT_COPPER,
-                  Items.OXIDIZED_CUT_COPPER_STAIRS, Items.WEATHERED_CUT_COPPER_STAIRS, Items.EXPOSED_CUT_COPPER_STAIRS, Items.CUT_COPPER_STAIRS,
-                  Items.OXIDIZED_CHISELED_COPPER, Items.WEATHERED_CHISELED_COPPER, Items.EXPOSED_CHISELED_COPPER, Items.CHISELED_COPPER,
-                  Items.OXIDIZED_COPPER_GRATE, Items.WEATHERED_COPPER_GRATE, Items.EXPOSED_COPPER_GRATE, Items.COPPER_GRATE,
-                  Items.COPPER_BARS.oxidized(), Items.COPPER_BARS.weathered(), Items.COPPER_BARS.exposed(), Items.COPPER_BARS.unaffected(),
-                  Items.COPPER_CHAIN.oxidized(), Items.COPPER_CHAIN.weathered(), Items.COPPER_CHAIN.exposed(), Items.COPPER_CHAIN.unaffected(),
-                  Items.COPPER_LANTERN.oxidized(), Items.COPPER_LANTERN.weathered(), Items.COPPER_LANTERN.exposed(), Items.COPPER_LANTERN.unaffected(),
-                  Items.OXIDIZED_CUT_COPPER_SLAB, Items.WEATHERED_CUT_COPPER_SLAB, Items.EXPOSED_CUT_COPPER_SLAB, Items.CUT_COPPER_SLAB,
-                  Items.OXIDIZED_COPPER_DOOR, Items.WEATHERED_COPPER_DOOR, Items.EXPOSED_COPPER_DOOR, Items.COPPER_DOOR,
-                  Items.OXIDIZED_COPPER_TRAPDOOR, Items.WEATHERED_COPPER_TRAPDOOR, Items.EXPOSED_COPPER_TRAPDOOR, Items.COPPER_TRAPDOOR,
-                  Items.OXIDIZED_COPPER_BULB, Items.WEATHERED_COPPER_BULB, Items.EXPOSED_COPPER_BULB, Items.COPPER_BULB,
-                  Items.OXIDIZED_COPPER_GOLEM_STATUE, Items.WEATHERED_COPPER_GOLEM_STATUE, Items.EXPOSED_COPPER_GOLEM_STATUE, Items.COPPER_GOLEM_STATUE,
-                  Items.OXIDIZED_COPPER_CHEST, Items.WEATHERED_COPPER_CHEST, Items.EXPOSED_COPPER_CHEST, Items.COPPER_CHEST)
-            .withViewStack(new ItemStack(Items.OXIDIZED_COPPER)));
+            .with(Items.COPPER_BLOCK.weathering().oxidized(), Items.COPPER_BLOCK.weathering().weathered(), Items.COPPER_BLOCK.weathering().exposed(), Items.COPPER_BLOCK.weathering().unaffected(),
+                  Items.CUT_COPPER.weathering().oxidized(), Items.CUT_COPPER.weathering().weathered(), Items.CUT_COPPER.weathering().exposed(), Items.CUT_COPPER.weathering().unaffected(),
+                  Items.CUT_COPPER_STAIRS.weathering().oxidized(), Items.CUT_COPPER_STAIRS.weathering().weathered(), Items.CUT_COPPER_STAIRS.weathering().exposed(), Items.CUT_COPPER_STAIRS.weathering().unaffected(),
+                  Items.CHISELED_COPPER.weathering().oxidized(), Items.CHISELED_COPPER.weathering().weathered(), Items.CHISELED_COPPER.weathering().exposed(), Items.CHISELED_COPPER.weathering().unaffected(),
+                  Items.COPPER_GRATE.weathering().oxidized(), Items.COPPER_GRATE.weathering().weathered(), Items.COPPER_GRATE.weathering().exposed(), Items.COPPER_GRATE.weathering().unaffected(),
+                  Items.COPPER_BARS.weathering().oxidized(), Items.COPPER_BARS.weathering().weathered(), Items.COPPER_BARS.weathering().exposed(), Items.COPPER_BARS.weathering().unaffected(),
+                  Items.COPPER_CHAIN.weathering().oxidized(), Items.COPPER_CHAIN.weathering().weathered(), Items.COPPER_CHAIN.weathering().exposed(), Items.COPPER_CHAIN.weathering().unaffected(),
+                  Items.COPPER_LANTERN.weathering().oxidized(), Items.COPPER_LANTERN.weathering().weathered(), Items.COPPER_LANTERN.weathering().exposed(), Items.COPPER_LANTERN.weathering().unaffected(),
+                  Items.CUT_COPPER_SLAB.weathering().oxidized(), Items.CUT_COPPER_SLAB.weathering().weathered(), Items.CUT_COPPER_SLAB.weathering().exposed(), Items.CUT_COPPER_SLAB.weathering().unaffected(),
+                  Items.COPPER_DOOR.weathering().oxidized(), Items.COPPER_DOOR.weathering().weathered(), Items.COPPER_DOOR.weathering().exposed(), Items.COPPER_DOOR.weathering().unaffected(),
+                  Items.COPPER_TRAPDOOR.weathering().oxidized(), Items.COPPER_TRAPDOOR.weathering().weathered(), Items.COPPER_TRAPDOOR.weathering().exposed(), Items.COPPER_TRAPDOOR.weathering().unaffected(),
+                  Items.COPPER_BULB.weathering().oxidized(), Items.COPPER_BULB.weathering().weathered(), Items.COPPER_BULB.weathering().exposed(), Items.COPPER_BULB.weathering().unaffected(),
+                  Items.COPPER_GOLEM_STATUE.weathering().oxidized(), Items.COPPER_GOLEM_STATUE.weathering().weathered(), Items.COPPER_GOLEM_STATUE.weathering().exposed(), Items.COPPER_GOLEM_STATUE.weathering().unaffected(),
+                  Items.COPPER_CHEST.weathering().oxidized(), Items.COPPER_CHEST.weathering().weathered(), Items.COPPER_CHEST.weathering().exposed(), Items.COPPER_CHEST.weathering().unaffected())
+            .withViewStack(new ItemStack(Items.COPPER_BLOCK.weathering().oxidized())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("logs", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
             .with(Items.ACACIA_LOG, Items.BAMBOO_BLOCK, Items.BIRCH_LOG, Items.CHERRY_LOG, Items.CRIMSON_STEM,
@@ -1802,7 +1804,7 @@ public class DefaultRecipeGenerator {
             .withViewStack(new ItemStack(Items.OAK_PRESSURE_PLATE)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("buttons", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
-            .with(Either.left(ItemTags.BUTTONS))
+            .with(Either.right(BlockTags.BUTTONS))
             .withViewStack(new ItemStack(Items.OAK_BUTTON)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("boats", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
@@ -1894,7 +1896,7 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("dyes", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.left(ConventionalItemTags.DYES))
-            .withViewStack(new ItemStack(Items.WHITE_DYE)));
+            .withViewStack(new ItemStack(Items.DYE.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("terracotta", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.right(BlockTags.TERRACOTTA))
@@ -1902,11 +1904,11 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("wool", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.left(ItemTags.WOOL))
-            .withViewStack(new ItemStack(Items.WHITE_WOOL)));
+            .withViewStack(new ItemStack(Items.WOOL.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("carpet", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.left(ItemTags.WOOL_CARPETS))
-            .withViewStack(new ItemStack(Items.WHITE_CARPET)));
+            .withViewStack(new ItemStack(Items.CARPET.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("glass", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.left(ConventionalItemTags.GLASS_BLOCKS_CHEAP))
@@ -1921,25 +1923,25 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("glazed_terracotta", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.left(ConventionalItemTags.GLAZED_TERRACOTTAS))
-            .withViewStack(new ItemStack(Items.WHITE_GLAZED_TERRACOTTA)));
+            .withViewStack(new ItemStack(Items.GLAZED_TERRACOTTA.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("concrete", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.left(ConventionalItemTags.CONCRETES))
-            .withViewStack(new ItemStack(Items.WHITE_CONCRETE)));
+            .withViewStack(new ItemStack(Items.CONCRETE.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("gravity_blocks", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.left(ConventionalItemTags.CONCRETE_POWDERS))
             .with(Either.left(ConventionalItemTags.SANDS))
             .with(Either.left(ConventionalItemTags.GRAVELS))
-            .withViewStack(new ItemStack(Items.WHITE_CONCRETE_POWDER)));
+            .withViewStack(new ItemStack(Items.CONCRETE_POWDER.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("banners", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.right(BlockTags.BANNERS))
-            .withViewStack(new ItemStack(Items.WHITE_BANNER)));
+            .withViewStack(new ItemStack(Items.BANNER.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("beds", new ItemStack(Items.LAPIS_LAZULI, 3), new ItemStack(Items.GLOWSTONE_DUST, 3))
             .with(Either.right(BlockTags.BEDS))
-            .withViewStack(new ItemStack(Items.WHITE_BED)));
+            .withViewStack(new ItemStack(Items.BED.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("rods", new ItemStack(Items.QUARTZ, 11), new ItemStack(Items.REDSTONE, 13))
             .with(Items.BLAZE_ROD, Items.BREEZE_ROD)
@@ -1984,7 +1986,7 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("sand_decomposition", new ItemStack(Items.SANDSTONE, 1), new ItemStack(Items.SAND, 4), new ItemStack(Items.GUNPOWDER, 3), new ItemStack(ArcanaRegistry.STARDUST, 1)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("fiber_decomposition", new ItemStack(Items.WHITE_WOOL, 1), new ItemStack(Items.STRING, 4), new ItemStack(Items.GUNPOWDER, 3), new ItemStack(ArcanaRegistry.STARDUST, 1)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("fiber_decomposition", Either.right(ItemTags.WOOL), 1, new ItemStack(Items.STRING, 4), new ItemStack(Items.GUNPOWDER, 3), new ItemStack(ArcanaRegistry.STARDUST, 1)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("honeycomb_decomposition", new ItemStack(Items.HONEYCOMB_BLOCK, 1), new ItemStack(Items.HONEYCOMB, 4), new ItemStack(Items.GUNPOWDER, 3), new ItemStack(ArcanaRegistry.STARDUST, 1)));
       
@@ -2160,7 +2162,7 @@ public class DefaultRecipeGenerator {
       f = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.STRONG_SWIFTNESS);
       g = new ArcanaIngredient(Items.GLASS, 16);
       h = new ArcanaIngredient(Items.BLAZE_POWDER, 16);
-      i = new ArcanaIngredient(ItemTags.LANTERNS, 16);
+      i = new ArcanaIngredient(BlockItemTags.LANTERNS.item(), 16);
       
       ingredients = new ArcanaIngredient[][]{
             {a, b, c, b, a},
@@ -2690,7 +2692,7 @@ public class DefaultRecipeGenerator {
       // ===================================
       //          SHULKER CORE
       // ===================================
-      t = new SoulstoneIngredient(Soulstone.tiers[4], false, true, false, EntityType.getKey(EntityType.SHULKER).toString());
+      t = new SoulstoneIngredient(Soulstone.tiers[4], false, true, false, EntityType.getKey(EntityTypes.SHULKER).toString());
       a = new ArcanaIngredient(Items.PHANTOM_MEMBRANE, 16);
       b = new ArcanaIngredient(Items.SHULKER_SHELL, 8);
       c = new ArcanaIngredient(Items.POTION, 1).withPotion(Potions.LONG_SLOW_FALLING);
@@ -3023,7 +3025,7 @@ public class DefaultRecipeGenerator {
       
       // --- STORM ARROWS ---
       a = ArcanaIngredient.EMPTY;
-      c = new ArcanaIngredient(Items.LIGHTNING_ROD, 24);
+      c = new ArcanaIngredient(Items.LIGHTNING_ROD.weathering().unaffected(), 24);
       g = new ArcanaIngredient(Items.ENCHANTED_BOOK, 1).withEnchantments(new ArcanaIngredient.EnchantmentEntry(Enchantments.CHANNELING, 1));
       h = new ArcanaIngredient(Items.SPECTRAL_ARROW, 16);
       m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX, 1);
@@ -3278,7 +3280,7 @@ public class DefaultRecipeGenerator {
       m = new ArcanaIngredient(Items.BEACON, 1, true);
       o = new ArcanaIngredient(Items.SHROOMLIGHT, 16);
       p = new ArcanaIngredient(Items.JACK_O_LANTERN, 16);
-      t = new ArcanaIngredient(Items.COPPER_BULB, 16);
+      t = new ArcanaIngredient(Items.COPPER_BULB.weathering().unaffected(), 16);
       v = new ArcanaIngredient(Items.LANTERN, 32);
       w = new ArcanaIngredient(Items.OCHRE_FROGLIGHT, 16);
       x = new ArcanaIngredient(Items.SOUL_TORCH, 32);
@@ -3293,7 +3295,7 @@ public class DefaultRecipeGenerator {
       
       
       // --- MAGNETISM CHARM ---
-      a = new ArcanaIngredient(Items.LIGHTNING_ROD, 16);
+      a = new ArcanaIngredient(Items.LIGHTNING_ROD.weathering().unaffected(), 16);
       b = new ArcanaIngredient(Items.IRON_INGOT, 16);
       c = new ArcanaIngredient(Items.IRON_BARS, 16);
       h = new ArcanaIngredient(Items.IRON_BLOCK, 8);
@@ -3456,11 +3458,11 @@ public class DefaultRecipeGenerator {
       
       
       // --- STORMCALLER ALTAR ---
-      a = new ArcanaIngredient(Items.LIGHTNING_ROD, 16);
-      b = new ArcanaIngredient(Items.OXIDIZED_COPPER, 12);
+      a = new ArcanaIngredient(Items.LIGHTNING_ROD.weathering().unaffected(), 16);
+      b = new ArcanaIngredient(Items.COPPER_BLOCK.weathering().oxidized(), 12);
       c = new ArcanaIngredient(Items.DIAMOND, 6);
       g = new ArcanaIngredient(Items.HEART_OF_THE_SEA, 1);
-      h = new ArcanaIngredient(Items.COPPER_BULB, 8);
+      h = new ArcanaIngredient(Items.COPPER_BULB.weathering().unaffected(), 8);
       m = new ArcanaIngredient(Items.RAW_COPPER_BLOCK, 16);
       
       ingredients = new ArcanaIngredient[][]{
@@ -3590,24 +3592,24 @@ public class DefaultRecipeGenerator {
       // ===================================
       //           TRANSMOGRIFICATION CATALYST
       // ===================================
-      a = new ArcanaIngredient(Items.WHITE_DYE, 8);
+      a = new ArcanaIngredient(Items.DYE.white(), 8);
       b = new ArcanaIngredient(Items.AMETHYST_SHARD, 4);
-      c = new ArcanaIngredient(Items.LIME_DYE, 8);
-      d = new ArcanaIngredient(Items.GRAY_DYE, 8);
-      e = new ArcanaIngredient(Items.LIGHT_BLUE_DYE, 8);
-      f = new ArcanaIngredient(Items.MAGENTA_DYE, 8);
-      g = new ArcanaIngredient(Items.CYAN_DYE, 8);
-      h = new ArcanaIngredient(Items.RED_DYE, 8);
-      i = new ArcanaIngredient(Items.PINK_DYE, 8);
+      c = new ArcanaIngredient(Items.DYE.lime(), 8);
+      d = new ArcanaIngredient(Items.DYE.gray(), 8);
+      e = new ArcanaIngredient(Items.DYE.lightBlue(), 8);
+      f = new ArcanaIngredient(Items.DYE.magenta(), 8);
+      g = new ArcanaIngredient(Items.DYE.cyan(), 8);
+      h = new ArcanaIngredient(Items.DYE.red(), 8);
+      i = new ArcanaIngredient(Items.DYE.pink(), 8);
       j = new GenericArcanaIngredient(ArcanaRegistry.CATALYTIC_MATRIX, 1);
-      k = new ArcanaIngredient(Items.BROWN_DYE, 8);
-      l = new ArcanaIngredient(Items.ORANGE_DYE, 8);
-      m = new ArcanaIngredient(Items.GREEN_DYE, 8);
-      n = new ArcanaIngredient(Items.PURPLE_DYE, 8);
-      o = new ArcanaIngredient(Items.BLUE_DYE, 8);
-      p = new ArcanaIngredient(Items.LIGHT_GRAY_DYE, 8);
-      q = new ArcanaIngredient(Items.YELLOW_DYE, 8);
-      r = new ArcanaIngredient(Items.BLACK_DYE, 8);
+      k = new ArcanaIngredient(Items.DYE.brown(), 8);
+      l = new ArcanaIngredient(Items.DYE.orange(), 8);
+      m = new ArcanaIngredient(Items.DYE.green(), 8);
+      n = new ArcanaIngredient(Items.DYE.purple(), 8);
+      o = new ArcanaIngredient(Items.DYE.blue(), 8);
+      p = new ArcanaIngredient(Items.DYE.lightGray(), 8);
+      q = new ArcanaIngredient(Items.DYE.yellow(), 8);
+      r = new ArcanaIngredient(Items.DYE.black(), 8);
       
       ingredients = new ArcanaIngredient[][]{
             {a, b, c, b, d},
@@ -3650,21 +3652,21 @@ public class DefaultRecipeGenerator {
             .withViewStack(new ItemStack(Items.SANDSTONE)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("copper", new ItemStack(Items.REDSTONE, 36), new ItemStack(Items.AMETHYST_SHARD, 24))
-            .with(Items.OXIDIZED_COPPER, Items.WEATHERED_COPPER, Items.EXPOSED_COPPER, Items.COPPER_BLOCK,
-                  Items.OXIDIZED_CUT_COPPER, Items.WEATHERED_CUT_COPPER, Items.EXPOSED_CUT_COPPER, Items.CUT_COPPER,
-                  Items.OXIDIZED_CUT_COPPER_STAIRS, Items.WEATHERED_CUT_COPPER_STAIRS, Items.EXPOSED_CUT_COPPER_STAIRS, Items.CUT_COPPER_STAIRS,
-                  Items.OXIDIZED_CHISELED_COPPER, Items.WEATHERED_CHISELED_COPPER, Items.EXPOSED_CHISELED_COPPER, Items.CHISELED_COPPER,
-                  Items.OXIDIZED_COPPER_GRATE, Items.WEATHERED_COPPER_GRATE, Items.EXPOSED_COPPER_GRATE, Items.COPPER_GRATE,
-                  Items.COPPER_BARS.oxidized(), Items.COPPER_BARS.weathered(), Items.COPPER_BARS.exposed(), Items.COPPER_BARS.unaffected(),
-                  Items.COPPER_CHAIN.oxidized(), Items.COPPER_CHAIN.weathered(), Items.COPPER_CHAIN.exposed(), Items.COPPER_CHAIN.unaffected(),
-                  Items.COPPER_LANTERN.oxidized(), Items.COPPER_LANTERN.weathered(), Items.COPPER_LANTERN.exposed(), Items.COPPER_LANTERN.unaffected(),
-                  Items.OXIDIZED_CUT_COPPER_SLAB, Items.WEATHERED_CUT_COPPER_SLAB, Items.EXPOSED_CUT_COPPER_SLAB, Items.CUT_COPPER_SLAB,
-                  Items.OXIDIZED_COPPER_DOOR, Items.WEATHERED_COPPER_DOOR, Items.EXPOSED_COPPER_DOOR, Items.COPPER_DOOR,
-                  Items.OXIDIZED_COPPER_TRAPDOOR, Items.WEATHERED_COPPER_TRAPDOOR, Items.EXPOSED_COPPER_TRAPDOOR, Items.COPPER_TRAPDOOR,
-                  Items.OXIDIZED_COPPER_BULB, Items.WEATHERED_COPPER_BULB, Items.EXPOSED_COPPER_BULB, Items.COPPER_BULB,
-                  Items.OXIDIZED_COPPER_GOLEM_STATUE, Items.WEATHERED_COPPER_GOLEM_STATUE, Items.EXPOSED_COPPER_GOLEM_STATUE, Items.COPPER_GOLEM_STATUE,
-                  Items.OXIDIZED_COPPER_CHEST, Items.WEATHERED_COPPER_CHEST, Items.EXPOSED_COPPER_CHEST, Items.COPPER_CHEST)
-            .withViewStack(new ItemStack(Items.OXIDIZED_COPPER)));
+            .with(Items.COPPER_BLOCK.weathering().oxidized(), Items.COPPER_BLOCK.weathering().weathered(), Items.COPPER_BLOCK.weathering().exposed(), Items.COPPER_BLOCK.weathering().unaffected(),
+                  Items.CUT_COPPER.weathering().oxidized(), Items.CUT_COPPER.weathering().weathered(), Items.CUT_COPPER.weathering().exposed(), Items.CUT_COPPER.weathering().unaffected(),
+                  Items.CUT_COPPER_STAIRS.weathering().oxidized(), Items.CUT_COPPER_STAIRS.weathering().weathered(), Items.CUT_COPPER_STAIRS.weathering().exposed(), Items.CUT_COPPER_STAIRS.weathering().unaffected(),
+                  Items.CHISELED_COPPER.weathering().oxidized(), Items.CHISELED_COPPER.weathering().weathered(), Items.CHISELED_COPPER.weathering().exposed(), Items.CHISELED_COPPER.weathering().unaffected(),
+                  Items.COPPER_GRATE.weathering().oxidized(), Items.COPPER_GRATE.weathering().weathered(), Items.COPPER_GRATE.weathering().exposed(), Items.COPPER_GRATE.weathering().unaffected(),
+                  Items.COPPER_BARS.weathering().oxidized(), Items.COPPER_BARS.weathering().weathered(), Items.COPPER_BARS.weathering().exposed(), Items.COPPER_BARS.weathering().unaffected(),
+                  Items.COPPER_CHAIN.weathering().oxidized(), Items.COPPER_CHAIN.weathering().weathered(), Items.COPPER_CHAIN.weathering().exposed(), Items.COPPER_CHAIN.weathering().unaffected(),
+                  Items.COPPER_LANTERN.weathering().oxidized(), Items.COPPER_LANTERN.weathering().weathered(), Items.COPPER_LANTERN.weathering().exposed(), Items.COPPER_LANTERN.weathering().unaffected(),
+                  Items.CUT_COPPER_SLAB.weathering().oxidized(), Items.CUT_COPPER_SLAB.weathering().weathered(), Items.CUT_COPPER_SLAB.weathering().exposed(), Items.CUT_COPPER_SLAB.weathering().unaffected(),
+                  Items.COPPER_DOOR.weathering().oxidized(), Items.COPPER_DOOR.weathering().weathered(), Items.COPPER_DOOR.weathering().exposed(), Items.COPPER_DOOR.weathering().unaffected(),
+                  Items.COPPER_TRAPDOOR.weathering().oxidized(), Items.COPPER_TRAPDOOR.weathering().weathered(), Items.COPPER_TRAPDOOR.weathering().exposed(), Items.COPPER_TRAPDOOR.weathering().unaffected(),
+                  Items.COPPER_BULB.weathering().oxidized(), Items.COPPER_BULB.weathering().weathered(), Items.COPPER_BULB.weathering().exposed(), Items.COPPER_BULB.weathering().unaffected(),
+                  Items.COPPER_GOLEM_STATUE.weathering().oxidized(), Items.COPPER_GOLEM_STATUE.weathering().weathered(), Items.COPPER_GOLEM_STATUE.weathering().exposed(), Items.COPPER_GOLEM_STATUE.weathering().unaffected(),
+                  Items.COPPER_CHEST.weathering().oxidized(), Items.COPPER_CHEST.weathering().weathered(), Items.COPPER_CHEST.weathering().exposed(), Items.COPPER_CHEST.weathering().unaffected())
+            .withViewStack(new ItemStack(Items.COPPER_BLOCK.weathering().oxidized())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("logs", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))
             .with(Items.ACACIA_LOG, Items.BAMBOO_BLOCK, Items.BIRCH_LOG, Items.CHERRY_LOG, Items.CRIMSON_STEM,
@@ -3731,7 +3733,7 @@ public class DefaultRecipeGenerator {
             .withViewStack(new ItemStack(Items.OAK_PRESSURE_PLATE)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("buttons", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))
-            .with(Either.left(ItemTags.BUTTONS))
+            .with(Either.right(BlockTags.BUTTONS))
             .withViewStack(new ItemStack(Items.OAK_BUTTON)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("boats", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))
@@ -3823,7 +3825,7 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("dyes", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.left(ConventionalItemTags.DYES))
-            .withViewStack(new ItemStack(Items.WHITE_DYE)));
+            .withViewStack(new ItemStack(Items.DYE.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("terracotta", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.right(BlockTags.TERRACOTTA))
@@ -3831,11 +3833,11 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("wool", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.left(ItemTags.WOOL))
-            .withViewStack(new ItemStack(Items.WHITE_WOOL)));
+            .withViewStack(new ItemStack(Items.WOOL.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("carpet", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.left(ItemTags.WOOL_CARPETS))
-            .withViewStack(new ItemStack(Items.WHITE_CARPET)));
+            .withViewStack(new ItemStack(Items.CARPET.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("glass", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.left(ConventionalItemTags.GLASS_BLOCKS_CHEAP))
@@ -3850,25 +3852,25 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("glazed_terracotta", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.left(ConventionalItemTags.GLAZED_TERRACOTTAS))
-            .withViewStack(new ItemStack(Items.WHITE_GLAZED_TERRACOTTA)));
+            .withViewStack(new ItemStack(Items.GLAZED_TERRACOTTA.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("concrete", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.left(ConventionalItemTags.CONCRETES))
-            .withViewStack(new ItemStack(Items.WHITE_CONCRETE)));
+            .withViewStack(new ItemStack(Items.CONCRETE.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("gravity_blocks", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.left(ConventionalItemTags.CONCRETE_POWDERS))
             .with(Either.left(ConventionalItemTags.SANDS))
             .with(Either.left(ConventionalItemTags.GRAVELS))
-            .withViewStack(new ItemStack(Items.WHITE_CONCRETE_POWDER)));
+            .withViewStack(new ItemStack(Items.CONCRETE_POWDER.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("banners", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.right(BlockTags.BANNERS))
-            .withViewStack(new ItemStack(Items.WHITE_BANNER)));
+            .withViewStack(new ItemStack(Items.BANNER.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("beds", new ItemStack(Items.LAPIS_LAZULI, 24), new ItemStack(Items.GLOWSTONE_DUST, 12))
             .with(Either.right(BlockTags.BEDS))
-            .withViewStack(new ItemStack(Items.WHITE_BED)));
+            .withViewStack(new ItemStack(Items.BED.white())));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("rods", new ItemStack(Items.QUARTZ, 35), new ItemStack(Items.REDSTONE, 45))
             .with(Items.BLAZE_ROD, Items.BREEZE_ROD)
@@ -3912,7 +3914,7 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("sand_decomposition", new ItemStack(Items.SANDSTONE, 1), new ItemStack(Items.SAND, 4), new ItemStack(Items.GUNPOWDER, 4), new ItemStack(ArcanaRegistry.STARDUST, 1)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("fiber_decomposition", new ItemStack(Items.WHITE_WOOL, 1), new ItemStack(Items.STRING, 4), new ItemStack(Items.GUNPOWDER, 4), new ItemStack(ArcanaRegistry.STARDUST, 1)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("fiber_decomposition", Either.right(ItemTags.WOOL), 1, new ItemStack(Items.STRING, 4), new ItemStack(Items.GUNPOWDER, 4), new ItemStack(ArcanaRegistry.STARDUST, 1)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("honeycomb_decomposition", new ItemStack(Items.HONEYCOMB_BLOCK, 1), new ItemStack(Items.HONEYCOMB, 4), new ItemStack(Items.GUNPOWDER, 4), new ItemStack(ArcanaRegistry.STARDUST, 1)));
       

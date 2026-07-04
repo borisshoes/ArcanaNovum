@@ -24,6 +24,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
@@ -65,7 +66,7 @@ public class ShulkerCoreGui extends SimpleGui implements ContainerWatcher {
          CompoundTag stoneData = ArcanaItem.getCompoundProperty(item, ShulkerCore.STONE_DATA_TAG);
          ItemStack stone;
          if(stoneData == null || stoneData.isEmpty()){
-            stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
+            stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityTypes.SHULKER);
          }else{
             stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, player.registryAccess()), stoneData).result().orElse(ItemStack.EMPTY);
          }
@@ -154,7 +155,7 @@ public class ShulkerCoreGui extends SimpleGui implements ContainerWatcher {
       
       if(ArcanaItemUtils.isArcane(item)){
          if(ArcanaItemUtils.identifyItem(item) instanceof Soulstone stone){
-            if(Soulstone.getType(item).equals(EntityType.getKey(EntityType.SHULKER).toString())){
+            if(Soulstone.getType(item).equals(EntityType.getKey(EntityTypes.SHULKER).toString())){
                validStone(item);
                return true;
             }

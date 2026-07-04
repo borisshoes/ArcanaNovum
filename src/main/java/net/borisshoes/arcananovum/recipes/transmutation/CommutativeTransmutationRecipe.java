@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
@@ -14,7 +15,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -81,7 +81,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe {
    }
    
    @Override
-   public List<Tuple<ItemStack, String>> doTransmutation(ItemEntity sourceEntity, ItemEntity focusEntity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
+   public List<Pair<ItemStack, String>> doTransmutation(ItemEntity sourceEntity, ItemEntity focusEntity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       ItemStack sourceStack = sourceEntity != null ? sourceEntity.getItem() : ItemStack.EMPTY;
       ItemStack focusStack = focusEntity != null ? focusEntity.getItem() : ItemStack.EMPTY;
@@ -124,8 +124,8 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe {
          }
       }
       
-      List<Tuple<ItemStack, String>> outputs = new ArrayList<>();
-      outputs.add(new Tuple<>(outputStack, "negative"));
+      List<Pair<ItemStack, String>> outputs = new ArrayList<>();
+      outputs.add(Pair.of(outputStack, "negative"));
       return outputs;
    }
    

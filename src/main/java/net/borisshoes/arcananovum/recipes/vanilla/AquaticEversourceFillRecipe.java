@@ -15,7 +15,10 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ColorCollection;
+import net.minecraft.world.level.block.ConcretePowderBlock;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Map.entry;
@@ -40,27 +43,14 @@ public class AquaticEversourceFillRecipe extends CustomRecipe {
    );
    public static final RecipeSerializer<AquaticEversourceFillRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
    
-   public static final Map<Item, ItemStackTemplate> FILLABLE = Map.ofEntries(
-         entry(Items.DIRT, new ItemStackTemplate(Items.MUD)),
-         entry(Items.GLASS_BOTTLE, new ItemStackTemplate(Items.POTION, DataComponentPatch.builder().set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER)).build())),
-         entry(Items.BUCKET, new ItemStackTemplate(Items.WATER_BUCKET)),
-         entry(Items.WHITE_CONCRETE_POWDER, new ItemStackTemplate(Items.WHITE_CONCRETE)),
-         entry(Items.ORANGE_CONCRETE_POWDER, new ItemStackTemplate(Items.ORANGE_CONCRETE)),
-         entry(Items.MAGENTA_CONCRETE_POWDER, new ItemStackTemplate(Items.MAGENTA_CONCRETE)),
-         entry(Items.LIGHT_BLUE_CONCRETE_POWDER, new ItemStackTemplate(Items.LIGHT_BLUE_CONCRETE)),
-         entry(Items.YELLOW_CONCRETE_POWDER, new ItemStackTemplate(Items.YELLOW_CONCRETE)),
-         entry(Items.LIME_CONCRETE_POWDER, new ItemStackTemplate(Items.LIME_CONCRETE)),
-         entry(Items.PINK_CONCRETE_POWDER, new ItemStackTemplate(Items.PINK_CONCRETE)),
-         entry(Items.GRAY_CONCRETE_POWDER, new ItemStackTemplate(Items.GRAY_CONCRETE)),
-         entry(Items.LIGHT_GRAY_CONCRETE_POWDER, new ItemStackTemplate(Items.LIGHT_GRAY_CONCRETE)),
-         entry(Items.CYAN_CONCRETE_POWDER, new ItemStackTemplate(Items.CYAN_CONCRETE)),
-         entry(Items.PURPLE_CONCRETE_POWDER, new ItemStackTemplate(Items.PURPLE_CONCRETE)),
-         entry(Items.BLUE_CONCRETE_POWDER, new ItemStackTemplate(Items.BLUE_CONCRETE)),
-         entry(Items.BROWN_CONCRETE_POWDER, new ItemStackTemplate(Items.BROWN_CONCRETE)),
-         entry(Items.GREEN_CONCRETE_POWDER, new ItemStackTemplate(Items.GREEN_CONCRETE)),
-         entry(Items.RED_CONCRETE_POWDER, new ItemStackTemplate(Items.RED_CONCRETE)),
-         entry(Items.BLACK_CONCRETE_POWDER, new ItemStackTemplate(Items.BLACK_CONCRETE))
-   );
+   public static final Map<Item, ItemStackTemplate> FILLABLE = new HashMap<>();
+   
+   static {
+      FILLABLE.put(Items.DIRT, new ItemStackTemplate(Items.MUD));
+      FILLABLE.put(Items.GLASS_BOTTLE, new ItemStackTemplate(Items.POTION, DataComponentPatch.builder().set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER)).build()));
+      FILLABLE.put(Items.BUCKET, new ItemStackTemplate(Items.WATER_BUCKET));
+      ColorCollection.VALUES.forEach(color -> FILLABLE.put(Items.CONCRETE_POWDER.pick(color), new ItemStackTemplate(Items.CONCRETE.pick(color))));
+   }
    
    private final Ingredient item;
    private final Ingredient eversource;

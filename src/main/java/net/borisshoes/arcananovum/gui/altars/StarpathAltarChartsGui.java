@@ -10,12 +10,12 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.gui.GuiSort;
 import net.borisshoes.borislib.gui.PagedGui;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,11 +40,11 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
       this.stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.STARGATE) > 0;
       setTitle(Component.literal("Star Charts"));
       
-      action1TextColor(ChatFormatting.AQUA.getColor().intValue());
-      action2TextColor(ChatFormatting.GREEN.getColor().intValue());
-      action3TextColor(ChatFormatting.YELLOW.getColor().intValue());
-      primaryTextColor(ChatFormatting.DARK_AQUA.getColor().intValue());
-      secondaryTextColor(ChatFormatting.BLUE.getColor().intValue());
+      action1TextColor(TextColor.AQUA.getValue());
+      action2TextColor(TextColor.GREEN.getValue());
+      action3TextColor(TextColor.YELLOW.getValue());
+      primaryTextColor(TextColor.DARK_AQUA.getValue());
+      secondaryTextColor(TextColor.BLUE.getValue());
       
       blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, 0x20224B)).hideTooltip());
       
@@ -54,7 +54,7 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
          destItem.addLoreLine(TextUtils.removeItalics(Component.literal(entry.getBlockCoords().toShortString()).withStyle(ChatFormatting.YELLOW)));
          if(stargate){
             ResourceKey<Level> dim = ResourceKey.create(Registries.DIMENSION, Identifier.parse(entry.dimension()));
-            destItem.addLoreLine(Component.literal("Dimension: ").withStyle(ChatFormatting.YELLOW).append(MinecraftUtils.getFormattedDimName(dim)));
+            destItem.addLoreLine(Component.literal("Dimension: ").withStyle(ChatFormatting.YELLOW).append(TextUtils.getFormattedDimName(dim)));
          }
          destItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
          destItem.addLoreLine(TextUtils.removeItalics((Component.literal("")
@@ -145,11 +145,11 @@ public class StarpathAltarChartsGui extends PagedGui<StarpathAltarBlockEntity.Ta
       public static final List<TargetSort> SORTS = new ArrayList<>();
       public static StarpathAltarBlockEntity blockEntity;
       
-      public static final TargetSort CLOSEST = new TargetSort("gui.arcananovum.closest", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+      public static final TargetSort CLOSEST = new TargetSort("gui.arcananovum.closest", TextColor.LIGHT_PURPLE.getValue(),
             Comparator.comparingInt(pair -> (int) pair.getBlockCoords().distSqr(getBlockEntity().getBlockPos())));
-      public static final TargetSort FURTHEST = new TargetSort("gui.arcananovum.furthest", ChatFormatting.DARK_PURPLE.getColor().intValue(),
+      public static final TargetSort FURTHEST = new TargetSort("gui.arcananovum.furthest", TextColor.DARK_PURPLE.getValue(),
             Comparator.comparing(pair -> (int) -pair.getBlockCoords().distSqr(getBlockEntity().getBlockPos())));
-      public static final TargetSort ALPHABETICAL = new TargetSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor().intValue(),
+      public static final TargetSort ALPHABETICAL = new TargetSort("gui.borislib.alphabetical", TextColor.GREEN.getValue(),
             Comparator.comparing(StarpathAltarBlockEntity.TargetEntry::name));
       
       private TargetSort(String key, int color, Comparator<StarpathAltarBlockEntity.TargetEntry> comparator){

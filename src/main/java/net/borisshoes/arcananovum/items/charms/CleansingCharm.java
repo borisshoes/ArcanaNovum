@@ -205,8 +205,8 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
-      Vec3 stackPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      AABB box = new AABB(Vec3.atCenterOf(stele.getBlockPos()).subtract(range), Vec3.atCenterOf(stele.getBlockPos()).add(range));
+      Vec3 stackPos = Vec3.atCenterOf(stele.getBlockPos()).add(0, 1, 0);
       
       List<LivingEntity> inRangeEntities = world.getEntitiesOfClass(LivingEntity.class, box);
       for(LivingEntity living : inRangeEntities){

@@ -51,7 +51,7 @@ public class FleeSteleGoal extends Goal {
          zones.sort(Comparator.comparingDouble(stele -> stele.getBlockEntity().getBlockPos().distSqr(this.mob.blockPosition())));
          GeomanticSteleBlockEntity.SteleZone zone = zones.getFirst();
          this.toFlee = zone.getBlockEntity().getBlockPos();
-         Vec3 vec3 = DefaultRandomPos.getPosAway(this.mob, 16, 7, this.toFlee.getCenter());
+         Vec3 vec3 = DefaultRandomPos.getPosAway(this.mob, 16, 7, Vec3.atCenterOf(this.toFlee));
          if(vec3 == null){
             this.toFlee = null;
             return false;
@@ -86,7 +86,7 @@ public class FleeSteleGoal extends Goal {
    
    @Override
    public void tick(){
-      if(this.mob.distanceToSqr(this.toFlee.getCenter()) < 49.0){
+      if(this.mob.distanceToSqr(Vec3.atCenterOf(this.toFlee)) < 49.0){
          this.mob.getNavigation().setSpeedModifier(this.sprintSpeedModifier);
       }else{
          this.mob.getNavigation().setSpeedModifier(this.walkSpeedModifier);

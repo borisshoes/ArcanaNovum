@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.gui.transmogrification;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -11,8 +12,8 @@ import net.borisshoes.borislib.gui.PagedGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 
@@ -26,11 +27,11 @@ public class TransmogrificationGui extends PagedGui<ArcanaSkin> {
       
       setTitle(Component.translatable("gui.arcananovum.skin_selection"));
       
-      action1TextColor(ChatFormatting.AQUA.getColor().intValue());
-      action2TextColor(ChatFormatting.GREEN.getColor().intValue());
-      action3TextColor(ChatFormatting.YELLOW.getColor().intValue());
-      primaryTextColor(ChatFormatting.LIGHT_PURPLE.getColor().intValue());
-      secondaryTextColor(ChatFormatting.DARK_PURPLE.getColor().intValue());
+      action1TextColor(TextColor.AQUA.getValue());
+      action2TextColor(TextColor.GREEN.getValue());
+      action3TextColor(TextColor.YELLOW.getValue());
+      primaryTextColor(TextColor.LIGHT_PURPLE.getValue());
+      secondaryTextColor(TextColor.DARK_PURPLE.getValue());
       
       blankItem(GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.PAGE_COLOR)).hideTooltip());
       
@@ -51,10 +52,10 @@ public class TransmogrificationGui extends PagedGui<ArcanaSkin> {
             }
             item.addLoreLine(Component.literal(""));
             item.addLoreLine(Component.translatable("text.arcananovum.item_skin", skinStack.getItemName().copy().withStyle(s -> s.withBold(false))).withColor(skinStack.getItemName().getStyle().getColor().getValue()));
-            for(Tuple<MutableComponent, MutableComponent> attribution : skin.getAttributions()){
+            for(Pair<MutableComponent, MutableComponent> attribution : skin.getAttributions()){
                item.addLoreLine(Component.literal("").withStyle(ChatFormatting.ITALIC)
-                     .append(attribution.getA().withColor(skin.getSecondaryColor()))
-                     .append(attribution.getB().withColor(skin.getPrimaryColor())));
+                     .append(attribution.getFirst().withColor(skin.getSecondaryColor()))
+                     .append(attribution.getSecond().withColor(skin.getPrimaryColor())));
             }
          }
          

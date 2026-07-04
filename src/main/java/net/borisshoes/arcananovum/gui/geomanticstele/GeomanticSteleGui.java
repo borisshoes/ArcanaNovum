@@ -9,6 +9,7 @@ import net.borisshoes.borislib.gui.GraphicalItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.phys.Vec3;
@@ -36,9 +37,9 @@ public class GeomanticSteleGui extends SimpleGui {
       this.setSlot(3, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR_LIGHT, ArcanaColors.EQUAYUS_COLOR)).setName(Component.literal("")).hideTooltip().addLoreLine(curRange.withStyle(ChatFormatting.GRAY)));
       this.setSlot(5, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR_LIGHT, ArcanaColors.EQUAYUS_COLOR)).setName(Component.literal("")).hideTooltip().addLoreLine(curRange.withStyle(ChatFormatting.GRAY)));
       
-      GuiElementBuilder xUp = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_UP, ChatFormatting.GRAY.getColor())).hideDefaultTooltip();
-      GuiElementBuilder yUp = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_UP, ChatFormatting.GRAY.getColor())).hideDefaultTooltip();
-      GuiElementBuilder zUp = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_UP, ChatFormatting.GRAY.getColor())).hideDefaultTooltip();
+      GuiElementBuilder xUp = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_UP, TextColor.GRAY.getValue())).hideDefaultTooltip();
+      GuiElementBuilder yUp = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_UP, TextColor.GRAY.getValue())).hideDefaultTooltip();
+      GuiElementBuilder zUp = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_UP, TextColor.GRAY.getValue())).hideDefaultTooltip();
       xUp.setName(Component.literal("Increase X Range").withStyle(ChatFormatting.GRAY));
       yUp.setName(Component.literal("Increase Y Range").withStyle(ChatFormatting.GRAY));
       zUp.setName(Component.literal("Increase Z Range").withStyle(ChatFormatting.GRAY));
@@ -88,9 +89,9 @@ public class GeomanticSteleGui extends SimpleGui {
       setSlot(1, yUp);
       setSlot(2, zUp);
       
-      GuiElementBuilder xDown = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_DOWN, ChatFormatting.DARK_GRAY.getColor())).hideDefaultTooltip();
-      GuiElementBuilder yDown = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_DOWN, ChatFormatting.DARK_GRAY.getColor())).hideDefaultTooltip();
-      GuiElementBuilder zDown = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_DOWN, ChatFormatting.DARK_GRAY.getColor())).hideDefaultTooltip();
+      GuiElementBuilder xDown = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_DOWN, TextColor.DARK_GRAY.getValue())).hideDefaultTooltip();
+      GuiElementBuilder yDown = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_DOWN, TextColor.DARK_GRAY.getValue())).hideDefaultTooltip();
+      GuiElementBuilder zDown = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.ARROW_DOWN, TextColor.DARK_GRAY.getValue())).hideDefaultTooltip();
       xDown.setName(Component.literal("Decrease X Range").withStyle(ChatFormatting.DARK_GRAY));
       yDown.setName(Component.literal("Decrease Y Range").withStyle(ChatFormatting.DARK_GRAY));
       zDown.setName(Component.literal("Decrease Z Range").withStyle(ChatFormatting.DARK_GRAY));

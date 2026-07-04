@@ -50,7 +50,7 @@ public class NegotiationCharm extends ArcanaItem {
       rarity = ArcanaRarity.EMPOWERED;
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.ITEMS, ArcaneTomeGui.TomeFilter.CHARMS};
       itemVersion = 0;
-      vanillaItem = Items.YELLOW_DYE;
+      vanillaItem = Items.DYE.yellow();
       item = new NegotiationCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_BARTER_PIGLIN, ResearchTasks.ADVANCEMENT_FIND_BASTION, ResearchTasks.ADVANCEMENT_TRADE};

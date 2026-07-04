@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
@@ -50,7 +51,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -197,7 +197,7 @@ public class DragonBossFight {
                makeScoreboards(server);
                
                // Set crystals to be invulnerable
-               crystals = endWorld.getEntities(EntityType.END_CRYSTAL, new AABB(new BlockPos(-50,25,-50).getCenter(), new BlockPos(50,115,50).getCenter()), EndCrystal::showsBottom);
+               crystals = endWorld.getEntities(EntityTypes.END_CRYSTAL, new AABB(Vec3.atCenterOf(new BlockPos(-50,25,-50)), Vec3.atCenterOf(new BlockPos(50,115,50))), EndCrystal::showsBottom);
                for(EndCrystal crystal : crystals){
                   crystal.setInvulnerable(true);
                }
@@ -267,7 +267,7 @@ public class DragonBossFight {
             }
          }else if(state == States.PHASE_ONE){ // Tick guardian check, dragon invincibility
             List<ServerPlayer> nearbyPlayers300 = endWorld.getPlayers(p -> p.distanceToSqr(new Vec3(0,100,0)) <= 300*300);
-            List<EnderMan> endermen = endWorld.getEntities(EntityType.ENDERMAN, new AABB(new BlockPos(-100,25,-100).getCenter(), new BlockPos(100,115,100).getCenter()), e -> true);
+            List<EnderMan> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-100,25,-100)), Vec3.atCenterOf(new BlockPos(100,115,100))), e -> true);
    
             for(EnderMan enderman : endermen){ // Make endermen not attack Endermites
                if(enderman.getTarget() instanceof Endermite || (enderman.getPersistentAngerTarget() != null && endWorld.getEntity(enderman.getPersistentAngerTarget().getUUID()) instanceof Endermite)){
@@ -391,7 +391,7 @@ public class DragonBossFight {
             States.updateState(States.PHASE_THREE,server);
             phase = 3;
          }else if(state == States.PHASE_THREE){ // Dragon HP Updates, Endermen buff and aggro
-            List<EnderMan> endermen = endWorld.getEntities(EntityType.ENDERMAN, new AABB(new BlockPos(-100,25,-100).getCenter(), new BlockPos(100,115,100).getCenter()), e -> true);
+            List<EnderMan> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-100,25,-100)), Vec3.atCenterOf(new BlockPos(100,115,100))), e -> true);
             float dragonHP = dragon.getHealth();
             float dragonMax = dragon.getMaxHealth();
    
@@ -474,7 +474,7 @@ public class DragonBossFight {
          if(gm != null) gmNotifs.forEach(gm::sendSystemMessage);
          if(state != States.WAITING_RESPAWN && state != States.WAITING_START && state != States.WAITING_ONE){
             if(age % 3000 == 0){
-               List<ShulkerBullet> bullets = endWorld.getEntities(EntityType.SHULKER_BULLET, new AABB(new BlockPos(-400,0,-400).getCenter(), new BlockPos(400,256,400).getCenter()), e -> true);
+               List<ShulkerBullet> bullets = endWorld.getEntities(EntityTypes.SHULKER_BULLET, new AABB(Vec3.atCenterOf(new BlockPos(-400,0,-400)), Vec3.atCenterOf(new BlockPos(400,256,400))), e -> true);
                for(ShulkerBullet bullet : bullets){
                   bullet.kill(endWorld);
                }
@@ -495,7 +495,7 @@ public class DragonBossFight {
    private static void spawnGoons(ServerLevel endWorld, int phase){
       if(phase == 1){ // Endermite Goons
          // Count existing goons
-         List<Endermite> curGoons = endWorld.getEntities(EntityType.ENDERMITE, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
+         List<Endermite> curGoons = endWorld.getEntities(EntityTypes.ENDERMITE, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
          if(curGoons.size() > 35) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(endWorld.getRandom().nextDouble() > chance) return; // Average 25+minTime seconds before goon spawn
@@ -504,7 +504,7 @@ public class DragonBossFight {
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          float endermiteHP = Mth.clamp(10 + 3*numPlayers,10,40);
          for(int i=0;i<goons.length;i++){
-            goons[i] = new Endermite(EntityType.ENDERMITE, endWorld);
+            goons[i] = new Endermite(EntityTypes.ENDERMITE, endWorld);
             goons[i].getAttribute(Attributes.MAX_HEALTH).setBaseValue(endermiteHP);
             goons[i].setHealth(endermiteHP);
             goons[i].setPersistenceRequired();
@@ -518,7 +518,7 @@ public class DragonBossFight {
          DragonDialog.announce(DragonDialog.Announcements.PHASE_ONE_GOONS,endWorld.getServer(),null);
       }else if(phase == 2){ // Shulker Goons
          // Count existing goons
-         List<Shulker> curGoons = endWorld.getEntities(EntityType.SHULKER, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
+         List<Shulker> curGoons = endWorld.getEntities(EntityTypes.SHULKER, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
          if(curGoons.size() > 35) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(endWorld.getRandom().nextDouble() > chance) return; // Average 25+minTime seconds before goon spawn
@@ -527,7 +527,7 @@ public class DragonBossFight {
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          float shulkerHP = Mth.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
-            goons[i] = new Shulker(EntityType.SHULKER, endWorld);
+            goons[i] = new Shulker(EntityTypes.SHULKER, endWorld);
             goons[i].getAttribute(Attributes.MAX_HEALTH).setBaseValue(shulkerHP);
             goons[i].setHealth(shulkerHP);
             goons[i].setPersistenceRequired();
@@ -540,7 +540,7 @@ public class DragonBossFight {
          DragonDialog.announce(DragonDialog.Announcements.PHASE_TWO_GOONS,endWorld.getServer(),null);
       }else if(phase == 3){ // Enderman Goons
          // Count existing goons
-         List<EnderMan> curGoons = endWorld.getEntities(EntityType.ENDERMAN, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
+         List<EnderMan> curGoons = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
          if(curGoons.size() > 50) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(endWorld.getRandom().nextDouble() > chance) return; // Average 25+minTime seconds before goon spawn
@@ -549,7 +549,7 @@ public class DragonBossFight {
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          float endermanHP = Mth.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
-            goons[i] = new EnderMan(EntityType.ENDERMAN, endWorld);
+            goons[i] = new EnderMan(EntityTypes.ENDERMAN, endWorld);
             goons[i].getAttribute(Attributes.MAX_HEALTH).setBaseValue(endermanHP);
             goons[i].setHealth(endermanHP);
             goons[i].getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(8f);
@@ -769,7 +769,7 @@ public class DragonBossFight {
    private static void resetTowers(ServerLevel endWorld){
       List<EndSpikeFeature.EndSpike> list = EndSpikeFeature.getSpikesForLevel(endWorld);
       for(EndSpikeFeature.EndSpike spike : list){
-         List<EndCrystal> nearCrystals = endWorld.getEntities(EntityType.END_CRYSTAL, new AABB(BlockPos.containing(spike.getCenterX()-10,0,spike.getCenterZ()-10).getCenter(), BlockPos.containing(spike.getCenterX()+10,255,spike.getCenterZ()+10).getCenter()), EndCrystal::showsBottom);
+         List<EndCrystal> nearCrystals = endWorld.getEntities(EntityTypes.END_CRYSTAL, new AABB(Vec3.atCenterOf(BlockPos.containing(spike.getCenterX()-10,0,spike.getCenterZ()-10)), Vec3.atCenterOf(BlockPos.containing(spike.getCenterX()+10,255,spike.getCenterZ()+10))), EndCrystal::showsBottom);
          for(EndCrystal nearCrystal : nearCrystals){
             nearCrystal.kill(endWorld);
          }
@@ -803,7 +803,7 @@ public class DragonBossFight {
          Iterator<Direction> var4 = Direction.Plane.HORIZONTAL.iterator();
          while(var4.hasNext()){
             Direction direction = var4.next();
-            EndCrystal crystal = new EndCrystal(EntityType.END_CRYSTAL, endWorld);
+            EndCrystal crystal = new EndCrystal(EntityTypes.END_CRYSTAL, endWorld);
             crystal.setPos(Vec3.atBottomCenterOf(blockPos2.relative(direction, 3)));
             endWorld.addFreshEntityWithPassengers(crystal);
          }
@@ -812,7 +812,7 @@ public class DragonBossFight {
          BorisLib.addTickTimerCallback(new DragonRespawnTimerCallback(player.level().getServer()));
       }else{
          player.sendSystemMessage(Component.literal("Co-opting Dragon"), false);
-         if(endWorld.getEntities(EntityType.END_CRYSTAL, new AABB(new BlockPos(-50, 25, -50).getCenter(), new BlockPos(50, 115, 50).getCenter()), EndCrystal::showsBottom).size() != 10){
+         if(endWorld.getEntities(EntityTypes.END_CRYSTAL, new AABB(Vec3.atCenterOf(new BlockPos(-50, 25, -50)), Vec3.atCenterOf(new BlockPos(50, 115, 50))), EndCrystal::showsBottom).size() != 10){
             player.sendSystemMessage(Component.literal("Tower Anomaly Detected, Resetting").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), false);
             resetTowers(endWorld);
          }
@@ -828,8 +828,8 @@ public class DragonBossFight {
    }
    
    public static int abortBoss(MinecraftServer server){
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
-      CompoundTag data = bossFight.getB();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      CompoundTag data = bossFight.getSecond();
       States state = States.valueOf(data.getStringOr("State", ""));
       ServerPlayer gm = server.getPlayerList().getPlayer(AlgoUtils.getUUID(data.getStringOr("GameMaster", "")));
       ServerLevel endWorld = server.getLevel(Level.END);
@@ -877,11 +877,11 @@ public class DragonBossFight {
          }
       }
       
-      List<Endermite> mites = endWorld.getEntities(EntityType.ENDERMITE, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
-      List<Shulker> shulkers = endWorld.getEntities(EntityType.SHULKER, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
-      List<Skeleton> skeletons = endWorld.getEntities(EntityType.SKELETON, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
-      List<Phantom> phantoms = endWorld.getEntities(EntityType.PHANTOM, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
-      List<Illusioner> illusioners = endWorld.getEntities(EntityType.ILLUSIONER, new AABB(new BlockPos(-300,25,-300).getCenter(), new BlockPos(300,255,300).getCenter()), e -> true);
+      List<Endermite> mites = endWorld.getEntities(EntityTypes.ENDERMITE, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
+      List<Shulker> shulkers = endWorld.getEntities(EntityTypes.SHULKER, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
+      List<Skeleton> skeletons = endWorld.getEntities(EntityTypes.SKELETON, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
+      List<Phantom> phantoms = endWorld.getEntities(EntityTypes.PHANTOM, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
+      List<Illusioner> illusioners = endWorld.getEntities(EntityTypes.ILLUSIONER, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
       mites.forEach(e -> e.kill(endWorld));
       shulkers.forEach(e -> e.kill(endWorld));
       skeletons.forEach(e -> e.kill(endWorld));
@@ -964,8 +964,8 @@ public class DragonBossFight {
    }
    
    public static int bossStatus(MinecraftServer server, CommandSourceStack source){
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
-      CompoundTag data = bossFight.getB();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      CompoundTag data = bossFight.getSecond();
       States state = States.valueOf(data.getStringOr("State", ""));
       ServerPlayer gm = server.getPlayerList().getPlayer(AlgoUtils.getUUID(data.getStringOr("GameMaster", "")));
       ArrayList<MutableComponent> msgs = new ArrayList<>();
@@ -1007,8 +1007,8 @@ public class DragonBossFight {
       if(state == States.PHASE_ONE || state == States.PHASE_TWO || state == States.PHASE_THREE){
          if(dragonAbilities != null){
             msgs.add(Component.literal("Dragon Ability Cooldowns: Next Check in "+ (600 - lastDragonAction)/20 + " Seconds"));
-            for(Tuple<DragonAbilities.DragonAbilityTypes, Integer> cooldown : dragonAbilities.getCooldowns(phase)){
-               msgs.add(Component.literal(" - "+cooldown.getA().name()+": "+cooldown.getB()/20+" Seconds"));
+            for(Pair<DragonAbilities.DragonAbilityTypes, Integer> cooldown : dragonAbilities.getCooldowns(phase)){
+               msgs.add(Component.literal(" - "+cooldown.getFirst().name()+": "+cooldown.getSecond()/20+" Seconds"));
             }
          }
    
@@ -1385,9 +1385,9 @@ public class DragonBossFight {
       }
       
       public static void updateState(States state, MinecraftServer server){
-         Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
-         if(bossFight.getA() == BossFights.DRAGON){
-            bossFight.getB().putString("State", state.name());
+         Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+         if(bossFight.getFirst() == BossFights.DRAGON){
+            bossFight.getSecond().putString("State", state.name());
          }else{
             devPrint("Boss fight not valid");
          }

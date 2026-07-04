@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.mixins;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -35,7 +36,7 @@ import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -47,7 +48,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -516,10 +516,10 @@ public abstract class LivingEntityMixin {
       
       
       // Enderia Boss health scale
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(entity.level().dimension(), BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(entity.level().dimension(), BossFightData.KEY).getBossFight();
       int numPlayers = 0;
       if(bossFight != null){
-         numPlayers = bossFight.getB().getIntOr("numPlayers", 0);
+         numPlayers = bossFight.getSecond().getIntOr("numPlayers", 0);
       }
       if(numPlayers != 0){
          float scale = Math.max(2f / numPlayers, 0.1f);

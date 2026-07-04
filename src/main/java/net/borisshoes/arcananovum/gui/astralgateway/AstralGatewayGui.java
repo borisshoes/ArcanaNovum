@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.gui.astralgateway;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -16,7 +17,6 @@ import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -58,45 +58,45 @@ public class AstralGatewayGui extends SimpleGui {
    }
    
    private void rebuildFrame(){
-      Tuple<Component, Integer> info = getStateInfo();
-      this.setSlot(9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(11, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(12, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(14, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(10, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(13, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(16, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(18, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(27, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(36, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(45, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_LEFT_LIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(26, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(44, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(53, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_RIGHT_LIGHT, info.getB())).setName(info.getA()));
-      this.setSlot(46, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(47, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(48, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(49, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(50, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(51, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
-      this.setSlot(52, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getB())).setName(info.getA()));
+      Pair<Component, Integer> info = getStateInfo();
+      this.setSlot(9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR_LIGHT, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR_LIGHT, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(11, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(12, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(14, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR_LIGHT, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(10, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(13, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(16, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(18, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(27, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(36, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(45, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_LEFT_LIGHT, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(26, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(44, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(53, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_RIGHT_LIGHT, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(46, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(47, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(48, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(49, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(50, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(51, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
+      this.setSlot(52, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL_INVERTED, info.getSecond())).setName(info.getFirst()));
       
-      GuiElementBuilder receptacleLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT_LIGHT, info.getB()));
+      GuiElementBuilder receptacleLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT_LIGHT, info.getSecond()));
       receptacleLeft.setName(Component.literal("Insert a Gateway-targeting Waystone").withStyle(ChatFormatting.AQUA));
       setSlot(3, receptacleLeft);
       
-      GuiElementBuilder receptacleRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT_LIGHT, info.getB()));
+      GuiElementBuilder receptacleRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT_LIGHT, info.getSecond()));
       receptacleRight.setName(Component.literal("Insert a Gateway-targeting Waystone").withStyle(ChatFormatting.AQUA));
       setSlot(5, receptacleRight);
       
-      GuiElementBuilder modeLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT_LIGHT, info.getB()));
+      GuiElementBuilder modeLeft = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT_LIGHT, info.getSecond()));
       modeLeft.setName(Component.literal("Gateway Mode Controls").withStyle(ChatFormatting.DARK_PURPLE));
       setSlot(0, modeLeft);
       
-      GuiElementBuilder modeRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT_LIGHT, info.getB()));
+      GuiElementBuilder modeRight = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT_LIGHT, info.getSecond()));
       modeRight.setName(Component.literal("Gateway Mode Controls").withStyle(ChatFormatting.DARK_PURPLE));
       setSlot(2, modeRight);
       
@@ -131,7 +131,7 @@ public class AstralGatewayGui extends SimpleGui {
             modeSwitch.setItem(Items.ENDER_PEARL);
             modeSwitch.addLoreLine(Component.literal("Current Mode: ").withStyle(ChatFormatting.GREEN).append(Component.literal("Receive Only - Gateway only be opened by other Gateways").withStyle(ChatFormatting.DARK_PURPLE)));
          }else{
-            modeSwitch.setItem(Items.COPPER_BARS.oxidized());
+            modeSwitch.setItem(Items.COPPER_BARS.weathering().oxidized());
             modeSwitch.addLoreLine(Component.literal("Current Mode: ").withStyle(ChatFormatting.GREEN).append(Component.literal("Send Only - Gateway can only open other Gateways").withStyle(ChatFormatting.DARK_PURPLE)));
          }
          modeSwitch.setCallback((type) -> {
@@ -189,41 +189,41 @@ public class AstralGatewayGui extends SimpleGui {
       }
    }
    
-   private Tuple<Component, Integer> getStateInfo(){
+   private Pair<Component, Integer> getStateInfo(){
       boolean hasStardust = gateway.getStardust() >= gateway.getOpeningStardust();
       boolean hasFrame = gateway.getFrame() != null && gateway.getFrame().finishedAndValid();
       boolean hasWaystone = !gateway.getInventory().getItem(0).isEmpty();
       boolean hasRedstone = gateway.getLevel().hasNeighborSignal(gateway.getBlockPos());
       GatewayState state = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
       if(state == GatewayState.OPEN || state == GatewayState.LOCKED_OPEN){
-         return new Tuple<>(Component.literal("Gateway Open").withStyle(ChatFormatting.DARK_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
+         return Pair.of(Component.literal("Gateway Open").withStyle(ChatFormatting.DARK_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
       }
       if(state == GatewayState.WARMUP){
-         return new Tuple<>(Component.literal("Gateway Warming Up").withStyle(ChatFormatting.DARK_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
+         return Pair.of(Component.literal("Gateway Warming Up").withStyle(ChatFormatting.DARK_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
       }
       if(state == GatewayState.COOLDOWN){
-         return new Tuple<>(Component.literal("Gateway Cooling Down").withStyle(ChatFormatting.DARK_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
+         return Pair.of(Component.literal("Gateway Cooling Down").withStyle(ChatFormatting.DARK_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
       }
       
       if(!hasStardust){
-         return new Tuple<>(Component.literal("Not Enough Stardust").withStyle(ChatFormatting.RED), ArcanaColors.ERROR_COLOR);
+         return Pair.of(Component.literal("Not Enough Stardust").withStyle(ChatFormatting.RED), ArcanaColors.ERROR_COLOR);
       }
       if(!hasFrame){
-         return new Tuple<>(Component.literal("No Valid Frame").withStyle(ChatFormatting.RED), ArcanaColors.ERROR_COLOR);
+         return Pair.of(Component.literal("No Valid Frame").withStyle(ChatFormatting.RED), ArcanaColors.ERROR_COLOR);
       }
       if(!hasWaystone){
-         return new Tuple<>(Component.literal("Use a Waystone to Sync to Another Gateway").withStyle(ChatFormatting.DARK_AQUA), ArcanaColors.ARCANE_PAGE_COLOR);
+         return Pair.of(Component.literal("Use a Waystone to Sync to Another Gateway").withStyle(ChatFormatting.DARK_AQUA), ArcanaColors.ARCANE_PAGE_COLOR);
       }
       if(!hasRedstone){
-         return new Tuple<>(Component.literal("Use a Redstone Signal to Activate the Gateway").withStyle(ChatFormatting.DARK_AQUA), ArcanaColors.ARCANE_PAGE_COLOR);
+         return Pair.of(Component.literal("Use a Redstone Signal to Activate the Gateway").withStyle(ChatFormatting.DARK_AQUA), ArcanaColors.ARCANE_PAGE_COLOR);
       }
       
       GatewayMode mode = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.MODE);
       if(mode == GatewayMode.RECEIVE_ONLY){
-         return new Tuple<>(Component.literal("Ready to Receive").withStyle(ChatFormatting.LIGHT_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
+         return Pair.of(Component.literal("Ready to Receive").withStyle(ChatFormatting.LIGHT_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
       }
       
-      return new Tuple<>(Component.literal("Cannot Find Other Gateway").withStyle(ChatFormatting.RED), ArcanaColors.ERROR_COLOR);
+      return Pair.of(Component.literal("Cannot Find Other Gateway").withStyle(ChatFormatting.RED), ArcanaColors.ERROR_COLOR);
    }
    
    @Override

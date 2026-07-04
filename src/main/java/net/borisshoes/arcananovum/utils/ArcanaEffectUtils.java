@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
@@ -25,10 +26,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -53,7 +53,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       if(tick < 15)
          BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> interdictionRing(world, blockPos, tick + 1)));
       if(tick % 4 == 0) return;
-      ParticleEffectUtils.circle(world, null, blockPos.getBottomCenter().add(0, 2.0 / 15.0 * tick, 0), ParticleTypes.WITCH, 2 - 0.75 / 15.0 * tick, 48, 1, 0, 0);
+      ParticleEffectUtils.circle(world, null, Vec3.upFromBottomCenterOf(blockPos,2.0 / 15.0 * tick), ParticleTypes.WITCH, 2 - 0.75 / 15.0 * tick, 48, 1, 0, 0);
    }
    
    public static void astralGatewayWarmup(AstralGatewayBlockEntity gateway, ServerLevel world, List<Vec3> points, int totalStarTicks, int animDuration, int tick){
@@ -74,7 +74,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       tick -= 20;
       Vec3 op = gateway.getFrame().getAxis().getPositive().getUnitVec3().scale(0.55);
       Vec3 on = gateway.getFrame().getAxis().getNegative().getUnitVec3().scale(0.55);
-      List<Tuple<Vec3, Vec3>> lines = new ArrayList<>();
+      List<Pair<Vec3, Vec3>> lines = new ArrayList<>();
       int pointSize = points.size();
       double pointsPerTick = (double) pointSize / totalStarTicks;
       int starTick = Math.min(tick, totalStarTicks);
@@ -91,9 +91,9 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       for(int i = 0; i < shownPoints; i++){
          int ind1 = i;
          int ind2 = (i + 1) % shownPoints;
-         if(ind2 != 0 || i == pointSize - 1) lines.add(new Tuple<>(points.get(ind1), points.get(ind2)));
+         if(ind2 != 0 || i == pointSize - 1) lines.add(Pair.of(points.get(ind1), points.get(ind2)));
          int prev5 = i - 5 < 0 ? (i - 5) + pointSize : i - 5;
-         if(pointSize > 5 && prev5 < shownPoints) lines.add(new Tuple<>(points.get(ind1), points.get(prev5)));
+         if(pointSize > 5 && prev5 < shownPoints) lines.add(Pair.of(points.get(ind1), points.get(prev5)));
       }
       
       int oldStarTick = Math.min(tick - 1, totalStarTicks);
@@ -108,12 +108,12 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       if(tick % 2 == 0){
          lines = MathUtils.mergeColinearLines(lines);
          DustParticleOptions dust = new DustParticleOptions(0xffffff, 0.65f);
-         for(Tuple<Vec3, Vec3> line : lines){
-            int intervals = (int) (line.getA().distanceTo(line.getB()) * 6 + (tick % 3));
-            Vec3 pp1 = line.getA().add(op);
-            Vec3 pn1 = line.getA().add(on);
-            Vec3 pp2 = line.getB().add(op);
-            Vec3 pn2 = line.getB().add(on);
+         for(Pair<Vec3, Vec3> line : lines){
+            int intervals = (int) (line.getFirst().distanceTo(line.getSecond()) * 6 + (tick % 3));
+            Vec3 pp1 = line.getFirst().add(op);
+            Vec3 pn1 = line.getFirst().add(on);
+            Vec3 pp2 = line.getSecond().add(op);
+            Vec3 pn2 = line.getSecond().add(on);
             ParticleEffectUtils.line(world, null, pp1, pp2, dust, intervals, 1, 0, 0);
             ParticleEffectUtils.line(world, null, pn1, pn2, dust, intervals, 1, 0, 0);
          }
@@ -156,9 +156,9 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    public static void gravitonMaulSlam(ServerLevel world, BlockPos pos, double range, int tick){
       BlockParticleOption dust = new BlockParticleOption(ParticleTypes.DUST_PILLAR, world.getBlockState(pos));
       double r = range / 3.0 * (tick + 1);
-      circle(world, null, pos.getCenter(), dust, r, 36, 4, 0.1, 1);
-      circle(world, null, pos.getCenter().add(0, 1, 0), dust, r, 36, 4, 0.1, 1, Math.PI / 3.0);
-      circle(world, null, pos.getCenter().add(0, 2, 0), dust, r, 36, 4, 0.1, 1, 2 * Math.PI / 3.0);
+      circle(world, null, Vec3.atCenterOf(pos), dust, r, 36, 4, 0.1, 1);
+      circle(world, null, Vec3.atCenterOf(pos).add(0, 1, 0), dust, r, 36, 4, 0.1, 1, Math.PI / 3.0);
+      circle(world, null, Vec3.atCenterOf(pos).add(0, 2, 0), dust, r, 36, 4, 0.1, 1, 2 * Math.PI / 3.0);
       SoundUtils.playSound(world, pos, SoundEvents.MACE_SMASH_AIR, SoundSource.PLAYERS, .5f, 0.4f + (tick * 0.2f));
       
       if(tick < 3){
@@ -208,8 +208,8 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       world.sendParticles(ParticleTypes.ENCHANT, player.getX(), player.getY() + player.getBbHeight() / 2.0, +player.getZ(), 100, 0.4, 0.8, 0.4, 0);
       world.sendParticles(ParticleTypes.WITCH, player.getX(), player.getY() + player.getBbHeight() / 1.5, +player.getZ(), 100, 0.25, 0.6, 0.25, 0.3);
       
-      Integer color = ArcanaRarity.getColor(arcanaItem.getRarity()).getColor();
-      ParticleOptions dust = new DustParticleOptions(color == null ? 0xffffff : color, 1.4f);
+      Integer color = ArcanaRarity.getColor(arcanaItem.getRarity()).getValue();
+      ParticleOptions dust = new DustParticleOptions(color, 1.4f);
       world.sendParticles(dust, player.getX(), player.getY() + player.getBbHeight() / 2.0, +player.getZ(), 30, 0.4, 0.8, 0.4, 1);
    }
    
@@ -218,13 +218,13 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       world.sendParticles(ParticleTypes.ENCHANT, player.getX(), player.getY() + player.getBbHeight() / 2.0, +player.getZ(), 3, 0.25, 0.6, 0.25, 0);
       world.sendParticles(player, ParticleTypes.ENCHANT, false, true, player.getX(), player.getY() + player.getBbHeight() / 2.0, +player.getZ(), 5, 0.25, 0.6, 0.25, 1);
       
-      Integer color = ArcanaRarity.getColor(arcanaItem.getRarity()).getColor();
-      ParticleOptions dust = new DustParticleOptions(color == null ? 0xffffff : color, 0.5f);
+      Integer color = ArcanaRarity.getColor(arcanaItem.getRarity()).getValue();
+      ParticleOptions dust = new DustParticleOptions(color, 0.5f);
       world.sendParticles(dust, player.getX(), player.getY() + player.getBbHeight() / 2.0, +player.getZ(), 4, 0.4, 0.8, 0.4, 1);
    }
    
    public static void enhancedForgingAnim(ServerLevel world, BlockPos forgePos, ItemStack stack, double tickRaw, double speedMod){
-      Vec3 center = forgePos.getCenter();
+      Vec3 center = Vec3.atCenterOf(forgePos);
       int tick = (int) tickRaw;
       if(tick < 350){
          BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> enhancedForgingAnim(world, forgePos, stack, tickRaw + (1 * speedMod), speedMod)));
@@ -381,7 +381,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void arcanaCraftingAnim(ServerLevel world, BlockPos forgePos, ItemStack stack, double tickRaw, double speedMod){
-      Vec3 center = forgePos.getCenter();
+      Vec3 center = Vec3.atCenterOf(forgePos);
       int tick = (int) tickRaw;
       if(tick < 350){
          BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> arcanaCraftingAnim(world, forgePos, stack, tickRaw + (1 * speedMod), speedMod)));
@@ -589,7 +589,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
          aequalisElem.setGlowColorOverride(ArcanaColors.EQUAYUS_COLOR);
          aequalisElem.setBrightness(new Brightness(15, 15));
          aequalisElem.setScale(new Vector3f(0.5f));
-         aequalisElem.setTranslation(center.subtract(BlockPos.containing(center).getCenter()).toVector3f());
+         aequalisElem.setTranslation(center.subtract(Vec3.atCenterOf(BlockPos.containing(center))).toVector3f());
          
          ItemDisplayElement inputElem = new ItemDisplayElement(input);
          inputElem.setGlowColorOverride(ArcanaColors.EQUAYUS_COLOR);
@@ -666,21 +666,21 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       double innerSize = tick < 50 ? tick / 100.0 : 0.2 * Math.sin(-Math.PI * tick / 50.0 - 0.25) + 0.45;
-      List<Tuple<Vec3, Vec3>> innerPairs = getIcosahedronPairs(getIcosahedronPoints().stream().map(
+      List<Pair<Vec3, Vec3>> innerPairs = getIcosahedronPairs(getIcosahedronPoints().stream().map(
             point -> point.zRot(-0.55357f).yRot((float) (rawTick * 2 * Math.PI / 500.0f)).scale(innerSize).add(center)
       ).toList());
       double outerSize = tick < 75 ? tick * 2 / 75.0 : tick > 450 ? 15 - 0.03 * tick : 0.25 * Math.sin(-Math.PI * tick / 75.0 - Math.PI / 2.0) + 1.75;
-      List<Tuple<Vec3, Vec3>> outerPairs = getIcosahedronPairs(getIcosahedronPoints().stream().map(
+      List<Pair<Vec3, Vec3>> outerPairs = getIcosahedronPairs(getIcosahedronPoints().stream().map(
             point -> point.zRot(-0.55357f).yRot((float) (rawTick * 2 * Math.PI / 500.0f)).scale(outerSize).add(center)
       ).toList());
       
-      for(Tuple<Vec3, Vec3> pair : innerPairs){
-         line(world, null, pair.getB(), pair.getA(), blueSmall, 5 + intBonus, 1, 0, 0, 1);
+      for(Pair<Vec3, Vec3> pair : innerPairs){
+         line(world, null, pair.getSecond(), pair.getFirst(), blueSmall, 5 + intBonus, 1, 0, 0, 1);
       }
       
       if(tick < 490){
-         for(Tuple<Vec3, Vec3> pair : outerPairs){
-            line(world, null, pair.getB(), pair.getA(), pink, 10 + intBonus, 1, 0, 0, 1);
+         for(Pair<Vec3, Vec3> pair : outerPairs){
+            line(world, null, pair.getSecond(), pair.getFirst(), pink, 10 + intBonus, 1, 0, 0, 1);
          }
       }
       
@@ -707,7 +707,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       
       if(tick > 60 && tick < 450){
          if(world.getRandom().nextFloat() < 0.1f){
-            animatedLightningBolt(world, center, outerPairs.get(world.getRandom().nextInt(outerPairs.size())).getB(), 12, 0.5, ParticleTypes.ELECTRIC_SPARK, 16, 1, 0, 0, false, 0, 15);
+            animatedLightningBolt(world, center, outerPairs.get(world.getRandom().nextInt(outerPairs.size())).getSecond(), 12, 0.5, ParticleTypes.ELECTRIC_SPARK, 16, 1, 0, 0, false, 0, 15);
          }
          if(tick % 6 == 0){
             world.sendParticles(ParticleTypes.END_ROD, center.x, center.y, center.z, 1, 1.6, 1.6, 1.6, 0);
@@ -762,7 +762,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
                   
                   double itemDY = 0.5 * Math.sin(Math.PI * (500 - lifeTime) / 100.0 + i * Math.PI * 2.0 / n);
                   elem.setTranslation(getCirclePoints(center, 1.75 + 0.5 * Math.sin(-Math.PI * (500 - lifeTime) / 60.0) / 30.0, n, (500 - lifeTime) * 6 * Math.PI / 500.0).get(i)
-                        .subtract(center).add(0, itemDY, 0).add(center.subtract(BlockPos.containing(center).getCenter())).toVector3f());
+                        .subtract(center).add(0, itemDY, 0).add(center.subtract(Vec3.atCenterOf(BlockPos.containing(center)))).toVector3f());
                }
             }
          }
@@ -889,7 +889,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void craftForge(ServerLevel world, BlockPos pos, int tick){
-      Vec3 center = pos.getCenter();
+      Vec3 center = Vec3.atCenterOf(pos);
       if(tick == 100){
          world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xffffff), center.x, center.y, center.z, 3, 0.4, 0.4, 0.4, 0);
          world.sendParticles(ParticleTypes.ELECTRIC_SPARK, center.x, center.y, center.z, 25, 0.6, 0.8, 0.6, 0);
@@ -901,7 +901,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void craftTome(ServerLevel world, BlockPos pos, int tick){
-      Vec3 center = pos.getCenter();
+      Vec3 center = Vec3.atCenterOf(pos);
       if(tick == 100){
          world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xffffff), center.x, center.y, center.z, 3, 0.4, 0.4, 0.4, 0);
          world.sendParticles(ParticleTypes.ELECTRIC_SPARK, center.x, center.y, center.z, 25, 0.6, 0.8, 0.6, 0);
@@ -959,7 +959,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       if(tick < 100){
          BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> stormcallerAltarAnim(world, center, tick + 1)));
       }else{
-         LightningBolt lightning = new LightningBolt(EntityType.LIGHTNING_BOLT, world);
+         LightningBolt lightning = new LightningBolt(EntityTypes.LIGHTNING_BOLT, world);
          lightning.setPos(center);
          world.addFreshEntity(lightning);
       }
@@ -1042,7 +1042,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       starpathAltarAnim(world, center, 0, new ArrayList<>(), new ArrayList<>());
    }
    
-   private static void starpathAltarAnim(ServerLevel world, Vec3 center, int tick, List<Tuple<Vec3, Integer>> groundStars, List<Vec3> skyStars){
+   private static void starpathAltarAnim(ServerLevel world, Vec3 center, int tick, List<Pair<Vec3, Integer>> groundStars, List<Vec3> skyStars){
       double phi = Math.PI * (3 - Math.sqrt(5));
       double theta = 2 * Math.PI / 100 * tick;
       int points = 100;
@@ -1071,12 +1071,12 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       if(tick >= 100){
          if(tick % 2 == 0){
             for(int i = 0; i < groundStars.size(); i++){
-               Tuple<Vec3, Integer> groundStar = groundStars.get(i);
-               Vec3 starPos = groundStar.getA();
+               Pair<Vec3, Integer> groundStar = groundStars.get(i);
+               Vec3 starPos = groundStar.getFirst();
                world.sendParticles(ParticleTypes.END_ROD, starPos.x, starPos.y, starPos.z, 1, 0, 0, 0, 0);
-               groundStars.set(i, new Tuple<>(starPos.add(0, 0.125, 0), groundStar.getB() - 1));
+               groundStars.set(i, Pair.of(starPos.add(0, 0.125, 0), groundStar.getSecond() - 1));
             }
-            groundStars.removeIf((p) -> p.getB() <= 0);
+            groundStars.removeIf((p) -> p.getSecond() <= 0);
             if(groundStars.size() < 8){ // Re-add stars
                for(int i = 0; i < 2; i++){
                   double t = world.getRandom().nextDouble() * Math.PI * 2;
@@ -1084,7 +1084,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
                   double x = Math.cos(t) * r;
                   double z = Math.sin(t) * r;
                   int lifeTime = world.getRandom().nextInt(8) + 4;
-                  groundStars.add(new Tuple<>(new Vec3(x, 0, z).add(center.x, center.y + 0.5, center.z), lifeTime));
+                  groundStars.add(Pair.of(new Vec3(x, 0, z).add(center.x, center.y + 0.5, center.z), lifeTime));
                }
             }
             

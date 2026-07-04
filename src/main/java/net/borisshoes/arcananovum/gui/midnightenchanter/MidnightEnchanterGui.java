@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.gui.midnightenchanter;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -32,12 +33,12 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
@@ -198,8 +199,8 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                      disenchantItem();
                   }else{
                      ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-                     Tuple<Holder<Enchantment>, Integer> entry = removeTopEnchant();
-                     enchantBuilder.upgrade(entry.getA(), entry.getB());
+                     Pair<Holder<Enchantment>, Integer> entry = removeTopEnchant();
+                     enchantBuilder.upgrade(entry.getFirst(), entry.getSecond());
                      EnchantmentHelper.setEnchantments(book, enchantBuilder.toImmutable());
                   }
                   SimpleContainer sinv = new SimpleContainer(book);
@@ -236,8 +237,8 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                            disenchantItem();
                         }else{
                            ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-                           Tuple<Holder<Enchantment>, Integer> entry = removeTopEnchant();
-                           enchantBuilder.upgrade(entry.getA(), entry.getB());
+                           Pair<Holder<Enchantment>, Integer> entry = removeTopEnchant();
+                           enchantBuilder.upgrade(entry.getFirst(), entry.getSecond());
                            EnchantmentHelper.setEnchantments(book, enchantBuilder.toImmutable());
                         }
                         singularity.addBook(book);
@@ -613,7 +614,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       finishUpdate();
    }
    
-   private Tuple<Holder<Enchantment>, Integer> removeTopEnchant(){
+   private Pair<Holder<Enchantment>, Integer> removeTopEnchant(){
       ItemEnchantments comp = EnchantmentHelper.getEnchantmentsForCrafting(getStack());
       Object2IntOpenHashMap<Holder<Enchantment>> enchants = new Object2IntOpenHashMap<>();
       comp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(), entry.getIntValue()));
@@ -621,7 +622,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       if(enchants.size() == 1){
          disenchantItem();
          for(Holder<Enchantment> entry : enchants.keySet()){
-            return new Tuple<>(entry, enchants.getInt(entry));
+            return Pair.of(entry, enchants.getInt(entry));
          }
       }
       setUpdating();
@@ -667,7 +668,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       
       setItem(getStack());
       finishUpdate();
-      return new Tuple<>(registryEntry, value);
+      return Pair.of(registryEntry, value);
    }
    
    public void setItem(ItemStack stack){
@@ -862,37 +863,37 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
    private static class BookFilter extends GuiFilter<EnchantEntry> {
       public static final List<BookFilter> FILTERS = new ArrayList<>();
       
-      public static final BookFilter NONE = new BookFilter("gui.arcananovum.none", ChatFormatting.WHITE.getColor().intValue(),
+      public static final BookFilter NONE = new BookFilter("gui.arcananovum.none", TextColor.WHITE.getValue(),
             (stack) -> true);
-      public static final BookFilter MAX_LEVEL = new BookFilter("gui.arcananovum.max_level", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+      public static final BookFilter MAX_LEVEL = new BookFilter("gui.arcananovum.max_level", TextColor.LIGHT_PURPLE.getValue(),
             (entry) -> entry.enchantment().value().getMaxLevel() == entry.level());
-      public static final BookFilter SWORDS = new BookFilter("gui.arcananovum.sword_enchants", ChatFormatting.RED.getColor().intValue(),
+      public static final BookFilter SWORDS = new BookFilter("gui.arcananovum.sword_enchants", TextColor.RED.getValue(),
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_SWORD)));
-      public static final BookFilter BOWS = new BookFilter("gui.arcananovum.bow_enchants", ChatFormatting.GOLD.getColor().intValue(),
+      public static final BookFilter BOWS = new BookFilter("gui.arcananovum.bow_enchants", TextColor.GOLD.getValue(),
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.BOW)));
-      public static final BookFilter AXES = new BookFilter("gui.arcananovum.axe_enchants", ChatFormatting.DARK_RED.getColor().intValue(),
+      public static final BookFilter AXES = new BookFilter("gui.arcananovum.axe_enchants", TextColor.DARK_RED.getValue(),
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_AXE)));
-      public static final BookFilter TOOLS = new BookFilter("gui.arcananovum.tool_enchants", ChatFormatting.BLUE.getColor().intValue(),
+      public static final BookFilter TOOLS = new BookFilter("gui.arcananovum.tool_enchants", TextColor.BLUE.getValue(),
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_PICKAXE)));
-      public static final BookFilter CROSSBOWS = new BookFilter("gui.arcananovum.crossbow_enchants", ChatFormatting.GRAY.getColor().intValue(),
+      public static final BookFilter CROSSBOWS = new BookFilter("gui.arcananovum.crossbow_enchants", TextColor.GRAY.getValue(),
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.CROSSBOW)));
-      public static final BookFilter TRIDENTS = new BookFilter("gui.arcananovum.trident_enchants", ChatFormatting.DARK_AQUA.getColor().intValue(),
+      public static final BookFilter TRIDENTS = new BookFilter("gui.arcananovum.trident_enchants", TextColor.DARK_AQUA.getValue(),
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.TRIDENT)));
-      public static final BookFilter FISHING = new BookFilter("gui.arcananovum.fishing_rod_enchants", ChatFormatting.DARK_GRAY.getColor().intValue(),
+      public static final BookFilter FISHING = new BookFilter("gui.arcananovum.fishing_rod_enchants", TextColor.DARK_GRAY.getValue(),
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.FISHING_ROD)));
-      public static final BookFilter ARMOR = new BookFilter("gui.arcananovum.armor_enchants", ChatFormatting.DARK_GREEN.getColor().intValue(),
+      public static final BookFilter ARMOR = new BookFilter("gui.arcananovum.armor_enchants", TextColor.DARK_GREEN.getValue(),
             (entry) -> (
                   entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_HELMET)) ||
                         entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_CHESTPLATE)) ||
                         entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_LEGGINGS)) ||
                         entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_BOOTS))));
-      public static final BookFilter MACES = new BookFilter("gui.arcananovum.mace_enchants", ChatFormatting.DARK_BLUE.getColor().intValue(),
+      public static final BookFilter MACES = new BookFilter("gui.arcananovum.mace_enchants", TextColor.DARK_BLUE.getValue(),
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.MACE)));
       public static final BookFilter SPEARS = new BookFilter("gui.arcananovum.spear_enchants", 0xa0ffec,
             (entry) -> entry.enchantment().value().isSupportedItem(new ItemStack(Items.GOLDEN_SPEAR)));
-      public static final BookFilter TREASURE = new BookFilter("gui.arcananovum.treasure_enchants", ChatFormatting.YELLOW.getColor().intValue(),
+      public static final BookFilter TREASURE = new BookFilter("gui.arcananovum.treasure_enchants", TextColor.YELLOW.getValue(),
             (entry) -> entry.enchantment().is(net.minecraft.tags.EnchantmentTags.TREASURE) && !entry.enchantment().is(net.minecraft.tags.EnchantmentTags.CURSE));
-      public static final BookFilter CURSES = new BookFilter("gui.arcananovum.curses", ChatFormatting.DARK_PURPLE.getColor().intValue(),
+      public static final BookFilter CURSES = new BookFilter("gui.arcananovum.curses", TextColor.DARK_PURPLE.getValue(),
             (entry) -> entry.enchantment().is(net.minecraft.tags.EnchantmentTags.CURSE));
       
       private BookFilter(String key, int color, Predicate<EnchantEntry> filter){
@@ -913,11 +914,11 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
    private static class BookSort extends GuiSort<EnchantEntry> {
       public static final List<BookSort> SORTS = new ArrayList<>();
       
-      public static final BookSort LEVEL_DESC = new BookSort("gui.arcananovum.level_descending", ChatFormatting.AQUA.getColor().intValue(),
+      public static final BookSort LEVEL_DESC = new BookSort("gui.arcananovum.level_descending", TextColor.AQUA.getValue(),
             Comparator.<EnchantEntry>comparingInt(entry -> -entry.level()));
-      public static final BookSort LEVEL_ASC = new BookSort("gui.arcananovum.level_ascending", ChatFormatting.LIGHT_PURPLE.getColor().intValue(),
+      public static final BookSort LEVEL_ASC = new BookSort("gui.arcananovum.level_ascending", TextColor.LIGHT_PURPLE.getValue(),
             Comparator.<EnchantEntry>comparingInt(EnchantEntry::level));
-      public static final BookSort ALPHABETICAL = new BookSort("gui.borislib.alphabetical", ChatFormatting.GREEN.getColor().intValue(),
+      public static final BookSort ALPHABETICAL = new BookSort("gui.borislib.alphabetical", TextColor.GREEN.getValue(),
             Comparator.comparing(entry -> Enchantment.getFullname(entry.enchantment(), entry.level()).getString()));
       
       private BookSort(String key, int color, Comparator<EnchantEntry> comparator){

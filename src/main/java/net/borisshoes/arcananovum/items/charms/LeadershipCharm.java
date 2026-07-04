@@ -103,7 +103,7 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
       int invigor = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.INVIGORATION);
-      AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
+      AABB box = new AABB(Vec3.atCenterOf(stele.getBlockPos()).subtract(range), Vec3.atCenterOf(stele.getBlockPos()).add(range));
       List<ServerPlayer> inRangePlayers = world.getPlayers(p -> !p.isSpectator() && p.getBoundingBox().intersects(box));
       for(ServerPlayer plyr : inRangePlayers){
          applyEffect(plyr, invigor, null);
@@ -111,7 +111,7 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
       
       if(world.getServer().getTickCount() % 20 == 0){
          double theta = Math.PI / (80) * (world.getServer().getTickCount() % 160);
-         ArcanaEffectUtils.sphere(world, null, stele.getBlockPos().getCenter().add(0, 1, 0), ParticleTypes.HAPPY_VILLAGER, 1.5, 50, 1, 0.1, 0, theta);
+         ArcanaEffectUtils.sphere(world, null, Vec3.atCenterOf(stele.getBlockPos()).add(0, 1, 0), ParticleTypes.HAPPY_VILLAGER, 1.5, 50, 1, 0.1, 0, theta);
       }
    }
    

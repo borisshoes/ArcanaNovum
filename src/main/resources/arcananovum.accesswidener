@@ -19,7 +19,7 @@ accessible field net/minecraft/world/item/crafting/ShapedRecipe result Lnet/mine
 accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
 accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
 
-accessible method net/minecraft/world/entity/LivingEntity collectEquipmentChanges ()Ljava/util/Map;
+accessible method net/minecraft/world/entity/LivingEntity detectEquipmentUpdates ()V
 accessible method net/minecraft/world/entity/animal/frog/Tadpole ageUp (I)V
 accessible method net/minecraft/world/entity/animal/frog/Tadpole getTicksLeftUntilAdult ()I
 accessible method net/minecraft/world/entity/projectile/arrow/AbstractArrow setPierceLevel (B)V
@@ -32,7 +32,7 @@ accessible method net/minecraft/world/level/block/RedStoneOreBlock spawnAfterBre
 
 accessible class net/minecraft/world/entity/ai/control/MoveControl$Operation
 accessible class net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl
-accessible class net/minecraft/world/entity/monster/Slime$SlimeMoveControl
+accessible class net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl
 accessible class net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl
 accessible class net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl
 accessible class net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl

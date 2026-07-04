@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -21,7 +22,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -54,7 +54,7 @@ public class AlchemicalArbalest extends ArcanaItem {
       item = new AlchemicalArbalestItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OL_BETSY, ResearchTasks.ADVANCEMENT_WHOS_THE_PILLAGER_NOW, ResearchTasks.ADVANCEMENT_ARBALISTIC, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_TIPPED_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION, ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
-      attributions = new Tuple[]{new Tuple<>(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("Sethzilla42"))};
+      attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("Sethzilla42"))};
    }
    
    @Override

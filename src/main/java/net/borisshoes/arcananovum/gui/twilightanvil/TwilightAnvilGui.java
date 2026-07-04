@@ -355,11 +355,11 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
                augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")));
                augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")
                      .append(Component.literal("Applying augments requires an ").withStyle(ChatFormatting.DARK_AQUA))
-                     .append(Component.literal("Augment Catalyst").withStyle(ArcanaRarity.getColor(tiers[0])))));
+                     .append(Component.literal("Augment Catalyst").withColor(ArcanaRarity.getColor(tiers[0])))));
                augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")
                      .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
                      .append(Component.literal(" to consume a ").withStyle(ChatFormatting.DARK_AQUA))
-                     .append(Component.literal("Catalyst").withStyle(ArcanaRarity.getColor(tiers[0])))
+                     .append(Component.literal("Catalyst").withColor(ArcanaRarity.getColor(tiers[0])))
                      .append(Component.literal(" to augment your item").withStyle(ChatFormatting.DARK_AQUA))));
             }else{ // Item level != max & < player level: Augment Catalyst
                augmentItem2 = GuiElementBuilder.from(ArcanaRarity.getAugmentCatalyst(tiers[curItemLevel]).getPrefItemNoLore());
@@ -375,11 +375,11 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
                augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")));
                augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")
                      .append(Component.literal("Applying augments requires an ").withStyle(ChatFormatting.DARK_AQUA))
-                     .append(Component.literal("Augment Catalyst").withStyle(ArcanaRarity.getColor(tiers[curItemLevel])))));
+                     .append(Component.literal("Augment Catalyst").withColor(ArcanaRarity.getColor(tiers[curItemLevel])))));
                augmentItem2.addLoreLine(TextUtils.removeItalics(Component.literal("")
                      .append(Component.literal("Click").withStyle(ChatFormatting.AQUA))
                      .append(Component.literal(" to consume a ").withStyle(ChatFormatting.DARK_AQUA))
-                     .append(Component.literal("Catalyst").withStyle(ArcanaRarity.getColor(tiers[curItemLevel])))
+                     .append(Component.literal("Catalyst").withColor(ArcanaRarity.getColor(tiers[curItemLevel])))
                      .append(Component.literal(" to augment your item").withStyle(ChatFormatting.DARK_AQUA))));
             }
             ItemStack finalItem = item;

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -17,7 +18,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -35,7 +35,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe {
    }
    
    @Override
-   public List<Tuple<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
+   public List<Pair<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayer player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(), ArcanaAugments.HASTY_BARGAIN);
       ItemStack input1Stack = input1Entity != null ? input1Entity.getItem() : ItemStack.EMPTY;
       ItemStack input2Stack = input2Entity != null ? input2Entity.getItem() : ItemStack.EMPTY;
@@ -66,7 +66,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe {
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(arcanaItemStack);
       if(arcanaItem instanceof RunicArrow) return new ArrayList<>();
       
-      List<Tuple<ItemStack, String>> outputs = new ArrayList<>();
+      List<Pair<ItemStack, String>> outputs = new ArrayList<>();
       int consumedCatas = 0;
       ListTag catas = ArcanaItem.getListProperty(arcanaItemStack, ArcanaItem.CATALYSTS_TAG);
       
@@ -74,17 +74,17 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe {
       if(curAugments == null) return new ArrayList<>();
       
       while(consumedCatas < catalystStack.getCount()){
-         ArrayList<Tuple<ArcanaAugment, Integer>> options = new ArrayList<>();
+         ArrayList<Pair<ArcanaAugment, Integer>> options = new ArrayList<>();
          ArrayList<ArcanaAugment> augTypes = new ArrayList<>(curAugments.keySet().stream().toList());
          Collections.shuffle(augTypes);
          for(ArcanaAugment augType : augTypes){
-            options.add(new Tuple<>(augType, curAugments.get(augType)));
+            options.add(Pair.of(augType, curAugments.get(augType)));
          }
          
          boolean cataFound = false;
-         for(Tuple<ArcanaAugment, Integer> option : options){
-            ArcanaAugment augment = option.getA();
-            int level = option.getB();
+         for(Pair<ArcanaAugment, Integer> option : options){
+            ArcanaAugment augment = option.getFirst();
+            int level = option.getSecond();
             
             Iterator<Tag> iter = catas.iterator();
             while(iter.hasNext()){
@@ -97,7 +97,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe {
                if(aug.equals(augment.id) && level == lvl){
                   ArcanaItem arcanaCata = ArcanaRarity.getAugmentCatalyst(rarity);
                   ItemStack catalyst = arcanaCata.addCrafter(arcanaCata.getNewItem(), arcanaItem.getCrafter(arcanaItemStack), 0, altar.getLevel().getServer());
-                  outputs.add(new Tuple<>(catalyst, outputPos));
+                  outputs.add(Pair.of(catalyst, outputPos));
                   consumedCatas++;
                   cataFound = true;
                   if(lvl - 1 <= 0){

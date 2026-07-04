@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -18,7 +19,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Item;
@@ -39,7 +39,7 @@ public class ArcanaIngredient {
    protected Predicate<ItemStack> itemPredicate;
    protected final ItemStack exampleStack;
    protected final boolean ignoresResourceful;
-   protected final List<Tuple<ResourceKey<Enchantment>, Integer>> enchantments = new ArrayList<>();
+   protected final List<Pair<ResourceKey<Enchantment>, Integer>> enchantments = new ArrayList<>();
    protected Holder<Potion> potion;
    protected final List<MobEffectInstance> effects = new ArrayList<>();
    
@@ -92,7 +92,7 @@ public class ArcanaIngredient {
       
       for(EnchantmentEntry enchantment : enchantments){
          this.exampleStack.enchant(enchantment.enchantment(), enchantment.level());
-         this.enchantments.add(new Tuple<>(enchantment.enchantmentKey(), enchantment.level()));
+         this.enchantments.add(Pair.of(enchantment.enchantmentKey(), enchantment.level()));
       }
       
       return this;
@@ -177,7 +177,7 @@ public class ArcanaIngredient {
       return ingredientAsStack().getHoverName().getString();
    }
    
-   public List<Tuple<ResourceKey<Enchantment>, Integer>> getEnchantments(){
+   public List<Pair<ResourceKey<Enchantment>, Integer>> getEnchantments(){
       return new ArrayList<>(enchantments);
    }
    
@@ -205,11 +205,11 @@ public class ArcanaIngredient {
       
       if(!this.enchantments.isEmpty()){
          builder.append(".withEnchantments(");
-         for(Tuple<ResourceKey<Enchantment>, Integer> enchantment : this.enchantments){
+         for(Pair<ResourceKey<Enchantment>, Integer> enchantment : this.enchantments){
             builder.append("new ArcanaIngredient.EnchantmentEntry(Enchantments.");
-            builder.append(enchantment.getA().identifier().getPath().toUpperCase(Locale.ROOT));
+            builder.append(enchantment.getFirst().identifier().getPath().toUpperCase(Locale.ROOT));
             builder.append(", ");
-            builder.append(enchantment.getB());
+            builder.append(enchantment.getSecond());
             builder.append(")");
             if(this.enchantments.indexOf(enchantment) < this.enchantments.size() - 1){
                builder.append(", ");
@@ -267,8 +267,8 @@ public class ArcanaIngredient {
       // Serialize enchantments
       if(!enchantments.isEmpty()){
          JsonObject enchantmentsJson = new JsonObject();
-         for(Tuple<ResourceKey<Enchantment>, Integer> enchantTuple : enchantments){
-            enchantmentsJson.addProperty(enchantTuple.getA().identifier().toString(), enchantTuple.getB());
+         for(Pair<ResourceKey<Enchantment>, Integer> enchantTuple : enchantments){
+            enchantmentsJson.addProperty(enchantTuple.getFirst().identifier().toString(), enchantTuple.getSecond());
          }
          json.add("enchantments", enchantmentsJson);
       }
@@ -331,7 +331,7 @@ public class ArcanaIngredient {
          for(Map.Entry<String, JsonElement> entry : enchantmentsJson.entrySet()){
             ResourceKey<Enchantment> enchantKey = ResourceKey.create(Registries.ENCHANTMENT, Identifier.parse(entry.getKey()));
             int level = entry.getValue().getAsInt();
-            ingredient.enchantments.add(new Tuple<>(enchantKey, level));
+            ingredient.enchantments.add(Pair.of(enchantKey, level));
             // Add enchantment predicate
             final ResourceKey<Enchantment> finalEnchantKey = enchantKey;
             final int finalLevel = level;
@@ -345,10 +345,10 @@ public class ArcanaIngredient {
          }
          if(!ingredient.enchantments.isEmpty()){
             ItemEnchantments.Mutable mutable = new ItemEnchantments.Mutable(ingredient.exampleStack.getEnchantments());
-            for(Tuple<ResourceKey<Enchantment>, Integer> enchantment : ingredient.enchantments){
-               Holder<Enchantment> enchant = MinecraftUtils.getEnchantment(enchantment.getA());
+            for(Pair<ResourceKey<Enchantment>, Integer> enchantment : ingredient.enchantments){
+               Holder<Enchantment> enchant = MinecraftUtils.getEnchantment(enchantment.getFirst());
                if(enchant == null) continue;
-               mutable.set(enchant, enchantment.getB());
+               mutable.set(enchant, enchantment.getSecond());
             }
             EnchantmentHelper.setEnchantments(ingredient.exampleStack, mutable.toImmutable());
          }

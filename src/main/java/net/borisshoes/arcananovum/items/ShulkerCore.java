@@ -35,7 +35,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -239,7 +239,7 @@ public class ShulkerCore extends EnergyItem {
             CompoundTag stoneData = getCompoundProperty(stack, STONE_DATA_TAG);
             ItemStack stone;
             if(stoneData == null || stoneData.isEmpty()){
-               stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
+               stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityTypes.SHULKER);
             }else{
                stone = ItemStack.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, BorisLib.SERVER.registryAccess()), stoneData).result().orElse(ItemStack.EMPTY);
             }

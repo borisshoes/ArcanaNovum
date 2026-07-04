@@ -32,7 +32,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -140,7 +140,7 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       Vec3 rayEnd = playerPos.add(view.scale(activeLength));
       
       AABB box = new AABB(playerPos, playerPos).inflate(activeLength + activeRange);
-      List<ItemEntity> items = world.getEntities(EntityType.ITEM, box, (entity) -> itemInRange(entity.position(), playerPos, rayEnd, activeRange) && canAffectItem(charm, entity.getItem().getItem()));
+      List<ItemEntity> items = world.getEntities(EntityTypes.ITEM, box, (entity) -> itemInRange(entity.position(), playerPos, rayEnd, activeRange) && canAffectItem(charm, entity.getItem().getItem()));
       SoundUtils.playSongToPlayer(player, SoundEvents.FOX_TELEPORT, 1, .9f);
       
       for(ItemEntity item : items){
@@ -263,7 +263,7 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
    }
    
    private void passiveSuck(ServerLevel world, ItemStack stack, AABB range, AABB excludeBox, Vec3 suckPos){
-      List<ItemEntity> items = world.getEntities(EntityType.ITEM, range, (e) -> canAffectItem(stack, e.getItem().getItem()) && (excludeBox == null || !e.getBoundingBox().intersects(excludeBox)));
+      List<ItemEntity> items = world.getEntities(EntityTypes.ITEM, range, (e) -> canAffectItem(stack, e.getItem().getItem()) && (excludeBox == null || !e.getBoundingBox().intersects(excludeBox)));
       Collections.shuffle(items);
       
       int i = 0;
@@ -307,9 +307,9 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      Vec3 suckPos = stele.getBlockPos().getCenter().add(0, 1, 0);
+      Vec3 suckPos = Vec3.atCenterOf(stele.getBlockPos()).add(0, 1, 0);
       if(world.getServer().getTickCount() % 5 == 0){
-         AABB box = new AABB(stele.getBlockPos().getCenter().subtract(range), stele.getBlockPos().getCenter().add(range));
+         AABB box = new AABB(Vec3.atCenterOf(stele.getBlockPos()).subtract(range), Vec3.atCenterOf(stele.getBlockPos()).add(range));
          passiveSuck(world, stack, box, new AABB(stele.getBlockPos()).inflate(1.125), suckPos.add(0, 0.5, 0));
       }
       if(world.getRandom().nextFloat() < 0.25){

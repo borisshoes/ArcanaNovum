@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
@@ -61,10 +62,9 @@ import net.minecraft.server.network.Filterable;
 import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -230,9 +230,9 @@ public class ArcanaCommands {
       List<ArcanaItemUtils.ArcanaInvItem> arcanaInv = ArcanaItemUtils.getArcanaInventory(player);
       for(ArcanaItemUtils.ArcanaInvItem invItem : arcanaInv){
          ArcanaItem arcanaItem = invItem.item;
-         for(Tuple<String, ItemStack> pair : invItem.getStacks()){
-            String uuid = pair.getA();
-            ItemStack stack = pair.getB();
+         for(Pair<String, ItemStack> pair : invItem.getStacks()){
+            String uuid = pair.getFirst();
+            ItemStack stack = pair.getSecond();
             count++;
             
             MutableComponent storage = invItem.getShortContainerString();
@@ -514,10 +514,10 @@ public class ArcanaCommands {
                }
                
                GuiElementBuilder recipeItem = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
-               HashMap<String, Tuple<Integer, ItemStack>> ingredList = recipe.getIngredientList();
+               HashMap<String, Pair<Integer, ItemStack>> ingredList = recipe.getIngredientList();
                recipeItem.setName(Component.literal("Total Ingredients").withStyle(ChatFormatting.DARK_PURPLE));
                recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("-----------------------").withStyle(ChatFormatting.LIGHT_PURPLE)));
-               for(Map.Entry<String, Tuple<Integer, ItemStack>> ingred : ingredList.entrySet()){
+               for(Map.Entry<String, Pair<Integer, ItemStack>> ingred : ingredList.entrySet()){
                   recipeItem.addLoreLine(TextUtils.removeItalics(getIngredStr(ingred)));
                }
                recipeItem.addLoreLine(TextUtils.removeItalics(Component.literal("")));
@@ -779,16 +779,16 @@ public class ArcanaCommands {
       code.append(")");
       
       // Add enchantments if any
-      List<Tuple<ResourceKey<Enchantment>, Integer>> enchantments = ingred.getEnchantments();
+      List<Pair<ResourceKey<Enchantment>, Integer>> enchantments = ingred.getEnchantments();
       if(!enchantments.isEmpty()){
          code.append(".withEnchantments(");
          for(int i = 0; i < enchantments.size(); i++){
-            Tuple<ResourceKey<Enchantment>, Integer> ench = enchantments.get(i);
-            String enchName = ench.getA().identifier().getPath().toUpperCase();
+            Pair<ResourceKey<Enchantment>, Integer> ench = enchantments.get(i);
+            String enchName = ench.getFirst().identifier().getPath().toUpperCase();
             code.append("new ArcanaIngredient.EnchantmentEntry(Enchantments.")
                   .append(enchName)
                   .append(",")
-                  .append(ench.getB())
+                  .append(ench.getSecond())
                   .append(")");
             if(i < enchantments.size() - 1) code.append(", ");
          }
@@ -1372,13 +1372,13 @@ public class ArcanaCommands {
    
    public static int abortBoss(CommandContext<CommandSourceStack> context){
       MinecraftServer server = context.getSource().getServer();
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       context.getSource().sendSuccess(() -> Component.literal("Aborting Boss Fight"), true);
       logCommandSuccess(context);
       if(bossFight == null){
          return BossFight.cleanBoss(server);
       }
-      if(bossFight.getA() == BossFights.DRAGON){
+      if(bossFight.getFirst() == BossFights.DRAGON){
          return DragonBossFight.abortBoss(server);
       }
       return 0;
@@ -1393,12 +1393,12 @@ public class ArcanaCommands {
    
    public static int bossStatus(CommandContext<CommandSourceStack> context){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(() -> Component.literal("No Boss Fight Active"), false);
          return -1;
       }
-      if(bossFight.getA() == BossFights.DRAGON){
+      if(bossFight.getFirst() == BossFights.DRAGON){
          logCommandSuccess(context);
          return DragonBossFight.bossStatus(source.getServer(), context.getSource());
       }
@@ -1407,12 +1407,12 @@ public class ArcanaCommands {
    
    public static int bossResetAbilities(CommandContext<CommandSourceStack> context, boolean doAbility){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(() -> Component.literal("No Boss Fight Active"), false);
          return -1;
       }
-      if(bossFight.getA() == BossFights.DRAGON){
+      if(bossFight.getFirst() == BossFights.DRAGON){
          logCommandSuccess(context);
          return DragonBossFight.resetDragonAbilities(source.getServer(), context.getSource(), doAbility);
       }
@@ -1421,12 +1421,12 @@ public class ArcanaCommands {
    
    public static int bossForceLairAction(CommandContext<CommandSourceStack> context){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(() -> Component.literal("No Boss Fight Active"), false);
          return -1;
       }
-      if(bossFight.getA() == BossFights.DRAGON){
+      if(bossFight.getFirst() == BossFights.DRAGON){
          logCommandSuccess(context);
          return DragonBossFight.forceLairAction(source.getServer(), context.getSource());
       }
@@ -1435,12 +1435,12 @@ public class ArcanaCommands {
    
    public static int bossForcePlayerCount(CommandContext<CommandSourceStack> context, int playerCount){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(() -> Component.literal("No Boss Fight Active"), false);
          return -1;
       }
-      if(bossFight.getA() == BossFights.DRAGON){
+      if(bossFight.getFirst() == BossFights.DRAGON){
          DragonBossFight.setForcedPlayerCount(context.getSource().getServer(), playerCount);
          logCommandSuccess(context);
          return 1;
@@ -1456,12 +1456,12 @@ public class ArcanaCommands {
    
    public static int bossTeleport(CommandContext<CommandSourceStack> context, ServerPlayer player, boolean all){
       CommandSourceStack source = context.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(() -> Component.literal("No Boss Fight Active"), false);
          return -1;
       }
-      if(bossFight.getA() == BossFights.DRAGON){
+      if(bossFight.getFirst() == BossFights.DRAGON){
          if(all){
             List<ServerPlayer> players = source.getServer().getPlayerList().getPlayers();
             for(ServerPlayer p : players){
@@ -1479,27 +1479,27 @@ public class ArcanaCommands {
    
    public static int announceBoss(CommandContext<CommandSourceStack> ctx, String time){
       CommandSourceStack source = ctx.getSource();
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          source.sendSuccess(() -> Component.literal("No Boss Fight Active"), false);
          return -1;
       }
-      if(bossFight.getA() == BossFights.DRAGON){
+      if(bossFight.getFirst() == BossFights.DRAGON){
          logCommandSuccess(ctx);
-         return DragonBossFight.announceBoss(source.getServer(), bossFight.getB(), time);
+         return DragonBossFight.announceBoss(source.getServer(), bossFight.getSecond(), time);
       }
       return -1;
    }
    
    public static int beginBoss(CommandContext<CommandSourceStack> context){
-      Tuple<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
+      Pair<BossFights, CompoundTag> bossFight = DataAccess.getWorld(Level.END, BossFightData.KEY).getBossFight();
       if(bossFight == null){
          context.getSource().sendSuccess(() -> Component.literal("No Boss Fight Active"), false);
          return -1;
       }
-      if(bossFight.getA() == BossFights.DRAGON){
+      if(bossFight.getFirst() == BossFights.DRAGON){
          logCommandSuccess(context);
-         return DragonBossFight.beginBoss(context.getSource().getServer(), bossFight.getB());
+         return DragonBossFight.beginBoss(context.getSource().getServer(), bossFight.getSecond());
       }
       return -1;
    }
@@ -1636,9 +1636,9 @@ public class ArcanaCommands {
          CommandSourceStack src = ctx.getSource();
          
          ArrayList<MutableComponent> blocks = new ArrayList<>();
-         for(Tuple<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getStringUUID().equals(pair.getB().getCrafterId()) && pair.getA().hasLevel() && pair.getA().getLevel().getBlockEntity(pair.getA().getBlockPos()) == pair.getA()).toList()){
-            BlockEntity blockEntity = pair.getA();
-            ArcanaBlockEntity arcanaBlockEntity = pair.getB();
+         for(Pair<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getStringUUID().equals(pair.getSecond().getCrafterId()) && pair.getFirst().hasLevel() && pair.getFirst().getLevel().getBlockEntity(pair.getFirst().getBlockPos()) == pair.getFirst()).toList()){
+            BlockEntity blockEntity = pair.getFirst();
+            ArcanaBlockEntity arcanaBlockEntity = pair.getSecond();
             
             String dim = blockEntity.getLevel().dimension().identifier().toString();
             MutableComponent dimensionName = Component.literal("Unknown").withStyle(ChatFormatting.GRAY);
@@ -1789,7 +1789,7 @@ public class ArcanaCommands {
          feedback.append(Component.literal("\n"));
          
          boolean hasSkyLight = player.level().getBrightness(LightLayer.SKY, player.blockPosition()) > 0;
-         boolean isFishing = !player.level().getEntities(EntityType.FISHING_BOBBER, player.getBoundingBox().inflate(20.0, 8.0, 20.0), (hook) -> player.equals(hook.getPlayerOwner())).isEmpty();
+         boolean isFishing = !player.level().getEntities(EntityTypes.FISHING_BOBBER, player.getBoundingBox().inflate(20.0, 8.0, 20.0), (hook) -> player.equals(hook.getPlayerOwner())).isEmpty();
          boolean inOverworld = player.level().equals(player.level().getServer().overworld());
          int gTimer = data.getLastGaialtusAttempt();
          boolean gDone = data.completedGaialtus();

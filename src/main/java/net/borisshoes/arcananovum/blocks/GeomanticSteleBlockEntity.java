@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
@@ -38,7 +39,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionHand;
@@ -127,7 +127,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
          }
          
          if(active){
-            ArcanaNovum.addActiveBlock(new Tuple<>(this, this));
+            ArcanaNovum.addActiveBlock(Pair.of(this, this));
             Set<BlockPos> blocks = calculateBlocks();
             if(!blocks.isEmpty()){
                if(currentZone != null){
@@ -174,7 +174,7 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
    }
    
    private Vec3 getHologramPos(){
-      return this.getBlockPos().getCenter();
+      return Vec3.atCenterOf(this.getBlockPos());
    }
    
    private ElementHolder getNewHologram(ServerLevel world){

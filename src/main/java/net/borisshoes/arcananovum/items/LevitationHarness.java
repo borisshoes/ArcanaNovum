@@ -40,6 +40,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -311,29 +312,29 @@ public class LevitationHarness extends EnergyItem {
                      hasGhast = false, hasHappyGhast = false, hasWither = false, hasParrot = false, hasVex = false, hasBat = false;
                for(Entity other : world.getEntities(entity, entity.getBoundingBox().inflate(32.0))){
                   EntityType<?> type = other.getType();
-                  if(type == EntityType.ALLAY){
+                  if(type == EntityTypes.ALLAY){
                      hasAllay = true;
-                  }else if(type == EntityType.BLAZE){
+                  }else if(type == EntityTypes.BLAZE){
                      hasBlaze = true;
-                  }else if(type == EntityType.BREEZE){
+                  }else if(type == EntityTypes.BREEZE){
                      hasBreeze = true;
-                  }else if(type == EntityType.BEE){
+                  }else if(type == EntityTypes.BEE){
                      hasBee = true;
-                  }else if(type == EntityType.ENDER_DRAGON){
+                  }else if(type == EntityTypes.ENDER_DRAGON){
                      hasDragon = true;
-                  }else if(type == EntityType.PHANTOM){
+                  }else if(type == EntityTypes.PHANTOM){
                      hasPhantom = true;
-                  }else if(type == EntityType.GHAST){
+                  }else if(type == EntityTypes.GHAST){
                      hasGhast = true;
-                  }else if(type == EntityType.HAPPY_GHAST){
+                  }else if(type == EntityTypes.HAPPY_GHAST){
                      hasHappyGhast = true;
-                  }else if(type == EntityType.WITHER){
+                  }else if(type == EntityTypes.WITHER){
                      hasWither = true;
-                  }else if(type == EntityType.PARROT){
+                  }else if(type == EntityTypes.PARROT){
                      hasParrot = true;
-                  }else if(type == EntityType.VEX){
+                  }else if(type == EntityTypes.VEX){
                      hasVex = true;
-                  }else if(type == EntityType.BAT){
+                  }else if(type == EntityTypes.BAT){
                      hasBat = true;
                   }
                }

@@ -6,7 +6,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -34,7 +34,7 @@ public class ArcanaAchievements {
    
    // Concussion Arrows
    public static final ArcanaAchievement SHOCK_AWE = ArcanaAchievements.register(
-         new EventAchievement("shock_awe", new ItemStack(Items.BLACK_DYE), ArcanaRegistry.CONCUSSION_ARROWS, 1000, 1));
+         new EventAchievement("shock_awe", new ItemStack(Items.DYE.black()), ArcanaRegistry.CONCUSSION_ARROWS, 1000, 1));
    
    // Detonation Arrows
    public static final ArcanaAchievement SAFETY_THIRD = ArcanaAchievements.register(
@@ -58,7 +58,7 @@ public class ArcanaAchievements {
    
    // Smoke Arrows
    public static final ArcanaAchievement SMOKE_SCREEN = ArcanaAchievements.register(
-         new EventAchievement("smoke_screen", new ItemStack(Items.LIGHT_GRAY_STAINED_GLASS), ArcanaRegistry.SMOKE_ARROWS, 1000, 1));
+         new EventAchievement("smoke_screen", new ItemStack(Items.STAINED_GLASS.lightGray()), ArcanaRegistry.SMOKE_ARROWS, 1000, 1));
    
    // Storm Arrows
    public static final ArcanaAchievement SHOCK_THERAPY = ArcanaAchievements.register(
@@ -459,10 +459,10 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement KILL_THEM_ALL = ArcanaAchievements.register(
          new ConditionalsAchievement("kill_them_all", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.SPEAR_OF_TENBROUS, 2500, 2,
                new String[]{
-                     EntityType.ENDERMAN.getDescription().getString(),
-                     EntityType.ENDERMITE.getDescription().getString(),
-                     EntityType.SHULKER.getDescription().getString(),
-                     EntityType.ENDER_DRAGON.getDescription().getString()
+                     EntityTypes.ENDERMAN.getDescription().getString(),
+                     EntityTypes.ENDERMITE.getDescription().getString(),
+                     EntityTypes.SHULKER.getDescription().getString(),
+                     EntityTypes.ENDER_DRAGON.getDescription().getString()
                }));
    public static final ArcanaAchievement HISTORY_CARVED_IN_STONE = ArcanaAchievements.register(
          new EventAchievement("history_carved_in_stone", ArcanaRegistry.SOULSTONE::getPrefItemNoLore, ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5));
@@ -491,7 +491,7 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement ENDERON_PRIME = ArcanaAchievements.register(
          new ProgressAchievement("enderon_prime", new ItemStack(Items.BARREL), ArcanaRegistry.ENDER_CRATE, 7500, 3, 10000));
    public static final ArcanaAchievement SECURITY_RAINBOW = ArcanaAchievements.register(
-         new EventAchievement("security_rainbow", new ItemStack(Items.CYAN_DYE), ArcanaRegistry.ENDER_CRATE, 1500, 1));
+         new EventAchievement("security_rainbow", new ItemStack(Items.DYE.cyan()), ArcanaRegistry.ENDER_CRATE, 1500, 1));
    
    // Astral Gateway
    public static final ArcanaAchievement FANCIER_STARGATE = ArcanaAchievements.register(
@@ -519,7 +519,7 @@ public class ArcanaAchievements {
    
    // Transmogrification Catalyst
    public static final ArcanaAchievement ANOTHER_TOUCH_OF_PERSONALITY = ArcanaAchievements.register(
-         new EventAchievement("another_touch_of_personality", new ItemStack(Items.MAGENTA_DYE), ArcanaRegistry.TRANSMOGRIFICATION_CATALYST, 10000, 3)).setHidden(true);
+         new EventAchievement("another_touch_of_personality", new ItemStack(Items.DYE.magenta()), ArcanaRegistry.TRANSMOGRIFICATION_CATALYST, 10000, 3)).setHidden(true);
    
    public static final ArcanaAchievement MOGGED = ArcanaAchievements.register(
          new EventAchievement("mogged", new ItemStack(Items.DIAMOND), ArcanaRegistry.TRANSMOGRIFICATION_CATALYST, 10000, 3)).setHidden(true);
