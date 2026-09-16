@@ -33,5 +33,11 @@
     "fabric-api": "*",
     "minecraft": "~${minecraft_version}",
     "borislib": ">=${borislib_version}"
+  },
+  "custom": {
+    "mc-publish": {
+      "modrinth": "9J7sCd3t",
+      "curseforge": 1331014
+    }
   }
 }
