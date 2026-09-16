@@ -207,7 +207,7 @@ public class BinaryBlades extends EnergyItem {
       if(!(ArcanaItemUtils.identifyItem(item) instanceof BinaryBlades)) return item;
       ItemStack fake = item.copy();
       putProperty(fake, FAKE_TAG, true);
-      putProperty(fake, UUID_TAG, ArcanaNovum.BLANK_UUID);
+      putProperty(fake, UUID_TAG, BorisLib.BLANK_UUID);
       
       boolean white = ArcanaAugments.getAugmentOnItem(fake, ArcanaAugments.WHITE_DWARF_BLADES) > 0;
       if(white){
@@ -273,7 +273,7 @@ public class BinaryBlades extends EnergyItem {
       List<List<Component>> list = new ArrayList<>();
       list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nRarity: ").withStyle(ChatFormatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(), false)), Component.literal("\nGazing up at the stars one night led me to observe two close stars dancing in the sky. Two stars harmoniously acting as one. Glancing over at my Forge gave me an idea.").withStyle(ChatFormatting.BLACK)));
       list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nThe Binary Blades are two swords that act in unison, combining into one when stored and splitting in two when held. They grant an increased attack speed compared to normal weapons, with each strike acting like a note in a harmony. ").withStyle(ChatFormatting.BLACK)));
-      list.add(List.of(Component.literal("Binary Blades").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD), Component.literal("\nSuccessive strikes grant the wielder increased movement and attack speed.\n\nWhen forging the two blades together, the essence of the upper sword becomes the primary and the lower sword becomes the secondary.\n").withStyle(ChatFormatting.BLACK)));
+      list.add(List.of(Component.literal("   Binary Blades").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("\nSuccessive strikes grant the wielder increased movement and attack speed.\n\nWhen forging the two blades together, the essence of the upper sword becomes the primary and the lower sword becomes the secondary.\n").withStyle(ChatFormatting.BLACK)));
       return list;
    }
    
@@ -431,20 +431,20 @@ public class BinaryBlades extends EnergyItem {
          double pulsarRange = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.BINARY_BLADES_PULSAR_RANGE);
          
          if(pulsar > 0 && energy > energyCost){
-            MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, player.getEyePosition(), player.getForward(), pulsarRange, true, player);
+            MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, player.getEyePosition(), player.getForward(), pulsarRange, true, player, 0.1, -1, e -> e instanceof LivingEntity);
             float damage = pulsar * pulsarDmg;
-            for(Entity hit : lasercast.sortedHits()){
-               if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
-                  double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
-                  if(dp < -0.6){
-                     ArcanaUtils.blockWithShield(hitPlayer, damage);
-                     continue;
-                  }
-               }
-               hit.hurtServer(player.level(), ArcanaDamageTypes.of(player.level(), ArcanaDamageTypes.PHOTONIC, player), damage);
+            
+            LivingEntity blocking = lasercast.blockingEntity();
+            if(blocking != null){
+               ArcanaUtils.blockWithShield(blocking, damage);
+            }
+            
+            for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
+               hit.entity().hurtServer(player.level(), ArcanaDamageTypes.of(player.level(), ArcanaDamageTypes.PHOTONIC, player), damage);
                ArcanaItem.putProperty(stack, BinaryBlades.LAST_HIT_TAG, delay);
                energyGain += perHit;
             }
+            
             ArcanaEffectUtils.pulsarBladeShoot(player.level(), player.getEyePosition().subtract(0, player.getBbHeight() / 4, 0), lasercast.endPos(), 0);
             SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.0f, 2.0f);
             addEnergy(stack, energyGain - energyCost);

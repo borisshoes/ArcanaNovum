@@ -612,9 +612,9 @@ public class ArcanaConfig {
          new IntConfigValue("stasisPearlReconstructDuration", 100, new IntConfigValue.IntLimits(0))));
    
    // Totem of Vengeance
-   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_DURATION = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
+   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new IntConfigValue("totemOfVengeanceDuration", 300, new IntConfigValue.IntLimits(0))));
-   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_DURATION_PER_LVL = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
+   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_DURATION_PER_LVL = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new ListConfigValue<>("totemOfVengeanceDurationPerLvl", List.of(0, 300, 600, 900), new IntConfigValue("totemOfVengeanceDurationPerLvl", 0, new IntConfigValue.IntLimits(0)))));
    public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_DURATION_PERCENT_AGAINST_PLAYER = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new DoubleConfigValue("totemOfVengeanceDurationPercentAgainstPlayer", 0.5, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));

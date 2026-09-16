@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -284,7 +285,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       ItemStack newStack = getNewItem();
       String uuid = getStringProperty(stack, UUID_TAG);
-      if(uuid.isEmpty() || uuid.equals("-") || uuid.equals(ArcanaNovum.BLANK_UUID)){
+      if(uuid.isEmpty() || uuid.equals("-") || uuid.equals(BorisLib.BLANK_UUID)){
          putProperty(newStack, UUID_TAG, UUID.randomUUID().toString());
       }else{
          putProperty(newStack, UUID_TAG, uuid);
@@ -328,7 +329,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       putProperty(stack, ID_TAG, id);
       putProperty(stack, RARITY_TAG, ArcanaRarity.getRarityInt(rarity));
       putProperty(stack, VERSION_TAG, ArcanaItem.VERSION + getItemVersion());
-      putProperty(stack, UUID_TAG, ArcanaNovum.BLANK_UUID);
+      putProperty(stack, UUID_TAG, BorisLib.BLANK_UUID);
       putProperty(stack, AUGMENTS_TAG, new CompoundTag());
       putProperty(stack, CATALYSTS_TAG, new ListTag());
       if(creativeMenuItem){
@@ -354,7 +355,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       return new Item.Properties().stacksTo(1)
             .component(DataComponents.LORE, new ItemLore(getItemLore(null)))
             .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .delayedComponent(DataComponents.DAMAGE_RESISTANT, context -> new DamageResistant(context.getOrThrow(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO)))
+            .delayedComponent(DataComponents.DAMAGE_RESISTANT, context -> context.get(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO).map(DamageResistant::new).orElseThrow())
             .component(DataComponents.TOOLTIP_DISPLAY, getTooltipDisplayComponent())
             ;
    }

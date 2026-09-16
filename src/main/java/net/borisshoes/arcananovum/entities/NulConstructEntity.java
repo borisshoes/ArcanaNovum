@@ -1008,22 +1008,19 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                LivingEntity livingEntity = (LivingEntity) serverWorld.getEntity(id);
                if(livingEntity != null && this.canAttack(livingEntity) && (this.distanceToSqr(livingEntity) < (RAY_RANGE * RAY_RANGE))){
                   Vec3 headPos = new Vec3(getHeadX(i), getHeadY(i), getHeadZ(i));
-                  MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.position().subtract(headPos).normalize(), RAY_RANGE, true, this);
+                  MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.position().subtract(headPos).normalize(), RAY_RANGE,
+                        true, this, 0.1, -1, e -> !e.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS));
                   if(this.tickCount % 10 == 0){
                      float damage = this.isExalted ? 2f : 4f;
                      
-                     for(Entity hit : lasercast.sortedHits()){
-                        if(!(hit instanceof LivingEntity livingHit) || hit.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS))
-                           continue;
-                        if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
-                           double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
-                           if(dp < -0.6){
-                              ArcanaUtils.blockWithShield(hitPlayer, damage);
-                              continue;
-                           }
-                        }
-                        
-                        hit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(), ArcanaDamageTypes.NUL, this), damage);
+                     LivingEntity blocking = lasercast.blockingEntity();
+                     if(blocking != null){
+                        ArcanaUtils.blockWithShield(blocking, damage);
+                     }
+                     
+                     for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
+                        if(!(hit.entity() instanceof LivingEntity livingHit)) continue;
+                        livingHit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(), ArcanaDamageTypes.NUL, this), damage);
                         ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_laser"), 40, 24.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
                         MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
                         MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, isExalted ? 100 : 40, 1, false, true, true);

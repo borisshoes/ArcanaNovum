@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.borisshoes.arcananovum.blocks.ItineranteurBlockEntity;
+import net.minecraft.resources.Identifier;
 import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.datastorage.AnchorData;
@@ -49,10 +50,10 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final HashMap<ServerPlayer, ItineranteurBlockEntity> ITINERANTEUR_USERS = new HashMap<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
-   public static MinecraftServer SERVER = null;
    public static final boolean DEV_MODE = false;
-   public static final String BLANK_UUID = "00000000-0000-4000-8000-000000000000";
    public static final ItemModDataHandler ITEM_DATA = new ItemModDataHandler(MOD_ID);
+   public static final Identifier ARCANA_CLICK_ACTION_ID = Identifier.fromNamespaceAndPath(MOD_ID, "run_command");
+   public static final String ARCANA_CLICK_KEY = MOD_ID + ":command";
    public static int DEBUG_VALUE = 0;
    
    @Override

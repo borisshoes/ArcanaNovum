@@ -84,7 +84,7 @@ public class PhotonicArrows extends RunicArrow {
       double prismaticCap = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_DMG_MAX);
       double prismaticMaxBuff = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_FLAT_DMG_INCREASE);
       double prismaticPerMob = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_PER_LVL).get(alignmentLvl);
-      MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, entity.getEyePosition(), entity.getForward(), maxRange, true, entity);
+      MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, entity.getEyePosition(), entity.getForward(), maxRange, true, entity, 0.1, -1, e -> e instanceof LivingEntity);
       
       float percentage = MinecraftUtils.getArrowPercentage(proj);
       float baseDmg = (float) (percentage * (maxDamage - minDamage) + minDamage);
@@ -92,22 +92,21 @@ public class PhotonicArrows extends RunicArrow {
       float bonusDmg = 0;
       
       int killCount = 0;
-      for(Entity hit : lasercast.sortedHits()){
-         float falloffDmg = (float) (falloff * hit.position().distanceTo(lasercast.startPos()));
-         float finalDmg = (float) ((hit instanceof ServerPlayer ? playerDmgMod : 1) * Math.max(minDamage, baseDmg + bonusDmg - falloffDmg));
-         if(hit instanceof ServerPlayer hitPlayer && hitPlayer.isBlocking()){
-            double dp = hitPlayer.getForward().normalize().dot(lasercast.direction().normalize());
-            if(dp < -0.6){
-               ArcanaUtils.blockWithShield(hitPlayer, finalDmg);
-               continue;
-            }
-         }
-         hit.hurtServer(serverWorld, ArcanaDamageTypes.of(entity.level(), ArcanaDamageTypes.PHOTONIC, proj, entity), finalDmg);
-         
-         if(hit instanceof Mob mob && mob.isDeadOrDying()){
+      for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
+         float falloffDmg = (float) (falloff * hit.entity().position().distanceTo(lasercast.startPos()));
+         float finalDmg = (float) ((hit.entity() instanceof ServerPlayer ? playerDmgMod : 1) * Math.max(minDamage, baseDmg + bonusDmg - falloffDmg));
+         hit.entity().hurtServer(serverWorld, ArcanaDamageTypes.of(entity.level(), ArcanaDamageTypes.PHOTONIC, proj, entity), finalDmg);
+         if(hit.entity() instanceof Mob mob && mob.isDeadOrDying()){
             killCount++;
          }
          bonusDmg = (float) Math.min(prismaticCap, bonusDmg + prismaticPerMob);
+      }
+      
+      LivingEntity blocking = lasercast.blockingEntity();
+      if(blocking != null){
+         float falloffDmg = (float) (falloff * blocking.position().distanceTo(lasercast.startPos()));
+         float finalDmg = (float) ((blocking instanceof ServerPlayer ? playerDmgMod : 1) * Math.max(minDamage, baseDmg + bonusDmg - falloffDmg));
+         ArcanaUtils.blockWithShield(blocking, finalDmg);
       }
       
       if(proj.getOwner() instanceof ServerPlayer player && killCount >= 10)

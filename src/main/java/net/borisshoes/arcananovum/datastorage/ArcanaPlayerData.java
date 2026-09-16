@@ -754,7 +754,7 @@ public class ArcanaPlayerData implements StorableData {
             }
          }
          double gaialtusEventChance = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.GAIALTUS_EVENT_CHANCE);
-         if(player.getRandom().nextDouble() < gaialtusEventChance){
+         if(player.level().getRandom().nextDouble() < gaialtusEventChance){
             tryStartGaialtus(player);
          }
          
@@ -1226,34 +1226,9 @@ public class ArcanaPlayerData implements StorableData {
    
    public void startZeraiya(ServerPlayer player){
       // z_no z_yes z_ask | z_no z_listen z_more
-      DialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
-            Component.literal("\n")
-                  .append(Component.literal("As ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
-                  .append(Component.literal("Enderia's Egg").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC))
-                  .append(Component.literal(" quietly dwells in your pocket, you feel a ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
-                  .append(Component.literal("wisp of wind").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
-                  .append(Component.literal(" blow through your mind.\n").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)),
-            Component.literal("")
-                  .append(Component.literal("A gentle voice inquires...").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)),
-            Component.literal("")
-                  .append(player.getDisplayName().copy())
-                  .append(Component.literal(", would you like to hear a story?").withStyle(ChatFormatting.DARK_GREEN)),
-            Component.literal("\n")
-                  .append(Component.literal("[No]").withStyle(s ->
-                        s.withBold(true).withColor(ChatFormatting.DARK_RED).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action z_no"))))
-                  .append(Component.literal(" "))
-                  .append(Component.literal("[Yes]").withStyle(s ->
-                        s.withBold(true).withColor(ChatFormatting.DARK_GREEN).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action z_yes"))))
-                  .append(Component.literal(" "))
-                  .append(Component.literal("[Is it a sad story?]").withStyle(s ->
-                        s.withBold(true).withColor(ChatFormatting.DARK_PURPLE).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action z_ask"))))
-      )), new ArrayList<>(Arrays.asList(
-            new Dialog.DialogSound(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS.value(), 2f, 2f),
-            new Dialog.DialogSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 1),
-            new Dialog.DialogSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 1),
-            new Dialog.DialogSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 1))
-      ), new int[]{0, 80, 60, 80}, 1, 1, 0), true);
-      Event.addEvent(new ZeraiyaStartEvent(player));
+      ZeraiyaStartEvent event = new ZeraiyaStartEvent(player);
+      event.sendInquiryDialog();
+      Event.addEvent(event);
    }
    
    public void startGaialtus(ServerPlayer player){
@@ -1521,31 +1496,7 @@ public class ArcanaPlayerData implements StorableData {
       ZeraiyaStartEvent zEventFound = Event.getEventsOfType(ZeraiyaStartEvent.class).stream().filter(z -> z.getPlayer().equals(player)).findFirst().orElse(null);
       if(zEventFound != null && msg.equalsIgnoreCase("z_yes")){
          Event.RECENT_EVENTS.removeIf(e -> e instanceof ZeraiyaStartEvent z && z.getPlayer().equals(player));
-         DialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
-               Component.literal("\n")
-                     .append(Component.literal("This is a story of how a ").withStyle(ChatFormatting.DARK_GREEN))
-                     .append(Component.literal("young dragon girl").withStyle(ChatFormatting.DARK_PURPLE))
-                     .append(Component.literal(" lost her way a long time ago...").withStyle(ChatFormatting.DARK_GREEN)),
-               Component.literal("\n")
-                     .append(Component.literal("[Listen More]").withStyle(s ->
-                           s.withBold(true).withColor(ChatFormatting.DARK_AQUA).withClickEvent(new ClickEvent.OpenUrl(URI.create("https://docs.google.com/document/d/1LONwFaFzXycvnQ5u4IliQmAcJfQzC9MUnWX04puoHQw/edit?usp=sharing"))))),
-               Component.literal("\n")
-                     .append(Component.literal("As the story ends you see at your feet a ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
-                     .append(Component.literal("pitch black spear").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC))
-                     .append(Component.literal(".").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)),
-               Component.literal("")
-                     .append(Component.literal("No one is born with venom in their veins, darkness is always chosen.").withStyle(ChatFormatting.DARK_GREEN)),
-               Component.literal("")
-                     .append(Component.literal("The presence fades and ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
-                     .append(Component.literal("Enderia's Egg").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC))
-                     .append(Component.literal(" stirs...").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
-         )), new ArrayList<>(Arrays.asList(
-               new Dialog.DialogSound(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS.value(), 2f, 2f),
-               new Dialog.DialogSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 1),
-               new Dialog.DialogSound(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS.value(), 2f, 2f),
-               new Dialog.DialogSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 1),
-               new Dialog.DialogSound(SoundEvents.ENDER_DRAGON_GROWL, 0.05f, 1.4f))
-         ), new int[]{0, 60, 200, 80, 80}, 1, 1, 0), true);
+         zEventFound.sendYesDialog();
          ItemStack spear = ArcanaRegistry.SPEAR_OF_TENBROUS.addCrafter(ArcanaRegistry.SPEAR_OF_TENBROUS.getNewItem(), player.getStringUUID(), 3, player.level().getServer());
          spear.enchant(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), 1);
          BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(spear, player, 265));
@@ -1562,23 +1513,7 @@ public class ArcanaPlayerData implements StorableData {
          SoundUtils.playSongToPlayer(player, SoundEvents.ENDER_DRAGON_GROWL, 0.05f, 1.4f);
       }else if(zEventFound != null && msg.equalsIgnoreCase("z_ask")){
          zEventFound.refresh();
-         DialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
-               Component.literal("\n")
-                     .append(Component.literal("The luminance of life often casts a ").withStyle(ChatFormatting.DARK_GREEN))
-                     .append(Component.literal("dark shadow").withStyle(ChatFormatting.DARK_GRAY))
-                     .append(Component.literal(". Not everyone has learned to live in the ").withStyle(ChatFormatting.DARK_GREEN))
-                     .append(Component.literal("light").withStyle(ChatFormatting.WHITE))
-                     .append(Component.literal(".").withStyle(ChatFormatting.DARK_GREEN)),
-               Component.literal("\n")
-                     .append(Component.literal("[I don't like sad stories]").withStyle(s ->
-                           s.withBold(true).withColor(ChatFormatting.DARK_RED).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action z_no"))))
-                     .append(Component.literal(" "))
-                     .append(Component.literal("[I'll listen]").withStyle(s ->
-                           s.withBold(true).withColor(ChatFormatting.DARK_GREEN).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action z_yes"))))
-         )), new ArrayList<>(Arrays.asList(
-               new Dialog.DialogSound(SoundEvents.AMBIENT_SOUL_SAND_VALLEY_ADDITIONS.value(), 2f, 2f),
-               new Dialog.DialogSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 1)
-         )), new int[]{0, 80}, 1, 1, 0), true);
+         zEventFound.sendMaybeDialog();
       }
       
       CeptyusStartEvent cEventFound = Event.getEventsOfType(CeptyusStartEvent.class).stream().filter(c -> c.getPlayer().equals(player) && c.sentInvestigate()).findFirst().orElse(null);

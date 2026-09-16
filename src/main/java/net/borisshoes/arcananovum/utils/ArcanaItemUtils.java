@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.core.*;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannels;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -238,7 +239,7 @@ public class ArcanaItemUtils {
             continue;
          }
          ArcanaItem arcanaItem = identifyItem(item);
-         if(!ArcanaItem.hasProperty(item, ArcanaItem.UUID_TAG) || ArcanaItem.getUUID(item).equals(ArcanaNovum.BLANK_UUID))
+         if(!ArcanaItem.hasProperty(item, ArcanaItem.UUID_TAG) || ArcanaItem.getUUID(item).equals(BorisLib.BLANK_UUID))
             continue;
          if(arcanaItem instanceof ArcanaItemContainer.ArcanaItemContainerHaver containerHaver){
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);

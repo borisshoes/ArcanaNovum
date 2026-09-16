@@ -834,7 +834,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment RETALIATIVE_FURY = ArcanaAugments.register(
          new ArcanaAugment("retaliative_fury", new ItemStack(Items.BLAZE_POWDER), ArcanaRegistry.TOTEM_OF_VENGEANCE,
                MUNDANE, MUNDANE, EMPOWERED).setRelatedConfigs(
-               Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PER_LVL, ConfigUnits.MINUTES),
+               Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PER_LVL, ConfigUnits.SECONDS),
                Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_SPEED_PER_LVL, ConfigUnits.NONE),
                Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_STRENGTH_PER_LVL, ConfigUnits.NONE)
          ));

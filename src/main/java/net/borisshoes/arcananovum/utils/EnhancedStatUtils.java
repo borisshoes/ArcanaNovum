@@ -275,25 +275,25 @@ public class EnhancedStatUtils {
       Vec3 pos = entity.position().add(0, leyway, 0);
       double section = (entity.getEyePosition().y - entity.position().y - leyway) / 4.0;
       ArrayList<Vec3> positions = new ArrayList<>();
-      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(helmet)){
+      if(!helmet.isEmpty() && EnhancedStatUtils.isEnhanced(helmet) && entity.random.nextFloat() < chance){
          positions.add(new Vec3(pos.x, pos.y + (section * 4), pos.z));
       }
-      if(entity.random.nextFloat() < chance && (EnhancedStatUtils.isEnhanced(chest) || EnhancedStatUtils.isEnhanced(body))){
+      if((!chest.isEmpty() || !body.isEmpty()) && (EnhancedStatUtils.isEnhanced(chest) || EnhancedStatUtils.isEnhanced(body)) && entity.random.nextFloat() < chance){
          positions.add(new Vec3(pos.x, pos.y + (section * 3), pos.z));
       }
-      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(legs)){
+      if(!legs.isEmpty() && EnhancedStatUtils.isEnhanced(legs) && entity.random.nextFloat() < chance){
          positions.add(new Vec3(pos.x, pos.y + (section * 2), pos.z));
       }
-      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(boots)){
+      if(!boots.isEmpty() && EnhancedStatUtils.isEnhanced(boots) && entity.random.nextFloat() < chance){
          positions.add(new Vec3(pos.x, pos.y + (section * 1), pos.z));
       }
-      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(mainhand)){
+      if(!mainhand.isEmpty() && EnhancedStatUtils.isEnhanced(mainhand) && entity.random.nextFloat() < chance){
          Vec3 newPos = new Vec3(pos.x, pos.y + (section * 2.5), pos.z);
          Vec3 look = entity.getForward().multiply(1, 0, 1).normalize().scale(width * 1.5);
          Vec3 handPos = newPos.add(-look.z, 0, look.x).add(entity.getForward().multiply(1, 0, 1).normalize().scale(width * 3));
          positions.add(handPos);
       }
-      if(entity.random.nextFloat() < chance && EnhancedStatUtils.isEnhanced(offhand)){
+      if(!offhand.isEmpty() && EnhancedStatUtils.isEnhanced(offhand) && entity.random.nextFloat() < chance){
          Vec3 newPos = new Vec3(pos.x, pos.y + (section * 2.5), pos.z);
          Vec3 look = entity.getForward().multiply(1, 0, 1).normalize().scale(width * 1.5);
          Vec3 handPos = newPos.add(look.z, 0, -look.x).add(entity.getForward().multiply(1, 0, 1).normalize().scale(width * 3));

@@ -267,7 +267,7 @@ public class ArcanaRegistry {
    );
    public static final Item DIVINE_ARCANE_PAPER = registerItem("divine_arcane_paper", new DivineArcanePaper("divine_arcane_paper", new Item.Properties().stacksTo(64).rarity(Rarity.EPIC)
          .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-         .delayedComponent(DataComponents.DAMAGE_RESISTANT, context -> new DamageResistant(context.getOrThrow(ARCANA_ITEM_IMMUNE_TO))))
+         .delayedComponent(DataComponents.DAMAGE_RESISTANT, context -> context.get(ARCANA_ITEM_IMMUNE_TO).map(DamageResistant::new).orElseThrow()))
    );
    
    // Normal Blocks (registered in initialize())
