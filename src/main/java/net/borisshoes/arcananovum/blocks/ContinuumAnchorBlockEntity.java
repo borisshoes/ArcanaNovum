@@ -25,6 +25,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
@@ -115,7 +116,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
          inventory.setItem(0, ItemStack.EMPTY);
          setChanged();
          if(!player.addItem(returnStack)){
-            ItemEntity itemEntity = player.drop(returnStack, false);
+            ItemEntity itemEntity = player.drop(returnStack, false, Prediction.SERVER_ONLY);
             if(itemEntity == null) return true;
             itemEntity.setNoPickUpDelay();
             itemEntity.setTarget(player.getUUID());

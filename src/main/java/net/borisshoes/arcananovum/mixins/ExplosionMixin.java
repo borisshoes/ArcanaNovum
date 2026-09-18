@@ -49,8 +49,8 @@ public class ExplosionMixin {
       return original;
    }
    
-   @Inject(method = "hurtEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;push(Lnet/minecraft/world/phys/Vec3;)V"))
-   private void arcananovum$detArrowAchievement(CallbackInfo ci, @Local Entity entity){
+   @Inject(method = "hurtEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;pushFromExplosion(Lnet/minecraft/world/phys/Vec3;)V"))
+   private void arcananovum$detArrowAchievement(CallbackInfo ci, @Local(name = "entity") Entity entity){
       if(damageSource.is(ArcanaDamageTypes.DETONATION_DAMAGE) && entity instanceof ServerPlayer hitPlayer){
          Entity attacker = damageSource.getEntity();
          if(attacker != null && hitPlayer.getUUID().equals(attacker.getUUID()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f)

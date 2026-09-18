@@ -269,7 +269,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
          }
       }
       
-      this.deflect(ProjectileDeflection.REVERSE, target, EntityReference.of(this.getOwner()), false);
+      this.deflect(ProjectileDeflection.REVERSE, target, EntityReference.of(this.getOwner()), false, new Vec3(0.02, 0.2, 0.02));
       this.setDeltaMovement(this.getDeltaMovement().multiply(0.02, 0.2, 0.02));
       this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
       this.discard();

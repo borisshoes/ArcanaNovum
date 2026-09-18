@@ -19,6 +19,7 @@ import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -235,7 +236,8 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.TWILIGHT_ANVIL).getCheckOffset()), null);
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.TWILIGHT_ANVIL).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

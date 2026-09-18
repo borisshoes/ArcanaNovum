@@ -57,6 +57,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -654,7 +655,7 @@ public class ArcanaPlayerData implements StorableData {
       ItemStack offHand = player.getOffhandItem().copy();
       player.getInventory().setItem(Inventory.SLOT_OFFHAND, storedOffhand.copyAndClear());
       if(!offHand.isEmpty() && !BinaryBlades.isFakeBlade(offHand)){
-         player.getInventory().placeItemBackInInventory(offHand);
+         player.getInventory().placeItemBackInInventory(offHand, Prediction.SERVER_ONLY);
       }
       markDirty();
       return true;

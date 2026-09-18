@@ -29,12 +29,6 @@ public class AstralGatewayPortalBlock extends BaseEntityBlock implements Polymer
    }
    
    @Override
-   protected MapCodec<? extends BaseEntityBlock> codec(){
-      return null;
-   }
-   
-   
-   @Override
    public BlockState getPolymerBlockState(BlockState blockState, PacketContext packetContext){
       return Blocks.END_GATEWAY.defaultBlockState();
    }

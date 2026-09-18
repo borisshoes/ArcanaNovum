@@ -344,7 +344,8 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.ARCANE_SINGULARITY).getCheckOffset()), serverWorld.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.ARCANE_SINGULARITY).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), serverWorld.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

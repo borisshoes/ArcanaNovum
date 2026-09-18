@@ -39,6 +39,7 @@ import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.*;
 import net.minecraft.server.level.ServerPlayer;
@@ -1237,7 +1238,8 @@ public class ArcaneTomeGui extends PagedMultiGui {
                permaCloseFlag = true;
                close();
             }else{
-               multicore.getMultiblock().displayStructure(new Multiblock.MultiblockCheck(player.level(), player.blockPosition(), player.level().getBlockState(player.blockPosition()), new BlockPos(multicore.getCheckOffset()), null), player);
+               Vec3i vec = multicore.getCheckOffset();
+               multicore.getMultiblock().displayStructure(new Multiblock.MultiblockCheck(player.level(), player.blockPosition(), player.level().getBlockState(player.blockPosition()), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), null), player);
                permaCloseFlag = true;
                close();
             }

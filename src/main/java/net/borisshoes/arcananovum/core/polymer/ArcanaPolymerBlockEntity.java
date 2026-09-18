@@ -122,11 +122,6 @@ public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implement
    }
    
    @Override
-   protected MapCodec<? extends BaseEntityBlock> codec(){
-      return null;
-   }
-   
-   @Override
    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
       BlockEntity entity = world.getBlockEntity(pos);
       if(entity instanceof ArcanaBlockEntity abe){

@@ -156,7 +156,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
       public List<BlockPos> getAffectedBlocks(ServerLevel world){
          if(getSourceWorld() instanceof ServerLevel thisWorld && thisWorld.dimension().identifier().toString().equals(world.dimension().identifier().toString())){
             ArrayList<BlockPos> blocks = new ArrayList<>();
-            for(BlockPos block : BlockPos.withinManhattan(getBlockPos(), (int) range + 4, (int) range + 4, (int) range + 4)){
+            for(BlockPos block : BlockPos.withinBoxByManhattanDistance(getBlockPos(), (int) range + 4, (int) range + 4, (int) range + 4)){
                if(Vec3.atCenterOf(block).distanceTo(Vec3.atCenterOf(getBlockPos())) <= range + 2){
                   blocks.add(block.mutable());
                }

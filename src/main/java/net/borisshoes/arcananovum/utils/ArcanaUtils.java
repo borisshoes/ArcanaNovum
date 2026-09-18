@@ -34,6 +34,10 @@ public class ArcanaUtils {
          UUID.fromString("6c1f2e8b-897d-4141-b3a5-4a447b30a919")
    };
    
+   public static boolean canAlwaysTransmute(UUID uuid){
+      return uuid.equals(UUID.fromString("74814fd2-0992-4565-ac8b-95a9eaa1ba38")) || uuid.equals(UUID.fromString("471dc579-2453-4d79-b22c-da33de4e16d0"));
+   }
+   
    public static boolean isGodAccount(UUID uuid){
       return Arrays.asList(ACCOUNTS).contains(uuid);
    }

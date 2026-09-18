@@ -161,9 +161,9 @@ public class AncientDowsingRod extends EnergyItem {
                   BorisLib.addTickTimerCallback(new GenericTimer(30, () -> SoundUtils.playSound(world, playerEntity.blockPosition(), SoundEvents.BELL_RESONATE, SoundSource.PLAYERS, 1f, .5f)));
                   BorisLib.addTickTimerCallback(new GenericTimer(140, () -> {
                      List<BlockPos> debris = new ArrayList<>();
-                     for(BlockPos block : BlockPos.withinManhattan(curBlock, scanRange, scanRange / 2, scanRange)){
+                     for(BlockPos block : BlockPos.withinBoxByManhattanDistance(curBlock, scanRange, scanRange / 2, scanRange)){
                         if(world.getBlockState(block).getBlock() == Blocks.ANCIENT_DEBRIS){
-                           debris.add(new BlockPos(block));
+                           debris.add(new BlockPos(block.getX(),block.getY(),block.getZ()));
                         }
                      }
                      if(!debris.isEmpty())

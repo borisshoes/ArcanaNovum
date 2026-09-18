@@ -168,7 +168,7 @@ public class Multiblock {
                };
                
                if(!rotatedPred.test(state)){
-                  incorrect.add(new MultiblockCheckResult(checkParams.world(), rotatedRawState, state, rotatedPred, new BlockPos(pos)));
+                  incorrect.add(new MultiblockCheckResult(checkParams.world(), rotatedRawState, state, rotatedPred, new BlockPos(pos.getX(), pos.getY(), pos.getZ())));
                }
             }
          }
@@ -270,7 +270,7 @@ public class Multiblock {
          for(Tag e : palette){
             // Get the actual block
             CompoundTag blockTag = (CompoundTag) e;
-            String blockName = blockTag.getStringOr("Name", "");
+            String blockName = blockTag.getStringOr("id", "");
             BlockState rawState = NbtUtils.readBlockState(BuiltInRegistries.BLOCK, blockTag); // Save raw state for display
             Predicate<BlockState> pred;
             Identifier identifier = Identifier.parse(blockName);
@@ -284,8 +284,8 @@ public class Multiblock {
             // Block found, build predicate
             Block block = (Block) ((Holder<?>) optional.get()).value();
             HashMap<Property<? extends Comparable<?>>, Comparable<?>> blockProperties = new HashMap<>();
-            if(blockTag.contains("Properties")){
-               CompoundTag properties = blockTag.getCompoundOrEmpty("Properties");
+            if(blockTag.contains("properties")){
+               CompoundTag properties = blockTag.getCompoundOrEmpty("properties");
                StateDefinition<Block, BlockState> stateManager = block.getStateDefinition();
                for(String key : properties.keySet()){
                   Property<?> p = stateManager.getProperty(key);

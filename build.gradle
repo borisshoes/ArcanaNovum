@@ -63,7 +63,7 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    implementation("net.borisshoes:BorisLib:${project.borislib_version}")
+    include(implementation("net.borisshoes:BorisLib:${project.borislib_version}"))
     include(implementation("eu.pb4:sgui:${project.sgui_version}"))
     include(implementation("eu.pb4:polymer-core:${project.polymer_version}"))
     include(implementation("eu.pb4:polymer-blocks:${project.polymer_version}"))

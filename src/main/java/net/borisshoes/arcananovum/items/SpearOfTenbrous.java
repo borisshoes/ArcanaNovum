@@ -173,7 +173,7 @@ public class SpearOfTenbrous extends ArcanaItem {
                .delayedHolderComponent(DataComponents.DAMAGE_TYPE, ArcanaDamageTypes.ARCANE_LIGHTNING)
                .component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0f)
                .component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(SoundEvents.SPEAR_ATTACK), Optional.of(SoundEvents.SPEAR_HIT)))
-               .component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, 20))
+               .component(DataComponents.ATTACK_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, 20))
                .component(DataComponents.USE_EFFECTS, new UseEffects(true, true, 1.0f))
                .attributes(ItemAttributeModifiers.builder()
                      .add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 6.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)

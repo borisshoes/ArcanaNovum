@@ -378,7 +378,7 @@ public class LightCharm extends ArcanaItem {
             BlockPos pos = player.blockPosition();
             if(vision){
                // Search 10x10x10 area around player for light blocks
-               for(BlockPos block : BlockPos.withinManhattan(pos, 10, 10, 10)){
+               for(BlockPos block : BlockPos.withinManhattan(pos, 10)){
                   BlockState state = world.getBlockState(block);
                   if(state.getBlock().equals(Blocks.LIGHT)){
                      serverWorld.sendParticles(player, new BlockParticleOption(ParticleTypes.BLOCK_MARKER, state), true, true, block.getX() + .5, block.getY() + .5, block.getZ() + .5, 1, 0, 0, 0, 0);

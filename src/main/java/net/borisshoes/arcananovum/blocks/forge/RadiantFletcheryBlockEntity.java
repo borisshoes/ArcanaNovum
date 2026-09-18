@@ -19,6 +19,7 @@ import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -118,7 +119,8 @@ public class RadiantFletcheryBlockEntity extends RandomizableContainerBlockEntit
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getCheckOffset()), null);
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), null);
    }
    
    public Container getInventory(){

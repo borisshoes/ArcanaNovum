@@ -1300,7 +1300,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                player.connection.send(new ClientboundSetEntityMotionPacket(player));
          }
          
-         for(BlockPos blockPos : BlockPos.withinManhattan(this.blockPosition(), (int) BLAST_RANGE, (int) BLAST_RANGE, (int) BLAST_RANGE)){
+         for(BlockPos blockPos : BlockPos.withinBoxByManhattanDistance(this.blockPosition(), (int) BLAST_RANGE, (int) BLAST_RANGE, (int) BLAST_RANGE)){
             int damage = (int) (10 - 15 * Math.pow((blockPos.distSqr(this.blockPosition()) / (BLAST_RANGE * BLAST_RANGE)), 0.25));
             damageBlock(blockPos, damage);
          }

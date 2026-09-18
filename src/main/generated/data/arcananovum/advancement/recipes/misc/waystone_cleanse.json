@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "arcananovum:waystone_cleanse"
+        "recipes": "arcananovum:waystone_cleanse"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

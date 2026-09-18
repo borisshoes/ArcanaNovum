@@ -96,8 +96,8 @@ public class ServerGamePacketListenerImplMixin {
       ArcanaNovum.TOTEM_KILL_LIST.removeIf(uuid -> uuid.equals(player.getUUID()));
    }
    
-   @Inject(method = "handleAnimate", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V"))
-   private void arcananovum$handSwing(ServerboundSwingPacket packet, CallbackInfo ci){
+   @Inject(method = "handlePunch", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V"))
+   private void arcananovum$handSwing(ServerboundPunchPacket packet, CallbackInfo ci){
       ServerGamePacketListenerImpl networkHandler = (ServerGamePacketListenerImpl) (Object) this;
       
       // Hit through Greater Invisibility
@@ -161,8 +161,8 @@ public class ServerGamePacketListenerImplMixin {
       }
    }
    
-   @Inject(method = "handleMovePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V"))
-   private void arcananovum$ensnarementAndGreavesPlayerOnMove(ServerboundMovePlayerPacket packet, CallbackInfo ci){
+   @Inject(method = "handlePlayerPositionChange", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V"))
+   private void arcananovum$ensnarementAndGreavesPlayerOnMove(double requestedX, double requestedY, double requestedZ, float requestedYRot, float requestedXRot, boolean isOnGround, boolean horizontalCollision, CallbackInfo ci){
       MobEffectInstance effect = player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null){
          if(++awaitingTeleport == Integer.MAX_VALUE){
@@ -173,7 +173,7 @@ public class ServerGamePacketListenerImplMixin {
       }else{
          ItemStack pants = player.getItemBySlot(EquipmentSlot.LEGS);
          if(!pants.isEmpty() && pants.is(ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()) && ArcanaAugments.getAugmentOnItem(pants, ArcanaAugments.EARTHEN_ASCENT) >= 1){
-            if(packet.horizontalCollision() && !player.getAbilities().flying && player.isShiftKeyDown()){
+            if(horizontalCollision && !player.getAbilities().flying && player.isShiftKeyDown()){
                player.setDeltaMovement(new Vec3(player.getDeltaMovement().x(), 0.2, player.getDeltaMovement().z()));
                player.connection.send(new ClientboundSetEntityMotionPacket(player));
                player.connection.aboveGroundTickCount = 0;
@@ -182,7 +182,7 @@ public class ServerGamePacketListenerImplMixin {
       }
    }
    
-   @ModifyVariable(method = "handleMovePlayer", at = @At("STORE"), ordinal = 0)
+   @ModifyVariable(method = "handlePlayerPositionChange", at = @At("STORE"), ordinal = 3)
    private double arcananovum$ensnarementPlayerX(double x){
       if(player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getX();
@@ -192,7 +192,7 @@ public class ServerGamePacketListenerImplMixin {
       
    }
    
-   @ModifyVariable(method = "handleMovePlayer", at = @At("STORE"), ordinal = 1)
+   @ModifyVariable(method = "handlePlayerPositionChange", at = @At("STORE"), ordinal = 4)
    private double arcananovum$ensnarementPlayerY(double y){
       if(player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getY();
@@ -201,7 +201,7 @@ public class ServerGamePacketListenerImplMixin {
       }
    }
    
-   @ModifyVariable(method = "handleMovePlayer", at = @At("STORE"), ordinal = 2)
+   @ModifyVariable(method = "handlePlayerPositionChange", at = @At("STORE"), ordinal = 5)
    private double arcananovum$ensnarementPlayerZ(double z){
       if(player.getEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getZ();

@@ -6,15 +6,15 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "modifier": [
             {
-              "function": "arcananovum:arcana_block_entity"
+              "type": "arcananovum:arcana_block_entity"
             }
           ],
           "name": "arcananovum:astral_gateway"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     }
   ],
   "random_sequence": "arcananovum:blocks/astral_gateway"

@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -58,7 +59,7 @@ public class PlayerDeathCallback {
                if(newStack.isEmpty()){
                   newPlayer.getInventory().setItem(i, oldStack);
                }else{
-                  newPlayer.getInventory().placeItemBackInInventory(oldStack);
+                  newPlayer.getInventory().placeItemBackInInventory(oldStack, Prediction.SERVER_ONLY);
                }
             }
          }

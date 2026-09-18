@@ -49,7 +49,7 @@ public class QuiverGui extends SimpleGui {
       
       ItemContainerContents arrows = item.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
-      arrows.allItemsCopyStream().forEachOrdered(stack -> {
+      arrows.itemCopies().forEachOrdered(stack -> {
          inv.setItem(i.get(), stack);
          i.getAndIncrement();
       });

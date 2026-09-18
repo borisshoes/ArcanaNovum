@@ -4,12 +4,14 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.List;
+import java.util.Optional;
 
 public class FoundArcanaItemLootFunction extends LootItemConditionalFunction {
    
@@ -18,7 +20,7 @@ public class FoundArcanaItemLootFunction extends LootItemConditionalFunction {
    );
    
    
-   protected FoundArcanaItemLootFunction(List<LootItemCondition> conditions){
+   protected FoundArcanaItemLootFunction(Optional<Holder<LootItemCondition>> conditions){
       super(conditions);
    }
    

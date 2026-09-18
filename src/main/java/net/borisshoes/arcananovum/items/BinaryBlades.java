@@ -34,8 +34,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
+import net.minecraft.network.protocol.game.ClientboundSwingAnimationPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -50,13 +52,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ToolMaterial;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -278,6 +278,7 @@ public class BinaryBlades extends EnergyItem {
    }
    
    public class BinaryBladesItem extends ArcanaPolymerItem {
+      
       public BinaryBladesItem(){
          super(getThis(), getEquipmentArcanaItemComponents()
                .sword(ToolMaterial.NETHERITE, 2, -1.2f)
@@ -392,6 +393,14 @@ public class BinaryBlades extends EnergyItem {
             }
          }
          
+         int pulsar = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PULSAR_BLADES);
+         int energyCost = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.BINARY_BLADES_PULSAR_ENERGY_CONSUMPTION_PER_LVL).get(pulsar);
+         if(pulsar > 0 && energy >= energyCost && handStack.equals(stack)){
+            stack.set(DataComponents.INTERACT_ANIMATION, new SwingAnimation(SwingAnimationType.STAB,20));
+         }else{
+            stack.set(DataComponents.INTERACT_ANIMATION, SwingAnimation.DEFAULT);
+         }
+         
          if(energy >= getMaxEnergy(stack)){
             Event.addEvent(new BinaryBladesMaxEnergyEvent(player));
             long count = Event.getEventsOfType(BinaryBladesMaxEnergyEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count();
@@ -449,7 +458,9 @@ public class BinaryBlades extends EnergyItem {
             SoundUtils.playSound(player.level(), player.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.0f, 2.0f);
             addEnergy(stack, energyGain - energyCost);
             player.getCooldowns().addCooldown(stack, 10);
-            player.level().getChunkSource().sendToTrackingPlayersAndSelf(player, new ClientboundAnimatePacket(player, ClientboundAnimatePacket.SWING_OFF_HAND));
+            ClientboundSwingAnimationPacket packet = new ClientboundSwingAnimationPacket(player, hand, new SwingAnimation(SwingAnimationType.STAB,20));
+            ServerChunkCache chunkSource = player.level().getChunkSource();
+            chunkSource.sendToTrackingPlayersAndSelf(player, packet);
             return InteractionResult.SUCCESS_SERVER;
          }
          

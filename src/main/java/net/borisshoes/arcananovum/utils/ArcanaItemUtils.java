@@ -206,7 +206,7 @@ public class ArcanaItemUtils {
             BundleContents bundleComp = item.get(DataComponents.BUNDLE_CONTENTS);
             SimpleContainer bundleInv = new SimpleContainer(bundleComp.size());
             int index = 0;
-            for(ItemStack itemStack : bundleComp.itemCopyStream().toList()){
+            for(ItemStack itemStack : bundleComp.itemCopies().toList()){
                bundleInv.setItem(index, itemStack);
                index++;
             }

@@ -20,6 +20,8 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
+import net.minecraft.network.protocol.game.ClientboundSwingAnimationPacket;
+import net.minecraft.server.commands.SwingCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -31,6 +33,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.component.SwingAnimation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -60,7 +63,7 @@ public class PlayerMixin {
             blades.addEnergy(handStack, perHit);
             if(player instanceof ServerPlayer serverPlayer)
                BorisLib.addTickTimerCallback(serverPlayer.level(), new GenericTimer(4, () -> {
-                  serverPlayer.level().getChunkSource().sendToTrackingPlayersAndSelf(serverPlayer, new ClientboundAnimatePacket(serverPlayer, ClientboundAnimatePacket.SWING_OFF_HAND));
+                  serverPlayer.swing(InteractionHand.OFF_HAND, SwingAnimation.DEFAULT, true);
                }));
          }
       }
@@ -129,7 +132,7 @@ public class PlayerMixin {
    
    // Remove all absorption callbacks when shield gets disabled
    @Inject(method = "blockUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/component/BlocksAttacks;disable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;FLnet/minecraft/world/item/ItemStack;)V"))
-   private void arcananovum$disableFortitudeShield(ServerLevel level, LivingEntity attacker, DamageSource source, float damage, CallbackInfo ci, @Local(name = "itemBlockingWith") ItemStack itemBlockingWith){
+   private void arcananovum$disableFortitudeShield(ServerLevel level, LivingEntity attacker, DamageSource source, float damage, boolean fullyBlocked, CallbackInfo ci, @Local(name = "itemBlockingWith") ItemStack itemBlockingWith){
       if(!(itemBlockingWith.getItem() instanceof ShieldOfFortitude.ShieldOfFortitudeItem)) return;
       Player player = (Player) (Object) this;
       ArrayList<ShieldTimerCallback> toRemove = new ArrayList<>();

@@ -33,6 +33,7 @@ import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -366,7 +367,8 @@ public class GeomanticSteleBlockEntity extends RandomizableContainerBlockEntity 
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.GEOMANTIC_STELE).getCheckOffset()), null);
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.GEOMANTIC_STELE).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), null);
    }
    
    public void setItem(ItemStack stack){

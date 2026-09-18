@@ -431,7 +431,7 @@ public class ArcanaRegistry {
             .lightLevel(blockStatex -> 15)
             .strength(-1.0F, 3600000.0F)
             .noLootTable()
-            .pushReaction(PushReaction.BLOCK)));
+            .pushReaction(PushReaction.IMMOVEABLE)));
       
       // Register the block entity after the block
       ASTRAL_GATEWAY_PORTAL_BLOCK_ENTITY = registerBlockEntity("astral_gateway_portal", FabricBlockEntityTypeBuilder.create(AstralGatewayPortalBlockEntity::new, ASTRAL_GATEWAY_PORTAL_BLOCK).build());

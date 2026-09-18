@@ -22,6 +22,7 @@ import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.ParticleEffectUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -186,7 +187,8 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.INTERDICTOR).getCheckOffset()), null);
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.INTERDICTOR).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

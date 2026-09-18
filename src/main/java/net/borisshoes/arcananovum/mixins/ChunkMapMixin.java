@@ -15,6 +15,7 @@ import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -25,11 +26,12 @@ import java.util.function.Supplier;
 // Credit to xZarex for some of the Chunk Loading mixin code
 @Mixin(ChunkMap.class)
 public class ChunkMapMixin implements ServerChunkLoadingManagerAccessor {
+   @Unique
    private ServerLevel hookedWorld;
    
    @Inject(method = "<init>", at = @At(value = "TAIL"))
-   private void ServerChunkLoadingManager(ServerLevel world, LevelStorageSource.LevelStorageAccess session, DataFixer dataFixer, StructureTemplateManager structureTemplateManager, Executor executor, BlockableEventLoop mainThreadExecutor, LightChunkGetter chunkProvider, ChunkGenerator chunkGenerator, ChunkStatusUpdateListener chunkStatusChangeListener, Supplier persistentStateManagerFactory, TicketStorage ticketManager, int viewDistance, boolean dsync, CallbackInfo ci){
-      hookedWorld = world;
+   private void ServerChunkLoadingManager(ServerLevel level, LevelStorageSource.LevelStorageAccess levelStorage, DataFixer dataFixer, StructureTemplateManager structureManager, Executor executor, BlockableEventLoop mainThreadExecutor, LightChunkGetter chunkGetter, ChunkGenerator generator, ChunkStatusUpdateListener chunkStatusListener, TicketStorage ticketStorage, int serverViewDistance, boolean syncWrites, CallbackInfo ci){
+      hookedWorld = level;
    }
    
    @Override

@@ -58,7 +58,7 @@ public class ArcanistsBeltGui extends SimpleGui {
       
       ItemContainerContents beltItems = beltStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
-      beltItems.allItemsCopyStream().forEachOrdered(stack -> {
+      beltItems.itemCopies().forEachOrdered(stack -> {
          inv.setItem(i.get(), stack);
          i.getAndIncrement();
       });

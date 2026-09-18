@@ -25,6 +25,7 @@ import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -250,7 +251,8 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getCheckOffset()), level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), level.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    private void tick(){

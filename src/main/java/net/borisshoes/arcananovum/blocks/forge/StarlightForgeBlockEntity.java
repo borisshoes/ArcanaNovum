@@ -18,6 +18,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -187,7 +188,8 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getCheckOffset()), null);
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

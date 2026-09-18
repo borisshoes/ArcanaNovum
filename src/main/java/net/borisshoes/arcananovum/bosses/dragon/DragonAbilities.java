@@ -25,7 +25,7 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonChargePlayerPhase;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhaseManager;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball;
@@ -312,10 +312,10 @@ public class DragonAbilities {
          ampTicks = 0;
          DragonDialog.announce(DragonDialog.Announcements.ABILITY_GRAVITY_AMP,server,null);
       }else if(ability == DragonAbilityTypes.CONSCRIPT_ARMY){
-         EnderMan[] goons = new EnderMan[25];
+         Enderman[] goons = new Enderman[25];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
-            goons[i] = new EnderMan(EntityTypes.ENDERMAN, endWorld);
+            goons[i] = new Enderman(EntityTypes.ENDERMAN, endWorld);
             goons[i].getAttribute(Attributes.MAX_HEALTH).setBaseValue(Mth.clamp(20 + 4*nearbyPlayers300.size(),40,100));
             goons[i].setHealth(Mth.clamp(20 + 4*nearbyPlayers300.size(),40,100));
             goons[i].getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(8f);
@@ -325,9 +325,9 @@ public class DragonAbilities {
             endWorld.addFreshEntityWithPassengers(goons[i]);
          }
          
-         List<EnderMan> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,115,300))), e -> true);
+         List<Enderman> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,115,300))), e -> true);
    
-         for(EnderMan enderman : endermen){
+         for(Enderman enderman : endermen){
             Player closestPlayer = endWorld.getNearestPlayer(enderman,30);
             if(closestPlayer != null){
                if(closestPlayer.isCreative() || closestPlayer.isSpectator()) continue; // Skip creative and spectator players

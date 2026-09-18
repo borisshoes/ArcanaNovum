@@ -22,6 +22,7 @@ import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -112,6 +113,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static List<TransmutationRecipe> getUnlockedRecipes(ServerPlayer player){
+      if(ArcanaUtils.canAlwaysTransmute(player.getUUID())) return new ArrayList<>(RecipeManager.TRANSMUTATION_RECIPES);
       return RecipeManager.TRANSMUTATION_RECIPES.stream().filter(recipe -> {
          if(recipe instanceof InfusionTransmutationRecipe r && ArcanaItemUtils.isArcane(r.getOutput()) && !ArcanaNovum.data(player).hasResearched(ArcanaItemUtils.identifyItem(r.getOutput()))){
             return false;

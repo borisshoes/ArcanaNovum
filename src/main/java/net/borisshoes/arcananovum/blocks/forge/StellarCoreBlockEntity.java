@@ -20,10 +20,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.NonNullList;
+import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -239,11 +236,11 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       int stardust = (int) (rawStardust * modifier);
       if(stardust > 0){
          while(stardust > 64){
-            salvage.add(ArcanaRegistry.STARDUST.getDefaultInstance().copyWithCount(64));
+            salvage.add(new ItemStack(ArcanaRegistry.STARDUST, 64));
             stardust -= 64;
          }
          if(stardust > 0){
-            salvage.add(ArcanaRegistry.STARDUST.getDefaultInstance().copyWithCount(stardust));
+            salvage.add(new ItemStack(ArcanaRegistry.STARDUST, stardust));
          }
       }
       
@@ -274,7 +271,8 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.STELLAR_CORE).getCheckOffset()), serverWorld.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.STELLAR_CORE).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), serverWorld.getBlockState(worldPosition).getValue(HORIZONTAL_FACING));
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

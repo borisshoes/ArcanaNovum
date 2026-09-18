@@ -59,7 +59,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.entity.monster.Endermite;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.Shulker;
@@ -75,8 +75,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.feature.EndSpikeFeature;
-import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.EndSpikeConfiguration;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -84,10 +82,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.*;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.devPrint;
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
@@ -199,7 +194,7 @@ public class DragonBossFight {
                // Set crystals to be invulnerable
                crystals = endWorld.getEntities(EntityTypes.END_CRYSTAL, new AABB(Vec3.atCenterOf(new BlockPos(-50,25,-50)), Vec3.atCenterOf(new BlockPos(50,115,50))), EndCrystal::showsBottom);
                for(EndCrystal crystal : crystals){
-                  crystal.setInvulnerable(true);
+                  crystal.setPermanentlyInvulnerable(true);
                }
                
                MutableComponent notif = Component.literal("")
@@ -247,7 +242,7 @@ public class DragonBossFight {
                         EndCrystal crystal = crystals.get(i);
                         wizards[i] = DragonGoonHelper.makeWizard(endWorld,numPlayers);
                         wizards[i].setPos(crystal.position().add(0,2,0));
-                        wizards[i].setInvulnerable(true);
+                        wizards[i].setPermanentlyInvulnerable(true);
                         wizards[i].setCrystalId(crystal.getUUID());
                         wizards[i].addEffect(new MobEffectInstance(MobEffects.RESISTANCE,100,4));
                         endWorld.addFreshEntityWithPassengers(wizards[i]);
@@ -267,9 +262,9 @@ public class DragonBossFight {
             }
          }else if(state == States.PHASE_ONE){ // Tick guardian check, dragon invincibility
             List<ServerPlayer> nearbyPlayers300 = endWorld.getPlayers(p -> p.distanceToSqr(new Vec3(0,100,0)) <= 300*300);
-            List<EnderMan> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-100,25,-100)), Vec3.atCenterOf(new BlockPos(100,115,100))), e -> true);
+            List<Enderman> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-100,25,-100)), Vec3.atCenterOf(new BlockPos(100,115,100))), e -> true);
    
-            for(EnderMan enderman : endermen){ // Make endermen not attack Endermites
+            for(Enderman enderman : endermen){ // Make endermen not attack Endermites
                if(enderman.getTarget() instanceof Endermite || (enderman.getPersistentAngerTarget() != null && endWorld.getEntity(enderman.getPersistentAngerTarget().getUUID()) instanceof Endermite)){
                   enderman.setTarget(null);
                   enderman.setPersistentAngerTarget(null);
@@ -307,7 +302,7 @@ public class DragonBossFight {
             numPlayers = Math.max(1,calcPlayers(server,false));
             fightData.putInt("numPlayers",numPlayers);
             for(DragonWizardEntity wizard : wizards){
-               wizard.setInvulnerable(false);
+               wizard.setPermanentlyInvulnerable(false);
             }
             
             DragonDialog.announce(DragonDialog.Announcements.PHASE_TWO_START,server,null);
@@ -333,7 +328,7 @@ public class DragonBossFight {
                         if(wizards[i].getCrystalId() != null){
                            Entity entity = endWorld.getEntity(wizards[i].getCrystalId());
                            if(entity instanceof EndCrystal crystal){
-                              crystal.setInvulnerable(false);
+                              crystal.setPermanentlyInvulnerable(false);
                            }
                         }
                         final int finalI = i;
@@ -391,11 +386,11 @@ public class DragonBossFight {
             States.updateState(States.PHASE_THREE,server);
             phase = 3;
          }else if(state == States.PHASE_THREE){ // Dragon HP Updates, Endermen buff and aggro
-            List<EnderMan> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-100,25,-100)), Vec3.atCenterOf(new BlockPos(100,115,100))), e -> true);
+            List<Enderman> endermen = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-100,25,-100)), Vec3.atCenterOf(new BlockPos(100,115,100))), e -> true);
             float dragonHP = dragon.getHealth();
             float dragonMax = dragon.getMaxHealth();
    
-            for(EnderMan enderman : endermen){
+            for(Enderman enderman : endermen){
                if(dragonHP/dragonMax <= 0.5){
                   int amp = dragonHP/dragonMax <= 0.25 ? 1 : 0;
                   MobEffectInstance strength = new MobEffectInstance(MobEffects.STRENGTH,120,amp,false,false,false);
@@ -412,7 +407,7 @@ public class DragonBossFight {
                }
             }
             if(age % 300 == 0){
-               for(EnderMan enderman : endermen){
+               for(Enderman enderman : endermen){
                   Player closestPlayer = endWorld.getNearestPlayer(enderman,30);
                   if(closestPlayer != null){
                      enderman.setBeingStaredAt();
@@ -540,16 +535,16 @@ public class DragonBossFight {
          DragonDialog.announce(DragonDialog.Announcements.PHASE_TWO_GOONS,endWorld.getServer(),null);
       }else if(phase == 3){ // Enderman Goons
          // Count existing goons
-         List<EnderMan> curGoons = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
+         List<Enderman> curGoons = endWorld.getEntities(EntityTypes.ENDERMAN, new AABB(Vec3.atCenterOf(new BlockPos(-300,25,-300)), Vec3.atCenterOf(new BlockPos(300,255,300))), e -> true);
          if(curGoons.size() > 50) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(endWorld.getRandom().nextDouble() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         EnderMan[] goons = new EnderMan[Mth.clamp(endWorld.getRandom().nextInt(3*numPlayers)+2+numPlayers*2,20,50)];
+         Enderman[] goons = new Enderman[Mth.clamp(endWorld.getRandom().nextInt(3*numPlayers)+2+numPlayers*2,20,50)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          float endermanHP = Mth.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
-            goons[i] = new EnderMan(EntityTypes.ENDERMAN, endWorld);
+            goons[i] = new Enderman(EntityTypes.ENDERMAN, endWorld);
             goons[i].getAttribute(Attributes.MAX_HEALTH).setBaseValue(endermanHP);
             goons[i].setHealth(endermanHP);
             goons[i].getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(8f);
@@ -782,8 +777,8 @@ public class DragonBossFight {
          }
 
          endWorld.explode((Entity)null, (double)((float)spike.getCenterX() + 0.5F), (double)spike.getHeight(), (double)((float)spike.getCenterZ() + 0.5F), 5.0F, Level.ExplosionInteraction.NONE);
-         EndSpikeConfiguration endSpikeFeatureConfig = new EndSpikeConfiguration(false, ImmutableList.of(spike), (BlockPos)null);
-         Feature.END_SPIKE.place(endSpikeFeatureConfig, endWorld, endWorld.getChunkSource().getGenerator(), RandomSource.create(), BlockPos.containing(spike.getCenterX(), 45, spike.getCenterZ()));
+         EndSpikeFeature feature = new EndSpikeFeature(List.of(spike), true, Optional.of(new BlockPos(0, 128, 0)));
+         feature.place(endWorld, endWorld.getChunkSource().getGenerator(), RandomSource.create(), BlockPos.containing(spike.getCenterX(), 45, spike.getCenterZ()));
       }
    }
    
@@ -872,7 +867,7 @@ public class DragonBossFight {
       if(crystals != null){
          for(EndCrystal crystal : crystals){
             if(crystal != null){
-               crystal.setInvulnerable(false);
+               crystal.setPermanentlyInvulnerable(false);
             }
          }
       }
@@ -1286,7 +1281,7 @@ public class DragonBossFight {
          // Explosion Particles / Sounds
          endWorld.sendParticles(ParticleTypes.EXPLOSION_EMITTER, pos.x()+.5, pos.y()-1, pos.z()+.5, 20, 2, 2, 2,0.5);
          // Tiered removal of obsidian
-         for(BlockPos block : BlockPos.withinManhattan(BlockPos.containing(pos), 12, 12, 12)){
+         for(BlockPos block : BlockPos.withinManhattan(BlockPos.containing(pos), 12)){
             boolean destroy = true;
             double dist = Math.sqrt(block.distToCenterSqr(pos));
             if(!block.closerToCenterThan(pos, 5)){

@@ -65,6 +65,7 @@ import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -670,9 +671,9 @@ public abstract class LivingEntityMixin {
    }
    
    @ModifyReturnValue(method = "getVisibilityPercent", at = @At("RETURN"))
-   private double arcananovum$greaterInvisibilityAttackRangeScale(double original, Entity attacker){
+   private double arcananovum$greaterInvisibilityAttackRangeScale(double original, final ServerLevel serverLevel, final @Nullable Entity targetingEntity){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
-      if(attacker.is(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)) return original;
+      if(targetingEntity == null || targetingEntity.is(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)) return original;
       if(livingEntity.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
          return original * 0.01;
       }

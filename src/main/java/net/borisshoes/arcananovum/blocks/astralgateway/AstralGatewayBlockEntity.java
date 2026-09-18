@@ -433,7 +433,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          }
       }else if(entity instanceof ServerPlayer player || (entity instanceof TamableAnimal tamableAnimal && tamableAnimal.getOwner() != null)){
          int portalCount = 0;
-         for(BlockPos pos : BlockPos.withinManhattan(snappedPos, 16, 16, 16)){
+         for(BlockPos pos : BlockPos.withinManhattan(snappedPos, 16)){
             if(destLevel.getBlockEntity(pos) instanceof AstralGatewayBlockEntity agbe && agbe.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.CLOSED){
                portalCount++;
             }

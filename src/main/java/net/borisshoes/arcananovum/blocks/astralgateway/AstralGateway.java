@@ -37,6 +37,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -291,7 +292,7 @@ public class AstralGateway extends ArcanaBlock {
                   gateway.setChanged();
                   SoundUtils.playSound(world, gateway.getBlockPos(), SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 0.5f, 2.0f);
                   if(!player.addItem(stone)){
-                     ItemEntity itemEntity = player.drop(stone, false);
+                     ItemEntity itemEntity = player.drop(stone, false, Prediction.SERVER_ONLY);
                      if(itemEntity == null) return InteractionResult.SUCCESS_SERVER;
                      itemEntity.setNoPickUpDelay();
                      itemEntity.setTarget(player.getUUID());

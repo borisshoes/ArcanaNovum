@@ -732,18 +732,20 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    
    private static ElementHolder makeAequalisItemHolder(ItemDisplayElement element, Vec3 center, int n, int i, double speedMod){
       return new ElementHolder() {
-         int lifeTime = (int) (500 / speedMod);
+         double progress = 0;
          
          @Override
          protected void onTick(){
             super.onTick();
             
-            if(lifeTime-- <= 0){
+            progress += speedMod;
+            
+            if(progress >= 500){
                setAttachment(null);
                destroy(); // Time expired, remove
                return;
             }
-            if(lifeTime < (int) (80 / speedMod)){
+            if(progress >= 420){
                element.setGlowing(true);
             }
             
@@ -754,14 +756,14 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
                if(element instanceof ItemDisplayElement elem){
                   elem.setLeftRotation(elem.getLeftRotation().rotateY(rotateRate, new Quaternionf()));
                   
-                  if((500 - lifeTime) > (int) (450 / speedMod) && elem.getScale().y() > 0){
+                  if(progress > 450 && elem.getScale().y() > 0){
                      elem.setScale(elem.getScale().add(-scaleRate, -scaleRate, -scaleRate, new Vector3f()));
-                  }else if((500 - lifeTime) > (int) (50 / speedMod) && elem.getScale().y() < 0.5){
+                  }else if(progress > 50 && elem.getScale().y() < 0.5){
                      elem.setScale(elem.getScale().add(scaleRate, scaleRate, scaleRate, new Vector3f()));
                   }
                   
-                  double itemDY = 0.5 * Math.sin(Math.PI * (500 - lifeTime) / 100.0 + i * Math.PI * 2.0 / n);
-                  elem.setTranslation(getCirclePoints(center, 1.75 + 0.5 * Math.sin(-Math.PI * (500 - lifeTime) / 60.0) / 30.0, n, (500 - lifeTime) * 6 * Math.PI / 500.0).get(i)
+                  double itemDY = 0.5 * Math.sin(Math.PI * progress / 100.0 + i * Math.PI * 2.0 / n);
+                  elem.setTranslation(getCirclePoints(center, 1.75 + 0.5 * Math.sin(-Math.PI * progress / 60.0) / 30.0, n, progress * 6 * Math.PI / 500.0).get(i)
                         .subtract(center).add(0, itemDY, 0).add(center.subtract(Vec3.atCenterOf(BlockPos.containing(center)))).toVector3f());
                }
             }

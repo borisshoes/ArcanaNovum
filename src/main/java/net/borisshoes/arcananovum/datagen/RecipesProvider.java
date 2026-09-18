@@ -7,9 +7,11 @@ import net.borisshoes.arcananovum.recipes.vanilla.MagmaticEversourceFillRecipe;
 import net.borisshoes.arcananovum.recipes.vanilla.WaystoneCleanseRecipe;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.*;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
@@ -28,8 +30,8 @@ public class RecipesProvider extends FabricRecipeProvider {
    }
    
    @Override
-   protected RecipeProvider createRecipeProvider(HolderLookup.Provider registryLookup, RecipeOutput exporter){
-      return new RecipeProvider(registryLookup, exporter) {
+   protected RecipeProvider createRecipeProvider(HolderLookup.Provider registryLookup, BootstrapContext<Recipe<?>> recipes, BootstrapContext<Advancement> advancements){
+      return new RecipeProvider(recipes, advancements) {
          @Override
          public void buildRecipes(){
             SpecialRecipeBuilder.special(() -> new ArcanaShieldDecoratorRecipe(this.tag(ItemTags.BANNERS), Ingredient.of(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem()), new ItemStackTemplate(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem())))

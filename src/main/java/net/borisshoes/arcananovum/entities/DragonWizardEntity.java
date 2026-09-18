@@ -97,7 +97,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
          if(skeletons != null){
             for(Skeleton skeleton : skeletons){
                if(skeleton != null){
-                  skeleton.setInvulnerable(false);
+                  skeleton.setPermanentlyInvulnerable(false);
                   skeleton.setNoAi(false);
                }
             }
@@ -210,7 +210,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
          }else if(summonTick == 59){
             for(int i = 0; i < skeletons.length; i++){
                if(skeletons[i] == null) continue;
-               skeletons[i].setInvulnerable(false);
+               skeletons[i].setPermanentlyInvulnerable(false);
                skeletons[i].setNoAi(false);
             }
          }else if(summonTick > 1){
@@ -278,7 +278,7 @@ public class DragonWizardEntity extends Illusioner implements PolymerEntity {
       skeleton.addEffect(fireRes);
       skeleton.addEffect(slowFall);
       skeleton.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
-      skeleton.setInvulnerable(true);
+      skeleton.setPermanentlyInvulnerable(true);
       skeleton.setNoAi(true);
       return skeleton;
    }

@@ -54,7 +54,7 @@ public class GreavesOfGaialtusGui extends SimpleGui {
       
       ItemContainerContents beltItems = greavesStack.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       AtomicInteger i = new AtomicInteger();
-      beltItems.allItemsCopyStream().forEachOrdered(stack -> {
+      beltItems.itemCopies().forEachOrdered(stack -> {
          inv.setItem(i.get(), stack);
          i.getAndIncrement();
       });

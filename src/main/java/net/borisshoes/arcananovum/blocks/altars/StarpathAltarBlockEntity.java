@@ -25,6 +25,7 @@ import net.borisshoes.borislib.utils.SpawnPile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -208,7 +209,8 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       if(!(this.level instanceof ServerLevel serverWorld)){
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(((MultiblockCore) ArcanaRegistry.STARPATH_ALTAR).getCheckOffset()), null);
+      Vec3i vec = ((MultiblockCore) ArcanaRegistry.STARPATH_ALTAR).getCheckOffset();
+      return new Multiblock.MultiblockCheck(serverWorld, worldPosition, serverWorld.getBlockState(worldPosition), new BlockPos(vec.getX(), vec.getY(), vec.getZ()), null);
    }
    
    private void tick(){
@@ -223,7 +225,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       
       boolean isActive = isActive();
       
-      for(BlockPos blockPos : BlockPos.withinManhattan(worldPosition, 4, 0, 4)){
+      for(BlockPos blockPos : BlockPos.withinBoxByManhattanDistance(worldPosition, 4, 0, 4)){
          BlockState state = level.getBlockState(blockPos);
          if((state.is(Blocks.SCULK_CATALYST) || blockPos.equals(worldPosition)) && state.getValue(BlockStateProperties.BLOOM) != isActive){
             level.setBlock(blockPos, state.setValue(BlockStateProperties.BLOOM, isActive), Block.UPDATE_ALL);

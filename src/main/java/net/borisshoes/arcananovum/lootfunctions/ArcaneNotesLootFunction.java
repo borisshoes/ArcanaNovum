@@ -12,8 +12,8 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -22,13 +22,14 @@ import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunct
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ArcaneNotesLootFunction extends LootItemConditionalFunction {
    public static final MapCodec<ArcaneNotesLootFunction> CODEC = RecordCodecBuilder.mapCodec(
          instance -> commonFields(instance)
                .and(
                      instance.group(
-                           RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("items").forGetter(function -> function.itemTag),
+                           RegistryCodecs.holderSet(Registries.ITEM).fieldOf("items").forGetter(function -> function.itemTag),
                            Codec.INT.fieldOf("mundane_weight").forGetter(function -> function.mundaneWeight),
                            Codec.INT.fieldOf("empowered_weight").forGetter(function -> function.empoweredWeight),
                            Codec.INT.fieldOf("exotic_weight").forGetter(function -> function.exoticWeight),
@@ -42,7 +43,7 @@ public class ArcaneNotesLootFunction extends LootItemConditionalFunction {
    private final HolderSet<Item> itemTag;
    private final int mundaneWeight, empoweredWeight, exoticWeight, sovereignWeight, divineWeight;
    
-   protected ArcaneNotesLootFunction(List<LootItemCondition> conditions, HolderSet<Item> itemTag, int mundaneWeight, int empoweredWeight, int exoticWeight, int sovereignWeight, int divineWeight){
+   protected ArcaneNotesLootFunction(Optional<Holder<LootItemCondition>> conditions, HolderSet<Item> itemTag, int mundaneWeight, int empoweredWeight, int exoticWeight, int sovereignWeight, int divineWeight){
       super(conditions);
       this.itemTag = itemTag;
       this.mundaneWeight = mundaneWeight;

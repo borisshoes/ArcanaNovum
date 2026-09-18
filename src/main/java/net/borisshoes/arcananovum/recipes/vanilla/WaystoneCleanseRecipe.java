@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.*;
 
 public class WaystoneCleanseRecipe extends CampfireCookingRecipe {
-   public static final MapCodec<WaystoneCleanseRecipe> MAP_CODEC = cookingMapCodec(WaystoneCleanseRecipe::new, 1200);
+   public static final MapCodec<WaystoneCleanseRecipe> MAP_CODEC = cookingMapCodec(WaystoneCleanseRecipe::new);
    public static final StreamCodec<RegistryFriendlyByteBuf, WaystoneCleanseRecipe> STREAM_CODEC = cookingStreamCodec(WaystoneCleanseRecipe::new);
    public static final RecipeSerializer<WaystoneCleanseRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
    
