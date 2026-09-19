@@ -928,135 +928,139 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          if(initSet) this.acquireTargetCooldown = 20;
       }
       
-      if(this.getTarget() == null){
+      LivingEntity target = this.getTarget();
+      if(target == null){
          this.movementType = ConstructMovementType.WAIT;
       }else{
-         this.lookAt(this.getTarget(), 30.0f, 30.0f);
+         this.lookAt(target, 30.0f, 30.0f);
       }
       
-      if(this.movementType == ConstructMovementType.CHARGE || this.movementType == ConstructMovementType.MELEE_PURSUIT){
-         double sqrDistToTarget = this.distanceToSqr(this.getTarget().getX(), this.getTarget().getY(), this.getTarget().getZ());
-         double attackRange = (double) (this.getBbWidth() * 2.0F * this.getBbWidth() * 2.0F);
-         
-         if(this.isExalted){
-            List<Player> players = level().getEntities(EntityTypes.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
-            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_exalted"), 30, 32.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
-            players.forEach(p -> Conditions.addCondition(level().getServer(), p, nearsight));
-         }
-         
-         this.attackCooldown = Math.max(this.attackCooldown - 1, 0);
-         if(!(sqrDistToTarget > attackRange)){
-            if(this.attackCooldown == 0){
-               this.attackCooldown = 15;
-               this.doHurtTarget(serverWorld, this.getTarget());
-               MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, 80, 0, false, true, true);
-               this.getTarget().addEffect(wither);
+      attack: {
+         if(target == null) break attack;
+         if(this.movementType == ConstructMovementType.CHARGE || this.movementType == ConstructMovementType.MELEE_PURSUIT){
+            double sqrDistToTarget = this.distanceToSqr(target.getX(), target.getY(), target.getZ());
+            double attackRange = (double) (this.getBbWidth() * 2.0F * this.getBbWidth() * 2.0F);
+            
+            if(this.isExalted){
+               List<Player> players = level().getEntities(EntityTypes.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_exalted"), 30, 32.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
+               players.forEach(p -> Conditions.addCondition(level().getServer(), p, nearsight));
             }
-         }
-         
-         speed *= 1.5;
-         this.targetPosition = this.getTarget().position();
-      }else if(this.movementType == ConstructMovementType.RANGED_PURSUIT){
-         double sqrDistToTarget = this.distanceToSqr(this.getTarget().getX(), this.getTarget().getY(), this.getTarget().getZ());
-         if(sqrDistToTarget < (RAY_RANGE * RAY_RANGE) && this.getSensing().hasLineOfSight(this.getTarget())){
+            
             this.attackCooldown = Math.max(this.attackCooldown - 1, 0);
-            if(this.attackCooldown == 0){
-               this.attackCooldown = 45;
-               this.performRangedAttack(this.getTarget(), 1);
+            if(!(sqrDistToTarget > attackRange)){
+               if(this.attackCooldown == 0){
+                  this.attackCooldown = 15;
+                  this.doHurtTarget(serverWorld, target);
+                  MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, 80, 0, false, true, true);
+                  target.addEffect(wither);
+               }
             }
-         }
-         
-         Vec3 targetDiff = this.getTarget().position().subtract(this.position());
-         double lengthDiff = targetDiff.length() - RAY_RANGE * 0.5;
-         Vec3 newTargetPos = this.position().add(targetDiff.normalize().scale(lengthDiff));
-         this.targetPosition = new Vec3(newTargetPos.x, this.getTarget().getY() + strafeHeight, newTargetPos.z);
-      }else if(this.movementType == ConstructMovementType.STRAFE){
-         this.circlingCenter = this.getTarget().blockPosition();
-         int up = 0;
-         while(this.level().getBlockState(this.circlingCenter.above()).isAir() && up < strafeHeight){
-            this.circlingCenter = this.circlingCenter.above();
-            up++;
-         }
-         
-         if(this.tickCount % 100 == 0){
-            this.strafeRadius = this.random.nextFloat() * 8 + 8f;
-            this.strafeRate = (this.random.nextFloat() * 4 + 0.5f);
-            this.strafeRate *= this.random.nextBoolean() ? -1 : 1;
-         }
-         
-         this.strafeYaw = Mth.wrapDegrees(this.strafeYaw + this.strafeRate);
-         Vec3 circleOffset = new Vec3(Math.cos(Math.toRadians(this.strafeYaw)), 0, Math.sin(Math.toRadians(this.strafeYaw))).scale(this.strafeRadius);
-         this.targetPosition = circleOffset.add(Vec3.atCenterOf(this.circlingCenter));
-         
-         double sqrDistToTarget = this.distanceToSqr(this.getTarget().getX(), this.getTarget().getY(), this.getTarget().getZ());
-         if(sqrDistToTarget < (RAY_RANGE * RAY_RANGE) && this.getSensing().hasLineOfSight(this.getTarget())){
-            this.attackCooldown = Math.max(this.attackCooldown - 1, 0);
-            if(this.attackCooldown == 0){
-               this.attackCooldown = 45;
-               this.performRangedAttack(this.getTarget(), 1);
+            
+            speed *= 1.5;
+            this.targetPosition = target.position();
+         }else if(this.movementType == ConstructMovementType.RANGED_PURSUIT){
+            double sqrDistToTarget = this.distanceToSqr(target.getX(), target.getY(), target.getZ());
+            if(sqrDistToTarget < (RAY_RANGE * RAY_RANGE) && this.getSensing().hasLineOfSight(target)){
+               this.attackCooldown = Math.max(this.attackCooldown - 1, 0);
+               if(this.attackCooldown == 0){
+                  this.attackCooldown = 45;
+                  this.performRangedAttack(target, 1);
+               }
             }
-         }
-      }else if(this.movementType == ConstructMovementType.LASER){
-         double sqrDistToPosition = this.distanceToSqr(this.targetPosition);
-         
-         if(sqrDistToPosition <= 4){
-            this.lookAt(this.getTarget(), 360.0f, 360.0f);
-            for(int i = 0; i < 3; i++){
-               int id = this.getTrackedEntityId(i);
-               if(id <= 0) continue;
-               
-               LivingEntity livingEntity = (LivingEntity) serverWorld.getEntity(id);
-               if(livingEntity != null && this.canAttack(livingEntity) && (this.distanceToSqr(livingEntity) < (RAY_RANGE * RAY_RANGE))){
-                  Vec3 headPos = new Vec3(getHeadX(i), getHeadY(i), getHeadZ(i));
-                  MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.position().subtract(headPos).normalize(), RAY_RANGE,
-                        true, this, 0.1, -1, e -> !e.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS));
-                  if(this.tickCount % 10 == 0){
-                     float damage = this.isExalted ? 2f : 4f;
-                     
-                     LivingEntity blocking = lasercast.blockingEntity();
-                     if(blocking != null){
-                        ArcanaUtils.blockWithShield(blocking, damage);
+            
+            Vec3 targetDiff = target.position().subtract(this.position());
+            double lengthDiff = targetDiff.length() - RAY_RANGE * 0.5;
+            Vec3 newTargetPos = this.position().add(targetDiff.normalize().scale(lengthDiff));
+            this.targetPosition = new Vec3(newTargetPos.x, target.getY() + strafeHeight, newTargetPos.z);
+         }else if(this.movementType == ConstructMovementType.STRAFE){
+            this.circlingCenter = target.blockPosition();
+            int up = 0;
+            while(this.level().getBlockState(this.circlingCenter.above()).isAir() && up < strafeHeight){
+               this.circlingCenter = this.circlingCenter.above();
+               up++;
+            }
+            
+            if(this.tickCount % 100 == 0){
+               this.strafeRadius = this.random.nextFloat() * 8 + 8f;
+               this.strafeRate = (this.random.nextFloat() * 4 + 0.5f);
+               this.strafeRate *= this.random.nextBoolean() ? -1 : 1;
+            }
+            
+            this.strafeYaw = Mth.wrapDegrees(this.strafeYaw + this.strafeRate);
+            Vec3 circleOffset = new Vec3(Math.cos(Math.toRadians(this.strafeYaw)), 0, Math.sin(Math.toRadians(this.strafeYaw))).scale(this.strafeRadius);
+            this.targetPosition = circleOffset.add(Vec3.atCenterOf(this.circlingCenter));
+            
+            double sqrDistToTarget = this.distanceToSqr(target.getX(), target.getY(), target.getZ());
+            if(sqrDistToTarget < (RAY_RANGE * RAY_RANGE) && this.getSensing().hasLineOfSight(target)){
+               this.attackCooldown = Math.max(this.attackCooldown - 1, 0);
+               if(this.attackCooldown == 0){
+                  this.attackCooldown = 45;
+                  this.performRangedAttack(target, 1);
+               }
+            }
+         }else if(this.movementType == ConstructMovementType.LASER){
+            double sqrDistToPosition = this.distanceToSqr(this.targetPosition);
+            
+            if(sqrDistToPosition <= 4){
+               this.lookAt(target, 360.0f, 360.0f);
+               for(int i = 0; i < 3; i++){
+                  int id = this.getTrackedEntityId(i);
+                  if(id <= 0) continue;
+                  
+                  LivingEntity livingEntity = (LivingEntity) serverWorld.getEntity(id);
+                  if(livingEntity != null && this.canAttack(livingEntity) && (this.distanceToSqr(livingEntity) < (RAY_RANGE * RAY_RANGE))){
+                     Vec3 headPos = new Vec3(getHeadX(i), getHeadY(i), getHeadZ(i));
+                     MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.position().subtract(headPos).normalize(), RAY_RANGE,
+                           true, this, 0.1, -1, e -> !e.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS));
+                     if(this.tickCount % 10 == 0){
+                        float damage = this.isExalted ? 2f : 4f;
+                        
+                        LivingEntity blocking = lasercast.blockingEntity();
+                        if(blocking != null){
+                           ArcanaUtils.blockWithShield(blocking, damage);
+                        }
+                        
+                        for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
+                           if(!(hit.entity() instanceof LivingEntity livingHit)) continue;
+                           livingHit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(), ArcanaDamageTypes.NUL, this), damage);
+                           ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_laser"), 40, 24.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
+                           MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
+                           MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, isExalted ? 100 : 40, 1, false, true, true);
+                           MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, isExalted ? 100 : 40, 2, false, true, true);
+                           MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, isExalted ? 100 : 40, 1, false, true, true);
+                           if(isExalted) Conditions.addCondition(level().getServer(), livingEntity, nearsight);
+                           livingHit.addEffect(slow);
+                           livingHit.addEffect(fatigue);
+                           livingHit.addEffect(weakness);
+                           livingHit.addEffect(wither);
+                           conversionHeal(damage * 0.8f);
+                        }
                      }
                      
-                     for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
-                        if(!(hit.entity() instanceof LivingEntity livingHit)) continue;
-                        livingHit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(), ArcanaDamageTypes.NUL, this), damage);
-                        ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_laser"), 40, 24.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
-                        MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
-                        MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, isExalted ? 100 : 40, 1, false, true, true);
-                        MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, isExalted ? 100 : 40, 2, false, true, true);
-                        MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, isExalted ? 100 : 40, 1, false, true, true);
-                        if(isExalted) Conditions.addCondition(level().getServer(), livingEntity, nearsight);
-                        livingHit.addEffect(slow);
-                        livingHit.addEffect(fatigue);
-                        livingHit.addEffect(weakness);
-                        livingHit.addEffect(wither);
-                        conversionHeal(damage * 0.8f);
+                     if(this.tickCount % 3 == 0){
+                        ParticleOptions dust = new DustParticleOptions(ArcanaColors.NUL_COLOR, 1.5f);
+                        int intervals = (int) (lasercast.startPos().subtract(lasercast.endPos()).length() * 4);
+                        ArcanaEffectUtils.line(serverWorld, null, lasercast.startPos(), lasercast.endPos(), dust, intervals, 1, 0.08, 0);
                      }
-                  }
-                  
-                  if(this.tickCount % 3 == 0){
-                     ParticleOptions dust = new DustParticleOptions(ArcanaColors.NUL_COLOR, 1.5f);
-                     int intervals = (int) (lasercast.startPos().subtract(lasercast.endPos()).length() * 4);
-                     ArcanaEffectUtils.line(serverWorld, null, lasercast.startPos(), lasercast.endPos(), dust, intervals, 1, 0.08, 0);
-                  }
-                  
-                  if(this.tickCount % 5 == 0){
-                     for(int xOff = -1; xOff <= 1; ++xOff){
-                        for(int zOff = -1; zOff <= 1; ++zOff){
-                           for(int yOff = -1; yOff <= 1; ++yOff){
-                              int x = (int) (lasercast.endPos().x + xOff);
-                              int y = (int) (lasercast.endPos().y + yOff);
-                              int z = (int) (lasercast.endPos().z + zOff);
-                              BlockPos blockPos = new BlockPos(x, y, z);
-                              int blockDamage = (int) (2.5 - (0.8 * (xOff * xOff + zOff * zOff + yOff * yOff)));
-                              damageBlock(blockPos, blockDamage);
+                     
+                     if(this.tickCount % 5 == 0){
+                        for(int xOff = -1; xOff <= 1; ++xOff){
+                           for(int zOff = -1; zOff <= 1; ++zOff){
+                              for(int yOff = -1; yOff <= 1; ++yOff){
+                                 int x = (int) (lasercast.endPos().x + xOff);
+                                 int y = (int) (lasercast.endPos().y + yOff);
+                                 int z = (int) (lasercast.endPos().z + zOff);
+                                 BlockPos blockPos = new BlockPos(x, y, z);
+                                 int blockDamage = (int) (2.5 - (0.8 * (xOff * xOff + zOff * zOff + yOff * yOff)));
+                                 damageBlock(blockPos, blockDamage);
+                              }
                            }
                         }
                      }
+                  }else{
+                     this.setTrackedEntityId(i, 0);
                   }
-               }else{
-                  this.setTrackedEntityId(i, 0);
                }
             }
          }
