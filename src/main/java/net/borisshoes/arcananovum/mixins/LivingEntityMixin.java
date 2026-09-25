@@ -686,7 +686,7 @@ public abstract class LivingEntityMixin {
       if(target.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) && !livingEntity.is(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)){
          return false;
       }
-      if(livingEntity.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS) && target instanceof NulConstructEntity){
+      if(ArcanaUtils.isConstructFriend(livingEntity) && target instanceof NulConstructEntity){
          return false;
       }
       if(target instanceof ServerPlayer player && livingEntity instanceof AbstractPiglin){

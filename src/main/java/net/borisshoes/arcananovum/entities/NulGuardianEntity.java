@@ -4,6 +4,7 @@ import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
@@ -65,7 +66,7 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    @Override
    public boolean canAttack(LivingEntity target){
       boolean base = super.canAttack(target);
-      if(target.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS)){
+      if(ArcanaUtils.isConstructFriend(target)){
          return false;
       }
       return base;

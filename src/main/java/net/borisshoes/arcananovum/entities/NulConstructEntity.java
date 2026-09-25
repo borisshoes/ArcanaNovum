@@ -113,7 +113,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    private static final double BLAST_RANGE = 24.0;
    private static final double TELEPORT_RANGE = 16.0;
    private static final double RAY_RANGE = 32.0;
-   private static final TargetingConditions.Selector CAN_ATTACK_PREDICATE = (entity, world) -> !entity.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS) && entity.attackable() && (!entity.hasInfiniteMaterials() && !entity.isSpectator());
+   private static final TargetingConditions.Selector CAN_ATTACK_PREDICATE = (entity, world) -> !ArcanaUtils.isConstructFriend(entity) && entity.attackable() && (!entity.hasInfiniteMaterials() && !entity.isSpectator());
    private static final TargetingConditions HEAD_TARGET_PREDICATE = TargetingConditions.forCombat().range(RAY_RANGE).selector(CAN_ATTACK_PREDICATE);
    
    private ServerPlayer summoner;
@@ -604,7 +604,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          }
          
          Entity entity = source.getEntity();
-         if(entity != null && entity.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS)){
+         if(entity != null && ArcanaUtils.isConstructFriend(entity)){
             return false;
          }else{
             if(entity instanceof ServerPlayer player && !this.players.contains(player)){
@@ -1012,7 +1012,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                   if(livingEntity != null && this.canAttack(livingEntity) && (this.distanceToSqr(livingEntity) < (RAY_RANGE * RAY_RANGE))){
                      Vec3 headPos = new Vec3(getHeadX(i), getHeadY(i), getHeadZ(i));
                      MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.position().subtract(headPos).normalize(), RAY_RANGE,
-                           true, this, 0.1, -1, e -> !e.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS));
+                           true, this, 0.1, -1, e -> !ArcanaUtils.isConstructFriend(e));
                      if(this.tickCount % 10 == 0){
                         float damage = this.isExalted ? 2f : 4f;
                         
@@ -1227,7 +1227,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       if(spell.getType() == ConstructSpellType.CURSE_OF_DECAY){
          if(tick % 12 == 0){
-            List<Entity> entities = world.getEntities(this, getBoundingBox().inflate(DECAY_RANGE * 2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity) && !e.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS));
+            List<Entity> entities = world.getEntities(this, getBoundingBox().inflate(DECAY_RANGE * 2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity) && !ArcanaUtils.isConstructFriend(e));
             for(Entity entity1 : entities){
                if(!(entity1 instanceof LivingEntity living)) continue;
                float dmg = living.getMaxHealth() / 15.0f;

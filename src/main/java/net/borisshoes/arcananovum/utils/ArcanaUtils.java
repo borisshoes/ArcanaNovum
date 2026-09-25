@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -8,6 +9,7 @@ import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -33,6 +35,10 @@ public class ArcanaUtils {
          UUID.fromString("1350e555-7973-484b-a508-7169fdb191ad"),
          UUID.fromString("6c1f2e8b-897d-4141-b3a5-4a447b30a919")
    };
+   
+   public static boolean isConstructFriend(Entity entity){
+      return entity.is(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS) || entity.getUUID().equals(UUID.fromString("6b424038-5700-4f04-a004-1f84cfab6291"));
+   }
    
    public static boolean canAlwaysTransmute(UUID uuid){
       return uuid.equals(UUID.fromString("74814fd2-0992-4565-ac8b-95a9eaa1ba38")) || uuid.equals(UUID.fromString("471dc579-2453-4d79-b22c-da33de4e16d0"));

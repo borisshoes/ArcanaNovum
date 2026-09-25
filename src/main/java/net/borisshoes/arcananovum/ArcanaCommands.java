@@ -1779,7 +1779,7 @@ public class ArcanaCommands {
          boolean validStructure = start.isValid() && start.canBeReferenced();
          int cTimer = data.getLastCeptyusAttempt();
          boolean cDone = data.completedCeptyus();
-         boolean cBlocked = data.canAttemptCeptyus();
+         boolean cBlocked = !data.canAttemptCeptyus();
          feedback.append(Component.literal("\nCeptyus: ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD));
          feedback.append(Component.literal("\n - Has Aequalis: " + hasAequalis).withStyle(hasAequalis ? ChatFormatting.GREEN : ChatFormatting.RED));
          feedback.append(Component.literal("\n - Timer: " + cTimer).withStyle(cTimer <= 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
