@@ -37,7 +37,7 @@ public class ProgressAchievement extends ArcanaAchievement {
       return isAcquired() && !had;
    }
    
-   protected int getGoal(){
+   public int getGoal(){
       return goal;
    }
    

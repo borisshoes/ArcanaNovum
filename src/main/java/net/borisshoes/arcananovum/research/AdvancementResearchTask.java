@@ -20,6 +20,10 @@ public class AdvancementResearchTask extends ResearchTask {
       this.advancementId = advancementId;
    }
    
+   public String getAdvancementId(){
+      return advancementId;
+   }
+   
    @Override
    public boolean isAcquired(ServerPlayer player){
       AdvancementHolder entry = player.level().getServer().getAdvancements().get(Identifier.parse(advancementId));

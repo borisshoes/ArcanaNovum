@@ -23,6 +23,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.datastorage.BossFightData;
+import net.borisshoes.arcananovum.datagen.WikiExporter;
 import net.borisshoes.arcananovum.gui.arcanetome.*;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -839,6 +840,30 @@ public class ArcanaCommands {
       }
       
       return code.toString();
+   }
+   
+   public static int wikiExport(CommandContext<CommandSourceStack> ctx){
+      if(!DEV_MODE)
+         return 0;
+      CommandSourceStack source = ctx.getSource();
+      try{
+         WikiExporter.Result result = WikiExporter.export(source.getServer());
+         source.sendSuccess(() -> Component.literal("Wiki export written to " + result.path().toAbsolutePath()).withStyle(ChatFormatting.GREEN), false);
+         source.sendSuccess(() -> Component.literal(result.items() + " items, " + result.modItems() + " mod items, " + result.augments() + " augments, " + result.achievements() + " achievements, "
+               + result.research() + " research tasks, " + result.configs() + " configs").withStyle(ChatFormatting.AQUA), false);
+         if(!result.defaultConfig()){
+            source.sendSuccess(() -> Component.literal("Config differs from defaults, so this export will fail validation. Re-export on a fresh config.").withStyle(ChatFormatting.RED), false);
+         }
+         if(!result.warnings().isEmpty()){
+            source.sendSuccess(() -> Component.literal(result.warnings().size() + " warning(s), see the server log").withStyle(ChatFormatting.YELLOW), false);
+         }
+         logCommandSuccess(ctx);
+         return 1;
+      }catch(Exception e){
+         log(2, "Wiki export failed: " + e);
+         source.sendFailure(Component.literal("Wiki export failed: " + e.getMessage()));
+         return 0;
+      }
    }
    
    public static int testCommand(CommandContext<CommandSourceStack> objectCommandContext, int num){

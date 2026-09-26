@@ -12,6 +12,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class WaystoneIngredient extends ArcanaIngredient {
    
    private boolean consumed;
@@ -103,6 +106,23 @@ public class WaystoneIngredient extends ArcanaIngredient {
          name += " Unattuned";
       }
       return name;
+   }
+   
+   @Override
+   public List<IngredientCondition> getConditions(){
+      List<IngredientCondition> conditions = new ArrayList<>();
+      if(requireUnattuned){
+         conditions.add(new IngredientCondition("attuned", false, "Must be unattuned"));
+      }else if(requireAttuned){
+         conditions.add(new IngredientCondition("attuned", true, "Must be attuned"));
+         if(worldKey != null){
+            conditions.add(new IngredientCondition("dimension", worldKey.identifier().toString(), "Must be attuned to " + TextUtils.getFormattedDimName(worldKey).getString()));
+         }
+      }
+      if(!consumed){
+         conditions.add(new IngredientCondition("consumed", false, "Not consumed"));
+      }
+      return conditions;
    }
    
    @Override

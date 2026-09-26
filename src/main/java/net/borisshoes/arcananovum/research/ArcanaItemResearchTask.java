@@ -20,6 +20,10 @@ public class ArcanaItemResearchTask extends ResearchTask {
       this.arcanaItem = arcanaItem;
    }
    
+   public ArcanaItem getArcanaItem(){
+      return arcanaItem;
+   }
+   
    @Override
    public boolean isAcquired(ServerPlayer player){
       return ArcanaNovum.data(player).hasResearched(arcanaItem);

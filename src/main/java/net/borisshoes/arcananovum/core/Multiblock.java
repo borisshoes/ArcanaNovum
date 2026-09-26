@@ -52,6 +52,14 @@ public class Multiblock {
       this.predicates = predicates;
    }
    
+   public int[][][] getStatePattern(){
+      return statePattern;
+   }
+   
+   public List<BlockState> getPaletteStates(){
+      return predicates.stream().map(Pair::getFirst).toList();
+   }
+   
    public HashMap<Item, Integer> getMaterialList(){
       HashMap<Item, Integer> mats = new HashMap<>();
       

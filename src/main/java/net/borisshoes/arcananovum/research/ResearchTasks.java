@@ -327,7 +327,7 @@ public class ResearchTasks {
       ));
       
       ResearchTasks.register(OBTAIN_ARCANE_TOME, new ObtainResearchTask(
-            "obtain_tome_of_arcana_novum", ArcanaRegistry.ARCANE_TOME.getItem(),
+            OBTAIN_ARCANE_TOME.identifier().getPath(), ArcanaRegistry.ARCANE_TOME.getItem(),
             ArcanaRegistry.ARCANE_TOME.getPrefItemNoLore()
       ));
       

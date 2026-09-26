@@ -11,6 +11,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class SoulstoneIngredient extends ArcanaIngredient {
@@ -97,6 +99,28 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          }
       }
       return name;
+   }
+   
+   @Override
+   public List<IngredientCondition> getConditions(){
+      List<IngredientCondition> conditions = new ArrayList<>();
+      if(souls > 0){
+         conditions.add(new IngredientCondition("souls_min", souls, "Requires at least " + souls + " souls"));
+      }
+      if(type != null){
+         Optional<Holder.Reference<EntityType<?>>> entityType = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(type));
+         String typeName = entityType.map(ref -> ref.value().getDescription().getString()).orElse(type);
+         conditions.add(new IngredientCondition("mob_type", type, "Must hold " + typeName + " souls"));
+      }else if(!ignoreEssenceEggTypes){
+         conditions.add(new IngredientCondition("essence_egg_mob", true, "Must hold souls of a mob usable by Essence Eggs"));
+      }
+      if(!consume){
+         conditions.add(new IngredientCondition("consumed", false, "Not consumed"));
+         if(souls > 0){
+            conditions.add(new IngredientCondition("souls_cost", souls, repeatable ? "Uses up souls in multiples of " + souls : "Uses up " + souls + " souls"));
+         }
+      }
+      return conditions;
    }
    
    @Override

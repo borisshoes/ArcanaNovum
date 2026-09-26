@@ -194,6 +194,7 @@ public class CommandRegisterCallback {
                .then(literal("getitemdata").requires(src -> isSourceGodAccount(src) || Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(src))
                      .then(argument("name", string()).executes(ctx -> ArcanaCommands.getItemData(ctx, getString(ctx, "name")))))
                .then(literal("makerecipe").requires(src -> isSourceGodAccount(src) || Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(src)).executes(ArcanaCommands::makeCraftingRecipe))
+               .then(literal("wikiexport").requires(src -> isSourceGodAccount(src) || Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(src)).executes(ArcanaCommands::wikiExport))
                .then(literal("loaditemdata").requires(src -> isSourceGodAccount(src) || Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(src))
                      .then(argument("id", string()).suggests(ArcanaCommands::getItemSuggestions)
                            .executes(ctx -> ArcanaCommands.loadItemData(ctx, getString(ctx, "id")))))

@@ -28,6 +28,14 @@ public class StatisticResearchTask<T> extends ResearchTask {
       
    }
    
+   public int getThreshold(){
+      return threshold;
+   }
+   
+   public Either<Identifier, Pair<StatType<T>, T>> getData(){
+      return data;
+   }
+   
    @Override
    public boolean isAcquired(ServerPlayer player){
       return data.left().map(identifier -> player.getStats().getValue(Stats.CUSTOM.get(identifier)) >= threshold)

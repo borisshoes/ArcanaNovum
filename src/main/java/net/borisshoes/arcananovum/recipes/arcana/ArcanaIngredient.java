@@ -189,6 +189,14 @@ public class ArcanaIngredient {
       return new ArrayList<>(effects);
    }
    
+   public List<Either<Item, TagKey<Item>>> getAcceptedItems(){
+      return new ArrayList<>(acceptedItems);
+   }
+   
+   public List<IngredientCondition> getConditions(){
+      return new ArrayList<>();
+   }
+   
    public boolean getIgnoresResourceful(){
       return ignoresResourceful;
    }

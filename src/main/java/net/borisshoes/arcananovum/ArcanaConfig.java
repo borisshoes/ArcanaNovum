@@ -417,7 +417,7 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> GRAVITON_MAUL_UP_SPEED = registerConfigSetting(ConfigUnits.BLOCKS_PER_TICK, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulUpSpeed", 0.75, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_DOWN_SPEED = registerConfigSetting(ConfigUnits.BLOCKS_PER_TICK, new ConfigSetting<>(
-         new DoubleConfigValue("gravitonMaulDownSpeed", -1.0, new DoubleConfigValue.DoubleLimits(Double.MIN_VALUE, 0.0))));
+         new DoubleConfigValue("gravitonMaulDownSpeed", -1.0, new DoubleConfigValue.DoubleLimits(Integer.MIN_VALUE, 0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_CRUSH_DMG = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulCrushDmg", 2.0, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_VORTEX_RANGE = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(

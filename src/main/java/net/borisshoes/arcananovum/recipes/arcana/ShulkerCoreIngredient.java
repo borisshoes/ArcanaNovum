@@ -7,6 +7,9 @@ import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ShulkerCoreIngredient extends ArcanaIngredient {
    
    private final boolean needsStone;
@@ -53,6 +56,18 @@ public class ShulkerCoreIngredient extends ArcanaIngredient {
          name += " (" + minSouls + "+ Souls)";
       }
       return name;
+   }
+   
+   @Override
+   public List<IngredientCondition> getConditions(){
+      List<IngredientCondition> conditions = new ArrayList<>();
+      if(needsStone){
+         conditions.add(new IngredientCondition("has_soulstone", true, "Must contain a Soulstone"));
+         if(minSouls > 0){
+            conditions.add(new IngredientCondition("souls_min", minSouls, "Requires at least " + minSouls + " souls"));
+         }
+      }
+      return conditions;
    }
    
    @Override

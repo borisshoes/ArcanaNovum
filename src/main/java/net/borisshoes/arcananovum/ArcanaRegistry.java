@@ -486,7 +486,7 @@ public class ArcanaRegistry {
       PolymerCreativeModeTabUtils.registerPolymerCreativeModeTab(arcanaId("arcana_items"), ARCANA_ITEMS_GROUP);
       PolymerCreativeModeTabUtils.registerPolymerCreativeModeTab(arcanaId("arcana_ingredients"), ARCANA_INGREDIENTS_GROUP);
       
-      if(ArcanaNovum.DEV_MODE) writeAchievementAndAugmentIds();
+      //if(ArcanaNovum.DEV_MODE) writeAchievementAndAugmentIds(); // Idk this crashes shit now
    }
    
    private static void writeAchievementAndAugmentIds(){
