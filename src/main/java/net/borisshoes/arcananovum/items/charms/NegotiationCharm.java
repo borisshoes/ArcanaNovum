@@ -9,7 +9,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.borislib.utils.TextUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
@@ -54,6 +54,7 @@ public class NegotiationCharm extends ArcanaItem {
       item = new NegotiationCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_BARTER_PIGLIN, ResearchTasks.ADVANCEMENT_FIND_BASTION, ResearchTasks.ADVANCEMENT_TRADE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.NEGOTIATION_CHARM_RANGE, ArcanaConfig.NEGOTIATION_CHARM_BARTER_BUFF_MULTIPLIER, ArcanaConfig.XP_NEGOTIATION_CHARM_BARTER, ArcanaConfig.XP_NEGOTIATION_CHARM_INFLUENCE};
    }
    
    @Override
@@ -148,4 +149,3 @@ public class NegotiationCharm extends ArcanaItem {
       }
    }
 }
-

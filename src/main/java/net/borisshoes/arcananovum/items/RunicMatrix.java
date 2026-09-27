@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -32,6 +33,7 @@ public class RunicMatrix extends ArcanaItem {
       item = new RunicMatrixItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_END_CRYSTAL, ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS, ResearchTasks.OBTAIN_AMETHYST_SHARD};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

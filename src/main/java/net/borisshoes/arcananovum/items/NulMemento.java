@@ -22,6 +22,7 @@ import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -78,6 +79,7 @@ public class NulMemento extends EnergyItem {
       item = new NulMementoItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST, ResearchTasks.KILL_CONSTRUCT};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN, ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN_PER_LVL, ArcanaConfig.XP_NUL_MEMENTO_DEALLOCATE, ArcanaConfig.XP_NUL_MEMENTO_PROTECT};
    }
    
    @Override

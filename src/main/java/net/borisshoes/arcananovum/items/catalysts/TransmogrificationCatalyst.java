@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.gui.transmogrification.TransmogrificationGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -45,6 +46,7 @@ public class TransmogrificationCatalyst extends ArcanaItem {
       item = new TransmogrificationCatalyst.TransmogrificationCatalystItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_CATALYTIC_MATRIX, ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.HAVE_A_SKIN};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

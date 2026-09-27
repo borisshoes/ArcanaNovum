@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -55,6 +56,7 @@ public class ExpulsionArrows extends RunicArrow {
       item = new ExpulsionArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SLIME, ResearchTasks.OBTAIN_AMETHYST_SHARD, ResearchTasks.USE_ENDER_PEARL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.EXPULSION_ARROW_RANGE, ArcanaConfig.EXPULSION_ARROW_DURATION_MAX, ArcanaConfig.EXPULSION_ARROW_DURATION_MIN, ArcanaConfig.EXPULSION_ARROW_REPULSION_RANGE_PER_LVL, ArcanaConfig.EXPULSION_ARROW_EVICTION_POWER_PER_LVL, ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MAX, ArcanaConfig.EXPULSION_ARROW_EVICTION_RANGE_MIN};
    }
    
    @Override

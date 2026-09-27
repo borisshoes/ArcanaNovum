@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -78,6 +79,7 @@ public class Planeshifter extends EnergyItem {
       item = new PlaneshifterItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.DIMENSION_TRAVEL, ResearchTasks.OBTAIN_EYE_OF_ENDER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.PLANESHIFTER_COOLDOWN, ArcanaConfig.PLANESHIFTER_COOLDOWN_PER_LVL, ArcanaConfig.XP_PLANESHIFTER_USE};
    }
    
    @Override

@@ -18,6 +18,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -81,6 +82,7 @@ public class LevitationHarness extends EnergyItem {
       item = new LevitationHarnessItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SHULKER_CORE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.ADVANCEMENT_ELYTRA, ResearchTasks.UNLOCK_ARCANE_SINGULARITY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.LEVITATION_HARNESS_GLOWSTONE_PER_HOUR, ArcanaConfig.LEVITATION_HARNESS_SOUL_PER_HOUR, ArcanaConfig.LEVITATION_HARNESS_DURABILITY_CHANCE, ArcanaConfig.LEVITATION_HARNESS_REBOOT_SPEED_PER_LVL, ArcanaConfig.HARNESS_CORE_RECYCLER_EFFICIENCY, ArcanaConfig.XP_LEVITATION_HARNESS_PER_SECOND};
    }
    
    @Override

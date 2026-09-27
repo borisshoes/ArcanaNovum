@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.mojang.datafixers.util.Pair;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -13,6 +14,7 @@ import net.borisshoes.arcananovum.gui.greaves.GreavesSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.ItemContainerContentsMutable;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -76,6 +78,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_GREAVES_OF_GAIALTUS};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("tcmEcho")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("tcmEcho"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.XP_GREAVES_OF_GAIALTUS_REFILL_BLOCK_PER_10};
    }
    
    @Override

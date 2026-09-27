@@ -10,6 +10,7 @@ import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -20,6 +21,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -92,6 +94,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.OBTAIN_BLAST_FURNACE, ResearchTasks.OBTAIN_NETHERITE_INGOT};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("ii_iridescent")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.STELLAR_CORE_SALVAGE_PER_LVL, ArcanaConfig.STELLAR_CORE_STARDUST_RATE, ArcanaConfig.STELLAR_CORE_STARDUST_RATE_PER_LVL, ArcanaConfig.XP_STELLAR_CORE_SALVAGE, ArcanaConfig.XP_STELLAR_CORE_SMELT};
    }
    
    @Override

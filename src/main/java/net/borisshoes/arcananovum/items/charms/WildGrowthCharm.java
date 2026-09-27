@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -70,6 +71,7 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
       item = new WildGrowthCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.ADVANCEMENT_BREED_AN_ANIMAL, ResearchTasks.ADVANCEMENT_PLANT_ANY_SNIFFER_SEED, ResearchTasks.ADVANCEMENT_PLANT_SEED, ResearchTasks.ADVANCEMENT_OBTAIN_NETHERITE_HOE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.WILD_GROWTH_CHARM_RANGE, ArcanaConfig.WILD_GROWTH_CHARM_BLOCKS_PER_TICK, ArcanaConfig.WILD_GROWTH_CHARM_FERTILIZER_INTERVALS, ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_MATURE_CROP, ArcanaConfig.XP_WILD_GROWTH_CHARM_PER_REAPED_CROP, ArcanaConfig.XP_WILD_GROWTH_CHARM_PASSIVE};
    }
    
    @Override
@@ -381,4 +383,3 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
       }
    }
 }
-

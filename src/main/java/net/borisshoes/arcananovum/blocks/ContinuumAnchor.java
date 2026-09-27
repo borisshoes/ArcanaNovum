@@ -13,6 +13,7 @@ import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -23,6 +24,7 @@ import net.borisshoes.arcananovum.datastorage.AnchorData;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -92,6 +94,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.UNLOCK_EXOTIC_MATTER, ResearchTasks.ADVANCEMENT_CHARGE_RESPAWN_ANCHOR, ResearchTasks.UNLOCK_STELLAR_CORE};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("SnivyXXY")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("SnivyXXY"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CONTINUUM_ANCHOR_EFFICIENCY_PER_LVL, ArcanaConfig.XP_CONTINUUM_ANCHOR_PER_MINUTE};
    }
    
    @Override

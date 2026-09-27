@@ -2,8 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaConfig;
-import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.ArcanaNovum;import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
@@ -14,6 +13,7 @@ import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -67,6 +67,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       item = new RunicQuiverItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_OVERFLOWING_QUIVER, ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.CONCENTRATION_DAMAGE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.RUNIC_QUIVER_RESTOCK_TIME, ArcanaConfig.RUNIC_QUIVER_RESTOCK_TIME_PER_LVL, ArcanaConfig.QUIVER_EFFICIENCY_PER_LVL, ArcanaConfig.XP_QUIVER_REFILL};
    }
    
    @Override

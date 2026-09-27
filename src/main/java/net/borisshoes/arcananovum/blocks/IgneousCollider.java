@@ -7,6 +7,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -15,6 +16,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -56,6 +58,7 @@ public class IgneousCollider extends ArcanaBlock {
       item = new IgneousColliderItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_PICKAXE, ResearchTasks.BREAK_OBSIDIAN, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.IGNEOUS_COLLIDER_COOLDOWN, ArcanaConfig.IGNEOUS_COLLIDER_COOLDOWN_PER_LVL, ArcanaConfig.IGNEOUS_COLLIDER_EFFICIENCY_PER_LVL, ArcanaConfig.XP_IGNEOUS_COLLIDER_PRODUCE};
    }
    
    @Override

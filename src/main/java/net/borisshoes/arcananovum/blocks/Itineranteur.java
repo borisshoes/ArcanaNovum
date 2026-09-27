@@ -7,6 +7,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
@@ -17,6 +18,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -93,6 +95,7 @@ public class Itineranteur extends ArcanaBlock {
       item = new ItineranteurItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.EFFECT_SWIFTNESS, ResearchTasks.OBTAIN_BEACON, ResearchTasks.WALK_ONE_KILOMETER, ResearchTasks.OBTAIN_LANTERN};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.ITINERANTEUR_BLOCKS, ArcanaConfig.ITINERANTEUR_BLOCKS_PER_LVL, ArcanaConfig.ITINERANTEUR_RANGE, ArcanaConfig.ITINERANTEUR_RANGE_PER_LVL, ArcanaConfig.ITINERANTEUR_SPEED, ArcanaConfig.ITINERANTEUR_SPEED_PER_LVL, ArcanaConfig.XP_ITINERANTEUR_BLOCK_TRAVELLED_PER_10};
    }
    
    @Override

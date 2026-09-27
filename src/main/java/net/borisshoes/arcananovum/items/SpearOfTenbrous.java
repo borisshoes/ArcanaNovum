@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.mojang.datafixers.util.Pair;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -16,6 +17,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -76,6 +78,7 @@ public class SpearOfTenbrous extends ArcanaItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SPEAR_OF_TENBROUS};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Magirush"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SPEAR_OF_TENBROUS_THROW_DMG, ArcanaConfig.SPEAR_OF_TENBROUS_STUN_DURATION, ArcanaConfig.SPEAR_OF_TENBROUS_STORM_DMG, ArcanaConfig.SPEAR_OF_TENBROUS_STORM_RANGE, ArcanaConfig.SPEAR_OF_TENBROUS_THROW_COOLDOWN_PER_LVL, ArcanaConfig.XP_SPEAR_OF_TENBROUS_IMPALE};
    }
    
    @Override

@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -32,6 +33,7 @@ public class MundaneCatalyst extends ArcanaItem {
       item = new MundaneCatalystItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_CATALYTIC_MATRIX, ResearchTasks.OBTAIN_QUARTZ, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

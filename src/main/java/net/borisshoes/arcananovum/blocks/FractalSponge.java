@@ -22,6 +22,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -72,6 +73,7 @@ public class FractalSponge extends ArcanaBlock {
       item = new FractalSpongeItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SPONGE, ResearchTasks.OBTAIN_END_CRYSTAL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.FRACTAL_SPONGE_BLOCKS, ArcanaConfig.FRACTAL_SPONGE_BLOCKS_PER_LVL, ArcanaConfig.FRACTAL_SPONGE_PULSE_DURATION, ArcanaConfig.FRACTAL_SPONGE_PULSES, ArcanaConfig.FRACTAL_SPONGE_RANGE, ArcanaConfig.FRACTAL_SPONGE_RANGE_PER_LVL, ArcanaConfig.XP_FRACTAL_SPONGE_ABSORB_BLOCK};
    }
    
    @Override

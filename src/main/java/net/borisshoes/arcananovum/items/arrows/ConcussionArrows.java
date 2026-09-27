@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -65,6 +66,7 @@ public class ConcussionArrows extends RunicArrow {
       item = new ConcussionArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SQUID, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.EFFECT_WEAKNESS, ResearchTasks.USE_FIREWORK};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CONCUSSION_ARROW_DURATION_MOD, ArcanaConfig.CONCUSSION_ARROW_RANGE_MAX, ArcanaConfig.CONCUSSION_ARROW_RANGE_MIN, ArcanaConfig.CONCUSSION_ARROW_SHELLSHOCK_BOOST_PER_LVL};
    }
    
    @Override

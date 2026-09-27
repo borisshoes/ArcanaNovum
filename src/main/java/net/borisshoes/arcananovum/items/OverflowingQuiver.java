@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -60,6 +61,7 @@ public class OverflowingQuiver extends QuiverItem {
       item = new OverflowingQuiverItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.OBTAIN_TIPPED_ARROW, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.OVERFLOWING_QUIVER_RESTOCK_TIME, ArcanaConfig.OVERFLOWING_QUIVER_RESTOCK_TIME_PER_LVL, ArcanaConfig.QUIVER_EFFICIENCY_PER_LVL, ArcanaConfig.XP_QUIVER_REFILL};
    }
    
    @Override

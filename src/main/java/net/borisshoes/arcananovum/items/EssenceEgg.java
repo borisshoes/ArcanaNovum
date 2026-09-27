@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -67,6 +68,7 @@ public class EssenceEgg extends ArcanaItem {
       item = new EssenceEggItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.FIND_SPAWNER, ResearchTasks.OBTAIN_EGG};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.ESSENCE_EGG_SPAWNER_USES, ArcanaConfig.ESSENCE_EGG_WILLING_CAPTIVE_DECREASE, ArcanaConfig.ESSENCE_EGG_SOUL_SPLIT_CHANCE, ArcanaConfig.ESSENCE_EGG_EFFICIENCY_PER_LVL, ArcanaConfig.XP_ESSENCE_EGG_SPAWN, ArcanaConfig.XP_ESSENCE_EGG_CONVERT};
    }
    
    @Override

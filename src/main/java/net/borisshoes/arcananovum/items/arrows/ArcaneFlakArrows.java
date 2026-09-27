@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -52,6 +53,7 @@ public class ArcaneFlakArrows extends RunicArrow {
       item = new ArcaneFlakArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.USE_FIREWORK, ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.FLAK_ARROW_DAMAGE, ArcanaConfig.FLAK_ARROW_DAMAGE_MULTIPLIER, ArcanaConfig.FLAK_ARROW_RANGE, ArcanaConfig.FLAK_ARROW_SENSE_RANGE, ArcanaConfig.FLAK_ARROW_AIRBURST_RANGE_BUFF_PER_LVL};
    }
    
    @Override

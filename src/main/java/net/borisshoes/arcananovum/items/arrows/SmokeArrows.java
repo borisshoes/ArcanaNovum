@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -42,6 +43,7 @@ public class SmokeArrows extends RunicArrow {
       item = new SmokeArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SQUID, ResearchTasks.USE_CAMPFIRE, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.EFFECT_WEAKNESS};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SMOKE_ARROW_DURATION, ArcanaConfig.SMOKE_ARROW_RANGE_MAX, ArcanaConfig.SMOKE_ARROW_RANGE_MIN, ArcanaConfig.SMOKE_ARROW_GAS_DURATION_PER_LVL};
    }
    
    @Override

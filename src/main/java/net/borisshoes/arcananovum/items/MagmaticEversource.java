@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -75,6 +76,7 @@ public class MagmaticEversource extends EnergyItem implements GeomanticStele.Int
       item = new MagmaticEversourceItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_LAVA_BUCKET, ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS, ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.UNLOCK_AQUATIC_EVERSOURCE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.MAGMATIC_EVERSOURCE_COOLDOWN, ArcanaConfig.MAGMATIC_EVERSOURCE_COOLDOWN_PER_LVL, ArcanaConfig.MAGMATIC_EVERSOURCE_CHARGES_PER_LVL, ArcanaConfig.XP_MAGMATIC_EVERSOURCE_USE};
    }
    
    @Override

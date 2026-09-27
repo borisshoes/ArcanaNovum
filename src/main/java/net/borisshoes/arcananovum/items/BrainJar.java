@@ -17,6 +17,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -80,6 +81,7 @@ public class BrainJar extends EnergyItem implements GeomanticStele.Interaction {
       item = new BrainJarItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.BREAK_SCULK, ResearchTasks.LEVEL_100, ResearchTasks.ACTIVATE_MENDING, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING, ResearchTasks.OBTAIN_ZOMBIE_HEAD, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.BRAIN_JAR_MAX_XP, ArcanaConfig.BRAIN_JAR_MAX_XP_PER_LVL, ArcanaConfig.BRAIN_JAR_INTEREST_PER_LVL, ArcanaConfig.BRAIN_JAR_INTEREST_TICK, ArcanaConfig.BRAIN_JAR_REPAIR_PER_LVL, ArcanaConfig.XP_BRAIN_JAR_MEND_PER_XP};
    }
    
    @Override

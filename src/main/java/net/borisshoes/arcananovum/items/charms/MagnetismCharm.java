@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
@@ -71,6 +72,7 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       item = new MagnetismCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_HEAVY_CORE, ResearchTasks.FISH_ITEM};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.MAGNETISM_CHARM_ACTIVE_RANGE, ArcanaConfig.MAGNETISM_CHARM_ACTIVE_WIDTH, ArcanaConfig.MAGNETISM_CHARM_PASSIVE_RANGE, ArcanaConfig.MAGNETISM_CHARM_ACTIVE_RANGE_PER_LVL, ArcanaConfig.MAGNETISM_CHARM_PASSIVE_RANGE_PER_LVL, ArcanaConfig.XP_MAGNETISM_CHARM_PER_ITEM, ArcanaConfig.XP_MAGNETISM_CHARM_CAP};
    }
    
    @Override
@@ -396,4 +398,3 @@ public class MagnetismCharm extends ArcanaItem implements GeomanticStele.Interac
       }
    }
 }
-

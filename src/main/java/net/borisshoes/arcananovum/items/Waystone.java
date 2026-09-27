@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -65,6 +66,7 @@ public class Waystone extends ArcanaItem {
       item = new Waystone.WaystoneItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_USE_LODESTONE};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

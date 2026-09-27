@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -41,6 +42,7 @@ public class ExoticMatter extends EnergyItem {
       item = new ExoticMatterItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.OBTAIN_CLOCK, ResearchTasks.ADVANCEMENT_SLEEP_IN_BED, ResearchTasks.OBTAIN_END_CRYSTAL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.EXOTIC_MATTER_DURATION, ArcanaConfig.EXOTIC_MATTER_DURATION_PER_LVL};
    }
    
    @Override

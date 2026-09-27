@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.DataFixer;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.ItemContainerContentsMutable;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -65,6 +66,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       item = new ArcanistsBeltItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BELT_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.CONCENTRATION_DAMAGE, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

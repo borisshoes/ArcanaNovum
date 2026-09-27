@@ -21,6 +21,7 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -87,6 +88,7 @@ public class GravitonMaul extends ArcanaItem {
       item = new GravitonMaulItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_MACE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OVER_OVERKILL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.GRAVITON_MAUL_UP_SPEED, ArcanaConfig.GRAVITON_MAUL_DOWN_SPEED, ArcanaConfig.GRAVITON_MAUL_CRUSH_DMG, ArcanaConfig.GRAVITON_MAUL_VORTEX_RANGE, ArcanaConfig.GRAVITON_MAUL_VORTEX_DMG_AMP, ArcanaConfig.GRAVITON_MAUL_VORTEX_DMG, ArcanaConfig.GRAVITON_MAUL_VORTEX_SUCK_POWER, ArcanaConfig.GRAVITON_MAUL_VORTEX_FORTITUDE, ArcanaConfig.GRAVITON_MAUL_AOE_RANGE, ArcanaConfig.GRAVITON_MAUL_SLAM_DMG_PER_SPEED, ArcanaConfig.GRAVITON_MAUL_SLAM_RANGE_PER_SPEED, ArcanaConfig.XP_GRAVITON_MAUL_IMPACT_DAMAGE_PER_10, ArcanaConfig.XP_GRAVITON_MAUL_IMPACT_DAMAGE_CAP};
    }
    
    @Override

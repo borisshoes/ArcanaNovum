@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -60,6 +61,7 @@ public class StasisPearl extends EnergyItem {
       item = new StasisPearlItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.STASIS_PEARL_COOLDOWN, ArcanaConfig.STASIS_PEARL_COOLDOWN_PER_LVL, ArcanaConfig.STASIS_PEARL_REGEN_PER_LVL, ArcanaConfig.STASIS_PEARL_FORTITUDE_PER_LVL, ArcanaConfig.STASIS_PEARL_RECONSTRUCT_DURATION, ArcanaConfig.XP_STASIS_PEARL_USE};
    }
    
    @Override

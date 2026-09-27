@@ -20,6 +20,7 @@ import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
@@ -72,6 +73,7 @@ public class AequalisScientia extends ArcanaItem {
       item = new AequalisScientiaItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TRANSMUTATION_ALTAR, ResearchTasks.OBTAIN_DIVINE_CATALYST, ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_CAKE_TO_NOTE_BLOCK, ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_ITEM_TO_PLAYER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.AEQUALIS_SCIENTIA_BASE_USES, ArcanaConfig.XP_AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE, ArcanaConfig.XP_AEQUALIS_SCIENTIA_SKILL_TRANSMUTE, ArcanaConfig.XP_AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE};
    }
    
    @Override

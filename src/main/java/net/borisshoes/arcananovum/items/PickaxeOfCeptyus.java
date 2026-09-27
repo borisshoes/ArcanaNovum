@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -69,6 +70,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       item = new PickaxeOfCeptyusItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_PICKAXE_OF_CEPTYUS};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY, ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GRACE, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_LOSS, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_PER_HASTE, ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_RANGE_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_BLOCKS_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_FORTUNE_PER_LVL, ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_MINE_BLOCK, ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK};
    }
    
    @Override

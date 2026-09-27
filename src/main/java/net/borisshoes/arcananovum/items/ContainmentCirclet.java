@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -68,6 +69,7 @@ public class ContainmentCirclet extends ArcanaItem {
       item = new ContainmentCircletItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TAME_AN_ANIMAL, ResearchTasks.USE_ENDER_CHEST};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CONTAINMENT_CIRCLET_HEALING_RATE, ArcanaConfig.XP_CONTAINMENT_CIRCLET_USE};
    }
    
    @Override

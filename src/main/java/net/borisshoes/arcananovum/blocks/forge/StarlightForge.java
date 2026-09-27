@@ -8,6 +8,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -19,6 +20,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -78,6 +80,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_ARCANE_TOME, ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("SnivyXXY")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("SnivyXXY"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.STARLIGHT_FORGE_RESOURCEFUL_PER_LVL, ArcanaConfig.STARLIGHT_FORGE_SKILLED_POINTS_PER_LVL, ArcanaConfig.STARLIGHT_FORGE_STELLAR_RANGE_HORIZONTAL, ArcanaConfig.STARLIGHT_FORGE_STELLAR_RANGE_VERTICAL};
    }
    
    @Override

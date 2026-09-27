@@ -7,6 +7,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -18,6 +19,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -82,6 +84,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
       item = new GeomanticSteleItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.OBTAIN_AMETHYST_SHARD};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.GEOMANTIC_STELE_RANGE_MULTIPLIER_PER_LVL};
    }
    
    @Override

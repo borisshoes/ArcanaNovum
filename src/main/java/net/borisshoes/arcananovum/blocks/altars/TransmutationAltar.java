@@ -7,6 +7,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -23,6 +24,7 @@ import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -80,6 +82,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       item = new TransmutationAltarItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_TRADE, ResearchTasks.OBTAIN_AMETHYST_SHARD, ResearchTasks.OBTAIN_DIAMOND, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.TRANSMUTATION_ALTAR_COOLDOWN, ArcanaConfig.TRANSMUTATION_ALTAR_COOLDOWN_PER_LVL, ArcanaConfig.XP_TRANSMUTATION_ALTAR_TRANSMUTE, ArcanaConfig.XP_TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM};
    }
    
    @Override

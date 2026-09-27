@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -46,6 +47,7 @@ public class ArcaneTome extends ArcanaItem {
       item = new ArcaneTomeItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

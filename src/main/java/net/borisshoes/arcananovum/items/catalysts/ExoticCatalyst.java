@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -32,6 +33,7 @@ public class ExoticCatalyst extends ArcanaItem {
       item = new ExoticCatalystItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EMPOWERED_CATALYST, ResearchTasks.OBTAIN_DIAMOND, ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

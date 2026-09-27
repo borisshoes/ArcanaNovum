@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.timers.RepeatTimer;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -44,6 +45,7 @@ public class EnsnarementArrows extends RunicArrow {
       item = new EnsnarementArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.EFFECT_SLOWNESS};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.ENSNAREMENT_ARROW_DURATION, ArcanaConfig.ENSNAREMENT_ARROW_ENTRAPMENT_DURATION_INCREASE_PER_LVL, ArcanaConfig.ENSNAREMENT_ARROW_PLAYER_DURATION_MULTIPLIER};
    }
    
    @Override

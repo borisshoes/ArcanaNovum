@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -51,6 +52,7 @@ public class FeastingCharm extends ArcanaItem {
       item = new FeastingCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENCHANTED_GOLDEN_APPLE, ResearchTasks.HUNGER_DAMAGE, ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.FEASTING_CHARM_ACTIVE_COOLDOWN, ArcanaConfig.FEASTING_CHARM_PASSIVE_COOLDOWN, ArcanaConfig.FEASTING_CHARM_PASSIVE_HUNGER, ArcanaConfig.FEASTING_CHARM_PASSIVE_SATURATION, ArcanaConfig.FEASTING_CHARM_ENZYMES_COOLDOWN_PER_LVL, ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_FOOD_PER_LVL, ArcanaConfig.FEASTING_CHARM_GLUTTONY_BONUS_SATURATION_PER_LVL, ArcanaConfig.XP_FEASTING_CHARM_PER_FOOD_VALUE};
    }
    
    @Override
@@ -213,4 +215,3 @@ public class FeastingCharm extends ArcanaItem {
       }
    }
 }
-

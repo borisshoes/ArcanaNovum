@@ -8,6 +8,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -18,6 +19,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -73,6 +75,7 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_ANVIL, ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("ii_iridescent")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.TWILIGHT_ANVIL_INFUSION_BUFF_PER_LVL, ArcanaConfig.XP_TWILIGHT_ANVIL_CAP, ArcanaConfig.XP_TWILIGHT_ANVIL_PER_10};
    }
    
    @Override

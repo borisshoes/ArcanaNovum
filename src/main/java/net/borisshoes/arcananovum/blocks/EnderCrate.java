@@ -27,6 +27,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.datastorage.DefaultPlayerData;
 import net.borisshoes.borislib.utils.AlgoUtils;
@@ -113,6 +114,7 @@ public class EnderCrate extends ArcanaBlock {
       item = new EnderCrateItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER, ResearchTasks.USE_ENDER_CHEST};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

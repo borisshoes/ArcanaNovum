@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -72,6 +73,7 @@ public class LightCharm extends ArcanaItem {
       item = new LightCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.EFFECT_NIGHT_VISION, ResearchTasks.PLACE_TORCHES, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.LIGHT_CHARM_PASSIVE_COOLDOWN, ArcanaConfig.LIGHT_CHARM_NOVA_COOLDOWN, ArcanaConfig.LIGHT_CHARM_NOVA_RANGE, ArcanaConfig.XP_LIGHT_CHARM_NOVA_PER_LIGHT, ArcanaConfig.XP_LIGHT_CHARM_AUTOMATIC, ArcanaConfig.XP_LIGHT_CHARM_MANUAL};
    }
    
    @Override
@@ -424,4 +426,3 @@ public class LightCharm extends ArcanaItem {
       }
    }
 }
-

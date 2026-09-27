@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -51,6 +52,7 @@ public class SiphoningArrows extends RunicArrow {
       item = new SiphoningArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION, ResearchTasks.OBTAIN_GLISTERING_MELON};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SIPHONING_ARROW_MAX_HEAL, ArcanaConfig.SIPHONING_ARROW_MIN_HEAL, ArcanaConfig.SIPHONING_ARROW_OVERHEAL_PER_LVL};
    }
    
    @Override

@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.gui.clockworkmultitool.ClockworkMultitoolEnder
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -66,6 +67,7 @@ public class ClockworkMultitool extends EnergyItem {
       item = new ClockworkMultitoolItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_GOLD_INGOT, ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.XP_CLOCKWORK_MULTITOOL_USE};
    }
    
    @Override

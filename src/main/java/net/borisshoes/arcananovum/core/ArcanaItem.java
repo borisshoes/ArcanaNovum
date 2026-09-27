@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -86,6 +87,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    protected Component displayName;
    protected ResourceKey<ResearchTask>[] researchTasks = new ResourceKey[0];
    protected Pair<MutableComponent, MutableComponent>[] attributions = new Pair[0];
+   protected IConfigSetting<?>[] relatedConfigs = new IConfigSetting[0];
    
    public Pair<MutableComponent, MutableComponent>[] getAttributions(){
       return attributions;
@@ -125,6 +127,10 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    
    public ResourceKey<ResearchTask>[] getResearchTasks(){
       return researchTasks;
+   }
+   
+   public IConfigSetting<?>[] getRelatedConfigs(){
+      return relatedConfigs;
    }
    
    public boolean hasCategory(ArcaneTomeGui.TomeFilter category){

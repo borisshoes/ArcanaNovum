@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -68,6 +69,7 @@ public class RunicBow extends ArcanaItem {
       item = new RunicBowItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.ADVANCEMENT_SNIPER_DUEL, ResearchTasks.ADVANCEMENT_BULLSEYE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.RUNIC_BOW_ACCURACY_PER_LVL, ArcanaConfig.XP_RUNIC_ARROW_SHOOT};
    }
    
    @Override

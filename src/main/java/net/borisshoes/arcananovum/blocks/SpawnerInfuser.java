@@ -19,6 +19,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -86,6 +87,7 @@ public class SpawnerInfuser extends ArcanaBlock {
       item = new SpawnerInfuserItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_ARCANE_SINGULARITY, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.UNLOCK_SPAWNER_HARNESS, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.ADVANCEMENT_KILL_MOB_NEAR_SCULK_CATALYST};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SPAWNER_INFUSER_EXTRA_CAPACITY_PER_LVL, ArcanaConfig.SPAWNER_INFUSER_ITEM_ID};
    }
    
    @Override

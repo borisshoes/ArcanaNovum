@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.AlgoUtils;
@@ -77,6 +78,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
       item = new ShadowStalkersGlaiveItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_SWORD, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.ADVANCEMENT_KILL_A_MOB, ResearchTasks.UNLOCK_STELLAR_CORE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SHADOW_STALKERS_GLAIVE_HIT_ENERGY, ArcanaConfig.SHADOW_STALKERS_GLAIVE_BLINK_ENERGY, ArcanaConfig.SHADOW_STALKERS_GLAIVE_BLINK_DISTANCE, ArcanaConfig.SHADOW_STALKERS_GLAIVE_KILL_ENERGY, ArcanaConfig.SHADOW_STALKERS_GLAIVE_STALK_ENERGY, ArcanaConfig.SHADOW_STALKERS_GLAIVE_PASSIVE_ENERGY_CAP, ArcanaConfig.SHADOW_STALKERS_GLAIVE_PASSIVE_ENERGY_RATE, ArcanaConfig.SHADOW_STALKERS_GLAIVE_INVIS_DURATION, ArcanaConfig.SHADOW_STALKERS_GLAIVE_NEARSIGHT_DURATION, ArcanaConfig.SHADOW_STALKERS_GLAIVE_BLOODLETTER_DAMAGE, ArcanaConfig.XP_SHADOW_STALKERS_GLAIVE_STALK, ArcanaConfig.XP_SHADOW_STALKERS_GLAIVE_BLINK};
    }
    
    @Override

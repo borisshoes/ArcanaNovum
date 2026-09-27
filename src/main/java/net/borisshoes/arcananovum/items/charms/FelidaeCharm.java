@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.GeomanticStele;
@@ -12,6 +13,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
@@ -57,6 +59,7 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
       item = new FelidaeCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CREEPER_HEAD, ResearchTasks.TAME_CAT, ResearchTasks.CAT_SCARE, ResearchTasks.FEATHER_FALL, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.FELIDAE_CHARM_REDUCTION, ArcanaConfig.FELIDAE_CHARM_GRACE_REDUCTION_PER_LEVEL, ArcanaConfig.FELIDAE_CHARM_CREEPER_RANGE, ArcanaConfig.XP_FELIDAE_CHARM_FALL, ArcanaConfig.XP_FELIDAE_CHARM_FALL_CAP, ArcanaConfig.XP_FELIDAE_CHARM_SCARE_PHANTOM, ArcanaConfig.XP_FELIDAE_CHARM_SCARE_CREEPER};
    }
    
    @Override
@@ -155,4 +158,3 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
       }
    }
 }
-

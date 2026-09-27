@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -61,6 +62,7 @@ public class StormArrows extends RunicArrow {
       item = new StormArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE, ResearchTasks.OBTAIN_LIGHTNING_ROD};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.STORM_ARROW_STRIKE_CHANCE,ArcanaConfig.STORM_ARROW_STRIKE_DMG,ArcanaConfig.STORM_ARROW_CHAIN_DMG,ArcanaConfig.STORM_ARROW_CHAIN_RANGE,ArcanaConfig.STORM_ARROW_AFTERSHOCK_RANGE_PER_LVL,ArcanaConfig.STORM_ARROW_AFTERSHOCK_DURATION_PER_LVL,ArcanaConfig.STORM_ARROW_AFTERSHOCK_DMG_PER_LVL};
    }
    
    @Override

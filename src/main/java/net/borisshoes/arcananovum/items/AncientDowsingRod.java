@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -61,6 +62,7 @@ public class AncientDowsingRod extends EnergyItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.RESONATE_BELL, ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS, ResearchTasks.ADVANCEMENT_FIND_BASTION};
       initEnergy = 100;
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.ANCIENT_DOWSING_ROD_COOLDOWN, ArcanaConfig.ANCIENT_DOWSING_ROD_COOLDOWN_PER_LVL, ArcanaConfig.ANCIENT_DOWSING_ROD_RANGE, ArcanaConfig.ANCIENT_DOWSING_ROD_RANGE_PER_LVL, ArcanaConfig.ANCIENT_DOWSING_ROD_EFFECT_DURATION, ArcanaConfig.ANCIENT_DOWSING_ROD_EFFECT_DURATION_PER_LVL, ArcanaConfig.XP_ANCIENT_DOWSING_ROD_PER_DEBRIS, ArcanaConfig.XP_ANCIENT_DOWSING_ROD_CAP};
    }
    
    @Override

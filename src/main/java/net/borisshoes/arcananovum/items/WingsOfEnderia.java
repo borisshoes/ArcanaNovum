@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -62,6 +63,7 @@ public class WingsOfEnderia extends EnergyItem {
       item = new WingsOfEnderiaItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_WINGS_OF_ENDERIA};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.WINGS_OF_ENDERIA_MAX_ENERGY, ArcanaConfig.WINGS_OF_ENDERIA_ENERGY_RATE, ArcanaConfig.WINGS_OF_ENDERIA_ENERGY_PER_DMG, ArcanaConfig.WINGS_OF_ENDERIA_BUFFET_RANGE, ArcanaConfig.WINGS_OF_ENDERIA_BUFFET_POWER, ArcanaConfig.XP_WINGS_OF_ENDERIA_FLY, ArcanaConfig.XP_WINGS_OF_ENDERIA_CUSHION, ArcanaConfig.XP_WINGS_OF_ENDERIA_CUSHION_CAP};
    }
    
    @Override

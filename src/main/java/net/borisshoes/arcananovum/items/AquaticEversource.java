@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -75,6 +76,7 @@ public class AquaticEversource extends ArcanaItem implements GeomanticStele.Inte
       item = new AquaticEversourceItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_HEART_OF_THE_SEA, ResearchTasks.OBTAIN_BLUE_ICE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.XP_AQUATIC_EVERSOURCE_USE};
    }
    
    @Override

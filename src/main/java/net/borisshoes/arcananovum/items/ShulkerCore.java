@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -69,6 +70,7 @@ public class ShulkerCore extends EnergyItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.SHULKER_CORE_COLOR);
       itemVersion = 1;
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.ADVANCEMENT_LEVITATE, ResearchTasks.EFFECT_SLOW_FALLING, ResearchTasks.UNLOCK_STELLAR_CORE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.HARNESS_CORE_RECYCLER_EFFICIENCY, ArcanaConfig.XP_SHULKER_CORE_PER_SOUL};
    }
    
    @Override

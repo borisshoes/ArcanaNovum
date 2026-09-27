@@ -7,6 +7,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -17,6 +18,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -68,6 +70,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       item = new MidnightEnchanterItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_ENCHANT_ITEM, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING, ResearchTasks.ADVANCEMENT_READ_POWER_OF_CHISELED_BOOKSHELF, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.UNLOCK_STARLIGHT_FORGE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.MIDNIGHT_ENCHANTER_ESSENCE_RATE, ArcanaConfig.MIDNIGHT_ENCHANTER_ESSENCE_RATE_PER_LVL, ArcanaConfig.XP_MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE};
    }
    
    @Override

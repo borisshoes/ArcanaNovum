@@ -9,6 +9,7 @@ import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
@@ -21,6 +22,7 @@ import net.borisshoes.arcananovum.gui.astralgateway.AstralGatewayGui;
 import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -88,6 +90,7 @@ public class AstralGateway extends ArcanaBlock {
       item = new AstralGatewayItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_MATTER, ResearchTasks.UNLOCK_WAYSTONE, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.USE_ENDER_EYE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.OBTAIN_STARDUST};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.ASTRAL_GATEWAY_STARDUST, ArcanaConfig.ASTRAL_GATEWAY_STARDUST_PER_LVL, ArcanaConfig.XP_ASTRAL_GATEWAY_STARDUST_CONSUMED, ArcanaConfig.XP_ASTRAL_GATEWAY_TELEPORT};
    }
    
    @Override

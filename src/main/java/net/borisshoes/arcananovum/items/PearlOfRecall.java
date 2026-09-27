@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -64,6 +65,7 @@ public class PearlOfRecall extends EnergyItem {
       item = new PearlOfRecallItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT, ResearchTasks.ADVANCEMENT_USE_LODESTONE, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.UNLOCK_WAYSTONE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.PEARL_OF_RECALL_COOLDOWN, ArcanaConfig.PEARL_OF_RECALL_COOLDOWN_PER_LVL, ArcanaConfig.PEARL_OF_RECALL_WARMUP, ArcanaConfig.PEARL_OF_RECALL_CANCEL_PERCENT, ArcanaConfig.PEARL_OF_RECALL_PHASE_DEFENSE_CHANCE, ArcanaConfig.XP_PEARL_OF_RECALL_USE};
    }
    
    @Override

@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
@@ -11,6 +12,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerCrossbowItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -55,6 +57,7 @@ public class AlchemicalArbalest extends ArcanaItem {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OL_BETSY, ResearchTasks.ADVANCEMENT_WHOS_THE_PILLAGER_NOW, ResearchTasks.ADVANCEMENT_ARBALISTIC, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_TIPPED_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION, ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("Sethzilla42"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.ALCHEMICAL_ARBALEST_VULNERABILITY_DURATION, ArcanaConfig.ALCHEMICAL_ARBALEST_VULNERABILITY_PER_LVL, ArcanaConfig.ALCHEMICAL_ARBALEST_FIELD_RANGE_PER_LVL, ArcanaConfig.ALCHEMICAL_ARBALEST_FIELD_DURATION, ArcanaConfig.XP_ALCHEMICAL_ARBALEST_SHOOT, ArcanaConfig.XP_DAMAGE_AMP_PER_10, ArcanaConfig.XP_DAMAGE_AMP_CAP};
    }
    
    @Override
@@ -220,4 +223,3 @@ public class AlchemicalArbalest extends ArcanaItem {
       
    }
 }
-

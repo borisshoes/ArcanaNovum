@@ -9,6 +9,7 @@ import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -20,6 +21,7 @@ import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.interdictor.InterdictorGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -81,6 +83,7 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
       item = new InterdictorItem(block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_EXOTIC_MATTER, ResearchTasks.OBTAIN_BEACON, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.OBTAIN_END_CRYSTAL, ResearchTasks.USE_ENDER_EYE, ResearchTasks.ADVANCEMENT_KILL_A_MOB};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.INTERDICTOR_RANGE, ArcanaConfig.INTERDICTOR_RANGE_PER_LVL, ArcanaConfig.XP_INTERDICTOR_MOB_BLOCKED_PER_100};
    }
    
    @Override

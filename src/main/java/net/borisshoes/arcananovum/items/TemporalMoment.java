@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -33,6 +34,7 @@ public class TemporalMoment extends ArcanaItem {
       item = new TemporalMomentItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CLOCK, ResearchTasks.ADVANCEMENT_SLEEP_IN_BED, ResearchTasks.USE_ENDER_PEARL};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

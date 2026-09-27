@@ -17,6 +17,7 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -71,6 +72,7 @@ public class ShieldOfFortitude extends ArcanaItem {
       item = new ShieldOfFortitudeItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.EFFECT_ABSORPTION, ResearchTasks.ADVANCEMENT_DEFLECT_ARROW, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SHIELD_OF_FORTITUDE_DISPLAY_MODE, ArcanaConfig.SHIELD_OF_FORTITUDE_BLOCKED_ENERGY_CONVERSION_PERCENT, ArcanaConfig.SHIELD_OF_FORTITUDE_HIT_MAX, ArcanaConfig.SHIELD_OF_FORTITUDE_HIT_MAX_PER_LVL, ArcanaConfig.SHIELD_OF_FORTITUDE_DURATION, ArcanaConfig.SHIELD_OF_FORTITUDE_DURATION_PER_LVL, ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS, ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS_DURATION, ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_PER_ABSORPTION, ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_DURATION_PER_ABSORPTION, ArcanaConfig.XP_SHIELD_OF_FORTITUDE_ABSORB_DAMAGE};
    }
    
    @Override

@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -59,6 +60,7 @@ public class TotemOfVengeance extends ArcanaItem {
       item = new TotemOfVengeanceItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.ADVANCEMENT_TOTEM_OF_UNDYING, ResearchTasks.KILL_EVOKER, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.EFFECT_STRENGTH, ResearchTasks.EFFECT_FIRE_RESISTANCE, ResearchTasks.EFFECT_SWIFTNESS};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION, ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PER_LVL, ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PERCENT_AGAINST_PLAYER, ArcanaConfig.TOTEM_OF_VENGEANCE_SPEED, ArcanaConfig.TOTEM_OF_VENGEANCE_SPEED_PER_LVL, ArcanaConfig.TOTEM_OF_VENGEANCE_STRENGTH, ArcanaConfig.TOTEM_OF_VENGEANCE_STRENGTH_PER_LVL, ArcanaConfig.XP_TOTEM_OF_VENGEANCE_ACTIVATE, ArcanaConfig.XP_TOTEM_OF_VENGEANCE_SURVIVE};
    }
    
    @Override

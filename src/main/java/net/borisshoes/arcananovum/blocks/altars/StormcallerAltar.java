@@ -8,6 +8,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
@@ -18,6 +19,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.core.polymer.PackAwareBlockModel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -76,6 +78,7 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE, ResearchTasks.OBTAIN_HEART_OF_THE_SEA, ResearchTasks.OBTAIN_LIGHTNING_ROD, ResearchTasks.ADVANCEMENT_WAX_ON, ResearchTasks.ADVANCEMENT_WAX_OFF, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("tcmEcho")), Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("tcmEcho"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.STORMCALLER_ALTAR_COOLDOWN, ArcanaConfig.STORMCALLER_ALTAR_COOLDOWN_PER_LVL, ArcanaConfig.STORMCALLER_ALTAR_ITEM, ArcanaConfig.XP_STORMCALLER_ALTAR_ACTIVATE};
    }
    
    @Override

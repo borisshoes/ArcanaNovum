@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -59,6 +60,7 @@ public class GravitonArrows extends RunicArrow {
       item = new GravitonArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_SLOWNESS};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.GRAVITON_ARROW_RANGE, ArcanaConfig.GRAVITON_ARROW_DURATION_MAX, ArcanaConfig.GRAVITON_ARROW_DURATION_MIN, ArcanaConfig.GRAVITON_ARROW_WELL_RANGE_PER_LVL};
    }
    
    @Override

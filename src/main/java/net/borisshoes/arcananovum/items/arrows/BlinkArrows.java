@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -51,6 +52,7 @@ public class BlinkArrows extends RunicArrow {
       item = new BlinkArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.USE_ENDER_PEARL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.BLINK_ARROW_PHASE_IN_DMG_MULTIPLIER, ArcanaConfig.BLINK_ARROW_PHASE_IN_DURATION_PER_LVL};
    }
    
    @Override

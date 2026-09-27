@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -83,6 +84,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem, Geomantic
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.KILL_BLAZE, ResearchTasks.KILL_MAGMA_CUBE, ResearchTasks.EFFECT_FIRE_RESISTANCE, ResearchTasks.USE_FLINT_AND_STEEL, ResearchTasks.UNLOCK_STELLAR_CORE};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.inspired_by"), Component.literal("sarhecker"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CINDERS_CHARM_REGENERATION_RATE, ArcanaConfig.CINDERS_CHARM_FIREWEB_RANGE_PER_LVL, ArcanaConfig.CINDERS_CHARM_FIREWEB_DMG_PER_LVL, ArcanaConfig.CINDERS_CHARM_FIREWEB_CREATURES_PER_LVL, ArcanaConfig.CINDERS_CHARM_FLAME_CONE_DMG, ArcanaConfig.CINDERS_CHARM_FLAME_CONE_ANGLE, ArcanaConfig.CINDERS_CHARM_FLAME_CONE_RANGE, ArcanaConfig.CINDERS_CHARM_PYROBLAST_TARGET_RANGE, ArcanaConfig.CINDERS_CHARM_PYROBLAST_EXPLOSION_RANGE_PER_LVL, ArcanaConfig.CINDERS_CHARM_PYROBLAST_DMG_PER_LVL, ArcanaConfig.CINDERS_CHARM_CREMATION_MULTIPLIER, ArcanaConfig.CINDERS_CHARM_CREMATION_DAMAGE_PER_ENERGY, ArcanaConfig.CINDERS_CHARM_WILDFIRE_REGENERATION_PER_LVL, ArcanaConfig.CINDERS_CHARM_WILDFIRE_CINDERS_PER_LVL, ArcanaConfig.CINDERS_CHARM_SUPERSMELTER_MULTIPLIER};
    }
    
    @Override

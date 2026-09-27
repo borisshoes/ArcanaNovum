@@ -17,6 +17,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -57,6 +58,7 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
       item = new LeadershipCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.LIGHT_PURPLE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_LEADERSHIP_CHARM};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.LEADERSHIP_CHARM_RADIUS, ArcanaConfig.LEADERSHIP_CHARM_INVIGORATION_RADIUS_PER_LVL, ArcanaConfig.LEADERSHIP_CHARM_MIGHT_PER_LVL, ArcanaConfig.LEADERSHIP_CHARM_FORTITUDE_PER_LVL, ArcanaConfig.LEADERSHIP_CHARM_REJUVENATION_PER_LVL};
    }
    
    @Override
@@ -203,4 +205,3 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
       }
    }
 }
-

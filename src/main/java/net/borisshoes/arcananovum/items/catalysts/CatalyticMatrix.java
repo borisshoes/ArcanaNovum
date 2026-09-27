@@ -1,11 +1,13 @@
 package net.borisshoes.arcananovum.items.catalysts;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -34,6 +36,7 @@ public class CatalyticMatrix extends ArcanaItem {
       item = new CatalyticMatrixItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_TWILIGHT_ANVIL, ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
+      relatedConfigs = new IConfigSetting[]{};
    }
    
    @Override

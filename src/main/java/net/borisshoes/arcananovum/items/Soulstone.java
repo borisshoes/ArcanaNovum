@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -69,6 +70,7 @@ public class Soulstone extends ArcanaItem {
       item = new SoulstoneItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_KILL_A_MOB, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.USE_SOUL_SPEED, ResearchTasks.UNLOCK_STELLAR_CORE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SOULSTONE_SOULS_PER_LVL, ArcanaConfig.XP_SOULSTONE_LEVEL_UP_PER_SOUL};
    }
    
    @Override

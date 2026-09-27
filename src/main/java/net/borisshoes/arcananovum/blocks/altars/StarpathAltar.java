@@ -7,6 +7,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
@@ -20,6 +21,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -86,6 +88,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       item = new StarpathAltarItem(this.block);
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.USE_ENDER_EYE, ResearchTasks.USE_ENDER_PEARL, ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN, ResearchTasks.UNLOCK_WAYSTONE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.STARPATH_ALTAR_COOLDOWN, ArcanaConfig.STARPATH_ALTAR_COOLDOWN_PER_LVL, ArcanaConfig.STARPATH_ALTAR_BLOCKS_PER_EYE, ArcanaConfig.STARPATH_ALTAR_ITEM, ArcanaConfig.XP_STARPATH_ALTAR_ACTIVATE};
    }
    
    @Override

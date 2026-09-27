@@ -18,6 +18,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -77,6 +78,7 @@ public class SojournerBoots extends EnergyItem {
       item = new SojournerBootsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.SPRINT_TEN_KILOMETERS, ResearchTasks.VISIT_DOZEN_BIOMES, ResearchTasks.ADVANCEMENT_WALK_ON_POWDER_SNOW_WITH_LEATHER_BOOTS, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.EFFECT_SWIFTNESS, ResearchTasks.EFFECT_JUMP_BOOST, ResearchTasks.UNLOCK_STELLAR_CORE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SOJOURNER_BOOTS_ENERGY_MAX, ArcanaConfig.SOJOURNER_BOOTS_ENERGY_MAX_PER_LVL, ArcanaConfig.SOJOURNER_BOOTS_RAMP, ArcanaConfig.SOJOURNER_BOOTS_RAMP_PER_LVL, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY_DURATION, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS_DURATION, ArcanaConfig.XP_SOJOURNERS_BOOTS_RUN_PER_SECOND};
    }
    
    @Override

@@ -44,6 +44,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
+import net.minecraft.stats.Stats;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EntityType;
@@ -81,7 +82,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
  * All text is plain ({@link Component#getString()}), with multi-line text split into arrays.
  */
 public class WikiExporter {
-   public static final String SCHEMA_VERSION = "3.0.0";
+   public static final String SCHEMA_VERSION = "3.0.1";
    public static final String EXPORT_FOLDER = "arcana-export";
    public static final String EXPORT_FILE = "export.json";
    
@@ -768,7 +769,19 @@ public class WikiExporter {
             case EntityType<?> entityType -> entityType.getDescription().getString();
             default -> String.valueOf(statType.getRegistry().getKey(value));
          };
-         params.addProperty("name", statType.getDisplayName().getString() + ": " + valueName);
+         // The killed/killed_by stat types translate to templates ("You killed %s %s"), not labels
+         String typeName;
+         if(statType == Stats.ENTITY_KILLED){
+            typeName = "Times Killed";
+         }else if(statType == Stats.ENTITY_KILLED_BY){
+            typeName = "Times Killed By";
+         }else{
+            typeName = statType.getDisplayName().getString();
+            if(typeName.matches(".*%(\\d+\\$)?[sd].*")){
+               warnings.add("Stat type " + BuiltInRegistries.STAT_TYPE.getKey(statType) + " translates to a template: " + typeName);
+            }
+         }
+         params.addProperty("name", typeName + ": " + valueName);
       }
       params.addProperty("amount", Math.max(1, task.getThreshold()));
    }

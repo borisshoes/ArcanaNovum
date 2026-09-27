@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -49,6 +50,7 @@ public class PhotonicArrows extends RunicArrow {
       item = new PhotonicArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON, ResearchTasks.OBTAIN_AMETHYST_CLUSTER, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.PHOTONIC_ARROW_RANGE_MAX, ArcanaConfig.PHOTONIC_ARROW_DMG_MAX, ArcanaConfig.PHOTONIC_ARROW_DMG_MIN, ArcanaConfig.PHOTONIC_ARROW_DMG_FALLOFF_PER_BLOCK, ArcanaConfig.PHOTONIC_ARROW_PLAYER_DMG_MULTIPLIER, ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_FLAT_DMG_INCREASE, ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_DMG_MAX, ArcanaConfig.PHOTONIC_ARROW_PRISMATIC_PER_LVL};
    }
    
    @Override

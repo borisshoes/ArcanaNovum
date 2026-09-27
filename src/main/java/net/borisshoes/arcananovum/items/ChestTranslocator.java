@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -82,6 +83,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       item = new ChestTranslocatorItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.EFFECT_STRENGTH};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN, ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL, ArcanaConfig.XP_CHEST_TRANSLOCATOR_USE};
    }
    
    @Override

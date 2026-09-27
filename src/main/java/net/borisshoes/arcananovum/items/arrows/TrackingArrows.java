@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -47,6 +48,7 @@ public class TrackingArrows extends RunicArrow {
       item = new TrackingArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.USE_ENDER_EYE, ResearchTasks.ADVANCEMENT_USE_LODESTONE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.TRACKING_ARROW_DETECTION_WIDTH_PER_LVL, ArcanaConfig.TRACKING_ARROW_BROADHEAD_DMG_AMP_DURATION_PER_LVL, ArcanaConfig.TRACKING_ARROW_BROADHEAD_DMG_AMP_PER_LVL};
    }
    
    @Override

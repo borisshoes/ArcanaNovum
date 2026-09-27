@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -43,6 +44,7 @@ public class DetonationArrows extends RunicArrow {
       item = new DetonationArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.OBTAIN_TNT};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.DETONATION_ARROW_ENTITY_DMG_MULTIPLIER, ArcanaConfig.DETONATION_ARROW_BLOCK_DMG_MULTIPLIER, ArcanaConfig.DETONATION_ARROW_PLAYER_DMG_MULTIPLIER, ArcanaConfig.DETONATION_ARROW_ANTI_PERSONNEL_INCREASE_PER_LVL, ArcanaConfig.DETONATION_ARROW_BLAST_MINE_INCREASE_PER_LVL};
    }
    
    @Override

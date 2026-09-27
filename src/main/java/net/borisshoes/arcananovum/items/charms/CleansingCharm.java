@@ -17,6 +17,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -78,6 +79,7 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
       item = new CleansingCharmItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.MILK_CLEANSE, ResearchTasks.HONEY_CLEANSE, ResearchTasks.EFFECT_POISON, ResearchTasks.EFFECT_NAUSEA, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.ADVANCEMENT_FURIOUS_COCKTAIL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CLEANSING_CHARM_COOLDOWN, ArcanaConfig.CLEANSING_CHARM_CHARCOAL_COOLDOWN_PER_LVL, ArcanaConfig.CLEANSING_CHARM_REJUVENATION_DURATION, ArcanaConfig.CLEANSING_CHARM_REJUVENATION_HEALTH_PER_TICK, ArcanaConfig.XP_CLEANSING_CHARM_CLEANSE};
    }
    
    @Override

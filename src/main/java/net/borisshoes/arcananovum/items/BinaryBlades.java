@@ -24,6 +24,7 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -88,6 +89,7 @@ public class BinaryBlades extends EnergyItem {
       item = new BinaryBladesItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.INFUSE_ITEM, ResearchTasks.OBTAIN_NETHERITE_SWORD, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.BINARY_BLADES_ENERGY_PER_HIT, ArcanaConfig.BINARY_BLADES_MAX_ENERGY, ArcanaConfig.BINARY_BLADES_ENERGY_DECAY_RATE, ArcanaConfig.BINARY_BLADES_ENERGY_GRACE_PERIOD, ArcanaConfig.BINARY_BLADES_PULSAR_ENERGY_CONSUMPTION_PER_LVL, ArcanaConfig.BINARY_BLADES_RED_GIANT_DMG_PER_ENERGY, ArcanaConfig.BINARY_BLADES_WHITE_DWARF_DMG_PER_ENERGY_BLOCK, ArcanaConfig.BINARY_BLADES_PULSAR_RANGE, ArcanaConfig.BINARY_BLADES_PULSAR_DMG, ArcanaConfig.XP_BINARY_BLADES_MAX_ENERGY_PER_SECOND};
    }
    
    @Override

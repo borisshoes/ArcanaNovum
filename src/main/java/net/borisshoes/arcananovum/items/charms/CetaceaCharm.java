@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -63,6 +64,7 @@ public class CetaceaCharm extends ArcanaItem implements GeomanticStele.Interacti
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_CONDUIT, ResearchTasks.CATCH_FISH, ResearchTasks.EFFECT_DOLPHINS_GRACE, ResearchTasks.DROWNING_DAMAGE};
       attributions = new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.texture_by"), Component.literal("Rookodzol"))};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CETACEA_CHARM_SWIM_PENALTY_PER_LVL, ArcanaConfig.XP_CETACEA_CHARM_PER_SECOND};
    }
    
    @Override

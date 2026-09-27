@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -78,6 +79,7 @@ public class TelescopingBeacon extends ArcanaItem {
       item = new TelescopingBeaconItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON, ResearchTasks.OBTAIN_PISTON};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.XP_TELESCOPING_BEACON_PER_BLOCK};
    }
    
    @Override

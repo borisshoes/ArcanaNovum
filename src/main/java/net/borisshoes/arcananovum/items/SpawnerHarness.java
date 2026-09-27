@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
@@ -67,6 +68,7 @@ public class SpawnerHarness extends ArcanaItem {
       item = new SpawnerHarnessItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_SILK_TOUCH, ResearchTasks.BREAK_SPAWNER, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SPAWNER_HARNESS_BREAK_PERCENT, ArcanaConfig.XP_SPAWNER_HARNESS_USE};
    }
    
    @Override
