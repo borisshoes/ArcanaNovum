@@ -34,7 +34,8 @@ If everything is done correctly, then players will automatically load into the s
 
 ### Item Skins
 Cosmetic item skins are not bundled with the mod. The server downloads them from the Arcana Novum skin API at startup, saves them in `config/arcananovum/skins`, and adds them to the resource pack when it is generated. Which skins a player has unlocked is looked up from the same API when they join.
-* A dedicated server checks for new skins about once an hour. New skins become usable the next time the resource pack is generated: after a restart, or after running `/polymer generate-pack`.
+* A dedicated server checks for new skins about once an hour. With auto-host enabled, it regenerates the resource pack by itself when skins have changed (at most once an hour), and players receive the new pack the next time they join. Nothing is pushed to players who are online: until they rejoin, they see the default look on items wearing a skin their pack does not have yet.
+* Without auto-host, new skins become usable after a restart or after running `/polymer generate-pack` and updating the pack you host.
 * If the API cannot be reached, the skins and unlocks saved from the last successful check keep working.
 * Skin unlocks are tied to Minecraft accounts, so they are not looked up on offline-mode servers.
 * A server without internet access can set `skinsEnabled` to false and copy the `config/arcananovum/skins/current` folder from an online install.

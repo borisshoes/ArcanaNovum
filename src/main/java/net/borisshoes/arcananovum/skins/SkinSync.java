@@ -103,6 +103,7 @@ final class SkinSync {
       }finally{
          RUNNING.set(false);
       }
+      ArcanaSkins.rebuildPackIfStale();
    }
    
    interface ApiCall<T> {

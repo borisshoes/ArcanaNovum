@@ -299,7 +299,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
-         ArcanaSkin skin = ArcanaItem.getSkin(itemStack);
+         ArcanaSkin skin = ArcanaItem.getSkin(itemStack, context);
          Identifier modelId = skin != null && skin.hasEquipmentAsset() ? skin.getModelId() : ArcanaRegistry.arcanaId(ID);
          Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, modelId)).build();
          baseStack.set(DataComponents.EQUIPPABLE, newComp);

@@ -63,7 +63,7 @@ public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
    @Override
    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup){
       if(PolymerResourcePackUtils.hasMainPack(context)){
-         ArcanaSkin skin = ArcanaItem.getSkin(stack);
+         ArcanaSkin skin = ArcanaItem.getSkin(stack, context);
          if(skin != null){
             return skin.getModelId();
          }else{
