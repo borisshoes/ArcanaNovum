@@ -289,7 +289,7 @@ public class GeomanticStele extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack STELE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/geomantic_stele"));
+      public static final LazyItemStack STELE = part("geomantic_stele");
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

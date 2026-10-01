@@ -306,8 +306,8 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack STARPATH_ALTAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starpath_altar"));
-      public static final LazyItemStack STAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_pulsar"));
+      public static final LazyItemStack STARPATH_ALTAR = part("starpath_altar");
+      public static final LazyItemStack STAR = part("starlight_forge_pulsar");
       
       // Star particle constants
       private static final int MAX_STARS = 8;

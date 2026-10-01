@@ -263,8 +263,8 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack CORE_LIT = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/stellar_core_lit"));
-      public static final LazyItemStack CORE_UNLIT = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/stellar_core_unlit"));
+      public static final LazyItemStack CORE_LIT = part("stellar_core_lit");
+      public static final LazyItemStack CORE_UNLIT = part("stellar_core_unlit");
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

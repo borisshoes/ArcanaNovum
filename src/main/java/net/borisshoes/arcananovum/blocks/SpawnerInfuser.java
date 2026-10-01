@@ -262,8 +262,8 @@ public class SpawnerInfuser extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack INFUSER = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/spawner_infuser"));
-      public static final LazyItemStack INFUSER_ARM = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/spawner_infuser_arm"));
+      public static final LazyItemStack INFUSER = part("spawner_infuser");
+      public static final LazyItemStack INFUSER_ARM = part("spawner_infuser_arm");
       
       // Arm rotation constants - each arm points to a corner (45, 135, 225, 315 degrees)
       private static final float[] ARM_YAW = {45f, 135f, 225f, 315f};

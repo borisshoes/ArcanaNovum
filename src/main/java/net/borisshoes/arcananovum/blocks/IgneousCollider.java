@@ -151,7 +151,7 @@ public class IgneousCollider extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack COLLIDER = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/igneous_collider"));
+      public static final LazyItemStack COLLIDER = part("igneous_collider");
       
       private final ItemDisplayElement main;
       

@@ -224,7 +224,7 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack ANVIL = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/twilight_anvil"));
+      public static final LazyItemStack ANVIL = part("twilight_anvil");
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

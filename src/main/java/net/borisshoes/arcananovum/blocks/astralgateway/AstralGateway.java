@@ -341,14 +341,14 @@ public class AstralGateway extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack GATEWAY_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway"));
-      public static final LazyItemStack GATEWAY_BASE_EMPTY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_empty"));
-      public static final LazyItemStack GATEWAY_SMALL_RING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_small_ring"));
-      public static final LazyItemStack GATEWAY_SMALL_RING_EMPTY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_small_ring_empty"));
-      public static final LazyItemStack GATEWAY_BIG_RING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_big_ring"));
-      public static final LazyItemStack GATEWAY_BIG_RING_EMPTY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_big_ring_empty"));
-      public static final LazyItemStack GATEWAY_KNOBS = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_knobs"));
-      public static final LazyItemStack GATEWAY_KNOBS_EMPTY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/astral_gateway_knobs_empty"));
+      public static final LazyItemStack GATEWAY_BASE = part("astral_gateway");
+      public static final LazyItemStack GATEWAY_BASE_EMPTY = part("astral_gateway_empty");
+      public static final LazyItemStack GATEWAY_SMALL_RING = part("astral_gateway_small_ring");
+      public static final LazyItemStack GATEWAY_SMALL_RING_EMPTY = part("astral_gateway_small_ring_empty");
+      public static final LazyItemStack GATEWAY_BIG_RING = part("astral_gateway_big_ring");
+      public static final LazyItemStack GATEWAY_BIG_RING_EMPTY = part("astral_gateway_big_ring_empty");
+      public static final LazyItemStack GATEWAY_KNOBS = part("astral_gateway_knobs");
+      public static final LazyItemStack GATEWAY_KNOBS_EMPTY = part("astral_gateway_knobs_empty");
       
       // Knob animation constants
       private static final float KNOB_AMPLITUDE_NORMAL = 0.01f;

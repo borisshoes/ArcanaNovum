@@ -190,8 +190,8 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack ENCHANTER_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/midnight_enchanter"));
-      public static final LazyItemStack ENCHANTER_BOOK = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/midnight_enchanter_book"));
+      public static final LazyItemStack ENCHANTER_BASE = part("midnight_enchanter");
+      public static final LazyItemStack ENCHANTER_BOOK = part("midnight_enchanter_book");
       
       private static final float PASSIVE_ROTATION_SPEED = 1.0f; // Degrees per tick
       private static final float TRACKING_LERP_SPEED = 0.1f; // Interpolation factor for smooth tracking

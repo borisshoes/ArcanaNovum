@@ -235,7 +235,7 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack STORMCALLER_ALTAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/stormcaller_altar"));
+      public static final LazyItemStack STORMCALLER_ALTAR = part("stormcaller_altar");
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

@@ -381,14 +381,14 @@ public class Itineranteur extends ArcanaBlock {
       COPPER("copper", Items.COPPER_LANTERN.waxed().unaffected(), ((BlockItem) Items.COPPER_LANTERN.waxed().unaffected()).getBlock()),
       GREEN("green", Items.COPPER_LANTERN.waxed().oxidized(), ((BlockItem) Items.COPPER_LANTERN.waxed().oxidized()).getBlock());
       
-      public static final LazyItemStack ITINERANTEUR_NORMAL = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_normal"));
-      public static final LazyItemStack ITINERANTEUR_NORMAL_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_normal_hanging"));
-      public static final LazyItemStack ITINERANTEUR_SOUL = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_soul"));
-      public static final LazyItemStack ITINERANTEUR_SOUL_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_soul_hanging"));
-      public static final LazyItemStack ITINERANTEUR_OXIDIZED = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_oxidized"));
-      public static final LazyItemStack ITINERANTEUR_OXIDIZED_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_oxidized_hanging"));
-      public static final LazyItemStack ITINERANTEUR_UNOXIDIZED = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_unoxidized"));
-      public static final LazyItemStack ITINERANTEUR_UNOXIDIZED_HANGING = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/itineranteur_unoxidized_hanging"));
+      public static final LazyItemStack ITINERANTEUR_NORMAL = PackAwareBlockModel.part("itineranteur_normal");
+      public static final LazyItemStack ITINERANTEUR_NORMAL_HANGING = PackAwareBlockModel.part("itineranteur_normal_hanging");
+      public static final LazyItemStack ITINERANTEUR_SOUL = PackAwareBlockModel.part("itineranteur_soul");
+      public static final LazyItemStack ITINERANTEUR_SOUL_HANGING = PackAwareBlockModel.part("itineranteur_soul_hanging");
+      public static final LazyItemStack ITINERANTEUR_OXIDIZED = PackAwareBlockModel.part("itineranteur_oxidized");
+      public static final LazyItemStack ITINERANTEUR_OXIDIZED_HANGING = PackAwareBlockModel.part("itineranteur_oxidized_hanging");
+      public static final LazyItemStack ITINERANTEUR_UNOXIDIZED = PackAwareBlockModel.part("itineranteur_unoxidized");
+      public static final LazyItemStack ITINERANTEUR_UNOXIDIZED_HANGING = PackAwareBlockModel.part("itineranteur_unoxidized_hanging");
       
       private final String id;
       private final Item item;

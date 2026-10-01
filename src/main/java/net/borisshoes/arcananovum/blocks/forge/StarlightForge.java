@@ -242,12 +242,12 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack FORGE_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge"));
-      public static final LazyItemStack FORGE_APPLE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_apple"));
-      public static final LazyItemStack STAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_star"));
-      public static final LazyItemStack PULSAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_pulsar"));
-      public static final LazyItemStack QUASAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_quasar"));
-      public static final LazyItemStack BLACK_HOLE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/starlight_forge_black_hole"));
+      public static final LazyItemStack FORGE_BASE = part("starlight_forge");
+      public static final LazyItemStack FORGE_APPLE = part("starlight_forge_apple");
+      public static final LazyItemStack STAR = part("starlight_forge_star");
+      public static final LazyItemStack PULSAR = part("starlight_forge_pulsar");
+      public static final LazyItemStack QUASAR = part("starlight_forge_quasar");
+      public static final LazyItemStack BLACK_HOLE = part("starlight_forge_black_hole");
       
       // Apple animation constants
       private static final float APPLE_SPIN_SPEED = 1.0f * Mth.DEG_TO_RAD; // Degrees per tick

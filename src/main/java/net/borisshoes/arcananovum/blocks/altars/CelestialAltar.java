@@ -266,9 +266,9 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack CELESTIAL_ALTAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/celestial_altar"));
-      public static final LazyItemStack MOON = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/celestial_altar_moon"));
-      public static final LazyItemStack SUN = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/celestial_altar_sun"));
+      public static final LazyItemStack CELESTIAL_ALTAR = part("celestial_altar");
+      public static final LazyItemStack MOON = part("celestial_altar_moon");
+      public static final LazyItemStack SUN = part("celestial_altar_sun");
       
       // Satellite animation constants
       private static final float SATELLITE_SPIN_SPEED = 0.5f * Mth.DEG_TO_RAD; // Slow spin (degrees per tick)

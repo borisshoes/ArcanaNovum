@@ -242,6 +242,7 @@ public class ArcanaRegistry {
    
    
    // Normal Items
+   public static final Item BLOCK_PART = Registry.register(BuiltInRegistries.ITEM, arcanaId("block_part"), new BlockPartItem("block_part", new Item.Properties()));
    public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence", new NebulousEssenceItem("nebulous_essence", new Item.Properties().stacksTo(64).fireResistant().rarity(Rarity.RARE)
          .component(DataComponents.LORE, NebulousEssenceItem.getDefaultLore())
          .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))

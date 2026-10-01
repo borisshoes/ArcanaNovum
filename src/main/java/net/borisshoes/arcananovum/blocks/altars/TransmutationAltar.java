@@ -276,7 +276,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack TRANSMUTATION_ALTAR = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/transmutation_altar"));
+      public static final LazyItemStack TRANSMUTATION_ALTAR = part("transmutation_altar");
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

@@ -9,7 +9,6 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -465,7 +464,7 @@ public class EnderCrate extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack CRATE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/ender_crate"));
+      public static final LazyItemStack CRATE = part("ender_crate");
       
       // Direction offsets for each horizontal face (North, South, East, West)
       private static final Direction[] FACES = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};

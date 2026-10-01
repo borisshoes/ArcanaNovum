@@ -296,12 +296,12 @@ public class ContinuumAnchor extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack ANCHOR_BASE_0 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_0"));
-      public static final LazyItemStack ANCHOR_BASE_1 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_1"));
-      public static final LazyItemStack ANCHOR_BASE_2 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_2"));
-      public static final LazyItemStack ANCHOR_BASE_3 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_3"));
-      public static final LazyItemStack ANCHOR_BASE_4 = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_4"));
-      public static final LazyItemStack ANCHOR_SPIKE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/continuum_anchor_spike"));
+      public static final LazyItemStack ANCHOR_BASE_0 = part("continuum_anchor_0");
+      public static final LazyItemStack ANCHOR_BASE_1 = part("continuum_anchor_1");
+      public static final LazyItemStack ANCHOR_BASE_2 = part("continuum_anchor_2");
+      public static final LazyItemStack ANCHOR_BASE_3 = part("continuum_anchor_3");
+      public static final LazyItemStack ANCHOR_BASE_4 = part("continuum_anchor_4");
+      public static final LazyItemStack ANCHOR_SPIKE = part("continuum_anchor_spike");
       
       // Spike animation constants
       private static final float SPIKE_TILT = 7.5f * Mth.DEG_TO_RAD; // Tilt towards center

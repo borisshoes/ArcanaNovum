@@ -272,8 +272,8 @@ public class FractalSponge extends ArcanaBlock {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack SPONGE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/fractal_sponge"));
-      public static final LazyItemStack SPONGE_WET = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/fractal_sponge_wet"));
+      public static final LazyItemStack SPONGE = part("fractal_sponge");
+      public static final LazyItemStack SPONGE_WET = part("fractal_sponge_wet");
       
       private final ServerLevel world;
       private final ItemDisplayElement main;

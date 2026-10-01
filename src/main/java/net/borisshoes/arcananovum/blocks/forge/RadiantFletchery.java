@@ -229,8 +229,8 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack FLETCHERY = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/radiant_fletchery"));
-      public static final LazyItemStack MATRIX = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/radiant_fletchery_matrix"));
+      public static final LazyItemStack FLETCHERY = part("radiant_fletchery");
+      public static final LazyItemStack MATRIX = part("radiant_fletchery_matrix");
       
       // Rubik's cube-like basis vectors - each disc rotates around its assigned axis
       private static final Vector3f[] BASIS_VECTORS = {

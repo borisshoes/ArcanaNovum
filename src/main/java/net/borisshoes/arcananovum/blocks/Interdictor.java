@@ -270,10 +270,10 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack INTERDICTOR_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/interdictor"));
-      public static final LazyItemStack INTERDICTOR_TOP = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/interdictor_top_shell"));
-      public static final LazyItemStack INTERDICTOR_BOT = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/interdictor_bottom_shell"));
-      public static final LazyItemStack INTERDICTOR_CORE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/interdictor_core"));
+      public static final LazyItemStack INTERDICTOR_BASE = part("interdictor");
+      public static final LazyItemStack INTERDICTOR_TOP = part("interdictor_top_shell");
+      public static final LazyItemStack INTERDICTOR_BOT = part("interdictor_bottom_shell");
+      public static final LazyItemStack INTERDICTOR_CORE = part("interdictor_core");
       
       // Base rotation speeds (radians per tick)
       private static final float SHELL_BASE_SPEED = 0.5f * Mth.DEG_TO_RAD;

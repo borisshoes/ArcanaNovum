@@ -57,6 +57,9 @@ public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implement
          uuid = UUID.randomUUID().toString();
       }
       arcanaBlock.initialize(augments, crafterId, uuid, origin, skin, customName);
+      if(arcanaBlock instanceof BlockEntity blockEntity && blockEntity.getLevel() != null){
+         PackAwareBlockModel.refreshSkin(blockEntity.getLevel(), blockEntity.getBlockPos());
+      }
    }
    
    @Override

@@ -280,10 +280,10 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    }
    
    public static final class Model extends PackAwareBlockModel {
-      public static final LazyItemStack SINGULARITY_BASE = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/arcane_singularity_bottom"));
-      public static final LazyItemStack SINGULARITY_STEM = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/arcane_singularity_middle"));
-      public static final LazyItemStack SINGULARITY_TOP_ON = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top"));
-      public static final LazyItemStack SINGULARITY_TOP_OFF = ItemDisplayElementUtil.getModel(ArcanaRegistry.arcanaId("block/arcane_singularity_top_off"));
+      public static final LazyItemStack SINGULARITY_BASE = part("arcane_singularity_bottom");
+      public static final LazyItemStack SINGULARITY_STEM = part("arcane_singularity_middle");
+      public static final LazyItemStack SINGULARITY_TOP_ON = part("arcane_singularity_top");
+      public static final LazyItemStack SINGULARITY_TOP_OFF = part("arcane_singularity_top_off");
       
       private final ServerLevel world;
       private final ItemDisplayElement base;

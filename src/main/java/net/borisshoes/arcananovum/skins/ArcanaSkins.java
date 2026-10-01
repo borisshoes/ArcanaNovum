@@ -452,7 +452,7 @@ public final class ArcanaSkins {
    }
    
    private static String packKey(ArcanaSkin skin){
-      return skin.getId().getPath() + (skin.hasEquipmentAsset() ? "#equipment" : "");
+      return skin.getId().getPath() + (skin.hasEquipmentAsset() ? "#equipment" : "") + (skin.getBlockParts().isEmpty() ? "" : "#" + String.join(",", skin.getBlockParts()));
    }
    
    public static boolean playerHasDataForSkin(@Nullable PacketContext viewer, ArcanaSkin skin){
