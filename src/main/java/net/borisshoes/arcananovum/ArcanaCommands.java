@@ -33,6 +33,7 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.borisshoes.arcananovum.skins.ArcanaSkins;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -1044,6 +1045,17 @@ public class ArcanaCommands {
          arcanaItem.addCrafter(handItem, optional.get().id().toString(), type, src.getServer());
          DataAccess.getPlayer(optional.get().id(), BorisLib.PLAYER_DATA_KEY).tryResolve(src.getServer());
          src.sendSuccess(() -> Component.translatable("command.arcananovum.change_crafter_success", optional.get().name()), false);
+         logCommandSuccess(ctx);
+         return 1;
+      }catch(Exception e){
+         log(2, e.toString());
+         return -1;
+      }
+   }
+   
+   public static int fetchSkins(CommandContext<CommandSourceStack> ctx){
+      try{
+         ArcanaSkins.fetchNow(ctx.getSource());
          logCommandSuccess(ctx);
          return 1;
       }catch(Exception e){

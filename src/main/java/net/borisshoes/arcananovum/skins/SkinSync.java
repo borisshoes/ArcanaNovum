@@ -58,9 +58,16 @@ final class SkinSync {
       }
    }
    
+   // The scheduled pass: fetch, then rebuild the resource pack if the saved skins are newer than it
    static void syncOnce(){
+      SyncResult result = sync();
+      if(result.outcome() != SyncOutcome.DISABLED && result.outcome() != SyncOutcome.BUSY) ArcanaSkins.rebuildPackIfStale(false);
+   }
+   
+   static SyncResult sync(){
       ArcanaSkinApi client = api;
-      if(client == null || !RUNNING.compareAndSet(false, true)) return;
+      if(client == null) return new SyncResult(SyncOutcome.DISABLED, 0, null);
+      if(!RUNNING.compareAndSet(false, true)) return new SyncResult(SyncOutcome.BUSY, 0, null);
       try{
          for(int round = 0; round < MAX_ROUNDS; round++){
             ArcanaSkinApi.SkinList list = call(client::listSkins);
@@ -68,14 +75,14 @@ final class SkinSync {
             ArcanaSkins.dev("Sync round {}: API lists {} skins with pack hash {}; saved pack hash is {}", round + 1, list.skins().size(), list.packHash(), savedPackHash.isEmpty() ? "<none>" : savedPackHash);
             if(list.packHash().equals(savedPackHash)){
                ArcanaSkins.recovered("sync", "Skin API reachable again; skins are up to date");
-               return;
+               return new SyncResult(SyncOutcome.UP_TO_DATE, list.skins().size(), null);
             }
             List<String> ids = list.skins().stream().map(skin -> skin.get("id").getAsString()).toList();
             if(ids.isEmpty()){
                SkinStore.installEmpty(list.packHash());
                ArcanaSkins.recovered("sync", "Skin API reachable again");
                ArcanaSkins.info("The skin API lists no skins for this version; saved skins removed");
-               return;
+               return new SyncResult(SyncOutcome.EMPTIED, 0, null);
             }
             ArcanaSkinApi.Bundle bundle;
             try{
@@ -95,15 +102,21 @@ final class SkinSync {
             SkinStore.install(bundle);
             ArcanaSkins.recovered("sync", "Skin API reachable again");
             ArcanaSkins.info("Downloaded {} skins; they apply the next time the resource pack is built", ids.size());
-            return;
+            return new SyncResult(SyncOutcome.DOWNLOADED, ids.size(), null);
          }
          ArcanaSkins.warn("sync-race", "Skin list kept changing during download; keeping saved skins until the next pass", null);
+         return new SyncResult(SyncOutcome.FAILED, 0, new IOException("the skin list kept changing during download"));
       }catch(Throwable t){
          ArcanaSkins.warn("sync", "Could not update skins from the API; using saved skins", t);
+         return new SyncResult(SyncOutcome.FAILED, 0, t);
       }finally{
          RUNNING.set(false);
       }
-      ArcanaSkins.rebuildPackIfStale();
+   }
+   
+   enum SyncOutcome {UP_TO_DATE, DOWNLOADED, EMPTIED, FAILED, BUSY, DISABLED}
+   
+   record SyncResult(SyncOutcome outcome, int skins, @Nullable Throwable cause) {
    }
    
    interface ApiCall<T> {

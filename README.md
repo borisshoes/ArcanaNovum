@@ -36,6 +36,7 @@ If everything is done correctly, then players will automatically load into the s
 Cosmetic item skins are not bundled with the mod. The server downloads them from the Arcana Novum skin API at startup, saves them in `config/arcananovum/skins`, and adds them to the resource pack when it is generated. Which skins a player has unlocked is looked up from the same API when they join.
 * A dedicated server checks for new skins about once an hour. With auto-host enabled, it regenerates the resource pack by itself when skins have changed (at most once an hour), and players receive the new pack the next time they join. Nothing is pushed to players who are online: until they rejoin, they see the default look on items wearing a skin their pack does not have yet.
 * Without auto-host, new skins become usable after a restart or after running `/polymer generate-pack` and updating the pack you host.
+* `/arcana fetchSkins` runs the check on demand, so a new skin does not have to wait for the hourly check or a restart.
 * If the API cannot be reached, the skins and unlocks saved from the last successful check keep working.
 * Skin unlocks are tied to Minecraft accounts, so they are not looked up on offline-mode servers.
 * A server without internet access can set `skinsEnabled` to false and copy the `config/arcananovum/skins/current` folder from an online install.
@@ -72,6 +73,7 @@ Cosmetic item skins are not bundled with the mod. The server downloads them from
 * ```/arcana augment setlevel <id> <level> [<target>]``` Sets an Augment to the specified level for a player. Use level 0 to remove.
 * ```/arcana changeCrafter <username> crafted|synthesized|earned|found``` Changes the crafter tag on the held Arcana Item to the specified player and acquisition type.
 * ```/arcana changeSkin <skin>``` Changes the cosmetic skin on the held Arcana Item to an unlocked skin, or "none" to reset to default.
+* ```/arcana fetchSkins``` Checks the skin API for new or changed skins right away instead of waiting for the next hourly check. With auto-host enabled, the resource pack is regenerated straight after if anything changed, without the hourly limit of the automatic rebuilds.
 * ```/arcana boss start dragon``` Starts the Dragon Boss fight.
 * ```/arcana boss resetAbilities <doAbility>``` Resets the boss's ability cycle. Set doAbility to true to immediately trigger a new ability.
 * ```/arcana boss forceLairAction``` Forces the boss to perform a lair action.
@@ -683,6 +685,7 @@ Arcana Novum uses the [Fabric Permissions API](https://github.com/lucko/fabric-p
 | `arcananovum.uuids` | `GAMEMASTERS` | View a player's Arcana item UUIDs via `/arcana uuids`                    |
 | `arcananovum.changecrafter` | `GAMEMASTERS` | Change the crafter tag on an item via `/arcana changeCrafter`            |
 | `arcananovum.changeskin` | `GAMEMASTERS` | Change the skin on an item via `/arcana changeSkin`                      |
+| `arcananovum.fetchskins` | `GAMEMASTERS` | Check the skin API for new skins via `/arcana fetchSkins`                |
 
 #### Infusion
 | Node | Default | Description |

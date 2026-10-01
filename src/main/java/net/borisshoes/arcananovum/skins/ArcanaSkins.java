@@ -23,6 +23,8 @@ import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 import net.minecraft.WorldVersion;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
@@ -347,31 +349,39 @@ public final class ArcanaSkins {
       packedSince = updated;
    }
    
-   static void rebuildPackIfStale(){
+   // A manual rebuild comes from the fetch command: it skips the hourly limit, which only holds back the automatic ones
+   static RebuildOutcome rebuildPackIfStale(boolean manual){
       try{
          MinecraftServer server = BorisLib.SERVER;
          String built = builtPackHash;
-         if(!SkinSync.dedicated() || server == null || !server.isRunning() || built == null) return;
+         if(server == null || !server.isRunning()) return RebuildOutcome.NOT_NEEDED;
+         if(!SkinSync.dedicated()){ // The client only builds its pack when the game launches
+            return !manual || SkinStore.currentPackHash().equals(built) ? RebuildOutcome.NOT_NEEDED : RebuildOutcome.NEEDS_RELAUNCH;
+         }
+         if(built == null){
+            if(!manual) return RebuildOutcome.NOT_NEEDED;
+            built = SkinStore.lastBuiltPackHash(); // No build yet this session, so go by the last one on record
+         }
          String saved = SkinStore.currentPackHash();
-         if(saved.equals(built)) return;
+         if(saved.equals(built)) return RebuildOutcome.NOT_NEEDED;
          if(!AutoHost.config.enabled){
             if(!saved.equals(staleNoticeFor)){
                staleNoticeFor = saved;
                ArcanaSkins.info("Skins changed since the resource pack was last built; run /polymer generate-pack");
             }
-            return;
+            return RebuildOutcome.NEEDS_COMMAND;
          }
          long now = System.currentTimeMillis();
          long wait = lastRebuild + REBUILD_GAP_MS - now;
-         if(wait > 0){
+         if(wait > 0 && !manual){
             ArcanaSkins.dev("Skins changed, but the resource pack was rebuilt for skins less than an hour ago; checking again in {}s", wait / 1000);
             if(REBUILD_CHECK_QUEUED.compareAndSet(false, true)){
                SkinSync.EXEC.schedule(() -> {
                   REBUILD_CHECK_QUEUED.set(false);
-                  rebuildPackIfStale();
+                  rebuildPackIfStale(false);
                }, wait, TimeUnit.MILLISECONDS);
             }
-            return;
+            return RebuildOutcome.WAITING;
          }
          lastRebuild = now;
          ArcanaSkins.info("Skins changed on the skin API; rebuilding the resource pack. Players get the new skins the next time they join");
@@ -382,9 +392,39 @@ public final class ArcanaSkins {
                ArcanaSkins.warn("pack-rebuild", "Could not rebuild the resource pack for the new skins; run /polymer generate-pack", t);
             }
          });
+         return RebuildOutcome.STARTED;
       }catch(Throwable t){
          ArcanaSkins.warn("pack-rebuild", "Could not rebuild the resource pack for the new skins; run /polymer generate-pack", t);
+         return RebuildOutcome.FAILED;
       }
+   }
+   
+   // For the fetch command: checks the skin API now instead of waiting for the next scheduled pass, and tells the source how it went
+   public static void fetchNow(CommandSourceStack source){
+      MinecraftServer server = source.getServer();
+      source.sendSuccess(() -> Component.translatable("command.arcananovum.skin_fetch_start"), false);
+      SkinSync.EXEC.execute(() -> {
+         SkinSync.SyncResult result = SkinSync.sync();
+         boolean ran = result.outcome() != SkinSync.SyncOutcome.DISABLED && result.outcome() != SkinSync.SyncOutcome.BUSY;
+         RebuildOutcome rebuild = ran ? rebuildPackIfStale(true) : RebuildOutcome.NOT_NEEDED;
+         server.execute(() -> {
+            switch(result.outcome()){
+               case UP_TO_DATE -> source.sendSuccess(() -> Component.translatable("command.arcananovum.skin_fetch_up_to_date"), false);
+               case DOWNLOADED -> source.sendSuccess(() -> Component.translatable("command.arcananovum.skin_fetch_downloaded", result.skins()), false);
+               case EMPTIED -> source.sendSuccess(() -> Component.translatable("command.arcananovum.skin_fetch_emptied"), false);
+               case FAILED -> source.sendFailure(Component.translatable("command.arcananovum.skin_fetch_failed", describe(result.cause())));
+               case BUSY -> source.sendFailure(Component.translatable("command.arcananovum.skin_fetch_busy"));
+               case DISABLED -> source.sendFailure(Component.translatable("command.arcananovum.skin_fetch_disabled"));
+            }
+            switch(rebuild){
+               case STARTED -> source.sendSuccess(() -> Component.translatable("command.arcananovum.skin_fetch_rebuild"), false);
+               case NEEDS_COMMAND -> source.sendSuccess(() -> Component.translatable("command.arcananovum.skin_fetch_rebuild_command"), false);
+               case NEEDS_RELAUNCH -> source.sendSuccess(() -> Component.translatable("command.arcananovum.skin_fetch_relaunch"), false);
+               case FAILED -> source.sendFailure(Component.translatable("command.arcananovum.skin_fetch_rebuild_failed"));
+               case NOT_NEEDED, WAITING -> {}
+            }
+         });
+      });
    }
    
    private static void addTranslations(ResourcePackBuilder builder, SkinCatalog catalog){
@@ -510,6 +550,8 @@ public final class ArcanaSkins {
    }
    
    // ===== Records =====
+   
+   enum RebuildOutcome {NOT_NEEDED, STARTED, NEEDS_COMMAND, NEEDS_RELAUNCH, WAITING, FAILED}
    
    record SkinGrant(String id, long expires) {
       boolean active(long now){

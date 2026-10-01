@@ -145,6 +145,7 @@ public class CommandRegisterCallback {
             .then(literal("changeSkin").requires(arcanaPermission(MOD_ID + ".changeskin", PermissionLevel.GAMEMASTERS))
                   .then(argument("skin", id()).suggests(CommandRegisterCallback::getSkinSuggestions)
                         .executes(context -> ArcanaCommands.changeSkin(context, String.valueOf(IdentifierArgument.getId(context, "skin"))))))
+            .then(literal("fetchSkins").requires(arcanaPermission(MOD_ID + ".fetchskins", PermissionLevel.GAMEMASTERS)).executes(ArcanaCommands::fetchSkins))
             .then(literal("boss").requires(arcanaPermission(MOD_ID + ".boss", PermissionLevel.ALL))
                   .then(literal("start").requires(arcanaPermission(MOD_ID + ".boss.start", PermissionLevel.GAMEMASTERS))
                         .then(literal("dragon").executes(ArcanaCommands::startDragonBoss)))

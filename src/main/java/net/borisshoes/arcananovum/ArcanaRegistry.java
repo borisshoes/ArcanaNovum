@@ -31,6 +31,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.core.polymer.BlockPartItem;
 import net.borisshoes.arcananovum.datagen.DefaultRecipeGenerator;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.effects.DeathWardEffect;

@@ -11,9 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class ArcanaSkin implements StringRepresentable {
    
@@ -30,6 +28,7 @@ public final class ArcanaSkin implements StringRepresentable {
    private final int primaryColor;
    private final int secondaryColor;
    private final List<Pair<String, String>> attributions;
+   private final Set<String> blockParts; // The block parts this skin replaces, from its files in models/block/skins/<skin id>/
    
    private ArcanaSkin(ArcanaItem arcanaItem, Identifier id, String hash, List<String> files, Map<String, Map<String, String>> translations, int primaryColor, int secondaryColor, List<Pair<String, String>> attributions){
       this.arcanaItem = arcanaItem;
@@ -40,6 +39,15 @@ public final class ArcanaSkin implements StringRepresentable {
       this.primaryColor = primaryColor;
       this.secondaryColor = secondaryColor;
       this.attributions = attributions;
+      
+      String partFolder = "/assets/" + id.getNamespace() + "/models/block/skins/" + id.getPath() + "/";
+      Set<String> parts = new TreeSet<>();
+      for(String file : files){
+         if(!file.startsWith(partFolder) || !file.endsWith(".json")) continue;
+         String part = file.substring(partFolder.length(), file.length() - ".json".length());
+         if(!part.isEmpty() && !part.contains("/")) parts.add(part);
+      }
+      this.blockParts = Collections.unmodifiableSet(parts);
    }
    
    @Nullable
@@ -93,6 +101,16 @@ public final class ArcanaSkin implements StringRepresentable {
    
    public boolean hasEquipmentAsset(){
       return files.contains("/assets/" + id.getNamespace() + "/equipment/skins/" + id.getPath() + ".json");
+   }
+   
+   public Set<String> getBlockParts(){
+      return blockParts;
+   }
+   
+   // A replacement keeps the name of the part it replaces, in the skin's own folder: models/block/skins/<skin id>/<part>.json
+   @Nullable
+   public Identifier getBlockPartModel(String part){
+      return blockParts.contains(part) ? ArcanaRegistry.arcanaId("block/skins/" + id.getPath() + "/" + part) : null;
    }
    
    public int getPrimaryColor(){
