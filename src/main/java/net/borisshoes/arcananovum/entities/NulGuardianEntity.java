@@ -45,6 +45,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    
@@ -235,8 +236,11 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
       mage = view.getBooleanOr("mage", false);
       
       if(level() instanceof ServerLevel serverWorld){
-         if(serverWorld.getEntity(AlgoUtils.getUUID(view.getStringOr("construct", ""))) instanceof NulConstructEntity con){
+         UUID conId = AlgoUtils.getUUID(view.getStringOr("construct", ""));
+         if(serverWorld.getEntity(conId) instanceof NulConstructEntity con){
             this.construct = con;
+         }else if(!conId.toString().equals(BorisLib.BLANK_UUID)){
+            discard();
          }
       }
    }

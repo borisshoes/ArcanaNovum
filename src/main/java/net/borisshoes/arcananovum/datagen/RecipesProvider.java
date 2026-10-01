@@ -17,6 +17,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CookingBookCategory;
+import net.minecraft.world.item.crafting.DyeRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 
@@ -50,6 +51,8 @@ public class RecipesProvider extends FabricRecipeProvider {
             SimpleCookingRecipeBuilder.generic(Ingredient.of(ArcanaRegistry.WAYSTONE.getItem()), RecipeCategory.MISC, CookingBookCategory.MISC, ArcanaRegistry.WAYSTONE.getItem(), 10f, 1200, WaystoneCleanseRecipe::new)
                   .unlockedBy(getHasName(ArcanaRegistry.WAYSTONE.getItem()), this.has(ArcanaRegistry.WAYSTONE.getItem()))
                   .save(this.output, recipeKey("waystone_cleanse"));
+            
+            dyedItem(ArcanaRegistry.SOJOURNER_BOOTS.getItem(), "sojourners_boots_dye");
          }
          
          private ResourceKey<Recipe<?>> recipeKey(String name){

@@ -20,6 +20,9 @@ import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.IngredientCondition;
+import net.borisshoes.arcananovum.recipes.RecipeManager;
+import net.borisshoes.arcananovum.recipes.transmutation.*;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.research.*;
 import net.borisshoes.arcananovum.utils.ConfigUnits;
 import net.borisshoes.borislib.config.ConfigValue;
@@ -47,6 +50,8 @@ import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -82,7 +87,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
  * All text is plain ({@link Component#getString()}), with multi-line text split into arrays.
  */
 public class WikiExporter {
-   public static final String SCHEMA_VERSION = "3.0.1";
+   public static final String SCHEMA_VERSION = "4.1.0";
    public static final String EXPORT_FOLDER = "arcana-export";
    public static final String EXPORT_FILE = "export.json";
    
@@ -98,7 +103,7 @@ public class WikiExporter {
       this.registryAccess = server.registryAccess();
    }
    
-   public record Result(Path path, boolean defaultConfig, int items, int modItems, int augments, int achievements, int research, int configs, List<String> warnings) {}
+   public record Result(Path path, boolean defaultConfig, int items, int modItems, int augments, int achievements, int research, int configs, int skins, int transmutations, List<String> warnings) {}
    
    public static Result export(MinecraftServer server) throws IOException{
       return new WikiExporter(server).run();
@@ -116,12 +121,16 @@ public class WikiExporter {
       JsonArray achievements = buildAchievements();
       JsonArray research = buildResearch();
       JsonArray configs = buildConfigs();
+      JsonArray skins = buildSkins();
+      JsonArray transmutations = buildTransmutations();
       root.add("items", items);
       root.add("mod_items", modItems);
       root.add("augments", augments);
       root.add("achievements", achievements);
       root.add("research", research);
       root.add("configs", configs);
+      root.add("skins", skins);
+      root.add("transmutations", transmutations);
    
       Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().serializeNulls().create(); // The contract requires explicit nulls
       Path dir = FabricLoader.getInstance().getGameDir().resolve(EXPORT_FOLDER);
@@ -132,7 +141,7 @@ public class WikiExporter {
       for(String warning : warnings){
          ArcanaNovum.log(1, "[Wiki Export] " + warning);
       }
-      return new Result(file, defaultConfig, items.size(), modItems.size(), augments.size(), achievements.size(), research.size(), configs.size(), warnings);
+      return new Result(file, defaultConfig, items.size(), modItems.size(), augments.size(), achievements.size(), research.size(), configs.size(), skins.size(), transmutations.size(), warnings);
    }
    
    // ========== Mod & Rarities ==========
@@ -182,13 +191,13 @@ public class WikiExporter {
    
    private JsonArray buildItems(){
       Map<String, ArcanaRecipe> defaultRecipes = loadRecipes("default");
-      Map<String, ArcanaRecipe> originalRecipes = loadRecipes("classic");
+      Map<String, ArcanaRecipe> classicRecipes = loadRecipes("classic");
    
       JsonArray items = new JsonArray();
       List<ArcanaItem> arcanaItems = ArcanaRegistry.ARCANA_ITEMS.stream().sorted(Comparator.comparing(ArcanaItem::getId)).toList();
       for(ArcanaItem arcanaItem : arcanaItems){
          try{
-            items.add(buildItem(arcanaItem, defaultRecipes.get(arcanaItem.getId()), originalRecipes.get(arcanaItem.getId())));
+            items.add(buildItem(arcanaItem, defaultRecipes.get(arcanaItem.getId()), classicRecipes.get(arcanaItem.getId())));
          }catch(Exception e){
             warnings.add("Failed to export item " + arcanaItem.getId() + ": " + e);
          }
@@ -196,7 +205,7 @@ public class WikiExporter {
       return items;
    }
    
-   private JsonObject buildItem(ArcanaItem arcanaItem, ArcanaRecipe defaultRecipe, ArcanaRecipe originalRecipe){
+   private JsonObject buildItem(ArcanaItem arcanaItem, ArcanaRecipe defaultRecipe, ArcanaRecipe classicRecipe){
       ItemStack prefItem = arcanaItem.getPrefItem();
       JsonObject obj = new JsonObject();
       obj.addProperty("id", arcanaItem.getId());
@@ -234,10 +243,10 @@ public class WikiExporter {
    
       JsonObject recipes = new JsonObject();
       recipes.add("default", defaultRecipe == null ? JsonNull.INSTANCE : buildRecipe(defaultRecipe));
-      recipes.add("original", originalRecipe == null ? JsonNull.INSTANCE : buildRecipe(originalRecipe));
+      recipes.add("classic", classicRecipe == null ? JsonNull.INSTANCE : buildRecipe(classicRecipe));
       obj.add("recipes", recipes);
    
-      JsonArray attributions = buildAttributions(arcanaItem);
+      JsonArray attributions = buildAttributions(arcanaItem.getAttributions());
       if(!attributions.isEmpty()) obj.add("attributions", attributions);
    
       if(arcanaItem instanceof RunicArrow){
@@ -323,9 +332,9 @@ public class WikiExporter {
       return pages;
    }
    
-   private JsonArray buildAttributions(ArcanaItem arcanaItem){
+   private JsonArray buildAttributions(Pair<MutableComponent, MutableComponent>[] attributions){
       JsonArray arr = new JsonArray();
-      for(Pair<MutableComponent, MutableComponent> attribution : arcanaItem.getAttributions()){
+      for(Pair<MutableComponent, MutableComponent> attribution : attributions){
          Component roleText = attribution.getFirst();
          Component nameText = attribution.getSecond();
          String role = "other";
@@ -335,6 +344,7 @@ public class WikiExporter {
                case "credits_and_attribution.arcananovum.model_by" -> "model";
                case "credits_and_attribution.arcananovum.code_by" -> "code";
                case "credits_and_attribution.arcananovum.inspired_by" -> "inspiration";
+               case "credits_and_attribution.arcananovum.skin_by" -> "skin";
                default -> "other";
             };
          }
@@ -472,43 +482,105 @@ public class WikiExporter {
    }
    
    private JsonObject ingredientJson(ArcanaIngredient ingredient){
+      JsonObject requires = requirements(ingredient);
       List<Either<Item, TagKey<Item>>> accepted = ingredient.getAcceptedItems();
       if(accepted.size() == 1 && accepted.getFirst().right().isPresent()){
-         JsonObject obj = tagRef(accepted.getFirst().right().get());
-         JsonElement items = obj.remove("items"); // Schema key order: tag, name, count, items
-         obj.addProperty("count", ingredient.getCount());
-         obj.add("items", items);
+         JsonObject obj = tagIngredient(accepted.getFirst().right().get(), ingredient.getCount());
+         if(requires != null) obj.add("requires", requires);
          return obj;
       }
       if(accepted.size() > 1){
          warnings.add("Ingredient accepting several items/tags " + accepted + " exported as its example item only");
       }
    
-      Item item = ingredient.ingredientAsStack().getItem();
-      JsonObject ref = itemRef(item, ingredient.getPotion(), ingredient.getEnchantments());
+      // The name is the item type's name: what the contents must be goes in `requires`
+      JsonObject obj = itemIngredient(ingredient.ingredientAsStack().getItem(), ingredient.getCount());
+      List<IngredientCondition> conditions = ingredient.getConditions();
+      if(!conditions.isEmpty()) obj.add("conditions", conditionsJson(conditions));
+      if(requires != null) obj.add("requires", requires);
+      return obj;
+   }
+   
+   /**
+    * The minimum contents an ingredient checks for, mirroring the predicates built by
+    * {@link ArcanaIngredient#withPotion}, {@link ArcanaIngredient#withEffects} and {@link ArcanaIngredient#withEnchantments}:
+    * every effect at or above its amplifier and duration, every enchantment at or above its level.
+    */
+   private JsonObject requirements(ArcanaIngredient ingredient){
+      List<MobEffectInstance> effectInstances = new ArrayList<>();
+      if(ingredient.getPotion() != null) effectInstances.addAll(ingredient.getPotion().value().getEffects());
+      effectInstances.addAll(ingredient.getEffects());
+      TreeMap<String, JsonObject> effects = new TreeMap<>();
+      for(MobEffectInstance instance : effectInstances){
+         Holder<MobEffect> effect = instance.getEffect();
+         String id = effect.unwrapKey().orElseThrow().identifier().toString();
+         JsonObject obj = new JsonObject();
+         obj.addProperty("id", id);
+         obj.addProperty("name", effect.value().getDisplayName().getString());
+         obj.addProperty("min_amplifier", Math.max(0, instance.getAmplifier()));
+         // Instant effects have no meaningful duration, so any duration passes the check
+         if(!effect.value().isInstantaneous() && instance.getDuration() > 1){
+            obj.addProperty("min_duration_ticks", instance.getDuration());
+         }
+         if(effects.putIfAbsent(id, obj) != null){
+            warnings.add("Ingredient requires effect " + id + " twice, keeping the first requirement");
+         }
+      }
+   
+      TreeMap<String, JsonObject> enchantments = new TreeMap<>();
+      for(Pair<ResourceKey<Enchantment>, Integer> pair : ingredient.getEnchantments()){
+         String id = pair.getFirst().identifier().toString();
+         JsonObject obj = new JsonObject();
+         obj.addProperty("id", id);
+         obj.addProperty("name", registryAccess.lookupOrThrow(Registries.ENCHANTMENT).get(pair.getFirst())
+               .map(holder -> holder.value().description().getString())
+               .orElse(pair.getFirst().identifier().getPath()));
+         obj.addProperty("min_level", Math.max(1, pair.getSecond()));
+         if(enchantments.putIfAbsent(id, obj) != null){
+            warnings.add("Ingredient requires enchantment " + id + " twice, keeping the first requirement");
+         }
+      }
+   
+      if(effects.isEmpty() && enchantments.isEmpty()) return null;
+      JsonObject requires = new JsonObject();
+      if(!effects.isEmpty()){
+         JsonArray arr = new JsonArray();
+         effects.values().forEach(arr::add);
+         requires.add("effects", arr);
+      }
+      if(!enchantments.isEmpty()){
+         JsonArray arr = new JsonArray();
+         enchantments.values().forEach(arr::add);
+         requires.add("enchantments", arr);
+      }
+      return requires;
+   }
+   
+   private JsonObject itemIngredient(Item item, int count){
+      JsonObject ref = itemRef(item, null, List.of());
       JsonObject obj = new JsonObject();
       obj.add("id", ref.get("id"));
       obj.add("name", ref.get("name"));
-      obj.addProperty("count", ingredient.getCount());
-      if(ref.has("potion")) obj.add("potion", ref.get("potion"));
-      if(ref.has("enchantments")) obj.add("enchantments", ref.get("enchantments"));
-      List<IngredientCondition> conditions = ingredient.getConditions();
-      if(!conditions.isEmpty()){
-         JsonArray arr = new JsonArray();
-         for(IngredientCondition condition : conditions){
-            JsonObject cond = new JsonObject();
-            cond.addProperty("type", condition.type());
-            cond.add("value", switch(condition.value()){
-               case Boolean b -> new JsonPrimitive(b);
-               case Number n -> new JsonPrimitive(n);
-               default -> new JsonPrimitive(String.valueOf(condition.value()));
-            });
-            cond.addProperty("text", sanitizeLine(condition.text()));
-            arr.add(cond);
-         }
-         obj.add("conditions", arr);
-      }
+      obj.addProperty("count", count);
       return obj;
+   }
+   
+   private JsonObject tagIngredient(TagKey<Item> tag, int count){
+      JsonObject obj = tagRef(tag);
+      JsonElement items = obj.remove("items"); // Schema key order: tag, name, count, items
+      obj.addProperty("count", count);
+      obj.add("items", items);
+      return obj;
+   }
+   
+   // An item-or-tag list as used by transmutation recipes; the contract has no "any of" form
+   private JsonObject eitherIngredient(List<Either<Item, TagKey<Item>>> options, int count, String where){
+      if(options.isEmpty()) throw new IllegalStateException(where + " has no items");
+      if(options.size() > 1){
+         warnings.add(where + " accepts several items/tags " + options + ", exported as the first only");
+      }
+      Either<Item, TagKey<Item>> first = options.getFirst();
+      return first.left().isPresent() ? itemIngredient(first.left().get(), count) : tagIngredient(first.right().orElseThrow(), count);
    }
    
    // ========== Multiblocks ==========
@@ -798,8 +870,19 @@ public class WikiExporter {
    // ========== Configs ==========
    
    private JsonArray buildConfigs(){
-      // Configs are linked to items only where the mod declares it: augment descriptions reference their configs
+      // Configs are linked to items only where the mod declares it: an item's own related configs,
+      // plus the configs its augments' descriptions reference
       Map<String, TreeSet<String>> configItems = new HashMap<>();
+      for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
+         if(arcanaItem.getRelatedConfigs() == null) continue;
+         for(IConfigSetting<?> setting : arcanaItem.getRelatedConfigs()){
+            if(setting == null){
+               warnings.add("Item " + arcanaItem.getId() + " lists a null related config");
+               continue;
+            }
+            configItems.computeIfAbsent(setting.getName(), k -> new TreeSet<>()).add(arcanaItem.getId());
+         }
+      }
       for(ArcanaAugment augment : ArcanaAugments.registry.values()){
          if(augment.getRelatedConfigs() == null || augment.getArcanaItem() == null) continue;
          for(Pair<IConfigSetting<?>, ConfigUnits> related : augment.getRelatedConfigs()){
@@ -889,6 +972,228 @@ public class WikiExporter {
       return field.get(instance);
    }
    
+   // ========== Skins ==========
+   
+   private JsonArray buildSkins(){
+      JsonArray arr = new JsonArray();
+      List<ArcanaSkin> skins = Arrays.stream(ArcanaSkin.values()).sorted(Comparator.comparing(skin -> skin.getId().getPath())).toList();
+      for(ArcanaSkin skin : skins){
+         try{
+            JsonObject obj = new JsonObject();
+            obj.addProperty("id", skin.getId().getPath());
+            obj.addProperty("name", skin.getName().getString());
+            obj.add("description", lines(skin.getDescription(), true));
+            obj.addProperty("item", skin.getArcanaItem().getId());
+            obj.addProperty("primary_color", hexColor(skin.getPrimaryColor()));
+            obj.addProperty("secondary_color", hexColor(skin.getSecondaryColor()));
+            obj.add("attributions", buildAttributions(skin.getAttributions()));
+            arr.add(obj);
+         }catch(Exception e){
+            warnings.add("Failed to export skin " + skin.getSerializedName() + ": " + e);
+         }
+      }
+      return arr;
+   }
+   
+   // ========== Transmutations ==========
+   
+   private JsonArray buildTransmutations(){
+      // Commutative and infusion recipes come from each pack's JSON. The rest are defined in code and
+      // are the same under either pack, so they only have a default.
+      Map<String, TransmutationRecipe> defaults = loadTransmutations("default");
+      for(TransmutationRecipe recipe : RecipeManager.TRANSMUTATION_RECIPES){
+         if(recipe instanceof CommutativeTransmutationRecipe || recipe instanceof InfusionTransmutationRecipe) continue;
+         defaults.putIfAbsent(recipe.getId(), recipe);
+      }
+      Map<String, TransmutationRecipe> classics = loadTransmutations("classic");
+      for(String id : classics.keySet()){
+         if(!defaults.containsKey(id)) warnings.add("Transmutation " + id + " exists only in the classic pack, skipping");
+      }
+   
+      JsonArray arr = new JsonArray();
+      for(String id : new TreeSet<>(defaults.keySet())){
+         TransmutationRecipe recipe = defaults.get(id);
+         try{
+            String type = transmutationType(recipe);
+            JsonObject recipes = new JsonObject();
+            recipes.add("default", transmutationBody(recipe));
+            TransmutationRecipe classic = classics.get(id);
+            if(classic != null && !transmutationType(classic).equals(type)){
+               warnings.add("Classic transmutation " + id + " is a different type than the default, exporting classic as null");
+               classic = null;
+            }
+            recipes.add("classic", classic == null ? JsonNull.INSTANCE : transmutationBody(classic));
+   
+            JsonObject obj = new JsonObject();
+            obj.addProperty("id", id);
+            obj.addProperty("type", type);
+            obj.addProperty("name", sanitizeLine(recipe.getName().getString()));
+            obj.add("recipes", recipes);
+            arr.add(obj);
+         }catch(Exception e){
+            warnings.add("Failed to export transmutation " + id + ": " + e);
+         }
+      }
+      return arr;
+   }
+   
+   private Map<String, TransmutationRecipe> loadTransmutations(String folder){
+      Map<String, TransmutationRecipe> recipes = new HashMap<>();
+      Path dir = FabricLoader.getInstance().getConfigDir().resolve("arcananovum").resolve("recipes").resolve(folder);
+      if(!Files.isDirectory(dir)) return recipes; // Already reported by loadRecipes
+      List<Path> files;
+      try(Stream<Path> paths = Files.walk(dir)){
+         files = paths.filter(Files::isRegularFile).filter(path -> path.toString().endsWith(".json")).sorted().toList();
+      }catch(IOException e){
+         warnings.add("Could not read recipe folder " + dir + ": " + e.getMessage());
+         return recipes;
+      }
+      for(Path file : files){
+         try{
+            JsonObject json = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+            if(!json.has("type")) continue;
+            TransmutationRecipe recipe = switch(json.get("type").getAsString()){
+               case "arcananovum:commutative_transmutation" -> CommutativeTransmutationRecipe.fromJson(json);
+               case "arcananovum:infusion_transmutation" -> InfusionTransmutationRecipe.fromJson(json);
+               default -> null;
+            };
+            if(recipe == null) continue;
+            if(recipes.putIfAbsent(recipe.getId(), recipe) != null){
+               warnings.add("Multiple " + folder + " transmutations with id " + recipe.getId() + ", using the first (" + dir.relativize(file) + " ignored)");
+            }
+         }catch(Exception e){
+            warnings.add("Failed to read transmutation " + file + ": " + e.getMessage());
+         }
+      }
+      return recipes;
+   }
+   
+   private static String transmutationType(TransmutationRecipe recipe){
+      return switch(recipe){
+         case CommutativeTransmutationRecipe ignored -> "commutative";
+         case InfusionTransmutationRecipe ignored -> "infusion";
+         case PermutationTransmutationRecipe ignored -> "permutation";
+         case AequalisCatalystTransmutationRecipe ignored -> "aequalis_catalyst";
+         case AequalisSkillTransmutationRecipe ignored -> "aequalis_skill";
+         case AequalisUnattuneTransmutationRecipe ignored -> "aequalis_unattune";
+         case TransmogrificationTransmutationRecipe ignored -> "transmogrification";
+         default -> throw new IllegalStateException("Unknown transmutation class " + recipe.getClass().getSimpleName());
+      };
+   }
+   
+   private JsonObject transmutationBody(TransmutationRecipe recipe){
+      String where = "Transmutation " + recipe.getId();
+      JsonArray reagents = new JsonArray();
+      reagents.add(eitherIngredient(recipe.getReagent1(), recipe.getReagent1Count(), where + " reagent 1"));
+      reagents.add(eitherIngredient(recipe.getReagent2(), recipe.getReagent2Count(), where + " reagent 2"));
+   
+      JsonObject body = new JsonObject();
+      body.add("reagents", reagents);
+      switch(recipe){
+         case CommutativeTransmutationRecipe commutative -> {
+            JsonArray pool = new JsonArray();
+            Set<Item> seenItems = new HashSet<>();
+            for(Either<Item, TagKey<Item>> entry : commutative.getCommunalInputs()){
+               if(entry.left().isPresent()){
+                  // Block tags are expanded to items when the recipe is built, which can repeat a listed item
+                  if(!seenItems.add(entry.left().get())) continue;
+                  pool.add(itemRef(entry.left().get(), null, List.of()));
+               }else{
+                  pool.add(tagRef(entry.right().orElseThrow()));
+               }
+            }
+            body.add("pool", pool);
+            body.add("view_item", itemRef(commutative.getViewStack().getItem(), null, List.of()));
+         }
+         case InfusionTransmutationRecipe infusion -> {
+            body.add("input", eitherIngredient(infusion.getInputs(), infusion.getInputCount(), where + " input"));
+            body.add("output", stackJson(infusion.getOutput(), infusion.getOutputCount()));
+         }
+         case PermutationTransmutationRecipe permutation -> {
+            // The input check matches Arcana items by id alone, so e.g. any Itineranteur counts
+            ItemStack input = permutation.getInput();
+            body.add("input", itemIngredient(input.getItem(), input.getCount()));
+            body.addProperty("result", sanitizeLine(permutation.getOutputDescription().getString()));
+         }
+         default -> body.add("slots", specialSlots(recipe));
+      }
+      return body;
+   }
+   
+   /**
+    * Pad descriptions for the hard-coded recipes. The text is worded as the Transmutation Altar recipe GUI
+    * shows it; the conditions are what each recipe's canTransmute checks beyond that wording.
+    */
+   private JsonObject specialSlots(TransmutationRecipe recipe){
+      IngredientCondition notMatrix = new IngredientCondition("excluded_item", ArcanaRegistry.arcanaId(ArcanaRegistry.CATALYTIC_MATRIX.getId()).toString(), "Can't be a Catalytic Matrix");
+      IngredientCondition aequalisResearched = new IngredientCondition("crafter_researched", ArcanaRegistry.AEQUALIS_SCIENTIA.getId(),
+            "The Aequalis Scientia's crafter must be online and have researched it");
+      JsonObject slots = new JsonObject();
+      switch(recipe){
+         case AequalisCatalystTransmutationRecipe ignored -> {
+            slots.add("input", slot("An Arcana Item", null,
+                  notMatrix,
+                  new IngredientCondition("excluded_type", "runic_arrow", "Runic Arrows can't be used")));
+            slots.add("focus", slot("1-4 Catalytic Matrices", ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
+            slots.add("aequalis", slot("Your Aequalis Scientia", ArcanaRegistry.AEQUALIS_SCIENTIA.getItem(),
+                  new IngredientCondition("augment", ArcanaAugments.EQUIVALENT_EXCHANGE.id, "The Aequalis Scientia must have Equivalent Exchange"),
+                  aequalisResearched));
+         }
+         case AequalisSkillTransmutationRecipe ignored -> {
+            slots.add("input", slot("An Arcana Item", null, notMatrix));
+            slots.add("focus", slot("An Arcana Item", null, notMatrix));
+            slots.add("aequalis", slot("Your Aequalis Scientia", ArcanaRegistry.AEQUALIS_SCIENTIA.getItem(), aequalisResearched));
+         }
+         case AequalisUnattuneTransmutationRecipe ignored -> slots.add("input", slot("An Aequalis Scientia", ArcanaRegistry.AEQUALIS_SCIENTIA.getItem(),
+               new IngredientCondition("attuned", true, "Must be attuned"),
+               new IngredientCondition("augment", ArcanaAugments.IMPERMANENT_PERMUTATION.id, "The Aequalis Scientia must have Impermanent Permutation")));
+         case TransmogrificationTransmutationRecipe ignored -> {
+            slots.add("input", slot("An Arcana Item", null,
+                  new IngredientCondition("excluded_item", ArcanaRegistry.arcanaId(ArcanaRegistry.TRANSMOGRIFICATION_CATALYST.getId()).toString(), "Can't be a Transmogrification Catalyst")));
+            slots.add("focus", slot("A Transmogrification Catalyst", ArcanaRegistry.TRANSMOGRIFICATION_CATALYST.getItem(),
+                  new IngredientCondition("skin_matches_input", true, "The selected skin must be for the input item and differ from its current skin, or no skin to remove the input's skin")));
+         }
+         default -> throw new IllegalStateException("No slot description for " + recipe.getId());
+      }
+      return slots;
+   }
+
+   private JsonObject slot(String text, Item item, IngredientCondition... conditions){
+      JsonObject obj = new JsonObject();
+      obj.addProperty("text", text);
+      if(item != null) obj.add("item", itemRef(item, null, List.of()));
+      if(conditions.length > 0) obj.add("conditions", conditionsJson(List.of(conditions)));
+      return obj;
+   }
+
+   private JsonArray conditionsJson(List<IngredientCondition> conditions){
+      JsonArray arr = new JsonArray();
+      for(IngredientCondition condition : conditions){
+         JsonObject cond = new JsonObject();
+         cond.addProperty("type", condition.type());
+         cond.add("value", switch(condition.value()){
+            case Boolean b -> new JsonPrimitive(b);
+            case Number n -> new JsonPrimitive(n);
+            default -> new JsonPrimitive(String.valueOf(condition.value()));
+         });
+         cond.addProperty("text", sanitizeLine(condition.text()));
+         arr.add(cond);
+      }
+      return arr;
+   }
+   
+   // An exact stack, e.g. a transmutation output: named as the game names that stack
+   private JsonObject stackJson(ItemStack stack, int count){
+      JsonObject ref = itemRef(stack);
+      JsonObject obj = new JsonObject();
+      obj.add("id", ref.get("id"));
+      obj.add("name", ref.get("name"));
+      obj.addProperty("count", Math.max(1, count));
+      if(ref.has("potion")) obj.add("potion", ref.get("potion"));
+      if(ref.has("enchantments")) obj.add("enchantments", ref.get("enchantments"));
+      return obj;
+   }
+   
    // ========== Shared Helpers ==========
    
    private JsonObject itemRef(ItemStack stack){
@@ -920,7 +1225,8 @@ public class WikiExporter {
          stack.set(DataComponents.POTION_CONTENTS, new PotionContents(potion));
          name = stack.getHoverName().getString();
       }else{
-         name = new ItemStack(item).getItemName().getString();
+         // Not getItemName(): potions derive it from their contents, so an empty one is "Uncraftable Potion"
+         name = Component.translatable(item.getDescriptionId()).getString();
       }
       obj.addProperty("name", name);
    

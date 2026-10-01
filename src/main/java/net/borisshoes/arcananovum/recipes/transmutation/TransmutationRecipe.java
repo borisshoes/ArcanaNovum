@@ -54,6 +54,14 @@ public abstract class TransmutationRecipe {
    
    public abstract ItemStack getViewStack();
    
+   public List<Either<Item, TagKey<Item>>> getReagent1(){
+      return reagent1;
+   }
+   
+   public List<Either<Item, TagKey<Item>>> getReagent2(){
+      return reagent2;
+   }
+   
    public int getReagent1Count(){
       return reagent1Count;
    }

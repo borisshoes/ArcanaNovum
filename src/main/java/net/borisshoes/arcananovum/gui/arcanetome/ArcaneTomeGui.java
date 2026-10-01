@@ -30,7 +30,9 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.datastorage.DataAccess;
+import net.borisshoes.borislib.datastorage.DefaultPlayerData;
 import net.borisshoes.borislib.gui.*;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -176,12 +178,11 @@ public class ArcaneTomeGui extends PagedMultiGui {
                int numAchievements = (int) ArcanaAchievements.ARCANA_ACHIEVEMENTS.values().stream().filter(ach -> !ach.isHidden()).count();
                int playerXp = data.getXP();
                int playerLevel = LevelUtils.levelFromXp(playerXp);
-               GameProfile playerGameProf;
                GuiElementBuilder playerItem;
                try{
-                  playerGameProf = player.level().getServer().services().profileResolver().fetchById(playerId).orElseThrow();
-                  playerItem = new GuiElementBuilder(Items.PLAYER_HEAD).setProfile(playerGameProf);
-                  playerItem.setName(Component.literal(playerGameProf.name()).withStyle(ChatFormatting.LIGHT_PURPLE));
+                  DefaultPlayerData defaultPlayerData = DataAccess.getPlayer(playerId,BorisLib.PLAYER_DATA_KEY);
+                  playerItem = GuiElementBuilder.from(defaultPlayerData.getPlayerHeadItem());
+                  playerItem.setName(Component.literal(defaultPlayerData.getUsername()).withStyle(ChatFormatting.LIGHT_PURPLE));
                }catch(Exception e){
                   playerItem = new GuiElementBuilder(Items.BARRIER);
                   playerItem.setName(Component.literal("<UNKNOWN>").withStyle(ChatFormatting.LIGHT_PURPLE));

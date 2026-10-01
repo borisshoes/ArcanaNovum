@@ -850,7 +850,7 @@ public class ArcanaCommands {
          WikiExporter.Result result = WikiExporter.export(source.getServer());
          source.sendSuccess(() -> Component.literal("Wiki export written to " + result.path().toAbsolutePath()).withStyle(ChatFormatting.GREEN), false);
          source.sendSuccess(() -> Component.literal(result.items() + " items, " + result.modItems() + " mod items, " + result.augments() + " augments, " + result.achievements() + " achievements, "
-               + result.research() + " research tasks, " + result.configs() + " configs").withStyle(ChatFormatting.AQUA), false);
+               + result.research() + " research tasks, " + result.configs() + " configs, " + result.skins() + " skins, " + result.transmutations() + " transmutations").withStyle(ChatFormatting.AQUA), false);
          if(!result.defaultConfig()){
             source.sendSuccess(() -> Component.literal("Config differs from defaults, so this export will fail validation. Re-export on a fresh config.").withStyle(ChatFormatting.RED), false);
          }

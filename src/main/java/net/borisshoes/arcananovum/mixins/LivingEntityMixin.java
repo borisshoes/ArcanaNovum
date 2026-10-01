@@ -100,7 +100,7 @@ public abstract class LivingEntityMixin {
       if(thisEntity.isDeadOrDying()) return;
       if(thisEntity.tickCount % 3 != 0) return;
       double stardustParticleRate = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.STARDUST_PARTICLE_RATE);
-      if(stardustParticleRate <= 0) return;
+      if(stardustParticleRate <= 0 || thisEntity.isSpectator()) return;
       EnhancedStatUtils.glowInfusedGear(thisEntity, stardustParticleRate);
    }
    

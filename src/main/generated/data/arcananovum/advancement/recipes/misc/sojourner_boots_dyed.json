@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_sojourner_boots": {
+      "conditions": {
+        "items": [
+          {
+            "items": "arcananovum:sojourner_boots"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "arcananovum:sojourner_boots_dyed"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_sojourner_boots"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "arcananovum:sojourner_boots_dyed"
+    ]
+  }
+}

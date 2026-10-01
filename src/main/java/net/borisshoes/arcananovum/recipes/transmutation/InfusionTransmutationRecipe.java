@@ -200,6 +200,10 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe {
       return MinecraftUtils.removeLore(output.copyWithCount(this.outputCount));
    }
    
+   public List<Either<Item, TagKey<Item>>> getInputs(){
+      return new ArrayList<>(input);
+   }
+   
    public int getInputCount(){
       return inputCount;
    }

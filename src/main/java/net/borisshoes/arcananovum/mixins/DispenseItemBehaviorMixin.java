@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
@@ -245,7 +246,12 @@ public interface DispenseItemBehaviorMixin {
                            if(newEntity instanceof Mob mobEntity){
                               mobEntity.finalizeSpawn(serverWorld, serverWorld.getCurrentDifficultyAt(newEntity.blockPosition()), EntitySpawnReason.DISPENSER, null);
                            }
-                           serverWorld.tryAddFreshEntityWithPassengers(newEntity);
+                           if(newEntity != null){
+                              serverWorld.tryAddFreshEntityWithPassengers(newEntity);
+                              if(stack.has(DataComponents.CUSTOM_NAME)){
+                                 newEntity.setCustomName(stack.getCustomName().plainCopy());
+                              }
+                           }
                         }
                         
                         if(serverWorld.getRandom().nextDouble() >= 0.1 * efficiencyLevel){

@@ -288,9 +288,11 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   
                   int blindDur = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SHADOW_STALKERS_GLAIVE_NEARSIGHT_DURATION).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.PARANOIA));
                   int invisDur = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SHADOW_STALKERS_GLAIVE_INVIS_DURATION).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHADOW_STRIDE));
-                  MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
-                  player.addEffect(invis);
-                  if(target instanceof LivingEntity living){
+                  if(invisDur > 0){
+                     MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
+                     player.addEffect(invis);
+                  }
+                  if(target instanceof LivingEntity living && blindDur > 0){
                      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), blindDur, 2.0f, false, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
                      Conditions.addCondition(world.getServer(), living, nearsight);
                   }
@@ -320,8 +322,10 @@ public class ShadowStalkersGlaive extends EnergyItem {
                ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
                
                int invisDur = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SHADOW_STALKERS_GLAIVE_INVIS_DURATION).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHADOW_STRIDE));
-               MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
-               player.addEffect(invis);
+               if(invisDur > 0){
+                  MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
+                  player.addEffect(invis);
+               }
                
                return InteractionResult.SUCCESS_SERVER;
             }else{

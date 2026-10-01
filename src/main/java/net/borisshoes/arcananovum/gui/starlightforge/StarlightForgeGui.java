@@ -130,6 +130,28 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       ItemStack newItem = item.copy();
       ArcanaEffectUtils.arcanaCraftingAnim(world, blockEntity.getBlockPos(), newItem, 0, fastAnim ? 1.75 : 1);
       
+      applyRemainders(recipe);
+
+      BorisLib.addTickTimerCallback(world, new GenericTimer(forgeDelay(fastAnim), () -> {
+         Vec3 pos = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 2, 0);
+         Containers.dropItemStack(world, pos.x, pos.y, pos.z, newItem);
+      }));
+
+      closeAfterForge(fastAnim);
+   }
+
+   private static int forgeDelay(boolean fastAnim){
+      return fastAnim ? (int) (350 / 1.75) : 350;
+   }
+
+   private void closeAfterForge(boolean fastAnim){
+      close();
+      if(fastAnim){
+         openRecipeSelectionGui();
+      }
+   }
+   
+   private void applyRemainders(ArcanaRecipe recipe){
       ItemStack[][] ingredients = new ItemStack[5][5];
       for(int i = 0; i < inventory.getContainerSize(); i++){
          ingredients[i / 5][i % 5] = inventory.getItem(i);
@@ -138,21 +160,87 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       for(int i = 0; i < inventory.getContainerSize(); i++){
          inventory.setItem(i, remainders[i / 5][i % 5]);
       }
-      
-      BorisLib.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {
-         Vec3 pos = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 2, 0);
-         Containers.dropItemStack(world, pos.x, pos.y, pos.z, newItem);
-      }));
-      
-      if(fastAnim){
-         close();
-         openRecipeSelectionGui();
-      }else{
-         close();
-      }
    }
    
-   void forgeItem(ArcanaItem arcanaItem, ArcanaRecipe recipe, @Nullable Pair<ArcanaAugment, Integer> skillPair, boolean fastAnim){
+   private List<Container> getSourceInventories(){
+      List<Container> sources = new ArrayList<>();
+      sources.add(player.getInventory());
+      if(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.MYSTIC_COLLECTION) >= 1){
+         sources.addAll(blockEntity.getIngredientInventories());
+      }
+      return sources;
+   }
+
+   private static List<ItemStack> findMatchingStacks(ArcanaIngredient ingredient, List<Container> sources){
+      List<ItemStack> matches = new ArrayList<>();
+      for(Container source : sources){
+         for(int j = 0; j < source.getContainerSize(); j++){
+            ItemStack stack = source.getItem(j);
+            if(!stack.isEmpty() && ingredient.validStackIgnoreCount(stack)){
+               matches.add(stack);
+            }
+         }
+      }
+      return matches;
+   }
+   
+   @Nullable
+   private static ItemStack takeIngredient(ArcanaIngredient ingredient, List<ItemStack> matchingStacks){
+      matchingStacks.sort(Comparator.comparingInt(ItemStack::getCount));
+
+      List<ItemStack> neededStacks = null;
+      for(ItemStack outerStack : matchingStacks){ // Find combinable stacks with the sufficient amount
+         List<ItemStack> candidate = new ArrayList<>();
+         candidate.add(outerStack);
+         int remaining = ingredient.getCount() - outerStack.getCount();
+
+         for(ItemStack innerStack : matchingStacks){
+            if(!ItemStack.isSameItemSameComponents(outerStack, innerStack) || innerStack == outerStack) continue;
+            if(remaining <= 0) break;
+            remaining -= innerStack.getCount();
+            candidate.add(innerStack);
+         }
+
+         if(remaining <= 0){
+            neededStacks = candidate;
+            break;
+         }
+      }
+      if(neededStacks == null) return null;
+
+      int remaining = ingredient.getCount();
+      ItemStack totalStack = null;
+      for(ItemStack neededStack : neededStacks){
+         int toRemove = Math.min(remaining, neededStack.getCount());
+         if(toRemove <= 0) continue;
+         ItemStack removed = neededStack.split(toRemove);
+         remaining -= removed.getCount();
+         if(totalStack == null){
+            totalStack = removed;
+         }else{
+            totalStack.grow(removed.getCount());
+         }
+      }
+      return totalStack;
+   }
+
+   private void buildRecipeFrame(){
+      for(int i = 0; i < getSize(); i++){
+         if(i % 9 == 0 || i % 9 == 6){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i % 9 == 8){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i % 9 == 7){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }
+      }
+      setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(33, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+   }
+   
+   protected void forgeItem(ArcanaItem arcanaItem, ArcanaRecipe recipe, @Nullable Pair<ArcanaAugment, Integer> skillPair, boolean fastAnim){
       if(!(blockEntity.getLevel() instanceof ServerLevel world)) return;
       ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, recipe.getCenterpieces(), blockEntity), player.getStringUUID(), 0, world.getServer());
       if(selectedSkin != null){
@@ -166,18 +254,11 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       
       arcanaItem.buildItemLore(newArcanaItem, player.level().getServer());
       
-      ItemStack[][] ingredients = new ItemStack[5][5];
-      for(int i = 0; i < inventory.getContainerSize(); i++){
-         ingredients[i / 5][i % 5] = inventory.getItem(i);
-      }
-      ItemStack[][] remainders = recipe.getRemainders(ingredients, blockEntity, resourceLvl);
-      for(int i = 0; i < inventory.getContainerSize(); i++){
-         inventory.setItem(i, remainders[i / 5][i % 5]);
-      }
-      
+      applyRemainders(recipe);
+
       ArcanaEffectUtils.arcanaCraftingAnim(world, blockEntity.getBlockPos(), newArcanaItem, 0, fastAnim ? 1.75 : 1);
-      
-      BorisLib.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {
+
+      BorisLib.addTickTimerCallback(world, new GenericTimer(forgeDelay(fastAnim), () -> {
          if(!ArcanaNovum.data(player).addCrafted(newArcanaItem) && !(arcanaItem instanceof ArcaneTome)){
             ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
          }
@@ -195,13 +276,8 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          Vec3 pos = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 2, 0);
          Containers.dropItemStack(world, pos.x, pos.y, pos.z, newArcanaItem);
       }));
-      
-      if(fastAnim){
-         close();
-         openRecipeSelectionGui();
-      }else{
-         close();
-      }
+
+      closeAfterForge(fastAnim);
    }
    
    HashMap<ArcanaAugment, Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayer player){
@@ -306,21 +382,9 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    }
    
    public void buildCraftingGui(ArcanaRecipe recipe){
-      for(int i = 0; i < getSize(); i++){
-         if(i % 9 == 0 || i % 9 == 6){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }else if(i % 9 == 8){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }else if(i % 9 == 7){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }
-      }
-      setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(33, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      buildRecipeFrame();
       setSlot(43, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      
+
       GuiElementBuilder book = new GuiElementBuilder(ArcanaRegistry.ARCANE_TOME.getPrefItemNoLore()).hideDefaultTooltip();
       book.setName(Component.literal("Arcana Items").withStyle(ChatFormatting.DARK_PURPLE));
       book.addLoreLine(TextUtils.removeItalics(Component.literal("")
@@ -348,81 +412,22 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          setSlot(CRAFTING_SLOTS[i], new GuiElementBuilder(Items.AIR));
       }
       
-      boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.MYSTIC_COLLECTION) >= 1;
-      ArrayList<Container> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
       for(int i = 0; i < 25; i++){
          setSlot(CRAFTING_SLOTS[i], new Slot(inventory, i, 0, 0));
       }
-      
+
       if(recipe != null){
          ArcanaIngredient[][] ingredients = recipe.getIngredients();
-         Container playerInventory = player.getInventory();
-         
+         List<Container> sources = getSourceInventories();
+
          for(int i = 0; i < 25; i++){
             ArcanaIngredient ingredient = ingredients[i / 5][i % 5];
             if(ingredient.ingredientAsStack().isEmpty()) continue;
-            List<ItemStack> matchingStacks = new ArrayList<>(); // Build a list of matching stacks
-            
-            // Check player's inventory
-            for(int j = 0; j < playerInventory.getContainerSize(); j++){
-               ItemStack invSlot = playerInventory.getItem(j);
-               if(invSlot.isEmpty()) continue;
-               
-               if(ingredient.validStackIgnoreCount(invSlot)){
-                  matchingStacks.add(invSlot);
-               }
-            }
-            
-            // Check nearby inventories (list is empty without Mystic Collection)
-            for(Container inventory : inventories){
-               for(int j = 0; j < inventory.getContainerSize(); j++){
-                  ItemStack invSlot = inventory.getItem(j);
-                  if(invSlot.isEmpty()) continue;
-                  
-                  if(ingredient.validStackIgnoreCount(invSlot)){
-                     matchingStacks.add(invSlot);
-                  }
-               }
-            }
-            // Take from smaller stacks first to avoid clutter
-            matchingStacks.sort(Comparator.comparingInt(ItemStack::getCount));
-            
-            boolean found = false;
-            ArrayList<ItemStack> neededStacks = new ArrayList<>();
-            for(ItemStack outerStack : matchingStacks){ // Find combinable stacks with the sufficient amount
-               neededStacks.clear();
-               int remaining = ingredient.getCount() - outerStack.getCount();
-               neededStacks.add(outerStack);
-               
-               for(ItemStack innerStack : matchingStacks){
-                  if(!ItemStack.isSameItemSameComponents(outerStack, innerStack) || innerStack == outerStack) continue;
-                  if(remaining <= 0) break;
-                  remaining -= innerStack.getCount();
-                  neededStacks.add(innerStack);
-               }
-               
-               if(remaining <= 0){
-                  found = true;
-                  break;
-               }
-            }
-            
-            if(found){ // Take from selected stacks and combine them in the crafting inventory
-               int remaining = ingredient.getCount();
-               ItemStack totalStack = null;
-               for(ItemStack neededStack : neededStacks){
-                  int toRemove = Math.min(remaining, neededStack.getCount());
-                  if(toRemove <= 0) continue;
-                  if(totalStack == null){
-                     totalStack = neededStack.split(toRemove);
-                     remaining -= totalStack.getCount();
-                  }else{
-                     ItemStack removed = neededStack.split(toRemove);
-                     remaining -= removed.getCount();
-                     totalStack.grow(removed.getCount());
-                  }
-               }
-               inventory.setItem(i, totalStack);
+
+            // Take from the selected stacks and combine them in the crafting inventory
+            ItemStack taken = takeIngredient(ingredient, findMatchingStacks(ingredient, sources));
+            if(taken != null){
+               inventory.setItem(i, taken);
             }
          }
          
@@ -524,19 +529,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          return;
       }
       
-      for(int i = 0; i < getSize(); i++){
-         if(i % 9 == 0 || i % 9 == 6){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }else if(i % 9 == 8){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }else if(i % 9 == 7){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-         }
-      }
-      setSlot(17, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(35, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(15, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(33, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      buildRecipeFrame();
       setSlot(7, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       setSlot(43, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
@@ -571,46 +564,16 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       
       HashMap<String, Pair<Integer, ItemStack>> ingredList = recipe.getIngredientList();
       if(!(recipe instanceof ExplainRecipe)){
-         boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.MYSTIC_COLLECTION) >= 1;
-         ArrayList<Container> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
-         Container playerInventory = player.getInventory();
+         List<Container> sources = getSourceInventories();
          HashMap<String, Integer> ingredCounts = new HashMap<>();
-         
+
          for(int i = 0; i < 25; i++){
             ArcanaIngredient ingredient = ingredients[i / 5][i % 5];
             if(ingredient.ingredientAsStack().isEmpty() || ingredCounts.containsKey(ingredient.getName())) continue;
-            Set<ItemStack> matchingStacks = new HashSet<>(); // Build a list of matching stacks
-            
-            // Check player's inventory
-            for(int j = 0; j < playerInventory.getContainerSize(); j++){
-               ItemStack invSlot = playerInventory.getItem(j);
-               if(invSlot.isEmpty()) continue;
-               
-               if(ingredient.validStackIgnoreCount(invSlot)){
-                  matchingStacks.add(invSlot);
-               }
-            }
-            
-            // Check nearby inventories (list is empty without Mystic Collection)
-            for(Container inventory : inventories){
-               for(int j = 0; j < inventory.getContainerSize(); j++){
-                  ItemStack invSlot = inventory.getItem(j);
-                  if(invSlot.isEmpty()) continue;
-                  
-                  if(ingredient.validStackIgnoreCount(invSlot)){
-                     matchingStacks.add(invSlot);
-                  }
-               }
-            }
-            
-            int totalCount = 0;
-            for(ItemStack matchingStack : matchingStacks){
-               totalCount += matchingStack.getCount();
-            }
+            int totalCount = findMatchingStacks(ingredient, sources).stream().mapToInt(ItemStack::getCount).sum();
             ingredCounts.put(ingredient.getName(), totalCount);
          }
-         
-         
+
          GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
          table.setName(Component.literal("Forge Item").withStyle(ChatFormatting.DARK_PURPLE));
          table.addLoreLine(TextUtils.removeItalics(Component.literal("")
@@ -651,31 +614,6 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          
          setSlot(43, table);
       }
-      
-      GuiElementBuilder recipeList = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
-      recipeList.setName(Component.literal("Total Ingredients").withStyle(ChatFormatting.DARK_PURPLE));
-      recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("-----------------------").withStyle(ChatFormatting.LIGHT_PURPLE)));
-      for(Map.Entry<String, Pair<Integer, ItemStack>> ingred : ingredList.entrySet()){
-         Component ingredStr = ArcaneTomeGui.getIngredStr(ingred);
-         recipeList.addLoreLine(TextUtils.removeItalics(ingredStr));
-      }
-      recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("")));
-      int slotCount = 0;
-      for(ArcanaItem item : recipe.getForgeRequirementList()){
-         GuiElementBuilder reqItem = GuiElementBuilder.from(item.getPrefItemNoLore()).hideDefaultTooltip().glow();
-         Component req = Component.literal("")
-               .append(Component.literal("Requires").withStyle(ChatFormatting.GREEN))
-               .append(Component.literal(" a ").withStyle(ChatFormatting.DARK_PURPLE))
-               .append(item.getTranslatedName().withStyle(ChatFormatting.AQUA));
-         recipeList.addLoreLine(TextUtils.removeItalics(req));
-         reqItem.setName(req);
-         //setSlot(slotCount,reqItem);
-         slotCount += 9;
-      }
-      if(!recipe.getForgeRequirementList().isEmpty())
-         recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("")));
-      recipeList.addLoreLine(TextUtils.removeItalics(Component.literal("Does not include item data").withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_PURPLE)));
-      //setSlot(26,recipeList);
       
       List<ArcanaRecipe> otherRecipes = RecipeManager.getSimilarRecipes(recipe);
       int size = otherRecipes.size();

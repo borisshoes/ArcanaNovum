@@ -19,6 +19,7 @@ import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -269,7 +270,12 @@ public class EssenceEgg extends ArcanaItem {
                         if(newEntity instanceof Mob mobEntity){
                            mobEntity.finalizeSpawn(serverWorld, serverWorld.getCurrentDifficultyAt(newEntity.blockPosition()), EntitySpawnReason.SPAWN_ITEM_USE, null);
                         }
-                        serverWorld.tryAddFreshEntityWithPassengers(newEntity);
+                        if(newEntity != null){
+                           serverWorld.tryAddFreshEntityWithPassengers(newEntity);
+                           if(stack.has(DataComponents.CUSTOM_NAME)){
+                              newEntity.setCustomName(stack.getCustomName().plainCopy());
+                           }
+                        }
                      }
                      
                      if(serverWorld.getRandom().nextDouble() >= efficiencyChance){

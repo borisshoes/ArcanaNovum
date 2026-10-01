@@ -8,10 +8,12 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.EnderCrateBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
@@ -32,6 +34,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TreeMap;
 
 public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
@@ -152,31 +156,30 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       return null;
    }
    
-   public ArrayList<Container> getIngredientInventories(){
-      ArrayList<Container> invs = new ArrayList<>();
+   public HashSet<Container> getIngredientInventories(){
+      HashSet<Container> invs = new HashSet<>();
       BlockPos range = this.getForgeRange();
       if(!(level instanceof ServerLevel serverWorld)) return invs;
+      HashMap<EnderCrateChannel, EnderCrateBlockEntity> crates = new HashMap<>();
+      
       for(BlockPos blockPos : BlockPos.betweenClosed(worldPosition.offset(range), worldPosition.subtract(range))){
          BlockEntity be = serverWorld.getBlockEntity(blockPos);
          BlockState state = serverWorld.getBlockState(blockPos);
          if(be instanceof ChestBlockEntity chestBe){
-            if(!invs.contains(chestBe)){
-               invs.add(chestBe);
-            }
+            invs.add(chestBe);
          }else if(be instanceof BarrelBlockEntity barrelBe){
-            if(!invs.contains(barrelBe)){
-               invs.add(barrelBe);
-            }
+            invs.add(barrelBe);
          }else if(be instanceof ShulkerBoxBlockEntity shulkerBox){
-            if(!invs.contains(shulkerBox)){
-               invs.add(shulkerBox);
-            }
+            invs.add(shulkerBox);
          }else if(be instanceof ArcaneSingularityBlockEntity singularity){
-            if(!invs.contains(singularity)){
-               invs.add(singularity);
+            invs.add(singularity);
+         }else if (be instanceof EnderCrateBlockEntity crate){
+            if(!crates.containsKey(crate.getChannel()) || crate.getBandwidth() > crates.get(crate.getChannel()).getBandwidth()){
+               crates.put(crate.getChannel(),crate);
             }
          }
       }
+      invs.addAll(crates.values());
       return invs;
    }
    

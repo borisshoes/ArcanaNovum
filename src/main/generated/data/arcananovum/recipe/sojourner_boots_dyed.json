@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_dye",
+  "dye": "#minecraft:dyes",
+  "group": "sojourners_boots_dye",
+  "result": {
+    "id": "arcananovum:sojourner_boots"
+  },
+  "target": "arcananovum:sojourner_boots"
+}

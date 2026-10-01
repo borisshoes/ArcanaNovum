@@ -248,9 +248,9 @@ public class ArcanaConfig {
          new DoubleConfigValue("cindersCharmSupersmelterMultiplier", 4.0, new DoubleConfigValue.DoubleLimits(0.0))));
    
    // Charm of Cleansing
-   public static final IConfigSetting<?> CLEANSING_CHARM_COOLDOWN = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
-         new IntConfigValue("cleansingCharmCooldown", 30, new IntConfigValue.IntLimits(0))));
-   public static final IConfigSetting<?> CLEANSING_CHARM_CHARCOAL_COOLDOWN_PER_LVL = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
+   public static final IConfigSetting<?> CLEANSING_CHARM_COOLDOWN = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
+         new IntConfigValue("cleansingCharmCooldown", 600, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> CLEANSING_CHARM_CHARCOAL_COOLDOWN_PER_LVL = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new ListConfigValue<>("cleansingCharmCharcoalCooldownPerLvl", List.of(0, 100, 200, 300, 400), new IntConfigValue("cleansingCharmCharcoalCooldownPerLvl", 0, new IntConfigValue.IntLimits(0)))));
    public static final IConfigSetting<?> CLEANSING_CHARM_REJUVENATION_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new IntConfigValue("cleansingCharmRejuvenationDuration", 200, new IntConfigValue.IntLimits(0))));

@@ -26,6 +26,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.commands.WeatherCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -107,11 +108,11 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       }
       
       if(mode == 0){
-         serverWorld.getWeatherData().setClearWeatherTime(dur);
+         serverWorld.getServer().setWeatherParameters(dur, 0, false, false);
       }else if(mode == 1){
-         serverWorld.getWeatherData().setRainTime(dur);
+         serverWorld.getServer().setWeatherParameters(0, dur, true, false);
       }else if(mode == 2){
-         serverWorld.getWeatherData().setThunderTime(dur);
+         serverWorld.getServer().setWeatherParameters(0, dur, true, true);
       }
       level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
       this.setActive(false);

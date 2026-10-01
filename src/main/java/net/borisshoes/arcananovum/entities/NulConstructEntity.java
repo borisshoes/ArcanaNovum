@@ -143,6 +143,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    private float strafeHeight = 5;
    private float strafeRate = 2;
    private int attackCooldown = 0;
+   private int emergencyTeleportCooldown = 0;
+   private int annoyanceCounter = 0;
+   private int timeToLaserPos = 0;
    
    public NulConstructEntity(EntityType<? extends NulConstructEntity> entityType, Level world){
       super(entityType, world);
@@ -548,7 +551,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    
    public void deconstruct(){
       if(summoner != null){
-         NulConstructDialog.announce(level().getServer(), summoner, this, Announcements.FAILURE, new boolean[]{summonerHasDivine, summonerHasWings, !summonerHasWings, false, true, isExalted, !isExalted});
+         Announcements type = this.annoyanceCounter >= 10 ? Announcements.ANNOYED : Announcements.FAILURE;
+         NulConstructDialog.announce(level().getServer(), summoner, this, type, new boolean[]{summonerHasDivine, summonerHasWings, !summonerHasWings, false, true, isExalted, !isExalted});
       }
       
       if(isExalted) dropItem(level(), (new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1), position());
@@ -645,6 +649,10 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       
       if(source.getWeaponItem() != null && (source.getWeaponItem().is(Items.MACE) || source.getWeaponItem().is(ArcanaRegistry.GRAVITON_MAUL.getItem()))){
          triggerAdaptation(ConstructAdaptations.DAMAGED_BY_MACE);
+      }
+      
+      if(source.getWeaponItem() != null && (source.getWeaponItem().is(ArcanaRegistry.SHADOW_STALKERS_GLAIVE.getItem())) && this.random.nextFloat() < 0.005f){
+         triggerAdaptation(ConstructAdaptations.DAMAGED_BY_GLAIVE);
       }
       
       if(this.isReflectionActive()){
@@ -772,9 +780,14 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             if(summoner == null || summoner.isDeadOrDying() || !summoner.level().dimension().equals(level().dimension())){
                deconstruct();
             }
-            if(distanceTo(summoner) >= FIGHT_RANGE){
+            ServerPlayer player = this.level().getServer().getPlayerList().getPlayer(this.summoner.getUUID());
+            if(player != null && !player.equals(summoner)){
+               this.summoner = player;
+            }
+            if(distanceTo(summoner) >= FIGHT_RANGE && emergencyTeleportCooldown == 0){
                spells.get(ConstructSpellType.SHADOW_SHROUD).setCooldown(0);
                castSpell(spells.get(ConstructSpellType.SHADOW_SHROUD));
+               annoyanceCounter++;
             }
             if(summoner.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
                triggerAdaptation(ConstructAdaptations.TRUE_INVISIBILITY);
@@ -801,10 +814,13 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             }
          }
          
-         if(this.tickCount % 20 == 0){
+         if(this.tickCount % 7 == 0){
             if(world.getGameRules().get(GameRules.MOB_GRIEFING)){
                destructiveAura();
             }
+         }
+         
+         if(this.tickCount % 20 == 0){
             if(isExalted){
                List<Player> players = level().getEntities(EntityTypes.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
                
@@ -813,8 +829,19 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                   Conditions.addCondition(level().getServer(), player, vulnerability);
                }
             }
+            
+            if(this.summoner != null && this.summoner.hasDisconnected()){
+               annoyanceCounter++;
+            }
          }
          
+         if(annoyanceCounter >= 10){
+            deconstruct();
+            return;
+         }
+         
+         if(annoyanceCounter > 0 && this.tickCount % 200 == 0) annoyanceCounter--;
+         if(emergencyTeleportCooldown > 0) emergencyTeleportCooldown--;
          if(spellCooldown > 0) spellCooldown--;
          for(ConstructSpell spell : spells.values()){
             if(spell.isActive()) tickSpell(spell);
@@ -824,8 +851,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          float curHP = getHealth();
          DamageSource recentDamage = getLastDamageSource();
          
-         if(recentDamage != null && recentDamage.is(DamageTypes.IN_WALL) && spells.get(ConstructSpellType.SHADOW_SHROUD).getCooldown() <= 0){
+         if(recentDamage != null && recentDamage.is(DamageTypes.IN_WALL) && spells.get(ConstructSpellType.SHADOW_SHROUD).getCooldown() <= 0 && emergencyTeleportCooldown == 0){
             castSpell(spells.get(ConstructSpellType.SHADOW_SHROUD));
+            annoyanceCounter++;
          }else if((int) (curHP * 4 / (getMaxHealth())) < (int) (prevHP * 4 / (getMaxHealth())) && spells.get(ConstructSpellType.REFLEXIVE_BLAST).getCooldown() <= 0){
             castSpell(spells.get(ConstructSpellType.REFLEXIVE_BLAST));
          }else if(getInvulnerableTimer() <= 0 && spellCooldown <= 0){
@@ -935,7 +963,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          this.lookAt(target, 30.0f, 30.0f);
       }
       
-      attack: {
+      attack:
+      {
          if(target == null) break attack;
          if(this.movementType == ConstructMovementType.CHARGE || this.movementType == ConstructMovementType.MELEE_PURSUIT){
             double sqrDistToTarget = this.distanceToSqr(target.getX(), target.getY(), target.getZ());
@@ -1002,7 +1031,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          }else if(this.movementType == ConstructMovementType.LASER){
             double sqrDistToPosition = this.distanceToSqr(this.targetPosition);
             
-            if(sqrDistToPosition <= 4){
+            if(sqrDistToPosition <= 4 || timeToLaserPos < 0){
                this.lookAt(target, 360.0f, 360.0f);
                for(int i = 0; i < 3; i++){
                   int id = this.getTrackedEntityId(i);
@@ -1249,6 +1278,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          }
       }else if(spell.getType() == ConstructSpellType.WITHERING_RAY){
          // Handled in AI method
+         timeToLaserPos--;
       }else if(spell.getType() == ConstructSpellType.NECROTIC_CONVERSION){
          ArcanaEffectUtils.nulConstructNecroticConversion(world, position());
       }else if(spell.getType() == ConstructSpellType.REFLECTIVE_ARMOR){
@@ -1282,7 +1312,14 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       float cooldownMod = 1f;
       float durationMod = 1f;
       if(spell.spellType == ConstructSpellType.SHADOW_SHROUD){ // Teleport
-         Vec3 tpPos = findConstructTpPos(new Vec3(0, 1, 0));
+         Pair<Vec3,Boolean> tpResult = findConstructTpPos(new Vec3(0, 1, 0));
+         Vec3 tpPos = tpResult.getFirst();
+         boolean forced = tpResult.getSecond();
+         if(forced){
+            emergencyTeleportCooldown = 20;
+            annoyanceCounter++;
+            castSpell(spells.get(ConstructSpellType.REFLEXIVE_BLAST));
+         }
          ArcanaEffectUtils.nulConstructNecroticShroud(world, position());
          teleportTo(tpPos.x(), tpPos.y(), tpPos.z());
          ArcanaEffectUtils.nulConstructNecroticShroud(world, tpPos);
@@ -1312,10 +1349,22 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       }else if(spell.spellType == ConstructSpellType.CURSE_OF_DECAY){ // AoE Damage
          // Nothing special at cast time
       }else if(spell.spellType == ConstructSpellType.FORGOTTEN_ARMY){ // Summon Skeletons
-         List<BlockPos> poses = SpawnPile.makeSpawnLocations(32, (int) BLAST_RANGE, world, EntityTypes.WITHER_SKELETON, blockPosition());
          int numWarriors = this.isExalted ? this.random.nextIntBetweenInclusive(6, 10) : this.random.nextIntBetweenInclusive(3, 6);
          int numMages = this.isExalted ? this.random.nextIntBetweenInclusive(4, 6) : this.random.nextIntBetweenInclusive(2, 4);
-         for(int i = 0; i < numWarriors + numMages; i++){
+         int numTotal = numWarriors + numMages;
+         List<BlockPos> poses = SpawnPile.makeSpawnLocations(numTotal, (int) BLAST_RANGE, world, EntityTypes.WITHER_SKELETON, blockPosition());
+         int counter = 0;
+         for(BlockPos spawnPos : poses){
+            if(this.summoner != null && spawnPos.distSqr(this.summoner.blockPosition()) > RAY_RANGE*RAY_RANGE){
+               counter++;
+            }
+         }
+         if(counter > numTotal / 2){
+            annoyanceCounter += 4;
+            spell.setCooldown(20);
+            return;
+         }
+         for(int i = 0; i < numTotal; i++){
             Vec3 spawnPos = Vec3.atCenterOf(poses.get(i));
             NulGuardianEntity skeleton = new NulGuardianEntity(world, this, i < numMages);
             skeleton.finalizeSpawn(world, world.getCurrentDifficultyAt(this.blockPosition()), EntitySpawnReason.MOB_SUMMONED, null);
@@ -1347,6 +1396,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             break;
          }
       }
+      timeToLaserPos = 60;
       spell.setCooldown((int) (spell.spellType.baseCooldown * cooldownMod));
       spell.cast(this, (int) (spell.spellType.duration * durationMod));
       tickSpell(spell);
@@ -1363,7 +1413,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                int y = thisY + yOff;
                int z = thisZ + zOff;
                BlockPos blockPos = new BlockPos(x, y, z);
-               double yMod = (yOff < 0 ? 1.5 * Math.sqrt(-yOff) + 2 : yOff);
+               double yMod = (yOff < 0 ? 1.5 * Math.sqrt(-yOff) + 2 : yOff) - 0.5;
                int damage = (int) (10 - (0.8 * (xOff * xOff + zOff * zOff + yMod * yMod)));
                damageBlock(blockPos, damage);
             }
@@ -1469,7 +1519,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       return pool.get(this.random.nextInt(pool.size()));
    }
    
-   private Vec3 findConstructTpPos(Vec3 biasDirection){
+   private Pair<Vec3, Boolean> findConstructTpPos(Vec3 biasDirection){
       int tries = 0;
       Vec3 sourcePos = summoner != null ? summoner.position() : this.position();
       
@@ -1478,13 +1528,25 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          Vec3 randomPoint = MathUtils.randomSpherePoint(Vec3.ZERO, 1).normalize();
          Vec3 dir = randomPoint.add(biasDirection).normalize().scale(this.random.nextFloat() * (NulConstructEntity.TELEPORT_RANGE - 4.0) + 4.0);
          Vec3 inWorld = sourcePos.add(dir);
+         if(!this.level().isInValidBounds(BlockPos.containing(inWorld))){
+            tries++;
+            continue;
+         }
          
          if(this.level().noCollision(this, this.getBoundingBox().move(this.position().reverse()).move(inWorld))){
-            return inWorld;
+            return Pair.of(inWorld, false);
          }
          tries++;
       }
-      return this.position();
+      
+      Vec3 randomPoint = MathUtils.randomSpherePoint(Vec3.ZERO, 1).normalize();
+      Vec3 dir = randomPoint.add(biasDirection).normalize().scale(this.random.nextFloat() * (NulConstructEntity.TELEPORT_RANGE - 4.0) + 4.0);
+      Vec3 inWorld = sourcePos.add(dir);
+      int minY = this.level().getChunk(BlockPos.containing(inWorld)).getMinY();
+      if(inWorld.y() < minY){
+         return Pair.of(new Vec3(inWorld.x, minY + 5, inWorld.z), true);
+      }
+      return Pair.of(inWorld, true);
    }
    
    private enum ConstructSpellType {
@@ -1594,6 +1656,16 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   An intriguing weapon, but gravity won't be your ally in this fight.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
+      DAMAGED_BY_GLAIVE("damaged_by_glaive", false, new Component[]{
+            Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
+                  .append(Component.literal("\n   That weapon... it reminds me of...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+            Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
+                  .append(Component.literal("\n   That weapon... it reminds me of the love I left behind.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+            Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
+                  .append(Component.literal("\n   That glaive... how did you create it?").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+            Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
+                  .append(Component.literal("\n   That glaive... what inspired its creation? I must know.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+      }),
       MASSIVE_BLOW("massive_blow", true, new Component[]{
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   A solid hit! However, my construct will adapt.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
@@ -1697,10 +1769,15 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          return new ConstructSpell(ConstructSpellType.fromString(tag.getStringOr("type", "")), tag.getIntOr("cooldown", 0), tag.getIntOr("weight", 0), tag.getBooleanOr("active", false), tag.getIntOr("tick", 0));
       }
       
-      public void cast(NulConstructEntity construct, int tick){
+      public void cast(NulConstructEntity construct, int tick, boolean withDialog){
          this.active = true;
          this.tick = tick;
-         NulConstructDialog.abilityText(construct.summoner, construct, spellType.abilityTexts[construct.random.nextInt(spellType.abilityTexts.length)]);
+         if(withDialog)
+            NulConstructDialog.abilityText(construct.summoner, construct, spellType.abilityTexts[construct.random.nextInt(spellType.abilityTexts.length)]);
+      }
+      
+      public void cast(NulConstructEntity construct, int tick){
+         this.cast(construct, tick, true);
       }
       
       public int tick(){
@@ -2139,6 +2216,48 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                      .append(Component.literal("!").withStyle(ChatFormatting.DARK_GRAY)),
                Component.literal("")
          )), new ArrayList<>(), new int[]{}, 0, 200, 0b100000));
+         DIALOG.get(Announcements.ANNOYED).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Component.literal("")
+                     .append(Component.literal("Your ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("cowardice").withStyle(ChatFormatting.RED))
+                     .append(Component.literal(" is ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("revolting!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC))
+                     .append(Component.literal(" Your ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("catalyst").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
+                     .append(Component.literal(" is ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("forfeit").withStyle(ChatFormatting.GOLD))
+                     .append(Component.literal("!").withStyle(ChatFormatting.DARK_GRAY)),
+               Component.literal("")
+         )), new ArrayList<>(), new int[]{}, 1, 1, 0b0));
+         DIALOG.get(Announcements.ANNOYED).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Component.literal("")
+                     .append(Component.literal("The ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("Divine").withStyle(ChatFormatting.LIGHT_PURPLE))
+                     .append(Component.literal(" is for the bold, not those who ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("cower").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC))
+                     .append(Component.literal(" in fear!").withStyle(ChatFormatting.DARK_GRAY)),
+               Component.literal("")
+         )), new ArrayList<>(), new int[]{}, 1, 1, 0b0));
+         DIALOG.get(Announcements.ANNOYED).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Component.literal("")
+                     .append(Component.literal("Do not waste my time with such ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("fearful").withStyle(ChatFormatting.RED))
+                     .append(Component.literal(" tactics again, or I will show you why I am the ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("God").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
+                     .append(Component.literal(" of Death!").withStyle(ChatFormatting.GRAY)),
+               Component.literal("")
+         )), new ArrayList<>(), new int[]{}, 1, 1, 0b0));
+         DIALOG.get(Announcements.ANNOYED).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Component.literal("")
+                     .append(Component.literal("Those who ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("run").withStyle(ChatFormatting.RED))
+                     .append(Component.literal(" and ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("hide").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
+                     .append(Component.literal(" are not worthy of my ").withStyle(ChatFormatting.DARK_GRAY))
+                     .append(Component.literal("power").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
+                     .append(Component.literal(". Get out of my sight!").withStyle(ChatFormatting.DARK_GRAY)),
+               Component.literal("")
+         )), new ArrayList<>(), new int[]{}, 1, 1, 0b0));
       }
       
       public static void abilityText(ServerPlayer summoner, NulConstructEntity construct, Component text){
@@ -2180,7 +2299,8 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       SUMMON_TEXT,
       SUMMON_DIALOG,
       SUCCESS,
-      FAILURE
+      FAILURE,
+      ANNOYED
    }
    
 }

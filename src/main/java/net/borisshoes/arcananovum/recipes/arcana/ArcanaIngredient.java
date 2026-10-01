@@ -78,7 +78,11 @@ public class ArcanaIngredient {
    }
    
    public ArcanaIngredient copyWithCount(int newCount){
-      return new ArcanaIngredient(acceptedItems, newCount, ignoresResourceful, exampleStack, itemPredicate);
+      ArcanaIngredient copy = new ArcanaIngredient(acceptedItems, newCount, ignoresResourceful, exampleStack, itemPredicate);
+      copy.enchantments.addAll(this.enchantments);
+      copy.potion = this.potion;
+      copy.effects.addAll(this.effects);
+      return copy;
    }
    
    public ArcanaIngredient withEnchantments(ArcanaIngredient.EnchantmentEntry... enchantments){

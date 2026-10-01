@@ -218,10 +218,8 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
          }
       }
       
-      if(world.getServer().getTickCount() % 20 == 0){
-         addEnergy(stack, -5); // Recharge
-         stele.setChanged();
-      }
+      addEnergy(stack, -5); // Recharge
+      stele.setChanged();
       
       if(world.getRandom().nextFloat() < 0.35){
          int rgb = Color.HSBtoRGB(world.getRandom().nextFloat(), 0.5f, 1.0f);
@@ -266,9 +264,7 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
          
          if(getBooleanProperty(stack, ACTIVE_TAG)) cleanseEffect(player, stack);
          
-         if(world.getServer().getTickCount() % 20 == 0){
-            addEnergy(stack, -1); // Recharge
-         }
+         addEnergy(stack, -1); // Recharge
       }
       
       @Override
