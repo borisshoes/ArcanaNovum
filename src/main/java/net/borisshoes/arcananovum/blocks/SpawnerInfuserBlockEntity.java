@@ -17,7 +17,6 @@ import net.borisshoes.arcananovum.gui.ContainerWatcher;
 import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.gui.spawnerinfuser.SpawnerInfuserGui;
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
@@ -59,7 +58,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
    private String crafterId;
    private String uuid;
    private int origin;
-   private ArcanaSkin skin;
+   private String skin;
    private String customName;
    private WatchedContainer inventory = new WatchedContainer(getContainerSize());
    private boolean active;
@@ -81,7 +80,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
       this.inventory.addWatcher(this);
    }
    
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, String skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
@@ -212,7 +211,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
       return origin;
    }
    
-   public ArcanaSkin getSkin(){
+   public String getSkin(){
       return skin;
    }
    
@@ -292,7 +291,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
+      this.skin = view.getStringOr(ArcanaBlockEntity.SKIN_TAG, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.active = view.getBooleanOr("active", false);
       this.points = view.getIntOr("points", 0);
@@ -326,7 +325,7 @@ public class SpawnerInfuserBlockEntity extends RandomizableContainerBlockEntity 
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
-      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.putInt("points", this.points);
       view.putInt("spentPoints", this.spentPoints);

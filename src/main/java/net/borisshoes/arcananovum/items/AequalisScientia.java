@@ -844,6 +844,7 @@ public class AequalisScientia extends ArcanaItem {
             ItemStack invStack = inventory.getItem(i);
             if(invStack.equals(aequalis)) continue;
             if(!invStack.is(ArcanaRegistry.TRANSMOGRIFICATION_CATALYST.getItem())) continue;
+            if(TransmogrificationCatalyst.isAttunedToUnavailableSkin(invStack)) continue;
             ArcanaSkin skin = ArcanaSkin.getSkinFromString(ArcanaItem.getStringProperty(invStack, TransmogrificationCatalyst.SELECTED_SKIN_TAG));
             ArcanaSkin curSkin = ArcanaItem.getSkin(arcanaStack);
             if(skin == null && curSkin == null) continue;

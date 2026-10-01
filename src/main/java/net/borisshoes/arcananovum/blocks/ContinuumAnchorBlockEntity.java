@@ -14,7 +14,6 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.items.ExoticMatter;
-import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -52,7 +51,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
    private String crafterId;
    private String uuid;
    private int origin;
-   private ArcanaSkin skin;
+   private String skin;
    private String customName;
    private int fuel;
    private boolean active;
@@ -62,7 +61,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       super(ArcanaRegistry.CONTINUUM_ANCHOR_BLOCK_ENTITY, pos, state);
    }
    
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, String skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
@@ -89,7 +88,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       return origin;
    }
    
-   public ArcanaSkin getSkin(){
+   public String getSkin(){
       return skin;
    }
    
@@ -216,7 +215,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
+      this.skin = view.getStringOr(ArcanaBlockEntity.SKIN_TAG, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.fuel = view.getIntOr("fuel", 0);
       this.active = view.getBooleanOr("active", false);
@@ -237,7 +236,7 @@ public class ContinuumAnchorBlockEntity extends RandomizableContainerBlockEntity
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
-      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.putInt("fuel", this.fuel);
       view.putBoolean("active", this.active);

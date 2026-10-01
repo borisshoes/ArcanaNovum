@@ -13,7 +13,6 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.CelestialAltarGui;
-import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
@@ -55,7 +54,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    private String crafterId;
    private String uuid;
    private int origin;
-   private ArcanaSkin skin;
+   private String skin;
    private String customName;
    private int cooldown;
    private int mode = 0; // 0 - time, 1 - phase
@@ -68,7 +67,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       this.multiblock = ((MultiblockCore) ArcanaRegistry.CELESTIAL_ALTAR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, String skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
@@ -254,7 +253,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       return origin;
    }
    
-   public ArcanaSkin getSkin(){
+   public String getSkin(){
       return skin;
    }
    
@@ -273,7 +272,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
+      this.skin = view.getStringOr(ArcanaBlockEntity.SKIN_TAG, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.cooldown = view.getIntOr("cooldown", 0);
       this.mode = view.getIntOr("mode", 0);
@@ -291,7 +290,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
-      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.putInt("cooldown", this.cooldown);
       view.putInt("mode", this.mode);

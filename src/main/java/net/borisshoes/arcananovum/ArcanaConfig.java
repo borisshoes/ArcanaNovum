@@ -42,7 +42,20 @@ public class ArcanaConfig {
          new BooleanConfigValue("allowSimilarBlockChecks", true)));
    public static final IConfigSetting<?> LOG_COMMAND_USAGE = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("logCommandUsage", false)));
-   
+
+   public static final IConfigSetting<?> SKINS_ENABLED = registerConfigSetting(new ConfigSetting<>(
+         new BooleanConfigValue("skinsEnabled", true)));
+   public static final IConfigSetting<?> SKINS_API_URL = registerConfigSetting(new ConfigSetting<>(
+         new StringConfigValue("skinsApiUrl", "https://api.borisshoes.net")));
+   public static final IConfigSetting<?> SKINS_REQUEST_TIMEOUT = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
+         new IntConfigValue("skinsRequestTimeout", 10, new IntConfigValue.IntLimits(1, 120))));
+   public static final IConfigSetting<?> SKINS_PACK_WAIT = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
+         new IntConfigValue("skinsPackWait", 15, new IntConfigValue.IntLimits(0, 120))));
+   public static final IConfigSetting<?> SKINS_CATALOG_REFRESH = registerConfigSetting(ConfigUnits.MINUTES, new ConfigSetting<>(
+         new IntConfigValue("skinsCatalogRefresh", 60, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> SKINS_PLAYER_REFRESH = registerConfigSetting(ConfigUnits.MINUTES, new ConfigSetting<>(
+         new IntConfigValue("skinsPlayerRefresh", 45, new IntConfigValue.IntLimits(5))));
+
    public static final IConfigSetting<?> CEPTYUS_EVENT_ENABLED = registerConfigSetting(new ConfigSetting<>(
          new BooleanConfigValue("ceptyusEventEnabled", true)));
    public static final IConfigSetting<?> GAIALTUS_EVENT_ENABLED = registerConfigSetting(new ConfigSetting<>(

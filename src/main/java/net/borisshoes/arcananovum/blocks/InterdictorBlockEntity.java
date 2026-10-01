@@ -14,7 +14,6 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.datastorage.InterdictionZones;
 import net.borisshoes.arcananovum.entities.NulGuardianEntity;
-import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.utils.AlgoUtils;
@@ -50,7 +49,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
    private String crafterId;
    private String uuid;
    private int origin;
-   private ArcanaSkin skin;
+   private String skin;
    private String customName;
    private final Multiblock multiblock;
    private int xRange = getMaxRange(0);
@@ -64,7 +63,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       this.multiblock = ((MultiblockCore) ArcanaRegistry.INTERDICTOR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, String skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
@@ -207,7 +206,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       return origin;
    }
    
-   public ArcanaSkin getSkin(){
+   public String getSkin(){
       return skin;
    }
    
@@ -258,7 +257,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
+      this.skin = view.getStringOr(ArcanaBlockEntity.SKIN_TAG, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.xRange = view.getIntOr("xRange", getMaxRange(0));
       this.yRange = view.getIntOr("yRange", getMaxRange(0));
@@ -281,7 +280,7 @@ public class InterdictorBlockEntity extends BlockEntity implements PolymerObject
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
-      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.putInt("xRange", this.xRange);
       view.putInt("yRange", this.yRange);

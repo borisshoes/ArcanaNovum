@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.config.IConfigSetting;
@@ -131,7 +132,8 @@ public class WingsOfEnderia extends EnergyItem {
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
-         Identifier modelId = ArcanaItem.getSkin(itemStack) != null ? ArcanaItem.getSkin(itemStack).getModelId() : ArcanaRegistry.arcanaId(ID);
+         ArcanaSkin skin = ArcanaItem.getSkin(itemStack);
+         Identifier modelId = skin != null && skin.hasEquipmentAsset() ? skin.getModelId() : ArcanaRegistry.arcanaId(ID);
          Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, modelId)).build();
          baseStack.set(DataComponents.EQUIPPABLE, newComp);
          return baseStack;

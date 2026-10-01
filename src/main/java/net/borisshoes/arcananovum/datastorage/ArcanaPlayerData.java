@@ -27,6 +27,7 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.borisshoes.arcananovum.skins.PlayerSkins;
 import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
@@ -76,8 +77,6 @@ import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.storage.ValueInput;
 
 import java.net.URI;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -1636,60 +1635,18 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public List<ArcanaSkin> getSkinsForItem(ArcanaItem item){
-      ArrayList<ArcanaSkin> skins = new ArrayList<>();
-      if(ArcanaUtils.isGodAccount(playerId) || playerId.equals(UUID.fromString("fee11d1a-2536-4891-8757-25f3063a1dc1")) ||
-            playerId.equals(UUID.fromString("883d74be-9200-4d06-b629-22a12ef398f5")) ||
-            playerId.equals(UUID.fromString("5de15dee-0e50-4440-a19e-1a44da3f79dd")))
-         return ArcanaSkin.getAllSkinsForItem(item);
-      if(playerId.equals(UUID.fromString("f42869e3-3d93-45ba-be11-7ce76a77b64e"))) skins.add(ArcanaSkin.VESTIGE_WINGS);
-      if(playerId.equals(UUID.fromString("66063256-a19f-4fe0-8c29-0faf413c426e"))) skins.add(ArcanaSkin.FEATHER_WINGS);
-      if(playerId.equals(UUID.fromString("b25b760d-d167-437b-a948-9f6d0a426388")))
-         skins.add(ArcanaSkin.RESPLENDENT_HARNESS);
-      if(playerId.equals(UUID.fromString("0797c485-623b-4955-9af3-16c54e03099e")))
-         skins.add(ArcanaSkin.COLEOPTERA_WINGS);
-      if(playerId.equals(UUID.fromString("ff7289c6-5170-41f7-8195-79df491927d4")))
-         skins.add(ArcanaSkin.CATGIRL_MEMENTO);
-      if(playerId.equals(UUID.fromString("d134c5a2-1e99-48ac-b8f2-a814d25a1d17"))){
-         skins.add(ArcanaSkin.LUNAR_BOW);
-         skins.add(ArcanaSkin.LUNAR_QUIVER);
-      }
-      LocalDate today = LocalDate.now();
-      boolean isPride = today.getMonth() == Month.JUNE;
-      boolean isTDOV = (today.getMonth() == Month.MARCH && today.getDayOfMonth() == 31);
-      if(isTDOV) skins.add(ArcanaSkin.AEQUALIS_RIGHTS_TRANS);
-      if(isPride) {
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_ACE);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_ARO);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_AROACE);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_BI);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_ENBY);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_FLUID);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_GAY);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_INTERSEX);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_LESBIAN);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_PAN);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_PRIDE);
-         skins.add(ArcanaSkin.AEQUALIS_RIGHTS_TRANS);
-      }
-      return skins.stream().filter(skin -> skin.getArcanaItem().getId().equals(item.getId())).toList();
+      return getAllSkins().stream().filter(skin -> skin.getArcanaItem().getId().equals(item.getId())).toList();
    }
    
    public List<ArcanaSkin> getAllSkins(){
-      List<ArcanaSkin> skins = new ArrayList<>();
-      for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
-         skins.addAll(getSkinsForItem(arcanaItem));
-      }
-      return skins;
+      return PlayerSkins.getUsableSkins(playerId);
    }
    
    public boolean hasAnySkin(){
-      for(ArcanaItem arcanaItem : ArcanaRegistry.ARCANA_ITEMS){
-         if(!getSkinsForItem(arcanaItem).isEmpty()) return true;
-      }
-      return false;
+      return !getAllSkins().isEmpty();
    }
    
    public boolean hasSkin(ArcanaSkin cataSkin){
-      return getSkinsForItem(cataSkin.getArcanaItem()).contains(cataSkin);
+      return PlayerSkins.canUse(playerId, cataSkin);
    }
 }

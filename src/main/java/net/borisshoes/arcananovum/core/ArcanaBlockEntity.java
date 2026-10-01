@@ -14,7 +14,6 @@ import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
-import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -44,9 +43,9 @@ public interface ArcanaBlockEntity {
    
    String getCustomArcanaName();
    
-   ArcanaSkin getSkin();
+   String getSkin();
    
-   void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName);
+   void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, String skin, @Nullable String customName);
    
    ArcanaItem getArcanaItem();
    
@@ -86,8 +85,8 @@ public interface ArcanaBlockEntity {
       
       ArcanaItem.putProperty(stack, ArcanaItem.UUID_TAG, uuid);
       
-      if(arcanaBlockEntity.getSkin() != null){
-         ArcanaItem.putProperty(stack, ArcanaItem.SKIN_TAG, arcanaBlockEntity.getSkin().getSerializedName());
+      if(arcanaBlockEntity.getSkin() != null && !arcanaBlockEntity.getSkin().isEmpty()){
+         ArcanaItem.putProperty(stack, ArcanaItem.SKIN_TAG, arcanaBlockEntity.getSkin());
       }
       
       if(arcanaBlockEntity.getCustomArcanaName() != null && !arcanaBlockEntity.getCustomArcanaName().isEmpty()){

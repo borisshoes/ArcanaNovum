@@ -132,7 +132,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
          if(level() instanceof ServerLevel serverWorld){
             ParticleOptions particles = ParticleTypes.COMPOSTER;
             int particleFadeColor = 0x001c08;
-            if(ArcanaItem.getSkin(pickupItemStack) == ArcanaSkin.ZEPHOS_LANCE){
+            if(ArcanaItem.hasSkin(pickupItemStack, ArcanaSkin.ZEPHOS_LANCE)){
                particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT, 0x53D1FF, 0.0f);
                particleFadeColor = 0x001C32;
             }
@@ -173,7 +173,7 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
    private void applyImpactEffects(Entity hitEntity, List<LivingEntity> affectedEntities){
       ParticleOptions particles = ParticleTypes.COMPOSTER;
       int particleFadeColor = 0x001c08;
-      if(ArcanaItem.getSkin(pickupItemStack) == ArcanaSkin.ZEPHOS_LANCE){
+      if(ArcanaItem.hasSkin(pickupItemStack, ArcanaSkin.ZEPHOS_LANCE)){
          particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT, 0x53D1FF, 0.0f);
          particleFadeColor = 0x001C32;
       }

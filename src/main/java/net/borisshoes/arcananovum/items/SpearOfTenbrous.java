@@ -286,7 +286,7 @@ public class SpearOfTenbrous extends ArcanaItem {
       public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker){
          if(attacker.level() instanceof ServerLevel serverWorld){
             ParticleOptions particles = ParticleTypes.COMPOSTER;
-            if(ArcanaItem.getSkin(stack) == ArcanaSkin.ZEPHOS_LANCE){
+            if(ArcanaItem.hasSkin(stack, ArcanaSkin.ZEPHOS_LANCE)){
                particles = SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT, 0x53D1FF, 0.0f);
             }
             ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, () -> attacker.position().add(0, attacker.getBbHeight() / 2, 0), () -> target.position().add(0, target.getBbHeight() / 2, 0), serverWorld.getRandom().nextInt(5) + 5, 0.5, particles,

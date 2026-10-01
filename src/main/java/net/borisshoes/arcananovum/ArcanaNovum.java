@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.datastorage.AnchorData;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
+import net.borisshoes.arcananovum.skins.SkinSystem;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.config.ConfigManager;
 import net.borisshoes.borislib.datastorage.DataAccess;
@@ -59,7 +60,8 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    @Override
    public void onInitialize(){
       ArcanaRegistry.initialize();
-      
+      SkinSystem.init();
+
       ServerTickEvents.END_LEVEL_TICK.register(WorldTickCallback::onWorldTick);
       ServerTickEvents.END_SERVER_TICK.register(TickCallback::onTick);
       UseEntityCallback.EVENT.register(EntityUseCallback::useEntity);

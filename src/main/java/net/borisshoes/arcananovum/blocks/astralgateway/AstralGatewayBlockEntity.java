@@ -18,7 +18,6 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.gui.ContainerWatcher;
 import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.items.Waystone;
-import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
@@ -88,7 +87,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    private String crafterId;
    private String uuid;
    private int origin;
-   private ArcanaSkin skin;
+   private String skin;
    private String customName;
    private GatewayFrame frame;
    private int stateTime;
@@ -121,7 +120,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    }
    
    @Override
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, String skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
@@ -835,7 +834,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       return origin;
    }
    
-   public ArcanaSkin getSkin(){
+   public String getSkin(){
       return skin;
    }
    
@@ -963,7 +962,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
+      this.skin = view.getStringOr(ArcanaBlockEntity.SKIN_TAG, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.stateTime = view.getIntOr(STATE_TIME_TAG, 0);
       this.stardust = view.getLongOr(STARDUST_TAG, 0L);
@@ -1014,7 +1013,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
-      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.putInt(STATE_TIME_TAG, this.stateTime);
       view.putLong(STARDUST_TAG, this.stardust);

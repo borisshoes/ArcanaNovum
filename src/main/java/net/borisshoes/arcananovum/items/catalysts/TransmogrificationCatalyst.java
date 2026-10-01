@@ -98,11 +98,18 @@ public class TransmogrificationCatalyst extends ArcanaItem {
          lore.add(Component.literal(""));
          if(skin != null){
             lore.add(Component.translatable("text.arcananovum.attuned_item_skin", skin.getName()).withColor(skin.getPrimaryColor()));
+         }else if(isAttunedToUnavailableSkin(itemStack)){
+            lore.add(Component.translatable("text.arcananovum.attuned_item_skin", ArcanaSkin.normalizeId(getStringProperty(itemStack, SELECTED_SKIN_TAG))).withStyle(ChatFormatting.DARK_GRAY));
          }else{
             lore.add(Component.translatable("text.arcananovum.attuned_item_skin", Component.translatable("text.arcananovum.default")).withStyle(ChatFormatting.WHITE));
          }
       }
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+   }
+   
+   public static boolean isAttunedToUnavailableSkin(ItemStack catalyst){
+      String skinId = getStringProperty(catalyst, SELECTED_SKIN_TAG);
+      return !skinId.isEmpty() && ArcanaSkin.getSkinFromString(skinId) == null;
    }
    
    @Override

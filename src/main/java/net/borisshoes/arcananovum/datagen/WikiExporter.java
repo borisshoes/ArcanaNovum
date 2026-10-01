@@ -23,6 +23,7 @@ import net.borisshoes.arcananovum.recipes.arcana.IngredientCondition;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.borisshoes.arcananovum.skins.SkinCatalog;
 import net.borisshoes.arcananovum.research.*;
 import net.borisshoes.arcananovum.utils.ConfigUnits;
 import net.borisshoes.borislib.config.ConfigValue;
@@ -976,7 +977,8 @@ public class WikiExporter {
    
    private JsonArray buildSkins(){
       JsonArray arr = new JsonArray();
-      List<ArcanaSkin> skins = Arrays.stream(ArcanaSkin.values()).sorted(Comparator.comparing(skin -> skin.getId().getPath())).toList();
+      // Skins come from the skin API, so this exports whatever catalog is installed on the server running the export
+      List<ArcanaSkin> skins = SkinCatalog.installed().byId().values().stream().sorted(Comparator.comparing(skin -> skin.getId().getPath())).toList();
       for(ArcanaSkin skin : skins){
          try{
             JsonObject obj = new JsonObject();

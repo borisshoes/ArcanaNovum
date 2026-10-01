@@ -8,7 +8,6 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannels;
-import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -33,7 +32,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
    private String crafterId = "";
    private String uuid = "";
    private int origin;
-   private ArcanaSkin skin;
+   private String skin;
    private String customName = "";
    private EnderCrateChannel channel;
    private int slotCount = 27;
@@ -43,7 +42,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
       super(ArcanaRegistry.ENDER_CRATE_BLOCK_ENTITY, blockPos, blockState);
    }
    
-   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, ArcanaSkin skin, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment, Integer> augments, String crafterId, String uuid, int origin, String skin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
@@ -95,7 +94,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
       return origin;
    }
    
-   public ArcanaSkin getSkin(){
+   public String getSkin(){
       return skin;
    }
    
@@ -161,7 +160,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
       this.uuid = view.getStringOr(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
       this.crafterId = view.getStringOr(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
-      this.skin = ArcanaSkin.getSkinFromString(view.getStringOr(ArcanaBlockEntity.SKIN_TAG, ""));
+      this.skin = view.getStringOr(ArcanaBlockEntity.SKIN_TAG, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
@@ -183,7 +182,7 @@ public class EnderCrateBlockEntity extends RandomizableContainerBlockEntity impl
       view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG, this.uuid == null ? "" : this.uuid);
       view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG, this.crafterId == null ? "" : this.crafterId);
       view.putString(ArcanaBlockEntity.CUSTOM_NAME, this.customName == null ? "" : this.customName);
-      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin.getSerializedName());
+      view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.storeNullable("channel", EnderCrateChannel.CODEC, this.getChannel());
    }

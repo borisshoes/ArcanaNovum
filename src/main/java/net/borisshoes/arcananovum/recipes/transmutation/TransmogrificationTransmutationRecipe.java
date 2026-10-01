@@ -168,6 +168,7 @@ public class TransmogrificationTransmutationRecipe extends TransmutationRecipe {
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(arcanaStack);
       if(arcanaItem == null || arcanaItem.getId().equals(ArcanaRegistry.TRANSMOGRIFICATION_CATALYST.getId()))
          return false;
+      if(TransmogrificationCatalyst.isAttunedToUnavailableSkin(transmogStack)) return false;
       ArcanaSkin cataSkin = ArcanaSkin.getSkinFromString(ArcanaItem.getStringProperty(transmogStack, TransmogrificationCatalyst.SELECTED_SKIN_TAG));
       ArcanaSkin curSkin = ArcanaItem.getSkin(arcanaStack);
       if(cataSkin != null && !arcanaItem.getId().equals(cataSkin.getArcanaItem().getId())) return false;

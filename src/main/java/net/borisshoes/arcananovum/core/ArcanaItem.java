@@ -281,6 +281,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       return ArcanaSkin.getSkinFromString(getStringProperty(item, SKIN_TAG));
    }
    
+   public static boolean hasSkin(ItemStack item, String skinId){
+      ArcanaSkin skin = getSkin(item);
+      return skin != null && skin.is(skinId);
+   }
+   
    public void initializePrefItem(MinecraftServer server){
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -298,10 +303,10 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       }
       CompoundTag augments = getCompoundProperty(stack, AUGMENTS_TAG);
       ListTag catalysts = getListProperty(stack, CATALYSTS_TAG);
-      ArcanaSkin skin = ArcanaSkin.getSkinFromString(getStringProperty(stack, SKIN_TAG));
+      String skin = getStringProperty(stack, SKIN_TAG);
       if(!augments.isEmpty()) putProperty(newStack, AUGMENTS_TAG, augments);
       if(!catalysts.isEmpty()) putProperty(newStack, CATALYSTS_TAG, catalysts);
-      if(skin != null) putProperty(newStack, SKIN_TAG, skin.getSerializedName());
+      if(!skin.isEmpty()) putProperty(newStack, SKIN_TAG, skin);
       addCrafter(newStack, getCrafter(stack), getOrigin(stack), server);
       
       EnchantmentHelper.setEnchantments(newStack, stack.getEnchantments());

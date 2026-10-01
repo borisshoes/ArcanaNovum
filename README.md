@@ -32,6 +32,13 @@ The server has the ability to automatically generate and serve the mod's texture
 
 If everything is done correctly, then players will automatically load into the server with the resource pack installed.
 
+### Item Skins
+Cosmetic item skins are not bundled with the mod. The server downloads them from the Arcana Novum skin API at startup, saves them in `config/arcananovum/skins`, and adds them to the resource pack when it is generated. Which skins a player has unlocked is looked up from the same API when they join.
+* A dedicated server checks for new skins about once an hour. New skins become usable the next time the resource pack is generated: after a restart, or after running `/polymer generate-pack`.
+* If the API cannot be reached, the skins and unlocks saved from the last successful check keep working.
+* Skin unlocks are tied to Minecraft accounts, so they are not looked up on offline-mode servers.
+* A server without internet access can set `skinsEnabled` to false and copy the `config/arcananovum/skins/current` folder from an online install.
+
 ## Commands
 ### Player Commands
 * ```/arcana version``` Shows the current Arcana Novum mod version.
@@ -93,6 +100,14 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config disableStardustInfusion` If true, players will not be able to perform the stardust infusion minigame for their gear. They will still be able to use it for making Sovereign Paper. (default: false)
 * `/arcana config logCommandUsage` Whether command usage is logged to the server console. (default: false)
 * `/arcana config allowSimilarBlockChecks` When true, blocks sharing a name but from a different mod can be used in multiblocks or for crafting the Starlight Forge or Midnight Enchanter. This is needed for mod compatibility for mods that alter or remove vanilla blocks. (default: true)
+
+#### Skins
+* `/arcana config skinsEnabled` Whether skins are downloaded from the skin API. When false, no network calls are made and only skins already saved in `config/arcananovum/skins/current` are used. Takes effect after a restart. (default: true)
+* `/arcana config skinsApiUrl` The address of the skin API. Takes effect after a restart. (default: "https://api.borisshoes.net")
+* `/arcana config skinsRequestTimeout` The timeout in seconds of each request to the skin API (capped at 3 seconds in singleplayer). Takes effect after a restart. (default: 10)
+* `/arcana config skinsPackWait` The longest in seconds that building the resource pack waits for the first skin download before using saved skins (capped at 3 seconds in singleplayer). (default: 15)
+* `/arcana config skinsCatalogRefresh` How often in minutes a dedicated server checks the skin API for new or changed skins. Set to 0 to only check at startup. Takes effect after a restart. (default: 60)
+* `/arcana config skinsPlayerRefresh` How often in minutes the skins unlocked by each online player are looked up again. (default: 45)
 
 #### Stardust Infusion Maximums
 * `/arcana config infusionMaxDurability` The maximum durability multiplier achievable through stardust infusion. (default: 0.5)

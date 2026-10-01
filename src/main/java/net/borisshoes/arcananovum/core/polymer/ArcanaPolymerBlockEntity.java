@@ -7,7 +7,6 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -48,7 +47,7 @@ public abstract class ArcanaPolymerBlockEntity extends BaseEntityBlock implement
       String crafterId = arcanaItem.getCrafter(stack);
       String uuid = ArcanaItem.getUUID(stack);
       int origin = arcanaItem.getOrigin(stack);
-      ArcanaSkin skin = ArcanaItem.getSkin(stack);
+      String skin = ArcanaItem.getStringProperty(stack, ArcanaItem.SKIN_TAG);
       String customName = null;
       if(stack.has(DataComponents.CUSTOM_NAME)){
          customName = stack.get(DataComponents.CUSTOM_NAME).getString();
