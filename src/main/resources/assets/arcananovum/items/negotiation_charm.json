@@ -4,10 +4,24 @@
         "property": "minecraft:custom_model_data",
         "cases": [
             {
+                "when": "capitalism",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/negotiation_charm_capitalism"
+                }
+            },
+            {
                 "when": "extortion",
                 "model": {
                     "type": "minecraft:model",
                     "model": "arcananovum:item/negotiation_charm_extortion"
+                }
+            },
+            {
+                "when": "renegotiation",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/negotiation_charm_renegotiation"
                 }
             }
         ],

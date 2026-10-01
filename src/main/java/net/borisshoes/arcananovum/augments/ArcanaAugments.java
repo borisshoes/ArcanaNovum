@@ -1093,6 +1093,10 @@ public class ArcanaAugments {
          new ArcanaAugment("extortion", new ItemStack(Items.EMERALD_BLOCK), ArcanaRegistry.NEGOTIATION_CHARM,
                SOVEREIGN
          ));
+   public static final ArcanaAugment RENEGOTIATION = ArcanaAugments.register(
+         new ArcanaAugment("renegotiation", new ItemStack(Items.DIAMOND_BLOCK), ArcanaRegistry.NEGOTIATION_CHARM,
+               DIVINE
+         ));
    
    // Itineranteur
    public static final ArcanaAugment GUIDING_LIGHT = ArcanaAugments.register(

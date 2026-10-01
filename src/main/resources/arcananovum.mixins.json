@@ -39,6 +39,7 @@
     "LivingEntityVulnerabilityTrackMixin1",
     "LivingEntityVulnerabilityTrackMixin2",
     "LocalMobCapCalculatorMixin",
+    "MerchantResultSlotMixin",
     "MinecraftServerMixin",
     "MobMixin",
     "MoveControlMixin",

@@ -1660,9 +1660,9 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   That weapon... it reminds me of...").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
-                  .append(Component.literal("\n   That weapon... it reminds me of the love I left behind.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Component.literal("\n   That glaive... it reminds me of the love I failed to save.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
-                  .append(Component.literal("\n   That glaive... how did you create it?").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Component.literal("\n   That blade... how did you create it?").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Component.literal("").append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD)).append(Component.literal("Nul").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.BOLD)).append(Component.literal(" ~ ").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD))
                   .append(Component.literal("\n   That glaive... what inspired its creation? I must know.").withStyle(ChatFormatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),

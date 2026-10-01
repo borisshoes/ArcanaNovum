@@ -13,6 +13,7 @@ import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -28,11 +29,16 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerData;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.item.trading.TradeSet;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
@@ -97,12 +103,32 @@ public class NegotiationCharm extends ArcanaItem {
    // Normal override in item class doesn't work because tamed animals consume the item interaction
    public InteractionResult useOnEntity(Player user, LivingEntity entity, InteractionHand hand){
       ItemStack stack = user.getItemInHand(hand);
-      boolean canForceRestock = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.EXTORTION) > 0;
-      if(canForceRestock && entity instanceof Villager villager && villager.level() instanceof ServerLevel serverLevel){
-         villager.restock();
+      boolean canRerollTrades = ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.RENEGOTIATION) > 0;
+      if(canRerollTrades && entity instanceof Villager villager && villager.level() instanceof ServerLevel serverLevel){
+         VillagerData data = villager.getVillagerData();
+         VillagerProfession profession = data.profession().value();
+         int level = data.level();
+         villager.setOffers(new MerchantOffers());
+         for(int i = 1; i <= level; i++){
+            ResourceKey<TradeSet> trades = profession.getTrades(i);
+            if (trades != null) {
+               villager.addOffersFromTradeSet(serverLevel, villager.getOffers(), trades);
+               Player tradingPlayer = villager.getTradingPlayer();
+               if (tradingPlayer != null) {
+                  villager.updateSpecialPrices(tradingPlayer);
+               }
+            }
+         }
          double villagerWidth = villager.getBbWidth();
          double villagerHeight = villager.getBbHeight();
          serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, villager.getX(), villager.getY() + villagerHeight / 2.0, villager.getZ(), 25, villagerWidth / 2, villagerHeight / 4, villagerWidth / 2, 1);
+         return InteractionResult.SUCCESS_SERVER;
+      }else if(canRerollTrades && entity instanceof WanderingTrader trader && trader.level() instanceof ServerLevel serverLevel){
+         trader.offers = new MerchantOffers();
+         trader.updateTrades(serverLevel);
+         double traderBbWidth = trader.getBbWidth();
+         double traderBbHeight = trader.getBbHeight();
+         serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, trader.getX(), trader.getY() + traderBbHeight / 2.0, trader.getZ(), 25, traderBbWidth / 2, traderBbHeight / 4, traderBbWidth / 2, 1);
          return InteractionResult.SUCCESS_SERVER;
       }
       return InteractionResult.PASS;
@@ -119,8 +145,14 @@ public class NegotiationCharm extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          
          List<String> stringList = new ArrayList<>();
-         if(ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.EXTORTION) >= 1){
+         boolean extortion = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.EXTORTION) >= 1;
+         boolean renegotiation = ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.RENEGOTIATION) >= 1;
+         if(extortion && renegotiation){
+            stringList.add("capitalism");
+         }else if(extortion){
             stringList.add("extortion");
+         }else if(renegotiation){
+            stringList.add("renegotiation");
          }
          baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;

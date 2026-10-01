@@ -378,7 +378,7 @@
   "augment.arcananovum.description.eternal_cruelty": "Mobs slain by the Spear give twice the souls to a Soulstone",
   "augment.arcananovum.description.ethereal_anchor": "Ensnared players become unable to teleport",
   "augment.arcananovum.description.eviction_burst": "Impact causes a single burst instead of multiple\nThe range is dependent on the arrow speed,\n between %1$s and %2$s\nA hit entity is also affected by the burst\nMutually Exclusive with Repulsion",
-  "augment.arcananovum.description.extortion": "Using the Charm on a Villager forces a restock",
+  "augment.arcananovum.description.extortion": "Makes Villagers you trade with never run out of stock",
   "augment.arcananovum.description.faraday_cage": "Allows you to filter items attracted\nSneak Right Click with an item in\n your offhand to add it to the filter\nSneak Right Click with the Charm in\n your offhand to reset the filter",
   "augment.arcananovum.description.fast_reboot": "Reduces Harness reboot time to %1$s",
   "augment.arcananovum.description.feline_grace": "Increases fall damage reduction\n by %1$s\nFinal level negates all fall damage",
@@ -2243,5 +2243,7 @@
   "transmutation.arcananovum.trident_synthesis": "Trident Synthesis",
   "transmutation.arcananovum.wood": "Wood",
   "transmutation.arcananovum.wool": "Wool",
-  "transmutation.arcananovum.mosses": "Mosses"
+  "transmutation.arcananovum.mosses": "Mosses",
+  "augment.arcananovum.name.renegotiation": "Renegotiation",
+  "augment.arcananovum.description.renegotiation": "Using the Charm on a Villager causes them to re-roll\n their trades while maintaining the same experience level"
 }
