@@ -4,16 +4,22 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import eu.pb4.polymer.autohost.impl.AutoHost;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.resourcepack.api.ResourcePackBuilder;
+import eu.pb4.polymer.resourcepack.impl.PolymerResourcePackMod;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 import net.minecraft.WorldVersion;
@@ -34,6 +40,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
@@ -48,6 +55,16 @@ public final class ArcanaSkins {
    private static final String ALLOWED_PREFIX = "assets/" + ArcanaNovum.MOD_ID + "/"; // This might need to be expanded to the data/ section later
    private static final String LANG_DIR = ALLOWED_PREFIX + "lang/";
    private static final Pattern LANGUAGE_CODE = Pattern.compile("[a-z0-9_]+");
+   
+   private static final long REBUILD_GAP_MS = 60 * 60 * 1000L;
+   private static final PacketContext.Key<Long> CONFIGURED_AT = PacketContext.key(ArcanaRegistry.arcanaId("skin_pack_time"));
+   private static final AtomicBoolean REBUILD_CHECK_QUEUED = new AtomicBoolean(false);
+   private static volatile Map<String, Long> packedSince = Map.of();
+   private static volatile SkinCatalog buildingCatalog = null;
+   private static volatile String buildingPackHash = null;
+   private static volatile String builtPackHash = null;
+   private static volatile String staleNoticeFor = "";
+   private static volatile long lastRebuild = 0;
    
    private static final Map<UUID, ArcanaSkins.PlayerSkinEntry> CACHE = new ConcurrentHashMap<>();
    private static final Map<UUID, Long> LAST_ATTEMPT = new ConcurrentHashMap<>();
@@ -67,7 +84,10 @@ public final class ArcanaSkins {
          SkinStore.init();
          SkinCatalog.loadInstalledFromDisk();
          ArcanaSkins.dev("Catalog loaded from disk at startup: {} {}", SkinCatalog.getInstalled().packHash().isEmpty() ? "<none>" : SkinCatalog.getInstalled().packHash(), SkinCatalog.getInstalled().byId().keySet());
+         markPacked(SkinCatalog.getInstalled(), 0L);
          PolymerResourcePackUtils.RESOURCE_PACK_AFTER_INITIAL_CREATION_EVENT.register(ArcanaSkins::onBuild); // API files need to take priority over native assets
+         PolymerResourcePackUtils.RESOURCE_PACK_FINISHED_EVENT.register(ArcanaSkins::onBuildFinished);
+         ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.register((listener, server) -> listener.getPacketContext().set(CONFIGURED_AT, System.currentTimeMillis())); // Fires before the pack is sent
          load();
          ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onJoin(handler.player, server));
          ServerTickEvents.END_SERVER_TICK.register(ArcanaSkins::tick);
@@ -267,6 +287,8 @@ public final class ArcanaSkins {
          SkinStore.Snapshot snapshot = SkinStore.readCurrentFiles();
          if(snapshot == null){
             SkinCatalog.setInstalled(SkinCatalog.EMPTY);
+            buildingCatalog = SkinCatalog.EMPTY;
+            buildingPackHash = SkinStore.emptyPackHash();
             if(ArcanaSkins.enabled() && SkinStore.emptyPackHash().isEmpty()){
                ArcanaSkins.warn("pack-empty", "No saved skins available; building the resource pack without skins", null);
             }
@@ -289,6 +311,8 @@ public final class ArcanaSkins {
          SkinCatalog catalog = snapshot.catalog();
          addTranslations(builder, catalog);
          SkinCatalog.setInstalled(catalog);
+         buildingCatalog = catalog;
+         buildingPackHash = catalog.packHash();
          SkinStore.markBuilt(catalog.packHash());
          ArcanaSkins.recovered("pack-empty", "Saved skins are available again");
          ArcanaSkins.info("Added {} skins ({} files) to the resource pack", catalog.byId().size(), added);
@@ -296,6 +320,70 @@ public final class ArcanaSkins {
       }catch(Throwable t){
          ArcanaSkins.warn("pack", "Could not add skins to the resource pack; it is built without them", t);
          SkinCatalog.setInstalled(SkinCatalog.EMPTY);
+         buildingCatalog = SkinCatalog.EMPTY;
+         buildingPackHash = SkinStore.currentPackHash();
+      }
+   }
+   
+   private static void onBuildFinished(Object result){
+      try{
+         SkinCatalog catalog = buildingCatalog;
+         buildingCatalog = null;
+         if(result == null || catalog == null) return;
+         markPacked(catalog, System.currentTimeMillis());
+         builtPackHash = buildingPackHash;
+         ArcanaSkins.dev("Resource pack build finished with skin catalog {}", builtPackHash == null || builtPackHash.isEmpty() ? "<none>" : builtPackHash);
+      }catch(Throwable t){
+         ArcanaSkins.warn("pack-finish", "Could not record the skins of the finished resource pack", t);
+      }
+   }
+   
+   private static void markPacked(SkinCatalog catalog, long time){
+      Map<String, Long> previous = packedSince;
+      Map<String, Long> updated = new HashMap<>();
+      for(ArcanaSkin skin : catalog.getAll()){
+         updated.put(packKey(skin), previous.getOrDefault(packKey(skin), time));
+      }
+      packedSince = updated;
+   }
+   
+   static void rebuildPackIfStale(){
+      try{
+         MinecraftServer server = BorisLib.SERVER;
+         String built = builtPackHash;
+         if(!SkinSync.dedicated() || server == null || !server.isRunning() || built == null) return;
+         String saved = SkinStore.currentPackHash();
+         if(saved.equals(built)) return;
+         if(!AutoHost.config.enabled){
+            if(!saved.equals(staleNoticeFor)){
+               staleNoticeFor = saved;
+               ArcanaSkins.info("Skins changed since the resource pack was last built; run /polymer generate-pack");
+            }
+            return;
+         }
+         long now = System.currentTimeMillis();
+         long wait = lastRebuild + REBUILD_GAP_MS - now;
+         if(wait > 0){
+            ArcanaSkins.dev("Skins changed, but the resource pack was rebuilt for skins less than an hour ago; checking again in {}s", wait / 1000);
+            if(REBUILD_CHECK_QUEUED.compareAndSet(false, true)){
+               SkinSync.EXEC.schedule(() -> {
+                  REBUILD_CHECK_QUEUED.set(false);
+                  rebuildPackIfStale();
+               }, wait, TimeUnit.MILLISECONDS);
+            }
+            return;
+         }
+         lastRebuild = now;
+         ArcanaSkins.info("Skins changed on the skin API; rebuilding the resource pack. Players get the new skins the next time they join");
+         server.execute(() -> {
+            try{
+               PolymerResourcePackMod.generateAndCall(server, false, server::sendSystemMessage, result -> {});
+            }catch(Throwable t){
+               ArcanaSkins.warn("pack-rebuild", "Could not rebuild the resource pack for the new skins; run /polymer generate-pack", t);
+            }
+         });
+      }catch(Throwable t){
+         ArcanaSkins.warn("pack-rebuild", "Could not rebuild the resource pack for the new skins; run /polymer generate-pack", t);
       }
    }
    
@@ -363,6 +451,16 @@ public final class ArcanaSkins {
       return FabricLoader.getInstance().getModContainer(ArcanaNovum.MOD_ID).map(mod -> mod.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
    }
    
+   private static String packKey(ArcanaSkin skin){
+      return skin.getId().getPath() + (skin.hasEquipmentAsset() ? "#equipment" : "");
+   }
+   
+   public static boolean playerHasDataForSkin(@Nullable PacketContext viewer, ArcanaSkin skin){
+      Long since = packedSince.get(packKey(skin));
+      if(since == null) return false;
+      Long configuredAt = viewer == null ? null : viewer.get(CONFIGURED_AT);
+      return configuredAt == null || configuredAt >= since;
+   }
    
    // ===== Logging =====
    

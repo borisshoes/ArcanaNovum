@@ -11,9 +11,11 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.borisshoes.arcananovum.skins.ArcanaSkins;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -279,6 +281,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       if(!ArcanaItemUtils.isArcane(item))
          return null;
       return ArcanaSkin.getSkinFromString(getStringProperty(item, SKIN_TAG));
+   }
+   
+   public static ArcanaSkin getSkin(ItemStack item, PacketContext viewer){
+      ArcanaSkin skin = getSkin(item);
+      return skin != null && ArcanaSkins.playerHasDataForSkin(viewer, skin) ? skin : null;
    }
    
    public static boolean hasSkin(ItemStack item, String skinId){
