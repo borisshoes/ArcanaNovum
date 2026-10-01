@@ -1,61 +1,66 @@
 package net.borisshoes.arcananovum.skins;
 
+import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-public enum ArcanaSkin implements StringRepresentable {
+public final class ArcanaSkin implements StringRepresentable {
    
-   VESTIGE_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x7a04c9, 0x512E93, ArcanaRegistry.arcanaId("vestige_wings")),
-   COLEOPTERA_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x402cbf, 0x3E3779, ArcanaRegistry.arcanaId("coleoptera_wings")),
-   FEATHER_WINGS(ArcanaRegistry.WINGS_OF_ENDERIA, 0x4FD6FF, 0x33988f, ArcanaRegistry.arcanaId("feather_wings")),
-   LUNAR_BOW(ArcanaRegistry.RUNIC_BOW, 0x074bde, 0x152cd6, ArcanaRegistry.arcanaId("lunar_bow")),
-   LUNAR_QUIVER(ArcanaRegistry.RUNIC_QUIVER, 0x074bde, 0x152cd6, ArcanaRegistry.arcanaId("lunar_quiver")),
-   RESPLENDENT_HARNESS(ArcanaRegistry.LEVITATION_HARNESS, 0x7f31ff, 0x4747FF, ArcanaRegistry.arcanaId("resplendent_harness"), new Pair[]{Pair.of(Component.translatable("credits_and_attribution.arcananovum.model_by"), Component.literal("ii_iridescent"))}),
-   CATGIRL_MEMENTO(ArcanaRegistry.NUL_MEMENTO, 0xFF55FF, 0x8B2E8B, ArcanaRegistry.arcanaId("catgirl_memento")),
-   ZEPHOS_LANCE(ArcanaRegistry.SPEAR_OF_TENBROUS, 0x18ceff, 0x0015e3, ArcanaRegistry.arcanaId("zephos_lance")),
-   AEQUALIS_RIGHTS(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF87C7, 0xBFEEFF, ArcanaRegistry.arcanaId("aequalis_rights")),
-   AEQUALIS_RIGHTS_ACE(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xBCB2C5, 0x946CFF, ArcanaRegistry.arcanaId("aequalis_rights_ace")),
-   AEQUALIS_RIGHTS_ARO(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xBCB2C5, 0x27AD43, ArcanaRegistry.arcanaId("aequalis_rights_aro")),
-   AEQUALIS_RIGHTS_AROACE(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFFC55A, 0x5EC1FF, ArcanaRegistry.arcanaId("aequalis_rights_aroace")),
-   AEQUALIS_RIGHTS_BI(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF41D8, 0x152cd6, ArcanaRegistry.arcanaId("aequalis_rights_bi")),
-   AEQUALIS_RIGHTS_ENBY(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFFF318, 0x7E33BF, ArcanaRegistry.arcanaId("aequalis_rights_enby")),
-   AEQUALIS_RIGHTS_FLUID(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF49F1, 0x5F37FF, ArcanaRegistry.arcanaId("aequalis_rights_fluid")),
-   AEQUALIS_RIGHTS_GAY(ArcanaRegistry.AEQUALIS_SCIENTIA, 0x53FF9B, 0x946CFF, ArcanaRegistry.arcanaId("aequalis_rights_gay")),
-   AEQUALIS_RIGHTS_INTERSEX(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFFCF16, 0x7E33BF, ArcanaRegistry.arcanaId("aequalis_rights_intersex")),
-   AEQUALIS_RIGHTS_LESBIAN(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xff5c9c, 0xFF9A30, ArcanaRegistry.arcanaId("aequalis_rights_lesbian")),
-   AEQUALIS_RIGHTS_PAN(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xff5c9c, 0x3C67FF, ArcanaRegistry.arcanaId("aequalis_rights_pan")),
-   AEQUALIS_RIGHTS_PRIDE(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xff5c9c, 0x33F3FF, ArcanaRegistry.arcanaId("aequalis_rights_pride")),
-   AEQUALIS_RIGHTS_TRANS(ArcanaRegistry.AEQUALIS_SCIENTIA, 0xFF87C7, 0xBFEEFF, ArcanaRegistry.arcanaId("aequalis_rights_trans"));
+   // Skin ids with custom behavior
+   public static final String ZEPHOS_LANCE = "zephos_lance";
+   
+   private static final String FALLBACK_LANGUAGE = "en_us";
    
    private final ArcanaItem arcanaItem;
    private final Identifier id;
+   private final String hash;
+   private final List<String> files;
+   private final Map<String, Map<String, String>> translations;
    private final int primaryColor;
    private final int secondaryColor;
-   private final Pair<MutableComponent, MutableComponent>[] attributions;
+   private final List<Pair<String, String>> attributions;
    
-   ArcanaSkin(ArcanaItem arcanaItem, int primaryColor, int secondaryColor, Identifier id){
+   private ArcanaSkin(ArcanaItem arcanaItem, Identifier id, String hash, List<String> files, Map<String, Map<String, String>> translations, int primaryColor, int secondaryColor, List<Pair<String, String>> attributions){
       this.arcanaItem = arcanaItem;
       this.id = id;
-      this.primaryColor = primaryColor;
-      this.secondaryColor = secondaryColor;
-      this.attributions = new Pair[0];
-   }
-   
-   ArcanaSkin(ArcanaItem arcanaItem, int primaryColor, int secondaryColor, Identifier id, Pair<MutableComponent, MutableComponent>[] attributions){
-      this.arcanaItem = arcanaItem;
-      this.id = id;
+      this.hash = hash;
+      this.files = files;
+      this.translations = translations;
       this.primaryColor = primaryColor;
       this.secondaryColor = secondaryColor;
       this.attributions = attributions;
+   }
+   
+   @Nullable
+   static ArcanaSkin parse(JsonObject skinObj){
+      try{
+         ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(skinObj.get("item_id").getAsString());
+         if(arcanaItem == null){
+            ArcanaSkins.dev("Skipping skin {}: this mod version has no item {}", skinObj.get("id"), skinObj.get("item_id"));
+            return null;
+         }
+         List<String> files = new ArrayList<>();
+         skinObj.getAsJsonArray("files").forEach(file -> files.add(file.getAsString()));
+         return new ArcanaSkin(arcanaItem, ArcanaRegistry.arcanaId(skinObj.get("id").getAsString()), skinObj.get("hash").getAsString(), List.copyOf(files),
+               ArcanaSkinApi.translations(skinObj),
+               ArcanaSkinApi.colorStringToInt(skinObj.get("primary_color").getAsString()),
+               ArcanaSkinApi.colorStringToInt(skinObj.get("secondary_color").getAsString()),
+               List.copyOf(ArcanaSkinApi.attributions(skinObj)));
+      }catch(RuntimeException e){
+         ArcanaSkins.debug("Skipping malformed skin entry " + skinObj, e);
+         return null;
+      }
    }
    
    public ArcanaItem getArcanaItem(){
@@ -66,8 +71,28 @@ public enum ArcanaSkin implements StringRepresentable {
       return id;
    }
    
+   public String getHash(){
+      return hash;
+   }
+   
+   public List<String> getFiles(){
+      return files;
+   }
+   
+   public Map<String, Map<String, String>> getTranslations(){
+      return translations;
+   }
+   
+   public boolean is(String skinId){
+      return id.getPath().equals(skinId);
+   }
+   
    public Identifier getModelId(){
       return ArcanaRegistry.arcanaId("skins/" + id.getPath());
+   }
+   
+   public boolean hasEquipmentAsset(){
+      return files.contains("/assets/" + id.getNamespace() + "/equipment/skins/" + id.getPath() + ".json");
    }
    
    public int getPrimaryColor(){
@@ -86,37 +111,68 @@ public enum ArcanaSkin implements StringRepresentable {
       return "skin." + id.getNamespace() + "." + id.getPath() + ".description";
    }
    
+   @Nullable
+   private String getFallbackTranslation(String key){
+      return translations.getOrDefault(FALLBACK_LANGUAGE, Map.of()).get(key);
+   }
+   
    public MutableComponent getName(){
-      return Component.translatable(getNameTranslationKey());
+      String fallback = getFallbackTranslation(getNameTranslationKey());
+      return Component.translatableWithFallback(getNameTranslationKey(), fallback != null ? fallback : id.getPath());
    }
    
    public List<MutableComponent> getDescription(){
-      String fullText = Component.translatable(getDescriptionTranslationKey()).getString();
-      String[] lines = fullText.split("\n");
       List<MutableComponent> components = new ArrayList<>();
-      for(String line : lines){
+      String fullText = getFallbackTranslation(getDescriptionTranslationKey());
+      if(fullText == null) return components;
+      for(String line : fullText.split("\n")){
          components.add(Component.literal(line));
       }
       return components;
    }
    
+   @SuppressWarnings("unchecked")
    public Pair<MutableComponent, MutableComponent>[] getAttributions(){
-      return attributions;
+      Pair<MutableComponent, MutableComponent>[] pairs = new Pair[attributions.size()];
+      for(int i = 0; i < pairs.length; i++){
+         pairs[i] = Pair.of(Component.translatable(attributions.get(i).getFirst()), Component.literal(attributions.get(i).getSecond()));
+      }
+      return pairs;
    }
    
    public static List<ArcanaSkin> getAllSkinsForItem(ArcanaItem item){
-      return Arrays.stream(values()).filter(skin -> skin.arcanaItem.getId().equals(item.getId())).toList();
+      return SkinCatalog.getInstalled().getSkinsForItem(item);
    }
    
-   public static ArcanaSkin getSkinFromString(String str){
-      for(ArcanaSkin value : values()){
-         if(value.id.equals(Identifier.parse(str))) return value;
-      }
-      return null;
+   public static String normalizeId(@Nullable String str){
+      if(str == null) return "";
+      String prefix = ArcanaNovum.MOD_ID + ":";
+      return str.startsWith(prefix) ? str.substring(prefix.length()) : str;
+   }
+   
+   @Nullable
+   public static ArcanaSkin getSkinFromString(@Nullable String str){
+      String skinId = normalizeId(str);
+      return skinId.isEmpty() ? null : SkinCatalog.getInstalled().get(skinId);
    }
    
    @Override
    public String getSerializedName(){
+      return id.toString();
+   }
+   
+   @Override
+   public boolean equals(Object obj){
+      return obj instanceof ArcanaSkin other && id.equals(other.id);
+   }
+   
+   @Override
+   public int hashCode(){
+      return id.hashCode();
+   }
+   
+   @Override
+   public String toString(){
       return id.toString();
    }
 }

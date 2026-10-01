@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.greaves.GreavesOfGaialtusGui;
 import net.borisshoes.arcananovum.gui.greaves.GreavesSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.config.IConfigSetting;
@@ -25,6 +26,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -297,7 +299,9 @@ public class GreavesOfGaialtus extends ArcanaItem {
       public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context, lookup);
          Equippable equippableComponent = baseStack.get(DataComponents.EQUIPPABLE);
-         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, ArcanaRegistry.arcanaId(ID))).build();
+         ArcanaSkin skin = ArcanaItem.getSkin(itemStack);
+         Identifier modelId = skin != null && skin.hasEquipmentAsset() ? skin.getModelId() : ArcanaRegistry.arcanaId(ID);
+         Equippable newComp = Equippable.builder(equippableComponent.slot()).setEquipSound(equippableComponent.equipSound()).setAsset(ResourceKey.create(EQUIPMENT_ASSET_REGISTRY_KEY, modelId)).build();
          baseStack.set(DataComponents.EQUIPPABLE, newComp);
          return baseStack;
       }

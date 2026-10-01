@@ -27,7 +27,7 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
-import net.borisshoes.arcananovum.skins.PlayerSkins;
+import net.borisshoes.arcananovum.skins.ArcanaSkins;
 import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
@@ -1639,7 +1639,7 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public List<ArcanaSkin> getAllSkins(){
-      return PlayerSkins.getUsableSkins(playerId);
+      return ArcanaSkins.getUsableSkins(playerId);
    }
    
    public boolean hasAnySkin(){
@@ -1647,6 +1647,6 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public boolean hasSkin(ArcanaSkin cataSkin){
-      return PlayerSkins.canUse(playerId, cataSkin);
+      return ArcanaSkins.canUse(playerId, cataSkin);
    }
 }

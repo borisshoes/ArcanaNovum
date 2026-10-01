@@ -99,7 +99,6 @@ public class PlayerConnectionCallback {
       }
       
       if(profile.hasAnySkin()){
-         profile.setResearchTask(ResearchTasks.CONTRIBUTE, true);
          profile.setResearchTask(ResearchTasks.HAVE_A_SKIN, true);
       }
    }

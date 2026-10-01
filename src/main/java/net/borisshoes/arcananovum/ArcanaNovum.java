@@ -4,13 +4,13 @@ import com.mojang.datafixers.util.Pair;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.borisshoes.arcananovum.blocks.ItineranteurBlockEntity;
+import net.borisshoes.arcananovum.skins.ArcanaSkins;
 import net.minecraft.resources.Identifier;
 import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.datastorage.AnchorData;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
-import net.borisshoes.arcananovum.skins.SkinSystem;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.config.ConfigManager;
 import net.borisshoes.borislib.datastorage.DataAccess;
@@ -28,7 +28,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -55,12 +54,13 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final ItemModDataHandler ITEM_DATA = new ItemModDataHandler(MOD_ID);
    public static final Identifier ARCANA_CLICK_ACTION_ID = Identifier.fromNamespaceAndPath(MOD_ID, "run_command");
    public static final String ARCANA_CLICK_KEY = MOD_ID + ":command";
+   public static final int SKIN_SCHEMA = 1;
    public static int DEBUG_VALUE = 0;
    
    @Override
    public void onInitialize(){
       ArcanaRegistry.initialize();
-      SkinSystem.init();
+      ArcanaSkins.init();
 
       ServerTickEvents.END_LEVEL_TICK.register(WorldTickCallback::onWorldTick);
       ServerTickEvents.END_SERVER_TICK.register(TickCallback::onTick);

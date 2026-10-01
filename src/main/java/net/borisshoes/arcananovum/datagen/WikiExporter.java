@@ -978,7 +978,7 @@ public class WikiExporter {
    private JsonArray buildSkins(){
       JsonArray arr = new JsonArray();
       // Skins come from the skin API, so this exports whatever catalog is installed on the server running the export
-      List<ArcanaSkin> skins = SkinCatalog.installed().byId().values().stream().sorted(Comparator.comparing(skin -> skin.getId().getPath())).toList();
+      List<ArcanaSkin> skins = SkinCatalog.getInstalled().byId().values().stream().sorted(Comparator.comparing(skin -> skin.getId().getPath())).toList();
       for(ArcanaSkin skin : skins){
          try{
             JsonObject obj = new JsonObject();
