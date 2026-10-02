@@ -20,6 +20,7 @@ accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/m
 accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
 accessible field net/minecraft/world/entity/npc/villager/AbstractVillager offers Lnet/minecraft/world/item/trading/MerchantOffers;
 
+accessible method net/minecraft/world/item/component/BundleContents <init> (Ljava/util/List;I)V
 accessible method net/minecraft/world/entity/LivingEntity detectEquipmentUpdates ()V
 accessible method net/minecraft/world/entity/animal/frog/Tadpole ageUp (I)V
 accessible method net/minecraft/world/entity/animal/frog/Tadpole getTicksLeftUntilAdult ()I

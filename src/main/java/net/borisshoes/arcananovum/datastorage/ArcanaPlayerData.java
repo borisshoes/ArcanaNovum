@@ -696,16 +696,23 @@ public class ArcanaPlayerData implements StorableData {
                if(item.has(DataComponents.BUNDLE_CONTENTS)){
                   BundleContents bundleComp = item.get(DataComponents.BUNDLE_CONTENTS);
                   List<ItemStackTemplate> newStacks = new ArrayList<>();
-                  for(ItemStackTemplate invStack : bundleComp.items()){
-                     ItemStack containedStack = invStack.create();
+                  boolean shouldUpdate = false;
+                  int selected = -1;
+                  for(int j = 0; j < bundleComp.size(); j++){
+                     ItemStack containedStack = bundleComp.items().get(j).create();
                      if(containedStack.is(ArcanaRegistry.ALL_ARCANA_ITEMS)){
                         containedStack.inventoryTick(player.level(), player, null);
+                        shouldUpdate = true;
                      }
                      if(!containedStack.isEmpty()){
+                        if(j == bundleComp.getSelectedItemIndex()) selected = newStacks.size();
                         newStacks.add(ItemStackTemplate.fromNonEmptyStack(containedStack));
                      }
                   }
-                  item.set(DataComponents.BUNDLE_CONTENTS, new BundleContents(newStacks));
+                  if(shouldUpdate){
+                     BundleContents newComp = new BundleContents(newStacks, selected);
+                     item.set(DataComponents.BUNDLE_CONTENTS, newComp);
+                  }
                }
                continue; // Item not arcane, skip
             }
