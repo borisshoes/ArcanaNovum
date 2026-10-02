@@ -50,7 +50,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final HashMap<ServerPlayer, ItineranteurBlockEntity> ITINERANTEUR_USERS = new HashMap<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static final HashMap<VirtualInventoryGui<?>, ServerPlayer> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
-   public static final boolean DEV_MODE = true;
+   public static final boolean DEV_MODE = false;
    public static final ItemModDataHandler ITEM_DATA = new ItemModDataHandler(MOD_ID);
    public static final Identifier ARCANA_CLICK_ACTION_ID = Identifier.fromNamespaceAndPath(MOD_ID, "run_command");
    public static final String ARCANA_CLICK_KEY = MOD_ID + ":command";
