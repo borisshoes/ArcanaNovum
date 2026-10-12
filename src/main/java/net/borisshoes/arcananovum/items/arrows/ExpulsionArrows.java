@@ -127,12 +127,12 @@ public class ExpulsionArrows extends RunicArrow {
       }
    }
    
-   private void evictionPulse(AbstractArrow arrow, ServerLevel world, Vec3 pos, double range){
+   private void evictionPulse(RunicArrowEntity arrow, ServerLevel world, Vec3 pos, double range){
       AABB rangeBox = new AABB(pos.x + 8, pos.y + 8, pos.z + 8, pos.x - 8, pos.y - 8, pos.z - 8);
       List<Entity> entities = world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 1.5 * range * range && !(e instanceof AbstractArrow) && !(e instanceof EnderDragon));
       for(Entity entity1 : entities){
          Vec3 diff = entity1.position().subtract(pos);
-         double extraMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.EXPULSION_ARROW_EVICTION_POWER_PER_LVL).getFirst();
+         double extraMod = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.EXPULSION_ARROW_EVICTION_POWER_PER_LVL).get(arrow.getAugment(ArcanaAugments.EVICTION_BURST));
          double multiplier = extraMod * Mth.clamp(3 - diff.length() * .5, .1, 7.5);
          Vec3 motion = diff.add(0, 0, 0).normalize().scale(multiplier);
          entity1.setDeltaMovement(motion.x, motion.y, motion.z);

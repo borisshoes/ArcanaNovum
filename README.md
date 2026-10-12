@@ -202,7 +202,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config concussionArrowRangeMin` The minimum effect range of Runic Concussion Arrows. (default: 1.0)
 * `/arcana config concussionArrowRangeMax` The maximum effect range of Runic Concussion Arrows. (default: 6.0)
 * `/arcana config concussionArrowDurationMod` The duration modifier multiplier for Runic Concussion Arrow effects. (default: 1.0)
-* `/arcana config concussionArrowShellshockBoostPerLvl` The Shellshock effect range boost per augment level for Runic Concussion Arrows. (default: [0.0, 0.5, 1.0, 2.0])
+* `/arcana config concussionArrowShellshockBoostPerLvl` The Shellshock effect duration boost per augment level for Runic Concussion Arrows. (default: [0.0, 0.5, 1.0, 2.0])
 * `/arcana config concussionArrowTorpor` The fraction of movement speed removed by the initial blast of Runic Concussion Arrows. (default: 0.75)
 * `/arcana config concussionArrowLingeringTorpor` The fraction of movement speed removed for the rest of the Runic Concussion Arrow's effect. (default: 0.45)
 * `/arcana config concussionArrowLethargy` The fraction of block break speed removed by Runic Concussion Arrows. (default: 0.99)
@@ -227,7 +227,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config expulsionArrowRepulsionRangePerLvl` The Repulsion range increase per augment level for Runic Expulsion Arrows. (default: [0.0, 1.5, 3.0, 4.5])
 * `/arcana config expulsionArrowEvictionRangeMin` The minimum Eviction Burst range for Runic Expulsion Arrows. (default: 1.0)
 * `/arcana config expulsionArrowEvictionRangeMax` The maximum Eviction Burst range for Runic Expulsion Arrows. (default: 5.0)
-* `/arcana config expulsionArrowEvictionPowerPerLvl` The Eviction Burst knockback power increase per augment level for Runic Expulsion Arrows. (default: [0.0, 1.0])
+* `/arcana config expulsionArrowEvictionPowerPerLvl` The Eviction Burst knockback power multiplier per augment level for Runic Expulsion Arrows. (default: [0.0, 1.0])
 
 ### Runic Graviton Arrows
 * `/arcana config gravitonArrowRange` The base pull range of Runic Graviton Arrows. (default: 3.0)
@@ -251,7 +251,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 ### Runic Siphoning Arrows
 * `/arcana config siphoningArrowHealMinHeal` The minimum healing from Runic Siphoning Arrows. (default: 1.0)
 * `/arcana config siphoningArrowHealMaxHeal` The maximum healing from Runic Siphoning Arrows. (default: 8.0)
-* `/arcana config siphoningArrowOverhealPerLvl` The overheal absorption hearts per augment level for Runic Siphoning Arrows. (default: [0, 4, 10, 20])
+* `/arcana config siphoningArrowOverhealPerLvl` The maximum overheal absorption in HP per augment level for Runic Siphoning Arrows. (default: [0, 4, 10, 20])
 
 ### Runic Smoke Arrows
 * `/arcana config smokeArrowDuration` The base smoke cloud duration in ticks for Runic Smoke Arrows. (default: 100)
@@ -372,7 +372,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config brainJarMaxXpPerLvl` The maximum XP storage increase per augment level for the Brain in a Jar. (default: [0, 1000000, 3000000, 5000000, 7000000, 9000000])
 * `/arcana config brainJarInterestPerLvl` The XP interest rate per augment level for the Brain in a Jar. (default: [0.0, 0.001, 0.0025, 0.005])
 * `/arcana config brainJarInterestTick` The tick interval between interest calculations for the Brain in a Jar. (default: 1200)
-* `/arcana config brainJarRepairPerLvl` The multiplier of mending effects for the Brain in a Jar per augment level. (default: [1.0, 1.5, 2.0, 1.5, 2.0, 2.5])
+* `/arcana config brainJarRepairPerLvl` The multiplier of mending effects for the Brain in a Jar per augment level. (default: [1.0, 1.5, 2.0, 2.5, 3.0, 3.5])
 
 ### Chest Translocator
 * `/arcana config chestTranslocatorCooldown` The cooldown in seconds for the Chest Translocator. (default: 30)
@@ -420,7 +420,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config levitationHarnessGlowstonePerHour` The glowstone fuel consumed per hour by the Levitation Harness. (default: 960)
 * `/arcana config levitationHarnessSoulPerHour` The soul sand fuel consumed per hour by the Levitation Harness. (default: 60)
 * `/arcana config levitationHarnessDurabilityChance` The chance to not deactivate when taking damage per augment level for the Sturdy Construction augment of the Levitation Harness. (default: [0.0, 0.15, 0.35, 0.5])
-* `/arcana config levitationHarnessRebootSpeedPerLvl` The reboot speed increase in seconds per augment level for the Fast Reboot augment of the Levitation Harness. (default: [15, 13, 11, 9, 7])
+* `/arcana config levitationHarnessRebootSpeedPerLvl` The reboot time in seconds per augment level for the Fast Reboot augment of the Levitation Harness. (default: [15, 13, 11, 9, 7])
 
 ### Levitation Harness / Shulker Core
 * `/arcana config harnessCoreRecyclerEfficiency` The fuel efficiency chance per augment level for the Levitation Harness and Shulker Core. (default: [0.0, 0.1, 0.25, 0.5])
@@ -479,14 +479,14 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config shadowStalkersGlaiveKillEnergy` The energy gained per kill with the Shadow Stalker's Glaive. (default: 85)
 * `/arcana config shadowStalkersGlaiveStalkEnergy` The energy consumed to activate the stalk ability of the Shadow Stalker's Glaive. (default: 80)
 * `/arcana config shadowStalkersGlaivePassiveEnergyCap` The maximum energy from passive regeneration for the Shadow Stalker's Glaive. (default: 20)
-* `/arcana config shadowStalkersGlaivePassiveEnergyRate` The tick interval between passive energy regeneration for the Shadow Stalker's Glaive. (default: 20)
+* `/arcana config shadowStalkersGlaivePassiveEnergyRate` The energy regenerated every 5 seconds while below the passive energy cap for the Shadow Stalker's Glaive. (default: 20)
 * `/arcana config shadowStalkersGlaiveInvisDuration` The invisibility duration in ticks per augment level for the Shadow Stalker's Glaive. (default: [0, 20, 40, 100])
 * `/arcana config shadowStalkersGlaiveNearsightDuration` The nearsight duration in ticks per augment level for the Shadow Stalker's Glaive. (default: [0, 20, 40, 100])
 * `/arcana config shadowStalkersGlaiveBloodletterDamage` The self-damage dealt by the Bloodletter augment of the Shadow Stalker's Glaive. (default: 2.0)
 
 ### Shield of Fortitude
 * `/arcana config shieldOfFortitudeDisplayMode` The display mode for the Shield of Fortitude (model_only means only the model will be used, vanilla_only means the shield will be a vanilla enchanted shield and show banners, hybrid means it will use the model unless a banner is applied). (default: hybrid)
-* `/arcana config shieldOfFortitudeBlockedEnergyConversionPercent` The percentage of blocked damage converted to shield energy for the Shield of Fortitude. (default: 0.5)
+* `/arcana config shieldOfFortitudeBlockedEnergyConversionPercent` The fraction of blocked damage converted to shield energy for the Shield of Fortitude. (default: 0.5)
 * `/arcana config shieldOfFortitudeHitMax` The base maximum damage absorbed per hit by the Shield of Fortitude. (default: 10.0)
 * `/arcana config shieldOfFortitudeHitMaxPerLvl` The maximum damage absorbed per hit increase per augment level for the Shield of Fortitude. (default: [0.0, 2.0, 4.0, 6.0, 8.0, 10.0])
 * `/arcana config shieldOfFortitudeDuration` The base shield effect duration in ticks for the Shield of Fortitude. (default: 200)
@@ -516,7 +516,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config spearOfTenbrousStunTorpor` The fraction of movement speed removed by the Spear of Tenbrous' stun, where 1.0 is a full root. (default: 1.0)
 * `/arcana config spearOfTenbrousStormDmg` The storm ability damage dealt by the Spear Of Tenbrous. (default: 6.0)
 * `/arcana config spearOfTenbrousStormRange` The storm ability range of the Spear Of Tenbrous. (default: 4.5)
-* `/arcana config spearOfTenbrousThrowCooldownPerLvl` The throw cooldown reduction in ticks per augment level for the Unending Hatred augment of the Spear Of Tenbrous. (default: [180, 140, 100, 60, 20])
+* `/arcana config spearOfTenbrousThrowCooldownPerLvl` The throw cooldown in ticks per augment level for the Unending Hatred augment of the Spear Of Tenbrous. (default: [180, 140, 100, 60, 20])
 
 ### Stasis Pearl
 * `/arcana config stasisPearlCooldown` The cooldown in seconds for the Stasis Pearl. (default: 60)
@@ -526,8 +526,8 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config stasisPearlReconstructDuration` The reconstruction effect duration in ticks for the Stasis Pearl. (default: 100)
 
 ### Totem of Vengeance
-* `/arcana config totemOfVengeanceDuration` The base effect duration in seconds for the Totem of Vengeance. (default: 300)
-* `/arcana config totemOfVengeanceDurationPerLvl` The effect duration increase in seconds per augment level for the Totem of Vengeance. (default: [0, 300, 600, 900])
+* `/arcana config totemOfVengeanceDuration` The base effect duration in ticks for the Totem of Vengeance. (default: 300)
+* `/arcana config totemOfVengeanceDurationPerLvl` The effect duration increase in ticks per augment level for the Totem of Vengeance. (default: [0, 300, 600, 900])
 * `/arcana config totemOfVengeanceDurationPercentAgainstPlayer` The duration multiplier when the Totem of Vengeance is triggered against a player. (default: 0.5)
 * `/arcana config totemOfVengeanceCelerity` The base movement speed multiplier granted by the Totem of Vengeance. (default: 0.4)
 * `/arcana config totemOfVengeanceCelerityPerLvl` The movement speed multiplier increase per augment level for the Totem of Vengeance. (default: [0.0, 0.2, 0.4, 0.6])
@@ -547,19 +547,19 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config celestialAltarItem` The item required to activate the Celestial Altar. (default: "minecraft:nether_star")
 
 ### Starpath Altar
-* `/arcana config starpathAltarCooldown` The cooldown in seconds for the Starpath Altar. (default: 36000)
-* `/arcana config starpathAltarCooldownPerLvl` The cooldown reduction in seconds per augment level for the Starpath Altar. (default: [0, 6000, 12000, 18000, 24000, 30000])
+* `/arcana config starpathAltarCooldown` The cooldown in ticks for the Starpath Altar. (default: 36000)
+* `/arcana config starpathAltarCooldownPerLvl` The cooldown reduction in ticks per augment level for the Starpath Altar. (default: [0, 6000, 12000, 18000, 24000, 30000])
 * `/arcana config starpathAltarBlocksPerEye` The number of blocks of pathway created per Eye of Ender for the Starpath Altar. (default: 64)
 * `/arcana config starpathAltarItem` The item required to activate the Starpath Altar. (default: "minecraft:ender_eye")
 
 ### Altar of the Stormcaller
-* `/arcana config stormcallerAltarCooldown` The cooldown in seconds for the Altar of the Stormcaller. (default: 36000)
-* `/arcana config stormcallerAltarCooldownPerLvl` The cooldown reduction in seconds per augment level for the Altar of the Stormcaller. (default: [0, 6000, 12000, 18000, 24000, 30000])
+* `/arcana config stormcallerAltarCooldown` The cooldown in ticks for the Altar of the Stormcaller. (default: 36000)
+* `/arcana config stormcallerAltarCooldownPerLvl` The cooldown reduction in ticks per augment level for the Altar of the Stormcaller. (default: [0, 6000, 12000, 18000, 24000, 30000])
 * `/arcana config stormcallerAltarItem` The item required to activate the Altar of the Stormcaller. (default: "minecraft:diamond_block")
 
 ### Transmutation Altar
-* `/arcana config transmutationAltarCooldown` The cooldown in seconds for the Transmutation Altar. (default: 13200)
-* `/arcana config transmutationAltarCooldownPerLvl` The cooldown reduction in seconds per augment level for the Transmutation Altar. (default: [0, 2400, 4800, 7200, 9600, 12000])
+* `/arcana config transmutationAltarCooldown` The cooldown in ticks for the Transmutation Altar. (default: 13200)
+* `/arcana config transmutationAltarCooldownPerLvl` The cooldown reduction in ticks per augment level for the Transmutation Altar. (default: [0, 2400, 4800, 7200, 9600, 12000])
 
 ### Astral Gateway
 * `/arcana config astralGatewayStardust` The base stardust cost per minute for the Astral Gateway. (default: 64)

@@ -410,7 +410,7 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> BRAIN_JAR_INTEREST_TICK = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new IntConfigValue("brainJarInterestTick", 1200, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> BRAIN_JAR_REPAIR_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
-         new ListConfigValue<>("brainJarRepairPerLvl", List.of(1.0, 1.5, 2.0, 1.5, 2.0, 2.5), new DoubleConfigValue("brainJarRepairPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0)))));
+         new ListConfigValue<>("brainJarRepairPerLvl", List.of(1.0, 1.5, 2.0, 2.5, 3.0, 3.5), new DoubleConfigValue("brainJarRepairPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0)))));
    
    // Chest Translocator
    public static final IConfigSetting<?> CHEST_TRANSLOCATOR_COOLDOWN = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
@@ -601,7 +601,7 @@ public class ArcanaConfig {
    // Shield of Fortitude
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_DISPLAY_MODE = registerConfigSetting(new ConfigSetting<>(
          new EnumConfigValue<>("shieldOfFortitudeDisplayMode", ShieldOfFortitude.ShieldDisplayMode.HYBRID, ShieldOfFortitude.ShieldDisplayMode.class)));
-   public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_BLOCKED_ENERGY_CONVERSION_PERCENT = registerConfigSetting(ConfigUnits.PERCENT, new ConfigSetting<>(
+   public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_BLOCKED_ENERGY_CONVERSION_PERCENT = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new DoubleConfigValue("shieldOfFortitudeBlockedEnergyConversionPercent", 0.5, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_HIT_MAX = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
          new DoubleConfigValue("shieldOfFortitudeHitMax", 10.0, new DoubleConfigValue.DoubleLimits(0.0))));

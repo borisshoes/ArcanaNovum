@@ -147,7 +147,7 @@ public class OverflowingQuiver extends QuiverItem {
    @Override
    protected double getEfficiencyMod(ItemStack item){
       int effLvl = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.OVERFLOWING_BOTTOMLESS);
-      return ArcanaNovum.CONFIG.getIntList(ArcanaConfig.QUIVER_EFFICIENCY_PER_LVL).get(effLvl);
+      return ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.QUIVER_EFFICIENCY_PER_LVL).get(effLvl);
    }
    
    private OverflowingQuiver getOuter(){
