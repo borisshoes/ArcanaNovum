@@ -483,7 +483,7 @@ public abstract class LivingEntityMixin {
                if(source.is(DamageTypes.FLY_INTO_WALL) && newReturn > player.getHealth() && (newReturn - dmgReduction) < player.getHealth())
                   ArcanaAchievements.grant(player, ArcanaAchievements.SEE_GLASS);
             }
-            wings.addEnergy(chestItem, (int) -dmgReduction * 100);
+            wings.addEnergy(chestItem, -(int) Math.ceil(dmgReduction * energyPerDmg));
             newReturn -= dmgReduction;
          }
          
@@ -573,7 +573,7 @@ public abstract class LivingEntityMixin {
    @Inject(method = "checkTotemDeathProtection", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setHealth(F)V"), cancellable = true)
    public void arcananovum$vengeanceTrigger(DamageSource source, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 0) ItemStack itemStack){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
-      List<NulConstructEntity> constructs = livingEntity.level().getEntitiesOfClass(NulConstructEntity.class, livingEntity.getBoundingBox().inflate(NulConstructEntity.FIGHT_RANGE * 2), construct -> construct.getSummoner().getUUID().equals(livingEntity.getUUID()));
+      List<NulConstructEntity> constructs = livingEntity.level().getEntitiesOfClass(NulConstructEntity.class, livingEntity.getBoundingBox().inflate(NulConstructEntity.FIGHT_RANGE * 2), construct -> construct.getSummoner() != null && construct.getSummoner().getUUID().equals(livingEntity.getUUID()));
       
       if(ArcanaItemUtils.identifyItem(itemStack) instanceof TotemOfVengeance vengeance){
          constructs.forEach(construct -> construct.triggerAdaptation(NulConstructEntity.ConstructAdaptations.USED_VENGEANCE_TOTEM));
@@ -618,9 +618,8 @@ public abstract class LivingEntityMixin {
       
       List<NulConstructEntity> constructs = livingEntity.level().getEntitiesOfClass(NulConstructEntity.class, livingEntity.getBoundingBox().inflate(NulConstructEntity.FIGHT_RANGE * 2), construct -> construct.getSummoner() != null && construct.getSummoner().getUUID().equals(livingEntity.getUUID()));
       if(itemStack != null){
-         if(ArcanaItemUtils.identifyItem(itemStack) instanceof TotemOfVengeance vengeance){
+         if(ArcanaItemUtils.identifyItem(itemStack) instanceof TotemOfVengeance){
             constructs.forEach(construct -> construct.triggerAdaptation(NulConstructEntity.ConstructAdaptations.USED_VENGEANCE_TOTEM));
-            vengeance.triggerTotem(itemStack, livingEntity, source);
          }else{
             if(constructs.stream().anyMatch(construct -> construct.hasActivatedAdaptation(NulConstructEntity.ConstructAdaptations.USED_TOTEM))){
                cir.setReturnValue(false);
@@ -702,7 +701,7 @@ public abstract class LivingEntityMixin {
    @Inject(method = "onEquipItem", at = @At("HEAD"), cancellable = true)
    private void arcananovum$sojournerEquipBug(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack, CallbackInfo ci){
       String uuid1, uuid2;
-      if(oldStack.is(newStack.getItem()) && ArcanaItemUtils.isArcane(oldStack) && (uuid1 = ArcanaItem.getUUID(newStack)) != null && (uuid2 = ArcanaItem.getUUID(newStack)) != null && uuid1.equals(uuid2)){
+      if(oldStack.is(newStack.getItem()) && ArcanaItemUtils.isArcane(oldStack) && (uuid1 = ArcanaItem.getUUID(oldStack)) != null && (uuid2 = ArcanaItem.getUUID(newStack)) != null && uuid1.equals(uuid2)){
          ci.cancel();
       }
    }

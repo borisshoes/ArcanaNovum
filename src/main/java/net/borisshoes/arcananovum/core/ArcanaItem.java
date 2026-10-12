@@ -302,6 +302,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       ItemStack newStack = getNewItem();
+      newStack.setCount(stack.getCount());
       String uuid = getStringProperty(stack, UUID_TAG);
       if(uuid.isEmpty() || uuid.equals("-") || uuid.equals(BorisLib.BLANK_UUID)){
          putProperty(newStack, UUID_TAG, UUID.randomUUID().toString());

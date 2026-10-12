@@ -7,7 +7,6 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
@@ -15,7 +14,6 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
-import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -28,13 +26,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -355,14 +351,9 @@ public class EnhancedForgingGui extends SimpleGui {
       
       final int finalCost = game.getTotalCost();
       
-      BorisLib.addTickTimerCallback(world, new GenericTimer(fast ? (int) (350 / 1.75) : 350, () -> {
-         if(percentile >= 0.99 && !enhancedStack.is(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER)){
-            ArcanaAchievements.grant(player, ArcanaAchievements.MASTER_CRAFTSMAN);
-         }
-         ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STARDUST_INFUSION_PER_STARDUST) * finalCost);
-         Vec3 pos = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 2, 0);
-         Containers.dropItemStack(world, pos.x, pos.y, pos.z, enhancedStack);
-      }));
+      boolean masterCraftsman = percentile >= 0.99 && !enhancedStack.is(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER);
+      int xp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_STARDUST_INFUSION_PER_STARDUST) * finalCost;
+      blockEntity.addPendingInfusion(enhancedStack, fast ? (int) (350 / 1.75) : 350, player.getUUID(), xp, masterCraftsman);
       
       paid = false;
       close();
@@ -372,7 +363,8 @@ public class EnhancedForgingGui extends SimpleGui {
    public void afterRemoval(){
       NonNullList<ItemStack> list = completed ? remainders : ingredients;
       
-      SimpleContainer returnInv = new SimpleContainer(list.size() + 1);
+      int stardustSlots = paid ? (int) Math.ceil((double) game.getTotalCost() / ArcanaRegistry.STARDUST.getDefaultMaxStackSize()) : 0;
+      SimpleContainer returnInv = new SimpleContainer(list.size() + stardustSlots + 1);
       for(ItemStack stack : list){
          returnInv.addItem(stack);
       }

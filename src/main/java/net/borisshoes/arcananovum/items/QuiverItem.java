@@ -366,7 +366,7 @@ public abstract class QuiverItem extends ArcanaItem implements GeomanticStele.In
    
    @Override
    public void steleTick(ServerLevel world, GeomanticSteleBlockEntity stele, ItemStack stack, Vec3 range){
-      if(world.getServer().getTickCount() % ((int) (getRefillMod(stack) * 0.75)) == 0){
+      if(world.getServer().getTickCount() % Math.max(1, (int) (getRefillMod(stack) * 0.75)) == 0){
          String crafterId = stele.getCrafterId();
          if(crafterId != null && !crafterId.isEmpty()){
             refillArrow(world.getServer(), AlgoUtils.getUUID(crafterId), stack);

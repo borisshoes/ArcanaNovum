@@ -283,21 +283,25 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
             }
          }
          
-         if(index != Integer.MAX_VALUE && registryEntry != null){
-            Holder<Enchantment> finalRegistryEntry = registryEntry;
-            int finalValue = value;
-            enchants.object2IntEntrySet().removeIf(e -> e.getKey().value() == finalRegistryEntry.value() && finalValue == e.getIntValue());
-            
-            for(int i = 0; i < inventory.getItems().size(); i++){
-               if(inventory.getItem(i).equals(book)){
-                  inventory.removeItemNoUpdate(i);
-                  break;
-               }
-            }
-            ItemStack newBook1 = EnchantmentHelper.createBook(new EnchantmentInstance(registryEntry, value));
-            ArcanaItem.putProperty(newBook1, ArcaneSingularity.SINGULARITY_TAG, StringTag.valueOf(UUID.randomUUID().toString()));
-            inventory.addItem(newBook1.copy());
+         if(registryEntry == null){ // None of the enchantments are in the tooltip order, so take the first one
+            Object2IntMap.Entry<Holder<Enchantment>> first = enchants.object2IntEntrySet().iterator().next();
+            registryEntry = first.getKey();
+            value = first.getIntValue();
          }
+         
+         Holder<Enchantment> finalRegistryEntry = registryEntry;
+         int finalValue = value;
+         enchants.object2IntEntrySet().removeIf(e -> e.getKey().value() == finalRegistryEntry.value() && finalValue == e.getIntValue());
+         
+         for(int i = 0; i < inventory.getItems().size(); i++){
+            if(inventory.getItem(i).equals(book)){
+               inventory.removeItemNoUpdate(i);
+               break;
+            }
+         }
+         ItemStack newBook1 = EnchantmentHelper.createBook(new EnchantmentInstance(registryEntry, value));
+         ArcanaItem.putProperty(newBook1, ArcaneSingularity.SINGULARITY_TAG, StringTag.valueOf(UUID.randomUUID().toString()));
+         inventory.addItem(newBook1.copy());
          
          ItemStack newBook2 = new ItemStack(Items.ENCHANTED_BOOK);
          ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);

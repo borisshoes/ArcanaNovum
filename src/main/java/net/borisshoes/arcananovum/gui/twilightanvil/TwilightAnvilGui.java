@@ -444,12 +444,14 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
             }
             TreeMap<ArcanaAugment, Integer> forgeAugments = forge.getAugments();
             forgeAugments.put(augment, level);
+            forge.setChanged();
             if(!creative) playerInv.removeItemNoUpdate(catalystSlot);
             buildGui();
             return true;
          }else if(tinkerSlotType == 2){
             TreeMap<ArcanaAugment, Integer> anvilAugments = blockEntity.getAugments();
             anvilAugments.put(augment, level);
+            blockEntity.setChanged();
             if(!creative) playerInv.removeItemNoUpdate(catalystSlot);
             buildGui();
             return true;

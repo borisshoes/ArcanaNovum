@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -12,30 +14,40 @@ import net.borisshoes.arcananovum.blocks.EnderCrateBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannel;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
+import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.TreeMap;
+import java.util.UUID;
 
 public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment, Integer> augments;
@@ -47,6 +59,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    private final Multiblock multiblock;
    private boolean assembled;
    private int seedUses;
+   private final ArrayList<PendingOutput> pendingOutputs = new ArrayList<>(); // Forged items waiting for their animation to finish
    
    public StarlightForgeBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.STARLIGHT_FORGE_BLOCK_ENTITY, pos, state);
@@ -112,6 +125,14 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
          return;
       }
       
+      if(!pendingOutputs.isEmpty()){
+         if(pendingOutputs.removeIf(output -> {
+            if(--output.ticks > 0) return false;
+            finishOutput(serverWorld, output);
+            return true;
+         })) setChanged();
+      }
+      
       if(serverWorld.getServer().getTickCount() % 10 == 0){
          this.assembled = multiblock.matches(getMultiblockCheck());
       }
@@ -136,6 +157,62 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       if(serverWorld.getServer().getTickCount() % 20 == 0 && this.assembled){
          ArcanaNovum.addActiveBlock(Pair.of(this, this));
       }
+   }
+   
+   // Saved with the forge, so the item still drops if the server stops before the delay is over
+   public void addPendingOutput(ItemStack stack, int delay){
+      addPendingOutput(new PendingOutput(stack, delay, Optional.empty(), false, false, 0, false));
+   }
+   
+   // An Arcana Item craft, whose crafting credit, xp and achievements go to the crafter when the item drops
+   public void addPendingCraft(ItemStack stack, int delay, UUID crafter, boolean usedFletchery){
+      addPendingOutput(new PendingOutput(stack, delay, Optional.of(crafter), true, usedFletchery, 0, false));
+   }
+   
+   // A stardust infusion, whose xp and achievement go to the crafter when the item drops
+   public void addPendingInfusion(ItemStack stack, int delay, UUID crafter, int xp, boolean masterCraftsman){
+      addPendingOutput(new PendingOutput(stack, delay, Optional.of(crafter), false, false, xp, masterCraftsman));
+   }
+   
+   private void addPendingOutput(PendingOutput output){
+      if(output.stack.isEmpty()) return;
+      pendingOutputs.add(output);
+      setChanged();
+   }
+   
+   // The crafter is looked up by UUID, so they are rewarded even if they logged off during the animation
+   private void finishOutput(Level world, PendingOutput output){
+      UUID crafter = output.crafter.orElse(null);
+      ArcanaPlayerData data = ArcanaNovum.data(crafter);
+      if(data != null){
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(output.stack);
+         if(output.arcanaCraft && arcanaItem != null){
+            if(!data.addCrafted(output.stack) && !(arcanaItem instanceof ArcaneTome)){
+               data.addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
+            }
+            
+            if(arcanaItem.getRarity() != ArcanaRarity.MUNDANE){
+               ArcanaAchievements.grant(crafter, ArcanaAchievements.INTRO_ARCANA);
+               ArcanaAchievements.progress(crafter, ArcanaAchievements.INTERMEDIATE_ARTIFICE, 1);
+            }
+            if(arcanaItem.getRarity() == ArcanaRarity.SOVEREIGN)
+               ArcanaAchievements.grant(crafter, ArcanaAchievements.ARTIFICIAL_DIVINITY);
+            if(output.usedFletchery){
+               ArcanaAchievements.setCondition(crafter, ArcanaAchievements.OVERLY_EQUIPPED_ARCHER, arcanaItem.getNameString(), true);
+            }
+         }
+         if(output.masterCraftsman) ArcanaAchievements.grant(crafter, ArcanaAchievements.MASTER_CRAFTSMAN);
+         if(output.xp > 0) data.addXP(output.xp);
+      }
+      
+      Vec3 pos = Vec3.atCenterOf(worldPosition).add(0, 2, 0);
+      Containers.dropItemStack(world, pos.x, pos.y, pos.z, output.stack);
+   }
+   
+   @Override
+   public void preRemoveSideEffects(BlockPos pos, BlockState oldState){
+      if(level != null) pendingOutputs.forEach(output -> finishOutput(level, output));
+      pendingOutputs.clear();
    }
    
    public BlockPos getForgeRange(){
@@ -290,6 +367,8 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       this.skin = view.getStringOr(ArcanaBlockEntity.SKIN_TAG, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.seedUses = view.getIntOr("seedUses", 0);
+      this.pendingOutputs.clear();
+      view.read("pendingOutputs", PendingOutput.CODEC.listOf()).ifPresent(this.pendingOutputs::addAll);
       this.augments = new TreeMap<>();
       view.read(ArcanaBlockEntity.AUGMENT_TAG, ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
@@ -306,5 +385,36 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       view.putString(ArcanaBlockEntity.SKIN_TAG, this.skin == null ? "" : this.skin);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG, this.origin);
       view.putInt("seedUses", this.seedUses);
+      if(!this.pendingOutputs.isEmpty()) view.store("pendingOutputs", PendingOutput.CODEC.listOf(), this.pendingOutputs);
+   }
+   
+   private static final class PendingOutput {
+      private static final Codec<PendingOutput> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ItemStack.CODEC.fieldOf("stack").forGetter(output -> output.stack),
+            Codec.INT.fieldOf("ticks").forGetter(output -> output.ticks),
+            CodecUtils.UUID_CODEC.optionalFieldOf("crafter").forGetter(output -> output.crafter),
+            Codec.BOOL.optionalFieldOf("arcanaCraft", false).forGetter(output -> output.arcanaCraft),
+            Codec.BOOL.optionalFieldOf("usedFletchery", false).forGetter(output -> output.usedFletchery),
+            Codec.INT.optionalFieldOf("xp", 0).forGetter(output -> output.xp),
+            Codec.BOOL.optionalFieldOf("masterCraftsman", false).forGetter(output -> output.masterCraftsman)
+      ).apply(instance, PendingOutput::new));
+      
+      private final ItemStack stack;
+      private int ticks;
+      private final Optional<UUID> crafter;
+      private final boolean arcanaCraft;
+      private final boolean usedFletchery;
+      private final int xp;
+      private final boolean masterCraftsman;
+      
+      private PendingOutput(ItemStack stack, int ticks, Optional<UUID> crafter, boolean arcanaCraft, boolean usedFletchery, int xp, boolean masterCraftsman){
+         this.stack = stack;
+         this.ticks = ticks;
+         this.crafter = crafter;
+         this.arcanaCraft = arcanaCraft;
+         this.usedFletchery = usedFletchery;
+         this.xp = xp;
+         this.masterCraftsman = masterCraftsman;
+      }
    }
 }

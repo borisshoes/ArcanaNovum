@@ -16,6 +16,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -54,6 +55,14 @@ public class TransmogrificationCatalyst extends ArcanaItem {
       super.initializeArcanaTag(stack);
       putProperty(stack, SELECTED_SKIN_TAG, "");
       return stack;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
+      String selectedSkin = getStringProperty(stack, SELECTED_SKIN_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, SELECTED_SKIN_TAG, selectedSkin);
+      return buildItemLore(newStack, server);
    }
    
    @Override

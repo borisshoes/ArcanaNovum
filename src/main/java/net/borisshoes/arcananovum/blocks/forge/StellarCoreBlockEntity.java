@@ -220,7 +220,7 @@ public class StellarCoreBlockEntity extends RandomizableContainerBlockEntity imp
          }
          
          finalSalv.forEach((salvItem, count) -> {
-            double baseCount = Math.round(count * salvageLvl);
+            double baseCount = count * salvageLvl;
             int salvCount = (int) baseCount;
             if(this.getLevel().getRandom().nextDouble() < (baseCount - salvCount - 1E-9)){
                salvCount++;

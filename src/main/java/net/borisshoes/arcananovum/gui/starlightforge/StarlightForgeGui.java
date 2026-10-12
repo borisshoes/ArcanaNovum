@@ -31,10 +31,8 @@ import net.borisshoes.arcananovum.skins.ArcanaSkin;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
-import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -49,7 +47,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,10 +129,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       
       applyRemainders(recipe);
 
-      BorisLib.addTickTimerCallback(world, new GenericTimer(forgeDelay(fastAnim), () -> {
-         Vec3 pos = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 2, 0);
-         Containers.dropItemStack(world, pos.x, pos.y, pos.z, newItem);
-      }));
+      blockEntity.addPendingOutput(newItem, forgeDelay(fastAnim));
 
       closeAfterForge(fastAnim);
    }
@@ -258,24 +252,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
 
       ArcanaEffectUtils.arcanaCraftingAnim(world, blockEntity.getBlockPos(), newArcanaItem, 0, fastAnim ? 1.75 : 1);
 
-      BorisLib.addTickTimerCallback(world, new GenericTimer(forgeDelay(fastAnim), () -> {
-         if(!ArcanaNovum.data(player).addCrafted(newArcanaItem) && !(arcanaItem instanceof ArcaneTome)){
-            ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
-         }
-         
-         if(arcanaItem.getRarity() != ArcanaRarity.MUNDANE){
-            ArcanaAchievements.grant(player, ArcanaAchievements.INTRO_ARCANA);
-            ArcanaAchievements.progress(player, ArcanaAchievements.INTERMEDIATE_ARTIFICE, 1);
-         }
-         if(arcanaItem.getRarity() == ArcanaRarity.SOVEREIGN)
-            ArcanaAchievements.grant(player, ArcanaAchievements.ARTIFICIAL_DIVINITY);
-         if(recipe.getForgeRequirement().needsFletchery()){
-            ArcanaAchievements.setCondition(player, ArcanaAchievements.OVERLY_EQUIPPED_ARCHER, arcanaItem.getNameString(), true);
-         }
-         
-         Vec3 pos = Vec3.atCenterOf(blockEntity.getBlockPos()).add(0, 2, 0);
-         Containers.dropItemStack(world, pos.x, pos.y, pos.z, newArcanaItem);
-      }));
+      blockEntity.addPendingCraft(newArcanaItem, forgeDelay(fastAnim), player.getUUID(), recipe.getForgeRequirement().needsFletchery());
 
       closeAfterForge(fastAnim);
    }
@@ -430,6 +407,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
                inventory.setItem(i, taken);
             }
          }
+         sources.forEach(Container::setChanged); // Stacks are taken straight out of the sources, so they need to be saved
          
          recipe.getForgeRequirement().forgeMeetsRequirement(blockEntity, true, player);
          

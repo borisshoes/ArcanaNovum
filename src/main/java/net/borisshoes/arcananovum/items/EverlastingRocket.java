@@ -235,7 +235,7 @@ public class EverlastingRocket extends EnergyItem {
          
          int baseCooldown = ArcanaNovum.CONFIG.getInt(ArcanaConfig.EVERLASTING_ROCKET_COOLDOWN);
          int cooldownReduction = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.EVERLASTING_ROCKET_COOLDOWN_PER_LVL).get(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SULFUR_REPLICATION));
-         if(player.level().getServer().getTickCount() % (baseCooldown - cooldownReduction) == 0){
+         if(player.level().getServer().getTickCount() % Math.max(1, baseCooldown - cooldownReduction) == 0){
             addEnergy(stack, 1);
             buildItemLore(stack, player.level().getServer());
          }

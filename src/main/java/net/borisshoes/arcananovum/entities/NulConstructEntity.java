@@ -789,6 +789,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          if(shouldHaveSummoner){
             if(summoner == null || summoner.isDeadOrDying() || !summoner.level().dimension().equals(level().dimension())){
                deconstruct();
+               return;
             }
             ServerPlayer player = this.level().getServer().getPlayerList().getPlayer(this.summoner.getUUID());
             if(player != null && !player.equals(summoner)){

@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
@@ -43,6 +44,7 @@ public class TickCallback {
          
          List<ServerPlayer> players = server.getPlayerList().getPlayers();
          players.forEach(p -> ArcanaNovum.data(p).tick(p));
+         ArcanaRegistry.AREA_EFFECTS.stream().forEach(areaEffectTracker -> areaEffectTracker.onTick(server));
          
          HashMap<ServerPlayer, Float> shieldTotals = new HashMap<>();
          for(TickTimerCallback callback : BorisLib.SERVER_TIMER_CALLBACKS){

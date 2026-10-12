@@ -29,6 +29,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -88,6 +89,14 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       super.initializeArcanaTag(stack);
       putProperty(stack, SEED_USES_TAG, 0);
       return stack;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
+      int seedUses = getIntProperty(stack, SEED_USES_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, SEED_USES_TAG, seedUses);
+      return buildItemLore(newStack, server);
    }
    
    @Override

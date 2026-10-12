@@ -123,8 +123,6 @@ public class PlayerConnectionCallback {
             }
          }
       });
-      for(VirtualInventoryGui<?> inv : new ArrayList<>(VIRTUAL_INVENTORY_GUIS.keySet())){
-         VIRTUAL_INVENTORY_GUIS.remove(inv);
-      }
+      VIRTUAL_INVENTORY_GUIS.values().removeIf(p -> player.getStringUUID().equals(p.getStringUUID()));
    }
 }

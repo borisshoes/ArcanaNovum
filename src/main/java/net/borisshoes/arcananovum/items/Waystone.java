@@ -26,6 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -75,6 +76,18 @@ public class Waystone extends ArcanaItem {
       putProperty(stack, LOCATION_TAG, getUnattunedTag());
       putProperty(stack, GATEWAY_TAG, false);
       return stack;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
+      CompoundTag location = getCompoundProperty(stack, LOCATION_TAG).copy();
+      boolean gateway = getBooleanProperty(stack, GATEWAY_TAG);
+      LodestoneTracker tracker = stack.get(DataComponents.LODESTONE_TRACKER);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, LOCATION_TAG, location);
+      putProperty(newStack, GATEWAY_TAG, gateway);
+      if(tracker != null) newStack.set(DataComponents.LODESTONE_TRACKER, tracker);
+      return buildItemLore(newStack, server);
    }
    
    @Override
@@ -172,8 +185,7 @@ public class Waystone extends ArcanaItem {
    
    public static boolean isForGateway(ItemStack stack){
       if(!stack.is(ArcanaRegistry.WAYSTONE.getItem())) return false;
-      CompoundTag comp = ArcanaItem.getCompoundProperty(stack, GATEWAY_TAG);
-      return comp.getBooleanOr(UNATTUNED_TAG, true) || getTarget(stack) == null;
+      return getBooleanProperty(stack, GATEWAY_TAG);
    }
    
    public static void setForGateway(ItemStack stack){

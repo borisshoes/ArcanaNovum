@@ -769,7 +769,6 @@ public class ArcanaPlayerData implements StorableData {
          
          flightCheck(player);
          concCheck(server, player, this);
-         ArcanaRegistry.AREA_EFFECTS.stream().forEach(areaEffectTracker -> areaEffectTracker.onTick(server));
          
          int quiverCD = ((IntTag) getMiscDataOr(QuiverItem.QUIVER_CD_TAG, IntTag.valueOf(0))).intValue();
          if(quiverCD > 0){

@@ -26,6 +26,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -86,6 +87,24 @@ public class LightCharm extends ArcanaItem {
       putProperty(stack, THRESHOLD_TAG, 1);
       putProperty(stack, NOVA_TAG, 0);
       return stack;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
+      boolean vision = getBooleanProperty(stack, VISION_TAG);
+      boolean active = getBooleanProperty(stack, ACTIVE_TAG);
+      int brightness = getIntProperty(stack, BRIGHTNESS_TAG);
+      int mode = getIntProperty(stack, MODE_TAG);
+      int threshold = getIntProperty(stack, THRESHOLD_TAG);
+      int nova = getIntProperty(stack, NOVA_TAG);
+      ItemStack newStack = super.updateItem(stack, server);
+      putProperty(newStack, VISION_TAG, vision);
+      putProperty(newStack, ACTIVE_TAG, active);
+      putProperty(newStack, BRIGHTNESS_TAG, brightness);
+      putProperty(newStack, MODE_TAG, mode);
+      putProperty(newStack, THRESHOLD_TAG, threshold);
+      putProperty(newStack, NOVA_TAG, nova);
+      return buildItemLore(newStack, server);
    }
    
    @Override

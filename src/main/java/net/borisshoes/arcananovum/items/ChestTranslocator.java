@@ -85,7 +85,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       item = new ChestTranslocatorItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.EFFECT_STRENGTH};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN, ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL, ArcanaConfig.CHEST_TRANSLOCATOR_TORPOR, ArcanaConfig.CHEST_TRANSLOCATOR_LETHARGY, ArcanaConfig.CHEST_TRANSLOCATOR_TORPOR, ArcanaConfig.CHEST_TRANSLOCATOR_LETHARGY, ArcanaConfig.XP_CHEST_TRANSLOCATOR_USE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN, ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL, ArcanaConfig.CHEST_TRANSLOCATOR_TORPOR, ArcanaConfig.CHEST_TRANSLOCATOR_LETHARGY,ArcanaConfig.XP_CHEST_TRANSLOCATOR_USE};
    }
    
    @Override
