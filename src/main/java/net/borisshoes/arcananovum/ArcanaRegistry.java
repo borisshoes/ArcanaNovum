@@ -162,7 +162,7 @@ public class ArcanaRegistry {
    public static final ResourceKey<? extends Registry<EquipmentAsset>> EQUIPMENT_ASSET_REGISTRY_KEY = ResourceKey.createRegistryKey(Identifier.withDefaultNamespace("equipment_asset"));
    
    public static final TicketType ANCHOR_TICKET_TYPE = registerTicketType("arcananovum_anchor", 40L, TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_PERSIST | TicketType.FLAG_KEEP_DIMENSION_ACTIVE);
-   public static final TicketType CONSTRUCT_TICKET_TYPE = registerTicketType("arcananovum_construct", 20L, TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_KEEP_DIMENSION_ACTIVE);
+   public static final TicketType CONSTRUCT_TICKET_TYPE = registerTicketType("arcananovum_construct", 60L, TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_KEEP_DIMENSION_ACTIVE);
    
    // Armor Materials
    public static final ArmorMaterial NON_PROTECTIVE_ARMOR_MATERIAL = new ArmorMaterial(1024, Util.make(new EnumMap<>(ArmorType.class), map -> {

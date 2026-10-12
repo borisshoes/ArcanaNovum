@@ -51,7 +51,8 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    
    private boolean mage;
    private NulConstructEntity construct;
-   
+   private boolean loadChecked = false;
+
    public NulGuardianEntity(Level world, NulConstructEntity construct, boolean mage){
       super(ArcanaRegistry.NUL_GUARDIAN_ENTITY, world);
       this.mage = mage;
@@ -125,8 +126,14 @@ public class NulGuardianEntity extends WitherSkeleton implements PolymerEntity {
    
    @Override
    public void tick(){
+      if(!this.loadChecked){
+         this.loadChecked = true;
+         // Guardians frozen mid death animation (chunk stopped ticking before they finished) get to finish dying once they tick again
+         if(this.isDeadOrDying() && this.deathTime < 19) this.deathTime = 19;
+      }
+
       super.tick();
-      
+
       if(this.construct != null && this.level() instanceof ServerLevel serverWorld){
          if(!this.construct.isAlive() || !this.construct.level().dimension().equals(this.level().dimension())){
             this.kill(serverWorld);

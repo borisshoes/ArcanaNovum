@@ -171,6 +171,17 @@ public enum ArcanaRarity {
       };
    }
    
+   public static int getArcanePaperMax(ArcanaRarity rarity){
+      return switch(rarity){
+         case MUNDANE -> 32;
+         case EMPOWERED -> 48;
+         case EXOTIC -> 48;
+         case SOVEREIGN -> 32;
+         case DIVINE -> 24;
+         default -> 48;
+      };
+   }
+   
    public static ArcaneTomeGui.TomeFilter getTomeFilter(ArcanaRarity rarity){
       return switch(rarity){
          case MUNDANE -> ArcaneTomeGui.TomeFilter.MUNDANE;

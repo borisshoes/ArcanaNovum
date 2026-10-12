@@ -16,7 +16,6 @@ import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -38,12 +37,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -180,9 +181,9 @@ public class SpawnerHarness extends ArcanaItem {
             CompoundTag spawnerTag = getCompoundProperty(stack, SPAWNER_TAG);
             
             if(!spawnerTag.isEmpty()){ // Has spawner, try to place
-               Direction side = context.getClickedFace();
-               BlockPos placePos = context.getClickedPos().offset(side.getUnitVec3i());
-               if(world.getBlockState(placePos).isAir()){
+               BlockPlaceContext placeContext = new BlockPlaceContext(context);
+               BlockPos placePos = placeContext.getClickedPos();
+               if(placeContext.canPlace() && world.isUnobstructed(Blocks.SPAWNER.defaultBlockState(), placePos, CollisionContext.placementContext(player))){
                   world.setBlock(placePos, Blocks.SPAWNER.defaultBlockState(), Block.UPDATE_ALL);
                   BlockEntity blockEntity = BlockEntity.loadStatic(placePos, Blocks.SPAWNER.defaultBlockState(), spawnerTag, world.registryAccess());
                   if(blockEntity != null){

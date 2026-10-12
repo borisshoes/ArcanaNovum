@@ -643,8 +643,10 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public int getArcanePaperRequirement(ArcanaRarity rarity){
+      int max = ArcanaRarity.getArcanePaperMax(rarity);
+      int totalInRarity = Math.toIntExact(ArcanaRegistry.ARCANA_ITEMS.stream().filter(i -> i.getRarity() == rarity).count());
       int totalResearched = ArcanaItemUtils.countRarityInList(getResearchedItems(), rarity, false);
-      return Math.min(64, (int) (0.025 * Math.pow(totalResearched, 2.5) + totalResearched + 1));
+      return Math.toIntExact(Math.round(1 + (max - 1) * Math.pow((double) totalResearched / totalInRarity, 1.75)));
    }
    
    

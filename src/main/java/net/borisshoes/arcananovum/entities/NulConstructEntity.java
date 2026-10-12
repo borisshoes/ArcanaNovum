@@ -425,6 +425,15 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
    }
    
    @Override
+   public void onRemoval(RemovalReason reason){
+      super.onRemoval(reason);
+      // Keep the fight area ticking long enough for the guardians to notice and finish their death animation
+      if((reason == RemovalReason.KILLED || reason == RemovalReason.DISCARDED) && level() instanceof ServerLevel serverWorld){
+         serverWorld.getChunkSource().addTicketWithRadius(ArcanaRegistry.CONSTRUCT_TICKET_TYPE, this.chunkPosition(), 4);
+      }
+   }
+
+   @Override
    protected void removeAfterChangingDimensions(){
       blockDamage.clear();
       super.removeAfterChangingDimensions();
