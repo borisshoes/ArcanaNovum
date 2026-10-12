@@ -48,7 +48,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -114,18 +113,17 @@ public class ConcussionArrows extends RunicArrow {
       float lingeringTorporStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_LINGERING_TORPOR);
       float lethargyStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_LETHARGY);
       float feebleStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_FEEBLE);
-      UUID inflicter = arrow.getOwner() != null ? arrow.getOwner().getUUID() : null;
       int mobsHit = 0;
       for(Entity entity : entities){
          if(entity instanceof LivingEntity e && !(entity instanceof EnderDragon || entity instanceof WitherBoss || entity instanceof NulConstructEntity)){
             if(e instanceof Mob) mobsHit++;
             
-            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), Math.max(1, (int) (25 * percent)), NearsightCondition.magnitudeForRadius(3.5f), false, true, false, AttributeModifier.Operation.ADD_VALUE, inflicter);
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), Math.max(1, (int) (25 * percent)), NearsightCondition.magnitudeForRadius(3.5f), false, true, false, AttributeModifier.Operation.ADD_VALUE, null);
             MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA, (int) (120 * percent), 0, false, false, true);
-            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), Math.max(1, (int) (40 * percent)), torporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
-            ConditionInstance lingeringTorpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID + "_lingering"), Math.max(1, (int) (120 * percent)), lingeringTorporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
-            ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), Math.max(1, (int) (80 * percent)), lethargyStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
-            ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ID), Math.max(1, (int) (120 * percent)), feebleStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
+            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), Math.max(1, (int) (40 * percent)), torporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+            ConditionInstance lingeringTorpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID + "_lingering"), Math.max(1, (int) (120 * percent)), lingeringTorporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+            ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), Math.max(1, (int) (80 * percent)), lethargyStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+            ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ID), Math.max(1, (int) (120 * percent)), feebleStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
             Conditions.addCondition(world.getServer(), e, nearsight);
             Conditions.addCondition(world.getServer(), e, torpor);
             Conditions.addCondition(world.getServer(), e, lingeringTorpor);

@@ -411,6 +411,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config gravitonMaulVortexSuckPower` The vortex pull power of the Graviton Maul. (default: 0.2)
 * `/arcana config gravitonMaulVortexFortitude` The damage reduction multiplier for the Graviton Maul's vortex. (default: 0.5)
 * `/arcana config gravitonMaulVortexKnockbackResistance` The fraction of knockback and explosion knockback resisted by the user of the Graviton Maul's vortex. (default: 0.5)
+* `/arcana config gravitonMaulVortexTorpor` The fraction of movement speed removed from the user of the Graviton Maul's vortex, where 1.0 is a full root. (default: 1.0)
 * `/arcana config gravitonMaulAoeRange` The area-of-effect range of the Graviton Maul's Gravitic Domain augment. (default: 3.5)
 * `/arcana config gravitonMaulSlamDmgPerSpeed` The slam damage per unit of speed for the Graviton Maul. (default: 3.5)
 * `/arcana config gravitonMaulSlamRangePerSpeed` The slam range per unit of speed for the Graviton Maul. (default: 1.0)

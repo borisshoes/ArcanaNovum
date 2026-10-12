@@ -1028,6 +1028,8 @@
   "command.arcananovum.graviton_maul_vortex_range.getter_setter": "Graviton Maul Vortex Range: %s",
   "command.arcananovum.graviton_maul_vortex_suck_power.comment": "The vortex pull power of the Graviton Maul",
   "command.arcananovum.graviton_maul_vortex_suck_power.getter_setter": "Graviton Maul Vortex Pull Power: %s",
+  "command.arcananovum.graviton_maul_vortex_torpor.comment": "The fraction of movement speed removed from the user of the Graviton Maul's vortex, where 1.0 is a full root",
+  "command.arcananovum.graviton_maul_vortex_torpor.getter_setter": "Graviton Maul Vortex Torpor: %s",
   "command.arcananovum.harness_core_recycler_efficiency.comment": "The fuel efficiency chance per augment level for the Levitation Harness and Shulker Core",
   "command.arcananovum.harness_core_recycler_efficiency.getter_setter": "Harness/Core Recycler Efficiency per level: %s",
   "command.arcananovum.igneous_collider_cooldown.comment": "The cooldown in ticks for the Igneous Collider",

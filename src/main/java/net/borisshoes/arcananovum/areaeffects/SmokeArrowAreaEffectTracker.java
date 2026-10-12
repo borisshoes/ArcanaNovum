@@ -129,8 +129,8 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          for(Entity affectedEntity : getAffectedEntities(world)){
             if(affectedEntity instanceof LivingEntity e){
                float feebleStr = e instanceof Mob ? ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SMOKE_ARROW_MOB_FEEBLE) : ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.SMOKE_ARROW_PLAYER_FEEBLE_PER_LVL).get(gasLvl);
-               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, NearsightCondition.magnitudeForRadius(7.5f), false, true, true, AttributeModifier.Operation.ADD_VALUE, contributor != null ? contributor.getUUID() : null);
-               ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, feebleStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, contributor != null ? contributor.getUUID() : null);
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, NearsightCondition.magnitudeForRadius(7.5f), false, true, true, AttributeModifier.Operation.ADD_VALUE, null);
+               ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, feebleStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
                MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, effectDur, 0, false, false, true);
                Conditions.addConditionIfStronger(world.getServer(), e, nearsight);
                Conditions.addConditionIfStronger(world.getServer(), e, feeble);

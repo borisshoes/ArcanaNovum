@@ -43,7 +43,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -123,7 +122,6 @@ public class GravitonArrows extends RunicArrow {
       float torporStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_ARROW_TORPOR);
       float torporFalloff = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_ARROW_TORPOR_FALLOFF);
       float gravitasStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_ARROW_GRAVITAS);
-      UUID inflicter = arrow.getOwner() != null ? arrow.getOwner().getUUID() : null;
       
       AABB rangeBox = new AABB(pos.x + 8, pos.y + 8, pos.z + 8, pos.x - 8, pos.y - 8, pos.z - 8);
       List<Entity> entities = world.getEntities(entity, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 2 * range * range && !(e instanceof AbstractArrow));
@@ -140,8 +138,8 @@ public class GravitonArrows extends RunicArrow {
             if(e instanceof Mob) mobsHit++;
             
             float torporAtDist = Mth.clamp(torporStr - torporFalloff * (float) diff.length(), 0, 1);
-            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), 20, torporAtDist, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
-            ConditionInstance gravitas = new ConditionInstance(Conditions.GRAVITAS, arcanaId(ID), 20, gravitasStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, inflicter);
+            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), 20, torporAtDist, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+            ConditionInstance gravitas = new ConditionInstance(Conditions.GRAVITAS, arcanaId(ID), 20, gravitasStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
             Conditions.addCondition(world.getServer(), e, torpor);
             Conditions.addCondition(world.getServer(), e, gravitas);
          }

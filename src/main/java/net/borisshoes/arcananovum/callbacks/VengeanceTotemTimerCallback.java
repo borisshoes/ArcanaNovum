@@ -30,12 +30,11 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback {
       this.duration = Math.max(1, time);
    }
    
-   // Shows the time left on the vengeance timer above the hotbar
    public void displayTimer(){
       if(avenged || getTimer() % 5 != 0) return;
       ServerPlayer player1 = player.level().getServer().getPlayerList().getPlayer(player.getUUID());
       if(player1 == null) return;
-      int segments = 15;
+      int segments = 10;
       int filled = Mth.clamp((int) Math.ceil((double) segments * getTimer() / duration), 0, segments);
       player1.sendSystemMessage(Component.literal("")
             .append(MinecraftUtils.getAtlasedTexture(AtlasIds.ITEMS, ArcanaRegistry.arcanaId("item/" + TotemOfVengeance.ID)))

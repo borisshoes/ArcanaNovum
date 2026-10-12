@@ -475,6 +475,8 @@ public class ArcanaConfig {
          new DoubleConfigValue("gravitonMaulVortexFortitude", 0.5, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_VORTEX_KNOCKBACK_RESISTANCE = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulVortexKnockbackResistance", 0.5, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> GRAVITON_MAUL_VORTEX_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("gravitonMaulVortexTorpor", 1.0, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_AOE_RANGE = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulAoeRange", 3.5, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_SLAM_DMG_PER_SPEED = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
