@@ -21,6 +21,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.WeakHashMap;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 
 public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
    
+   private static final WeakHashMap<LivingEntity, UUID> CONDITION_CONTRIBUTORS = new WeakHashMap<>();
    private final List<AlchemicalArrowSource> sources;
    
    public AlchemicalArrowAreaEffectTracker(){
@@ -121,6 +124,10 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
       return new AlchemicalArrowSource(sourceBlock, blockWorld, range, level, effects, contributor);
    }
    
+   public static @Nullable UUID getConditionContributor(LivingEntity entity){
+      return CONDITION_CONTRIBUTORS.get(entity);
+   }
+   
    public static class AlchemicalArrowSource extends AreaEffectSource {
       private final BlockPos sourceBlock;
       private final ServerLevel blockWorld;
@@ -180,7 +187,13 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
       
       public void applyCondition(ServerLevel world, LivingEntity entity, ConditionInstance condition){
          if(!world.dimension().identifier().toString().equals(blockWorld.dimension().identifier().toString())) return;
-         Conditions.addConditionIfStronger(world.getServer(), entity, condition);
+         if(Conditions.addConditionIfStronger(world.getServer(), entity, condition) == Conditions.AddResult.REJECTED) return;
+         // The condition itself is unattributed so it hits everyone, so the contributor is remembered here
+         if(contributor != null){
+            CONDITION_CONTRIBUTORS.put(entity, contributor.getUUID());
+         }else{
+            CONDITION_CONTRIBUTORS.remove(entity);
+         }
       }
       
       @Override

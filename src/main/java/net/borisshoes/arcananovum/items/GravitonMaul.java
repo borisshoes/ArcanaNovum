@@ -2,6 +2,11 @@ package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
+import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -64,6 +69,9 @@ import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -77,6 +85,9 @@ public class GravitonMaul extends ArcanaItem {
    public static final String ID = "graviton_maul";
    
    public static final String FALL_START_HEIGHT_TAG = "fallStart";
+   private static final String VORTEX_TEAM = "arcananovum_vortex";
+   private static final HashMap<UUID, Integer> VORTEX_USERS = new HashMap<>(); // Player -> last server tick spent vortexing
+   private static final HashSet<UUID> VORTEX_TEAM_MEMBERS = new HashSet<>(); // Vortex users that were put on the placeholder team
    
    public GravitonMaul(){
       id = ID;
@@ -240,6 +251,59 @@ public class GravitonMaul extends ArcanaItem {
       }
    }
    
+   // Mobs shove a player on the player's own client, which only stops when that client thinks the player's team never collides
+   private void disableVortexCollision(ServerPlayer player){
+      int tick = player.level().getServer().getTickCount();
+      Integer lastTick = VORTEX_USERS.put(player.getUUID(), tick);
+      if(lastTick != null && tick >= lastTick && tick - lastTick <= 2) return;
+      
+      PlayerTeam team = player.level().getScoreboard().getPlayersTeam(player.getScoreboardName());
+      if(team != null){
+         // Detached copy, so the real team is untouched and nobody else is sent the change
+         PlayerTeam copy = new PlayerTeam(new Scoreboard(), team.getName());
+         copy.setDisplayName(team.getDisplayName());
+         copy.setPlayerPrefix(team.getPlayerPrefix());
+         copy.setPlayerSuffix(team.getPlayerSuffix());
+         copy.setColor(team.getColor());
+         copy.setAllowFriendlyFire(team.isAllowFriendlyFire());
+         copy.setSeeFriendlyInvisibles(team.canSeeFriendlyInvisibles());
+         copy.setNameTagVisibility(team.getNameTagVisibility());
+         copy.setDeathMessageVisibility(team.getDeathMessageVisibility());
+         copy.setCollisionRule(Team.CollisionRule.NEVER);
+         player.connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(copy, false));
+      }else{
+         PlayerTeam placeholder = new PlayerTeam(new Scoreboard(), VORTEX_TEAM);
+         placeholder.setCollisionRule(Team.CollisionRule.NEVER);
+         placeholder.getPlayers().add(player.getScoreboardName());
+         player.connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(placeholder, true));
+         VORTEX_TEAM_MEMBERS.add(player.getUUID());
+      }
+      watchVortexCollision(player);
+   }
+   
+   private void watchVortexCollision(ServerPlayer player){
+      BorisLib.addTickTimerCallback(new GenericTimer(2, () -> {
+         MinecraftServer server = player.level().getServer();
+         Integer lastTick = VORTEX_USERS.get(player.getUUID());
+         if(lastTick != null && server.getTickCount() - lastTick <= 2){
+            watchVortexCollision(player);
+            return;
+         }
+         
+         VORTEX_USERS.remove(player.getUUID());
+         boolean onPlaceholder = VORTEX_TEAM_MEMBERS.remove(player.getUUID());
+         ServerPlayer current = server.getPlayerList().getPlayer(player.getUUID());
+         if(current == null) return;
+         if(onPlaceholder){
+            current.connection.send(ClientboundSetPlayerTeamPacket.createRemovePacket(new PlayerTeam(new Scoreboard(), VORTEX_TEAM)));
+         }
+         PlayerTeam team = server.getScoreboard().getPlayersTeam(current.getScoreboardName());
+         if(team != null){
+            current.connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, onPlaceholder));
+         }
+      }));
+   }
+   
    private List<Entity> getAffectedEntities(ServerPlayer player, boolean includePlayer, double range){
       List<Entity> entities = new ArrayList<>(player.level().getEntities(player, player.getBoundingBox().inflate(range * 2), e -> e.distanceTo(player) <= range));
       if(includePlayer) entities.add(player);
@@ -336,7 +400,7 @@ public class GravitonMaul extends ArcanaItem {
             }
             
             if(affectedEntity instanceof LivingEntity livingEntity){
-               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ID), 10, vortexAmp, true, true, true, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
+               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ID), 10, vortexAmp, true, true, true, AttributeModifier.Operation.ADD_VALUE, null);
                Conditions.addCondition(player.level().getServer(), livingEntity, vulnerability);
                livingEntity.hurtServer(player.level(), player.damageSources().source(DamageTypes.CRAMMING,player), vortexDmg);
             }
@@ -357,6 +421,7 @@ public class GravitonMaul extends ArcanaItem {
             ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexTorpor, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
             Conditions.addCondition(player.level().getServer(), player, torpor);
          }
+         disableVortexCollision(player);
       }
    }
    
