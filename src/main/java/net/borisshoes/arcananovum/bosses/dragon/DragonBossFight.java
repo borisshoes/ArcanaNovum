@@ -9,6 +9,9 @@ import eu.pb4.polymer.virtualentity.api.elements.InteractionElement;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.bosses.BossFight;
@@ -53,8 +56,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
@@ -89,6 +90,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.log;
 import static net.borisshoes.borislib.utils.SpawnPile.makeSpawnLocations;
 
 public class DragonBossFight {
+   private static final Identifier CONDITION_ID = ArcanaRegistry.arcanaId("dragon_boss_fight");
    private static boolean prepNotif = false;
    private static boolean phase1Notif = false;
    private static boolean startTimeAnnounced = false;
@@ -230,7 +232,7 @@ public class DragonBossFight {
                         guardianPhantoms[i] = DragonGoonHelper.makeGuardianPhantom(endWorld,numPlayers);
                         phantomBossBars[i] = endWorld.getServer().getCustomBossEvents().create(endWorld.getRandom(),Identifier.parse("guardianphantom-"+guardianPhantoms[i].getStringUUID()),guardianPhantoms[i].getCustomName());
                         phantomBossBars[i].setColor(BossEvent.BossBarColor.PURPLE);
-                        guardianPhantoms[i].addEffect(new MobEffectInstance(MobEffects.RESISTANCE,100,4));
+                        Conditions.addCondition(endWorld.getServer(), guardianPhantoms[i], new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 100, 1.0f, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null));
                         endWorld.addFreshEntityWithPassengers(guardianPhantoms[i]);
                         phantomData.add(StringTag.valueOf(guardianPhantoms[i].getStringUUID()));
                      }
@@ -244,7 +246,7 @@ public class DragonBossFight {
                         wizards[i].setPos(crystal.position().add(0,2,0));
                         wizards[i].setPermanentlyInvulnerable(true);
                         wizards[i].setCrystalId(crystal.getUUID());
-                        wizards[i].addEffect(new MobEffectInstance(MobEffects.RESISTANCE,100,4));
+                        Conditions.addCondition(endWorld.getServer(), wizards[i], new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 100, 1.0f, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null));
                         endWorld.addFreshEntityWithPassengers(wizards[i]);
                         wizardData.add(StringTag.valueOf(wizards[i].getStringUUID()));
                      }
@@ -392,17 +394,17 @@ public class DragonBossFight {
    
             for(Enderman enderman : endermen){
                if(dragonHP/dragonMax <= 0.5){
-                  int amp = dragonHP/dragonMax <= 0.25 ? 1 : 0;
-                  MobEffectInstance strength = new MobEffectInstance(MobEffects.STRENGTH,120,amp,false,false,false);
-                  enderman.addEffect(strength);
-                  MobEffectInstance resist = new MobEffectInstance(MobEffects.RESISTANCE,120,amp,false,false,false);
-                  enderman.addEffect(resist);
+                  boolean enraged = dragonHP/dragonMax <= 0.25;
+                  ConditionInstance might = new ConditionInstance(Conditions.MIGHT, CONDITION_ID, 120, enraged ? 0.85f : 0.4f, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+                  ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 120, enraged ? 0.4f : 0.2f, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+                  Conditions.addCondition(endWorld.getServer(), enderman, might);
+                  Conditions.addCondition(endWorld.getServer(), enderman, fortitude);
                }
                if(enderman.isCreepy()){
                   Player closestPlayer = endWorld.getNearestPlayer(enderman,4);
                   if(closestPlayer != null){
-                     MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS,60,2,false,false,false);
-                     closestPlayer.addEffect(slow);
+                     ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, CONDITION_ID, 60, 0.45f, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, enderman.getUUID());
+                     Conditions.addCondition(endWorld.getServer(), closestPlayer, torpor);
                   }
                }
             }
@@ -1026,8 +1028,8 @@ public class DragonBossFight {
       ServerLevel endWorld = player.level().getServer().getLevel(Level.END);
       if(hasDied.contains(player) || override){
          player.teleport(new TeleportTransition(endWorld, new Vec3(100.5,51,0.5), Vec3.ZERO, 90, 0, TeleportTransition.PLACE_PORTAL_TICKET));
-         MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 20*30, 4, false, false, true);
-         player.addEffect(res);
+         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 20*30, 1.0f, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+         Conditions.addCondition(endWorld.getServer(), player, fortitude);
          MutableComponent msg = Component.literal("")
                .append(Component.literal("You are ").withStyle(ChatFormatting.AQUA))
                .append(Component.literal("protected").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
@@ -1201,8 +1203,8 @@ public class DragonBossFight {
                   player.connection.send(new ClientboundSetEntityMotionPacket(player));
                }
                if(player != null && ticks % 5 == 0){
-                  MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 25, 4, false, true, true);
-                  player.addEffect(res);
+                  ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 25, 1.0f, true, true, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+                  Conditions.addCondition(endWorld.getServer(), player, fortitude);
                   endWorld.sendParticles(ParticleTypes.CLOUD,player.getX(),player.getY(),player.getZ(),5,0.25,0.25,0.25,0);
                }
                if(animTicks % 150 == 0){
@@ -1223,10 +1225,10 @@ public class DragonBossFight {
                if(shieldTicks % 20 == 0){
                   List<ServerPlayer> inRangePlayers = endWorld.getPlayers(p -> p.distanceToSqr(shieldPos) <= 5*5);
                   for(ServerPlayer plyr: inRangePlayers){
-                     MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5 + 5, 0, false, true, true);
-                     MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 20 * 5 + 5, 2, false, true, true);
-                     plyr.addEffect(res);
-                     plyr.addEffect(regen);
+                     ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, ArcanaRegistry.arcanaId("dragon_shield"), 20 * 5 + 5, 0.2f, true, true, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+                     ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, ArcanaRegistry.arcanaId("dragon_shield"), 20 * 5 + 5, 5 / 3f, true, true, true, AttributeModifier.Operation.ADD_VALUE, null);
+                     Conditions.addCondition(endWorld.getServer(), plyr, fortitude);
+                     Conditions.addCondition(endWorld.getServer(), plyr, rejuv);
                   }
                }
             }

@@ -203,6 +203,10 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config concussionArrowRangeMax` The maximum effect range of Runic Concussion Arrows. (default: 6.0)
 * `/arcana config concussionArrowDurationMod` The duration modifier multiplier for Runic Concussion Arrow effects. (default: 1.0)
 * `/arcana config concussionArrowShellshockBoostPerLvl` The Shellshock effect range boost per augment level for Runic Concussion Arrows. (default: [0.0, 0.5, 1.0, 2.0])
+* `/arcana config concussionArrowTorpor` The fraction of movement speed removed by the initial blast of Runic Concussion Arrows. (default: 0.75)
+* `/arcana config concussionArrowLingeringTorpor` The fraction of movement speed removed for the rest of the Runic Concussion Arrow's effect. (default: 0.45)
+* `/arcana config concussionArrowLethargy` The fraction of block break speed removed by Runic Concussion Arrows. (default: 0.99)
+* `/arcana config concussionArrowFeeble` The fraction of dealt damage removed by Runic Concussion Arrows. (default: 0.75)
 
 ### Runic Detonation Arrows
 * `/arcana config detonationArrowEntityDmgMultiplier` The entity damage multiplier for Runic Detonation Arrows. (default: 1.0)
@@ -230,6 +234,9 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config gravitonArrowDurationMin` The minimum pull duration in quarter-seconds for Runic Graviton Arrows. (default: 2)
 * `/arcana config gravitonArrowDurationMax` The maximum pull duration in quarter-seconds for Runic Graviton Arrows. (default: 20)
 * `/arcana config gravitonArrowWellRangePerLvl` The Gravity Well range increase per augment level for Runic Graviton Arrows. (default: [0.0, 1.0, 2.0, 3.0])
+* `/arcana config gravitonArrowTorpor` The fraction of movement speed removed at the center of a Runic Graviton Arrow's pull. (default: 0.9)
+* `/arcana config gravitonArrowTorporFalloff` The fraction of movement speed the Runic Graviton Arrow's Torpor loses per block from its center. (default: 0.15)
+* `/arcana config gravitonArrowGravitas` The gravity multiplier added to creatures caught in a Runic Graviton Arrow's pull. (default: 1.0)
 
 ### Runic Photonic Arrows
 * `/arcana config photonicArrowDmgMin` The minimum damage dealt by Runic Photonic Arrows. (default: 1.0)
@@ -251,6 +258,8 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config smokeArrowRangeMin` The minimum smoke cloud range for Runic Smoke Arrows. (default: 0.3)
 * `/arcana config smokeArrowRangeMax` The maximum smoke cloud range for Runic Smoke Arrows. (default: 2.5)
 * `/arcana config smokeArrowGasDurationPerLvl` The Tear Gas duration increase in ticks per augment level for Runic Smoke Arrows. (default: [0, 60, 120, 180])
+* `/arcana config smokeArrowMobFeeble` The fraction of dealt damage removed from mobs inside a Runic Smoke Arrow's cloud. (default: 1.0)
+* `/arcana config smokeArrowPlayerFeeblePerLvl` The fraction of dealt damage removed from players inside a Runic Smoke Arrow's cloud per augment level. (default: [0.35, 0.55, 0.75, 0.95])
 
 ### Runic Storm Arrows
 * `/arcana config stormArrowStrikeChance` The lightning strike chance per stabilization level for Runic Storm Arrows. (default: [0.1, 0.2, 0.4, 0.6, 0.8, 1.0])
@@ -306,9 +315,9 @@ All configuration values can be viewed and changed with `/arcana config <setting
 ### Charm of Leadership
 * `/arcana config leadershipCharmRadius` The base effect radius of the Charm of Leadership. (default: 8.5)
 * `/arcana config leadershipCharmInvigorationRadiusPerLvl` The Invigoration radius increase per augment level for the Charm of Leadership. (default: [0.0, 1.0, 2.0, 3.0])
-* `/arcana config leadershipCharmMightPerLvl` The damage multiplier per augment level for the Charm of Leadership. (default: [0.25, 0.4, 0.55, 0.7])
-* `/arcana config leadershipCharmFortitudePerLvl` The damage resistance per augment level for the Charm of Leadership. (default: [0.25, 0.30, 0.35, 0.40])
-* `/arcana config leadershipCharmRejuvenationPerLvl` The hp per tick of Rejuvenation per augment level for the Charm of Leadership. (default: [0.03, 0.04, 0.05, 0.06])
+* `/arcana config leadershipCharmMightPerLvl` The damage multiplier per augment level for the Charm of Leadership. (default: [1.0, 1.5, 2.0, 2.5])
+* `/arcana config leadershipCharmFortitudePerLvl` The damage resistance per augment level for the Charm of Leadership. (default: [0.5, 0.6, 0.7, 0.8])
+* `/arcana config leadershipCharmRejuvenationPerLvl` The hp per tick of Rejuvenation per augment level for the Charm of Leadership. (default: [0.0675, 0.125, 0.25, 0.375])
 
 ### Charm of Light
 * `/arcana config lightCharmPassiveCooldown` The passive light placement cooldown in ticks for the Charm of Light. (default: 60)
@@ -348,6 +357,8 @@ All configuration values can be viewed and changed with `/arcana config <setting
 ### Binary Blades
 * `/arcana config binaryBladesEnergyPerHit` The energy gained per hit with the Binary Blades. (default: 10)
 * `/arcana config binaryBladesMaxEnergy` The maximum energy for the Binary Blades. (default: 100)
+* `/arcana config binaryBladesMaxCelerity` The movement speed multiplier gained at full energy with the Binary Blades. (default: 0.5)
+* `/arcana config binaryBladesMaxFervor` The attack speed multiplier gained at full energy with the Binary Blades. (default: 0.25)
 * `/arcana config binaryBladesEnergyDecayRate` The energy decay rate for the Binary Blades. (default: 4)
 * `/arcana config binaryBladesEnergyGracePeriod` The energy grace period in ticks before energy decay begins for the Binary Blades. (default: 20)
 * `/arcana config binaryBladesPulsarEnergyConsumptionPerLvl` The energy consumed by the Pulsar ability of the Binary Blades. (default: [0, 50, 25])
@@ -366,6 +377,8 @@ All configuration values can be viewed and changed with `/arcana config <setting
 ### Chest Translocator
 * `/arcana config chestTranslocatorCooldown` The cooldown in seconds for the Chest Translocator. (default: 30)
 * `/arcana config chestTranslocatorCooldownPerLvl` The cooldown reduction in seconds per augment level for the Chest Translocator. (default: [0, 8, 16, 24])
+* `/arcana config chestTranslocatorTorpor` The fraction of movement speed removed while the Chest Translocator is carrying a container. (default: 0.45)
+* `/arcana config chestTranslocatorLethargy` The fraction of block break speed removed while the Chest Translocator is carrying a container. (default: 0.7)
 
 ### Containment Circlet
 * `/arcana config containmentCircletHealingRate` The healing rate in HP per second for the Containment Circlet. (default: 0.05)
@@ -388,13 +401,16 @@ All configuration values can be viewed and changed with `/arcana config <setting
 
 ### Graviton Maul
 * `/arcana config gravitonMaulUpSpeed` The upward launch speed of the Graviton Maul. (default: 0.75)
+* `/arcana config gravitonMaulLevity` The fraction of gravity removed while lifting with the Graviton Maul, where 1.0 is weightless and anything above reverses gravity. (default: 1.0625)
 * `/arcana config gravitonMaulDownSpeed` The downward slam speed of the Graviton Maul. (default: -1.0)
+* `/arcana config gravitonMaulGravitas` The gravity multiplier added while slamming with the Graviton Maul. (default: 1.0)
 * `/arcana config gravitonMaulCrushDmg` The crush damage dealt by the Graviton Maul. (default: 2.0)
 * `/arcana config gravitonMaulVortexRange` The vortex pull range of the Graviton Maul. (default: 5.5)
 * `/arcana config gravitonMaulVortexDmgAmp` The vortex damage amplification multiplier for the Graviton Maul. (default: 0.5)
 * `/arcana config gravitonMaulVortexDmg` The vortex damage dealt by the Graviton Maul. (default: 1.5)
 * `/arcana config gravitonMaulVortexSuckPower` The vortex pull power of the Graviton Maul. (default: 0.2)
 * `/arcana config gravitonMaulVortexFortitude` The damage reduction multiplier for the Graviton Maul's vortex. (default: 0.5)
+* `/arcana config gravitonMaulVortexKnockbackResistance` The fraction of knockback and explosion knockback resisted by the user of the Graviton Maul's vortex. (default: 0.5)
 * `/arcana config gravitonMaulAoeRange` The area-of-effect range of the Graviton Maul's Gravitic Domain augment. (default: 3.5)
 * `/arcana config gravitonMaulSlamDmgPerSpeed` The slam damage per unit of speed for the Graviton Maul. (default: 3.5)
 * `/arcana config gravitonMaulSlamRangePerSpeed` The slam range per unit of speed for the Graviton Maul. (default: 1.0)
@@ -416,6 +432,9 @@ All configuration values can be viewed and changed with `/arcana config <setting
 ### Nul Memento
 * `/arcana config nulMementoWardCooldown` The death ward cooldown in ticks for the Nul Memento. (default: 36000)
 * `/arcana config nulMementoWardCooldownPerLvl` The death ward cooldown reduction in ticks per augment level for the Nul Memento. (default: [0, 12000, 24000])
+* `/arcana config nulMementoTorpor` The fraction of movement speed removed while the Nul Memento is deallocating skill points, where 1.0 is a full root. (default: 1.0)
+* `/arcana config nulMementoLethargy` The fraction of block break speed removed while the Nul Memento is deallocating skill points. (default: 1.0)
+* `/arcana config nulMementoFeeble` The fraction of dealt damage removed while the Nul Memento is deallocating skill points. (default: 1.0)
 
 ### Overflowing Quiver
 * `/arcana config overflowingQuiverRestockTime` The base arrow restock time in ticks for the Overflowing Quiver. (default: 3000)
@@ -443,6 +462,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config pickaxeOfCeptyusEnergyGrace` The grace period in ticks before energy decays for the Ancient Pickaxe of Ceptyus. (default: 40)
 * `/arcana config pickaxeOfCeptyusEnergyLoss` The energy lost per tick when decaying for the Ancient Pickaxe of Ceptyus. (default: 10)
 * `/arcana config pickaxeOfCeptyusEnergyPerHaste` The energy required per level of haste for the Ancient Pickaxe of Ceptyus. (default: 100.0)
+* `/arcana config pickaxeOfCeptyusAlacrityPerHaste` The block break speed multiplier gained per haste level of the Pickaxe of Ceptyus. (default: 0.2)
 * `/arcana config pickaxeOfCeptyusVeinRangePerLvl` The extra vein mine range per augment level for the With the Depths augment of the Ancient Pickaxe of Ceptyus. (default: [8, 10, 12, 14, 16, 18])
 * `/arcana config pickaxeOfCeptyusVeinBlocksPerLvl` The extra vein mine blocks per augment level for the With the Depths augment of the Ancient Pickaxe of Ceptyus. (default: [64, 96, 128, 160, 192, 224])
 * `/arcana config pickaxeOfCeptyusFortunePerLvl` The vein mine fortune level per augment level of the Ancient Pickaxe of Ceptyus. (default: [5, 6, 8, 10])
@@ -470,7 +490,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config shieldOfFortitudeHitMaxPerLvl` The maximum damage absorbed per hit increase per augment level for the Shield of Fortitude. (default: [0.0, 2.0, 4.0, 6.0, 8.0, 10.0])
 * `/arcana config shieldOfFortitudeDuration` The base shield effect duration in ticks for the Shield of Fortitude. (default: 200)
 * `/arcana config shieldOfFortitudeDurationPerLvl` The shield effect duration increase in ticks per augment level for the Shield of Fortitude. (default: [0, 100, 200, 300, 400, 500])
-* `/arcana config shieldOfFortitudeShieldBashSlowness` The slowness effect amplifier applied by the Shield of Fortitude's Shield Bash augment. (default: 4)
+* `/arcana config shieldOfFortitudeShieldBashTorpor` The fraction of movement speed removed by the Shield of Fortitude's Shield Bash augment. (default: 0.75)
 * `/arcana config shieldOfFortitudeShieldBashSlownessDuration` The slowness effect duration in ticks applied by the Shield of Fortitude's Shield Bash augment. (default: 60)
 * `/arcana config shieldOfFortitudeShieldBashVulnerabilityPerAbsorption` The vulnerability multiplier per absorption point consumed by the Shield of Fortitude's Shield Bash augment. (default: 0.02)
 * `/arcana config shieldOfFortitudeShieldBashVulnerabilityDurationPerAbsorption` The vulnerability duration in ticks per absorption point consumed by the Shield of Fortitude's Shield Bash augment. (default: 5.0)
@@ -480,9 +500,10 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config sojournerBootsEnergyMaxPerLvl` The maximum energy increase per augment level for the Sojourner's Boots. (default: [0, 50, 100, 150, 200, 250])
 * `/arcana config sojournerBootsRamp` The base speed ramp rate for the Sojourner's Boots. (default: 2)
 * `/arcana config sojournerBootsRampPerLvl` The speed ramp rate increase per augment level for the Sojourner's Boots. (default: [0, 2, 4])
+* `/arcana config sojournerBootsCelerityPerEnergy` The movement speed multiplier gained per point of energy for the Sojourner's Boots. (default: 0.01)
 * `/arcana config sojournersBootsJuggernautVulnerability` The vulnerability multiplier applied by the Juggernaut augment of the Sojourner's Boots. (default: 0.5)
 * `/arcana config sojournersBootsJuggernautVulnerabilityDuration` The vulnerability duration in ticks applied by the Juggernaut augment of the Sojourner's Boots. (default: 100)
-* `/arcana config sojournersBootsJuggernautSlowness` The slowness amplifier applied by the Juggernaut augment of the Sojourner's Boots. (default: 4)
+* `/arcana config sojournersBootsJuggernautTorpor` The fraction of movement speed removed by the Juggernaut augment of the Sojourner's Boots. (default: 0.75)
 * `/arcana config sojournersBootsJuggernautSlownessDuration` The slowness duration in ticks applied by the Juggernaut augment of the Sojourner's Boots. (default: 60)
 
 ### Spawner Harness
@@ -491,6 +512,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 ### Spear of Tenbrous
 * `/arcana config spearOfTenbrousThrowDmg` The throw damage dealt by the Spear Of Tenbrous. (default: 11.0)
 * `/arcana config spearOfTenbrousStunDuration` The stun duration in ticks when hitting a target with the Spear Of Tenbrous. (default: 25)
+* `/arcana config spearOfTenbrousStunTorpor` The fraction of movement speed removed by the Spear of Tenbrous' stun, where 1.0 is a full root. (default: 1.0)
 * `/arcana config spearOfTenbrousStormDmg` The storm ability damage dealt by the Spear Of Tenbrous. (default: 6.0)
 * `/arcana config spearOfTenbrousStormRange` The storm ability range of the Spear Of Tenbrous. (default: 4.5)
 * `/arcana config spearOfTenbrousThrowCooldownPerLvl` The throw cooldown reduction in ticks per augment level for the Unending Hatred augment of the Spear Of Tenbrous. (default: [180, 140, 100, 60, 20])
@@ -506,10 +528,10 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config totemOfVengeanceDuration` The base effect duration in seconds for the Totem of Vengeance. (default: 300)
 * `/arcana config totemOfVengeanceDurationPerLvl` The effect duration increase in seconds per augment level for the Totem of Vengeance. (default: [0, 300, 600, 900])
 * `/arcana config totemOfVengeanceDurationPercentAgainstPlayer` The duration multiplier when the Totem of Vengeance is triggered against a player. (default: 0.5)
-* `/arcana config totemOfVengeanceSpeed` The base speed effect level granted by the Totem of Vengeance. (default: 1)
-* `/arcana config totemOfVengeanceSpeedPerLvl` The speed effect level increase per augment level for the Totem of Vengeance. (default: [0, 1, 2, 3])
-* `/arcana config totemOfVengeanceStrength` The base strength effect level granted by the Totem of Vengeance. (default: 1)
-* `/arcana config totemOfVengeanceStrengthPerLvl` The strength effect level increase per augment level for the Totem of Vengeance. (default: [0, 1, 2, 3])
+* `/arcana config totemOfVengeanceCelerity` The base movement speed multiplier granted by the Totem of Vengeance. (default: 0.4)
+* `/arcana config totemOfVengeanceCelerityPerLvl` The movement speed multiplier increase per augment level for the Totem of Vengeance. (default: [0.0, 0.2, 0.4, 0.6])
+* `/arcana config totemOfVengeanceMight` The base damage multiplier granted by the Totem of Vengeance. (default: 0.6)
+* `/arcana config totemOfVengeanceMightPerLvl` The damage multiplier increase per augment level for the Totem of Vengeance. (default: [0.0, 0.3, 0.6, 0.9])
 
 ### Armored Wings of Enderia
 * `/arcana config wingsOfEnderiaMaxEnergy` The maximum energy for the Armored Wings of Enderia. (default: 10000)

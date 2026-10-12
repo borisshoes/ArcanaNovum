@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -89,7 +91,7 @@ public class BinaryBlades extends EnergyItem {
       item = new BinaryBladesItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.INFUSE_ITEM, ResearchTasks.OBTAIN_NETHERITE_SWORD, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.BINARY_BLADES_ENERGY_PER_HIT, ArcanaConfig.BINARY_BLADES_MAX_ENERGY, ArcanaConfig.BINARY_BLADES_ENERGY_DECAY_RATE, ArcanaConfig.BINARY_BLADES_ENERGY_GRACE_PERIOD, ArcanaConfig.BINARY_BLADES_PULSAR_ENERGY_CONSUMPTION_PER_LVL, ArcanaConfig.BINARY_BLADES_RED_GIANT_DMG_PER_ENERGY, ArcanaConfig.BINARY_BLADES_WHITE_DWARF_DMG_PER_ENERGY_BLOCK, ArcanaConfig.BINARY_BLADES_PULSAR_RANGE, ArcanaConfig.BINARY_BLADES_PULSAR_DMG, ArcanaConfig.XP_BINARY_BLADES_MAX_ENERGY_PER_SECOND};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.BINARY_BLADES_ENERGY_PER_HIT, ArcanaConfig.BINARY_BLADES_MAX_ENERGY, ArcanaConfig.BINARY_BLADES_MAX_CELERITY, ArcanaConfig.BINARY_BLADES_MAX_FERVOR, ArcanaConfig.BINARY_BLADES_ENERGY_DECAY_RATE, ArcanaConfig.BINARY_BLADES_ENERGY_GRACE_PERIOD, ArcanaConfig.BINARY_BLADES_PULSAR_ENERGY_CONSUMPTION_PER_LVL, ArcanaConfig.BINARY_BLADES_RED_GIANT_DMG_PER_ENERGY, ArcanaConfig.BINARY_BLADES_WHITE_DWARF_DMG_PER_ENERGY_BLOCK, ArcanaConfig.BINARY_BLADES_PULSAR_RANGE, ArcanaConfig.BINARY_BLADES_PULSAR_DMG, ArcanaConfig.XP_BINARY_BLADES_MAX_ENERGY_PER_SECOND};
    }
    
    @Override
@@ -239,8 +241,6 @@ public class BinaryBlades extends EnergyItem {
       }
       
       if(energy > 0){
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MOVEMENT_SPEED, new AttributeModifier(ArcanaRegistry.arcanaId(MOVE_SPEED_TAG), 0.5 * getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.MAINHAND));
-         attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_SPEED, new AttributeModifier(ArcanaRegistry.arcanaId(ATTACK_SPEED_TAG), (double) getEnergy(stack) / getMaxEnergy(stack), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
          if(redGiant && energy >= 50){
             float dmgPerEnergy = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BINARY_BLADES_RED_GIANT_DMG_PER_ENERGY);
             attributeList.add(new ItemAttributeModifiers.Entry(Attributes.ATTACK_DAMAGE, new AttributeModifier(ArcanaRegistry.arcanaId(ATTACK_DAMAGE_TAG), dmgPerEnergy * (getEnergy(stack) - 50.0), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND));
@@ -367,6 +367,16 @@ public class BinaryBlades extends EnergyItem {
                }
                message.append(" ✦ \uD83D\uDDE1");
                player.sendSystemMessage(Component.literal(message.toString()).withStyle(getColor(stack)), true);
+            }
+            
+            if(energy > 0){
+               float charge = (float) energy / getMaxEnergy(stack);
+               float celerityStr = charge * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BINARY_BLADES_MAX_CELERITY);
+               float fervorStr = charge * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BINARY_BLADES_MAX_FERVOR);
+               ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ID), 5, celerityStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+               ConditionInstance fervor = new ConditionInstance(Conditions.FERVOR, ArcanaRegistry.arcanaId(ID), 5, fervorStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+               Conditions.addCondition(world.getServer(), player, celerity);
+               Conditions.addCondition(world.getServer(), player, fervor);
             }
          }else if(split){
             putProperty(stack, SPLIT_TAG, false);

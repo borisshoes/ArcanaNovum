@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -76,12 +78,13 @@ public class SojournerBoots extends EnergyItem {
       id = ID;
       name = "Sojourner's Boots";
       rarity = ArcanaRarity.SOVEREIGN;
+      itemVersion = 1;
       categories = new ArcaneTomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), ArcaneTomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.LEATHER_BOOTS;
       item = new SojournerBootsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_GREEN);
       researchTasks = new ResourceKey[]{ResearchTasks.SPRINT_TEN_KILOMETERS, ResearchTasks.VISIT_DOZEN_BIOMES, ResearchTasks.ADVANCEMENT_WALK_ON_POWDER_SNOW_WITH_LEATHER_BOOTS, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.EFFECT_SWIFTNESS, ResearchTasks.EFFECT_JUMP_BOOST, ResearchTasks.UNLOCK_STELLAR_CORE};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SOJOURNER_BOOTS_ENERGY_MAX, ArcanaConfig.SOJOURNER_BOOTS_ENERGY_MAX_PER_LVL, ArcanaConfig.SOJOURNER_BOOTS_RAMP, ArcanaConfig.SOJOURNER_BOOTS_RAMP_PER_LVL, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY_DURATION, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS_DURATION, ArcanaConfig.XP_SOJOURNERS_BOOTS_RUN_PER_SECOND};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.SOJOURNER_BOOTS_ENERGY_MAX, ArcanaConfig.SOJOURNER_BOOTS_ENERGY_MAX_PER_LVL, ArcanaConfig.SOJOURNER_BOOTS_RAMP, ArcanaConfig.SOJOURNER_BOOTS_RAMP_PER_LVL, ArcanaConfig.SOJOURNER_BOOTS_CELERITY_PER_ENERGY, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY_DURATION, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_TORPOR, ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS_DURATION, ArcanaConfig.XP_SOJOURNERS_BOOTS_RUN_PER_SECOND};
    }
    
    @Override
@@ -143,6 +146,7 @@ public class SojournerBoots extends EnergyItem {
       boolean active = getBooleanProperty(stack, ACTIVE_TAG);
       ItemStack newStack = super.updateItem(stack, server);
       putProperty(newStack, ACTIVE_TAG, active);
+      rebuildAttributes(newStack);
       return buildItemLore(newStack, server);
    }
    
@@ -174,8 +178,6 @@ public class SojournerBoots extends EnergyItem {
          double height = 0.65 + ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.HIKING_BOOTS);
          attributeList.add(new ItemAttributeModifiers.Entry(Attributes.STEP_HEIGHT, new AttributeModifier(ArcanaRegistry.arcanaId(STEP_TAG), height, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.FEET));
       }
-      
-      attributeList.add(new ItemAttributeModifiers.Entry(Attributes.MOVEMENT_SPEED, new AttributeModifier(ArcanaRegistry.arcanaId(SPEED_TAG), getEnergy(stack) / 100.0, AttributeModifier.Operation.ADD_MULTIPLIED_BASE), EquipmentSlotGroup.FEET));
       
       ItemAttributeModifiers newComponent = new ItemAttributeModifiers(attributeList);
       stack.set(DataComponents.ATTRIBUTE_MODIFIERS, newComponent);
@@ -294,7 +296,12 @@ public class SojournerBoots extends EnergyItem {
                   addEnergy(stack, -10);
                }
                
-               rebuildAttributes(stack);
+               int energy = getEnergy(stack);
+               if(energy > 0){
+                  float celerityStr = energy * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SOJOURNER_BOOTS_CELERITY_PER_ENERGY);
+                  ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ID), 5, celerityStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+                  Conditions.addCondition(world.getServer(), player, celerity);
+               }
             }else{
                if(getEnergy(stack) != 0){
                   setEnergy(stack, 0);

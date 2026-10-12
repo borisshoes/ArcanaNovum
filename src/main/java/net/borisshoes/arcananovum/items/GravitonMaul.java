@@ -88,7 +88,7 @@ public class GravitonMaul extends ArcanaItem {
       item = new GravitonMaulItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_MACE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OVER_OVERKILL};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.GRAVITON_MAUL_UP_SPEED, ArcanaConfig.GRAVITON_MAUL_DOWN_SPEED, ArcanaConfig.GRAVITON_MAUL_CRUSH_DMG, ArcanaConfig.GRAVITON_MAUL_VORTEX_RANGE, ArcanaConfig.GRAVITON_MAUL_VORTEX_DMG_AMP, ArcanaConfig.GRAVITON_MAUL_VORTEX_DMG, ArcanaConfig.GRAVITON_MAUL_VORTEX_SUCK_POWER, ArcanaConfig.GRAVITON_MAUL_VORTEX_FORTITUDE, ArcanaConfig.GRAVITON_MAUL_AOE_RANGE, ArcanaConfig.GRAVITON_MAUL_SLAM_DMG_PER_SPEED, ArcanaConfig.GRAVITON_MAUL_SLAM_RANGE_PER_SPEED, ArcanaConfig.XP_GRAVITON_MAUL_IMPACT_DAMAGE_PER_10, ArcanaConfig.XP_GRAVITON_MAUL_IMPACT_DAMAGE_CAP};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.GRAVITON_MAUL_UP_SPEED, ArcanaConfig.GRAVITON_MAUL_LEVITY, ArcanaConfig.GRAVITON_MAUL_DOWN_SPEED, ArcanaConfig.GRAVITON_MAUL_GRAVITAS, ArcanaConfig.GRAVITON_MAUL_VORTEX_KNOCKBACK_RESISTANCE, ArcanaConfig.GRAVITON_MAUL_CRUSH_DMG, ArcanaConfig.GRAVITON_MAUL_VORTEX_RANGE, ArcanaConfig.GRAVITON_MAUL_VORTEX_DMG_AMP, ArcanaConfig.GRAVITON_MAUL_VORTEX_DMG, ArcanaConfig.GRAVITON_MAUL_VORTEX_SUCK_POWER, ArcanaConfig.GRAVITON_MAUL_VORTEX_FORTITUDE, ArcanaConfig.GRAVITON_MAUL_AOE_RANGE, ArcanaConfig.GRAVITON_MAUL_SLAM_DMG_PER_SPEED, ArcanaConfig.GRAVITON_MAUL_SLAM_RANGE_PER_SPEED, ArcanaConfig.XP_GRAVITON_MAUL_IMPACT_DAMAGE_PER_10, ArcanaConfig.XP_GRAVITON_MAUL_IMPACT_DAMAGE_CAP};
    }
    
    @Override
@@ -254,10 +254,15 @@ public class GravitonMaul extends ArcanaItem {
       float crushDmg = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_CRUSH_DMG);
       
       if(mode == 0){
+         float levityStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_LEVITY);
          for(Entity affectedEntity : domain ? getAffectedEntities(player, true, domainRange) : List.of(player)){
-            affectedEntity.push(0, 0.085, 0);
+            if(affectedEntity instanceof LivingEntity livingEntity){
+               ConditionInstance levity = new ConditionInstance(Conditions.LEVITY, arcanaId(ID), 2, levityStr, false, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+               Conditions.addCondition(player.level().getServer(), livingEntity, levity);
+            }else{
+               affectedEntity.push(0, 0.085, 0);
+            }
             if(affectedEntity instanceof ServerPlayer affectedPlayer){
-               affectedPlayer.connection.send(new ClientboundSetEntityMotionPacket(affectedPlayer));
                affectedPlayer.connection.aboveGroundTickCount = 0;
             }
             
@@ -271,7 +276,12 @@ public class GravitonMaul extends ArcanaItem {
             player.level().sendParticles(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS, affectedEntity.getX(), affectedEntity.getY() + affectedEntity.getBbHeight() / 2, affectedEntity.getZ(), 5, affectedEntity.getBbWidth() / 2, affectedEntity.getBbHeight() / 2, affectedEntity.getBbWidth() / 2, 0.01);
          }
       }else if(mode == 1){
+         float gravitasStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_GRAVITAS);
          for(Entity affectedEntity : domain ? getAffectedEntities(player, true, domainRange) : List.of(player)){
+            if(affectedEntity instanceof LivingEntity livingEntity){
+               ConditionInstance gravitas = new ConditionInstance(Conditions.GRAVITAS, arcanaId(ID), 2, gravitasStr, false, false, true, AttributeModifier.Operation.ADD_VALUE, livingEntity == player ? null : player.getUUID());
+               Conditions.addCondition(player.level().getServer(), livingEntity, gravitas);
+            }
             player.level().sendParticles(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS, affectedEntity.getX(), affectedEntity.getY() + affectedEntity.getBbHeight() / 2, affectedEntity.getZ(), 5, affectedEntity.getBbWidth() / 2, affectedEntity.getBbHeight() / 2, affectedEntity.getBbWidth() / 2, 0.01);
          }
          
@@ -335,8 +345,13 @@ public class GravitonMaul extends ArcanaItem {
          
          
          float vortexFortitude = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_FORTITUDE);
-         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, -(vortexFortitude), true, true, true, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
+         float vortexKnockbackRes = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_KNOCKBACK_RESISTANCE);
+         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexFortitude, true, true, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
+         ConditionInstance poise = new ConditionInstance(Conditions.POISE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexKnockbackRes, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
+         ConditionInstance damping = new ConditionInstance(Conditions.DAMPING, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexKnockbackRes, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
          Conditions.addCondition(player.level().getServer(), player, fortitude);
+         Conditions.addCondition(player.level().getServer(), player, poise);
+         Conditions.addCondition(player.level().getServer(), player, damping);
       }
    }
    

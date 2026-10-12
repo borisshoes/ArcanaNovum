@@ -2,6 +2,9 @@ package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -27,8 +30,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.borislib.utils.MinecraftUtils.makeEnchantComponent;
 
@@ -70,7 +72,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       item = new PickaxeOfCeptyusItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_AQUA);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_PICKAXE_OF_CEPTYUS};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY, ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GRACE, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_LOSS, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_PER_HASTE, ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_RANGE_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_BLOCKS_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_FORTUNE_PER_LVL, ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_MINE_BLOCK, ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.PICKAXE_OF_CEPTYUS_ALACRITY_PER_HASTE, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GAIN_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY, ArcanaConfig.PICKAXE_OF_CEPTYUS_MAX_ENERGY_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_GRACE, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_LOSS, ArcanaConfig.PICKAXE_OF_CEPTYUS_ENERGY_PER_HASTE, ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_RANGE_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_VEIN_BLOCKS_PER_LVL, ArcanaConfig.PICKAXE_OF_CEPTYUS_FORTUNE_PER_LVL, ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_MINE_BLOCK, ArcanaConfig.XP_PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK};
    }
    
    @Override
@@ -237,8 +239,9 @@ public class PickaxeOfCeptyus extends ArcanaItem {
             }
             profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(lastTick + 1));
             int speed = (int) (energy / energyPerHaste);
-            MobEffectInstance haste = new MobEffectInstance(MobEffects.HASTE, 100, speed, false, false, false);
-            player.addEffect(haste);
+            float alacrityPerHaste = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.PICKAXE_OF_CEPTYUS_ALACRITY_PER_HASTE);
+            ConditionInstance alacrity = new ConditionInstance(Conditions.ALACRITY, arcanaId(ID), 100, alacrityPerHaste * (speed + 1), true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+            Conditions.addCondition(serverWorld.getServer(), player, alacrity);
             if(speed == 10) ArcanaAchievements.progress(player, ArcanaAchievements.BACK_IN_THE_MINE, 1);
          }
       }

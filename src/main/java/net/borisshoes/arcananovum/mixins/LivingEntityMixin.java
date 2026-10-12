@@ -281,12 +281,14 @@ public abstract class LivingEntityMixin {
             int energy = EnergyItem.getEnergy(boots);
             if(juggernaut && energy >= 200){
                int slowDuration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS_DURATION);
-               int slowStr = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS);
+               float torporStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_TORPOR);
                int vulnDuration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY_DURATION);
                float vulnStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY);
                
-               MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, slowDuration, slowStr, false, false, true);
-               entity.addEffect(slow);
+               if(slowDuration > 0){
+                  ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SOJOURNER_BOOTS.getId()), slowDuration, torporStr, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
+                  Conditions.addCondition(entity.level().getServer(), entity, torpor);
+               }
                ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.SOJOURNER_BOOTS.getId()), vulnDuration, vulnStr, true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
                Conditions.addCondition(entity.level().getServer(), entity, vulnerability);
                sojournerBoots.setEnergy(boots, 0);
@@ -318,13 +320,15 @@ public abstract class LivingEntityMixin {
             shieldTotal = Math.min(Math.min(absAmt, shieldTotal), 50);
             if(shieldTotal >= 20){
                int slowDur = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS_DURATION);
-               int slowLvl = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS);
+               float torporStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_TORPOR);
                double vulnDurPerAbs = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_DURATION_PER_ABSORPTION);
                float vulnPerAbs = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_PER_ABSORPTION);
                
-               MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, slowDur, slowLvl, false, false, true);
-               entity.addEffect(slow);
-               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.SHIELD_OF_FORTITUDE.getId()), (int) (shieldTotal * vulnDurPerAbs), shieldTotal * vulnPerAbs, true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
+               if(slowDur > 0){
+                  ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SHIELD_OF_FORTITUDE.getId()), slowDur, torporStr, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
+                  Conditions.addCondition(entity.level().getServer(), entity, torpor);
+               }
+               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.SHIELD_OF_FORTITUDE.getId()), Math.max(1, (int) (shieldTotal * vulnDurPerAbs)), shieldTotal * vulnPerAbs, true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
                Conditions.addCondition(entity.level().getServer(), entity, vulnerability);
                
                toRemove.forEach(ShieldTimerCallback::onTimer);

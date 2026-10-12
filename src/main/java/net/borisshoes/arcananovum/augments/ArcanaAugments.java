@@ -509,7 +509,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment SHIELD_BASH = ArcanaAugments.register(
          new ArcanaAugment("shield_bash", new ItemStack(Items.IRON_AXE), ArcanaRegistry.SHIELD_OF_FORTITUDE,
                DIVINE).setRelatedConfigs(
-               Pair.of(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS, ConfigUnits.NONE),
+               Pair.of(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_TORPOR, ConfigUnits.PERCENT),
                Pair.of(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS_DURATION, ConfigUnits.SECONDS),
                Pair.of(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_PER_ABSORPTION, ConfigUnits.PERCENT),
                Pair.of(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_DURATION_PER_ABSORPTION, ConfigUnits.SECONDS)
@@ -546,7 +546,7 @@ public class ArcanaAugments {
                DIVINE).setRelatedConfigs(
                Pair.of(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY, ConfigUnits.PERCENT),
                Pair.of(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY_DURATION, ConfigUnits.SECONDS),
-               Pair.of(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS, ConfigUnits.NONE),
+               Pair.of(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_TORPOR, ConfigUnits.PERCENT),
                Pair.of(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS_DURATION, ConfigUnits.SECONDS)
          ));
    
@@ -835,8 +835,8 @@ public class ArcanaAugments {
          new ArcanaAugment("retaliative_fury", new ItemStack(Items.BLAZE_POWDER), ArcanaRegistry.TOTEM_OF_VENGEANCE,
                MUNDANE, MUNDANE, EMPOWERED).setRelatedConfigs(
                Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PER_LVL, ConfigUnits.SECONDS),
-               Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_SPEED_PER_LVL, ConfigUnits.NONE),
-               Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_STRENGTH_PER_LVL, ConfigUnits.NONE)
+               Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_CELERITY_PER_LVL, ConfigUnits.PERCENT),
+               Pair.of(ArcanaConfig.TOTEM_OF_VENGEANCE_MIGHT_PER_LVL, ConfigUnits.PERCENT)
          ));
    
    // Aquatic Eversource

@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.NearsightCondition;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -15,7 +16,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -128,12 +128,12 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          boolean withOwner = false;
          for(Entity affectedEntity : getAffectedEntities(world)){
             if(affectedEntity instanceof LivingEntity e){
-               int amp = e instanceof Mob ? 5 : 0;
-               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId() + "_" + gasLvl), effectDur, 7.5f, false, true, true, AttributeModifier.Operation.ADD_VALUE, contributor != null ? contributor.getUUID() : null);
-               MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, effectDur, amp + gasLvl, false, false, true);
+               float feebleStr = e instanceof Mob ? ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SMOKE_ARROW_MOB_FEEBLE) : ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.SMOKE_ARROW_PLAYER_FEEBLE_PER_LVL).get(gasLvl);
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, NearsightCondition.magnitudeForRadius(7.5f), false, true, true, AttributeModifier.Operation.ADD_VALUE, contributor != null ? contributor.getUUID() : null);
+               ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, feebleStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, contributor != null ? contributor.getUUID() : null);
                MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, effectDur, 0, false, false, true);
-               Conditions.addCondition(world.getServer(), e, nearsight);
-               e.addEffect(weakness);
+               Conditions.addConditionIfStronger(world.getServer(), e, nearsight);
+               Conditions.addConditionIfStronger(world.getServer(), e, feeble);
                if(e instanceof ServerPlayer){
                   e.addEffect(invis);
                }

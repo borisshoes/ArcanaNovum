@@ -152,8 +152,8 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
                int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STASIS_PEARL_RECONSTRUCT_DURATION);
                float rejuvRate = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_REGEN_PER_LVL).get(reconstructLvl);
                float fortMod = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_FORTITUDE_PER_LVL).get(reconstructLvl);
-               ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, rejuvRate, true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
-               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, -fortMod, true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
+               ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, 20 * rejuvRate, true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
+               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, fortMod, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, holder.getUUID());
                Conditions.addCondition(holder.level().getServer(), holder, rejuv);
                Conditions.addCondition(holder.level().getServer(), holder, fortitude);
                

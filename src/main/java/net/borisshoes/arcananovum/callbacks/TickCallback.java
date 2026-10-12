@@ -54,6 +54,8 @@ public class TickCallback {
                }else{
                   shieldTotals.put(st.getPlayer(), st.getHearts());
                }
+            }else if(callback instanceof VengeanceTotemTimerCallback vt){
+               vt.displayTimer();
             }
          }
          

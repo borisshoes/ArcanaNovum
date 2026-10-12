@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.NearsightCondition;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.*;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -800,7 +801,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             }
             if(summoner.hasEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
                triggerAdaptation(ConstructAdaptations.TRUE_INVISIBILITY);
-               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_invis_rebuke"), 110, 4.0f, false, true, false, AttributeModifier.Operation.ADD_VALUE, getUUID());
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_invis_rebuke"), 110, NearsightCondition.magnitudeForRadius(4.0f), false, true, false, AttributeModifier.Operation.ADD_VALUE, getUUID());
                Conditions.addCondition(world.getServer(), summoner, nearsight);
                summoner.removeEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT);
             }
@@ -981,7 +982,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
             
             if(this.isExalted){
                List<Player> players = level().getEntities(EntityTypes.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
-               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_exalted"), 30, 32.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_exalted"), 30, NearsightCondition.magnitudeForRadius(32.0f), false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
                players.forEach(p -> Conditions.addCondition(level().getServer(), p, nearsight));
             }
             
@@ -1062,7 +1063,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                         for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
                            if(!(hit.entity() instanceof LivingEntity livingHit)) continue;
                            livingHit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(), ArcanaDamageTypes.NUL, this), damage);
-                           ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_laser"), 40, 24.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
+                           ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_laser"), 40, NearsightCondition.magnitudeForRadius(24.0f), false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
                            MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
                            MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, isExalted ? 100 : 40, 1, false, true, true);
                            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, isExalted ? 100 : 40, 2, false, true, true);
@@ -1335,7 +1336,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
          
          if(this.isExalted){
             List<Player> players = level().getEntities(EntityTypes.PLAYER, getBoundingBox().inflate(FIGHT_RANGE), (e) -> true);
-            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_blast"), 60, 16.0f, false, true, false, AttributeModifier.Operation.ADD_VALUE, getUUID());
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_blast"), 60, NearsightCondition.magnitudeForRadius(16.0f), false, true, false, AttributeModifier.Operation.ADD_VALUE, getUUID());
             players.forEach(p -> Conditions.addCondition(level().getServer(), p, nearsight));
          }
       }else if(spell.spellType == ConstructSpellType.REFLEXIVE_BLAST){ // Blast

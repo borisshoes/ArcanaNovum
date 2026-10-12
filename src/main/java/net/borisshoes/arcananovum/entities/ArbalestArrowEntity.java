@@ -136,7 +136,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
       if(effects.isEmpty()){
          int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ALCHEMICAL_ARBALEST_VULNERABILITY_DURATION);
          float vulnStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.ALCHEMICAL_ARBALEST_VULNERABILITY_PER_LVL).get(lvl);
-         ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.ALCHEMICAL_ARBALEST.getId() + "_" + lvl), duration, vulnStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, getOwner() != null ? getOwner().getUUID() : null);
+         ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.ALCHEMICAL_ARBALEST.getId()), duration, vulnStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, getOwner() != null ? getOwner().getUUID() : null);
          effects.add(Either.right(vulnerability));
          effects.add(Either.left(new MobEffectInstance(MobEffects.GLOWING, duration, 0, false, true, true)));
       }

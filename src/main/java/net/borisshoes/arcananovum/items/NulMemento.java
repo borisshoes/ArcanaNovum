@@ -19,6 +19,7 @@ import net.borisshoes.arcananovum.utils.*;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.NearsightCondition;
 import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -79,7 +80,7 @@ public class NulMemento extends EnergyItem {
       item = new NulMementoItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
       researchTasks = new ResourceKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST, ResearchTasks.KILL_CONSTRUCT};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN, ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN_PER_LVL, ArcanaConfig.XP_NUL_MEMENTO_DEALLOCATE, ArcanaConfig.XP_NUL_MEMENTO_PROTECT};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN, ArcanaConfig.NUL_MEMENTO_WARD_COOLDOWN_PER_LVL, ArcanaConfig.NUL_MEMENTO_TORPOR, ArcanaConfig.NUL_MEMENTO_LETHARGY, ArcanaConfig.NUL_MEMENTO_FEEBLE, ArcanaConfig.XP_NUL_MEMENTO_DEALLOCATE, ArcanaConfig.XP_NUL_MEMENTO_PROTECT};
    }
    
    @Override
@@ -252,14 +253,14 @@ public class NulMemento extends EnergyItem {
       putProperty(stack, ACTIVE_TAG, true);
       
       int increments = 100;
-      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), increments * 5, 1.0f, false, true, true, AttributeModifier.Operation.ADD_VALUE, null);
-      MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, increments * 5, 9, false, false, true);
-      MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, increments * 5, 4, false, false, true);
-      MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, increments * 5, 4, false, false, true);
+      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), increments * 5, NearsightCondition.magnitudeForRadius(1.0f), false, true, true, AttributeModifier.Operation.ADD_VALUE, null);
+      ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_TORPOR), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+      ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_LETHARGY), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+      ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_FEEBLE), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
       Conditions.addCondition(player.level().getServer(), player, nearsight);
-      player.addEffect(slow);
-      player.addEffect(fatigue);
-      player.addEffect(weakness);
+      Conditions.addCondition(player.level().getServer(), player, torpor);
+      Conditions.addCondition(player.level().getServer(), player, lethargy);
+      Conditions.addCondition(player.level().getServer(), player, feeble);
       
       final boolean[] cont = {true};
       int resolve = ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.RESOLVE);
@@ -408,7 +409,7 @@ public class NulMemento extends EnergyItem {
             .append(Component.literal("Nul Memento").withStyle(ChatFormatting.BLACK, ChatFormatting.BOLD, ChatFormatting.ITALIC))
             .append(Component.literal(" becomes too much to bare, perhaps you aren't ready...").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), false);
       player.removeAllEffects();
-      Conditions.removeCondition(player.level().getServer(),player,Conditions.NEARSIGHT,arcanaId(ID));
+      Conditions.removeConditionsIf(player.level().getServer(), player, instance -> instance.getId().equals(arcanaId(ID)));
    }
    
    public void inventoryDialog(ServerPlayer player){

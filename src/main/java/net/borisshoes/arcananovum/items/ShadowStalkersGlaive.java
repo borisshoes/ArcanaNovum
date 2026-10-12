@@ -18,6 +18,7 @@ import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.NearsightCondition;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -293,7 +294,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                      player.addEffect(invis);
                   }
                   if(target instanceof LivingEntity living && blindDur > 0){
-                     ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), blindDur, 2.0f, false, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
+                     ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), blindDur, NearsightCondition.magnitudeForRadius(2.0f), false, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
                      Conditions.addCondition(world.getServer(), living, nearsight);
                   }
                   

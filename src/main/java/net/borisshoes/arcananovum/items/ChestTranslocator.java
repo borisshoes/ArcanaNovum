@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -40,8 +43,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -65,6 +66,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer.ArcanaItemContainerHaver {
@@ -83,7 +85,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       item = new ChestTranslocatorItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.USE_ENDER_CHEST, ResearchTasks.EFFECT_STRENGTH};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN, ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL, ArcanaConfig.XP_CHEST_TRANSLOCATOR_USE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN, ArcanaConfig.CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL, ArcanaConfig.CHEST_TRANSLOCATOR_TORPOR, ArcanaConfig.CHEST_TRANSLOCATOR_LETHARGY, ArcanaConfig.CHEST_TRANSLOCATOR_TORPOR, ArcanaConfig.CHEST_TRANSLOCATOR_LETHARGY, ArcanaConfig.XP_CHEST_TRANSLOCATOR_USE};
    }
    
    @Override
@@ -300,10 +302,12 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          CompoundTag contents = getCompoundProperty(stack, CONTENTS_TAG);
          
          if(!contents.isEmpty()){
-            MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, 20, 2, false, false, true);
-            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, 20, 0, false, false, true);
-            player.addEffect(slow);
-            player.addEffect(fatigue);
+            float torporStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CHEST_TRANSLOCATOR_TORPOR);
+            float lethargyStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CHEST_TRANSLOCATOR_LETHARGY);
+            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), 20, torporStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+            ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), 20, lethargyStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+            Conditions.addCondition(serverWorld.getServer(), player, torpor);
+            Conditions.addCondition(serverWorld.getServer(), player, lethargy);
          }
          
          if(world.getServer().getTickCount() % 20 == 0){

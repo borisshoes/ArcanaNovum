@@ -5,6 +5,8 @@ import eu.pb4.polymer.core.api.utils.PolymerObject;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ManualAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
+import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -13,7 +15,6 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,7 +28,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -769,7 +769,6 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), true);
          return;
       }
       
@@ -779,7 +778,6 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), true);
          return;
       }
       
@@ -800,12 +798,14 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
             data.removeMiscData(CRAFTER_TAG);
          }
          data.addMiscData(FED_TAG, ByteTag.valueOf(feed));
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), false);
+         if(speed > 0){
+            ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), 15, speed, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+            Conditions.addCondition(serverLevel.getServer(), player, celerity);
+         }
       }else{
          ArcanaPlayerData data = ArcanaNovum.data(player);
          data.removeMiscData(CRAFTER_TAG);
          data.removeMiscData(FED_TAG);
-         MinecraftUtils.attributeEffect(player, Attributes.MOVEMENT_SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), true);
       }
    }
    

@@ -72,7 +72,7 @@ public class TrackingArrows extends RunicArrow {
       int broadheads = arrow.getAugment(ArcanaAugments.BROADHEADS);
       int duration = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.TRACKING_ARROW_BROADHEAD_DMG_AMP_DURATION_PER_LVL).get(broadheads);
       float damageMod = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.TRACKING_ARROW_BROADHEAD_DMG_AMP_PER_LVL).get(broadheads);
-      if(entityHitResult.getEntity() instanceof LivingEntity living && broadheads > 0){
+      if(entityHitResult.getEntity() instanceof LivingEntity living && broadheads > 0 && duration > 0){
          ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ID), duration, damageMod, true, true, false, AttributeModifier.Operation.ADD_VALUE, arrow.getOwner() != null ? arrow.getOwner().getUUID() : null);
          Conditions.addCondition(living.level().getServer(), living, vulnerability);
       }

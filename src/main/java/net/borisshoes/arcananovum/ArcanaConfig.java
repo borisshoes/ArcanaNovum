@@ -121,6 +121,14 @@ public class ArcanaConfig {
          new DoubleConfigValue("concussionArrowDurationMod", 1.0, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> CONCUSSION_ARROW_SHELLSHOCK_BOOST_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new ListConfigValue<>("concussionArrowShellshockBoostPerLvl", List.of(0.0, 0.5, 1.0, 2.0), new DoubleConfigValue("concussionArrowShellshockBoostPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
+   public static final IConfigSetting<?> CONCUSSION_ARROW_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("concussionArrowTorpor", 0.75, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> CONCUSSION_ARROW_LINGERING_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("concussionArrowLingeringTorpor", 0.45, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> CONCUSSION_ARROW_LETHARGY = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("concussionArrowLethargy", 0.99, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> CONCUSSION_ARROW_FEEBLE = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("concussionArrowFeeble", 0.75, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    
    // Runic Detonation Arrows
    public static final IConfigSetting<?> DETONATION_ARROW_ENTITY_DMG_MULTIPLIER = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
@@ -167,6 +175,12 @@ public class ArcanaConfig {
          new IntConfigValue("gravitonArrowDurationMax", 20, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> GRAVITON_ARROW_WELL_RANGE_PER_LVL = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
          new ListConfigValue<>("gravitonArrowWellRangePerLvl", List.of(0.0, 1.0, 2.0, 3.0), new DoubleConfigValue("gravitonArrowWellRangePerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
+   public static final IConfigSetting<?> GRAVITON_ARROW_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("gravitonArrowTorpor", 0.9, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> GRAVITON_ARROW_TORPOR_FALLOFF = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("gravitonArrowTorporFalloff", 0.15, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> GRAVITON_ARROW_GRAVITAS = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("gravitonArrowGravitas", 1.0, new DoubleConfigValue.DoubleLimits(0.0))));
    
    // Runic Photonic Arrows
    public static final IConfigSetting<?> PHOTONIC_ARROW_DMG_MIN = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
@@ -203,6 +217,10 @@ public class ArcanaConfig {
          new DoubleConfigValue("smokeArrowRangeMax", 2.5, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> SMOKE_ARROW_GAS_DURATION_PER_LVL = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new ListConfigValue<>("smokeArrowGasDurationPerLvl", List.of(0, 60, 120, 180), new IntConfigValue("smokeArrowGasDurationPerLvl", 0, new IntConfigValue.IntLimits(0)))));
+   public static final IConfigSetting<?> SMOKE_ARROW_MOB_FEEBLE = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("smokeArrowMobFeeble", 1.0, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> SMOKE_ARROW_PLAYER_FEEBLE_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new ListConfigValue<>("smokeArrowPlayerFeeblePerLvl", List.of(0.35, 0.55, 0.75, 0.95), new DoubleConfigValue("smokeArrowPlayerFeeblePerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0, 1.0)))));
    
    // Runic Storm Arrows
    public static final IConfigSetting<?> STORM_ARROW_STRIKE_CHANCE = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
@@ -266,7 +284,7 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> CLEANSING_CHARM_CHARCOAL_COOLDOWN_PER_LVL = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new ListConfigValue<>("cleansingCharmCharcoalCooldownPerLvl", List.of(0, 100, 200, 300, 400), new IntConfigValue("cleansingCharmCharcoalCooldownPerLvl", 0, new IntConfigValue.IntLimits(0)))));
    public static final IConfigSetting<?> CLEANSING_CHARM_REJUVENATION_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
-         new IntConfigValue("cleansingCharmRejuvenationDuration", 200, new IntConfigValue.IntLimits(0))));
+         new IntConfigValue("cleansingCharmRejuvenationDuration", 200, new IntConfigValue.IntLimits(1))));
    public static final IConfigSetting<?> CLEANSING_CHARM_REJUVENATION_HEALTH_PER_TICK = registerConfigSetting(ConfigUnits.HP_PER_TICK, new ConfigSetting<>(
          new DoubleConfigValue("cleansingCharmRejuvenationHealthPerTick", 0.03, new DoubleConfigValue.DoubleLimits(0))));
    
@@ -300,11 +318,11 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> LEADERSHIP_CHARM_INVIGORATION_RADIUS_PER_LVL = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
          new ListConfigValue<>("leadershipCharmInvigorationRadiusPerLvl", List.of(0.0, 1.0, 2.0, 3.0), new DoubleConfigValue("leadershipCharmInvigorationRadiusPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
    public static final IConfigSetting<?> LEADERSHIP_CHARM_MIGHT_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
-         new ListConfigValue<>("leadershipCharmMightPerLvl", List.of(0.25, 0.4, 0.55, 0.7), new DoubleConfigValue("leadershipCharmMightPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
+         new ListConfigValue<>("leadershipCharmMightPerLvl", List.of(1.0, 1.5, 2.0, 2.5), new DoubleConfigValue("leadershipCharmMightPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
    public static final IConfigSetting<?> LEADERSHIP_CHARM_FORTITUDE_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
-         new ListConfigValue<>("leadershipCharmFortitudePerLvl", List.of(0.25, 0.30, 0.35, 0.40), new DoubleConfigValue("leadershipCharmFortitudePerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
+         new ListConfigValue<>("leadershipCharmFortitudePerLvl", List.of(0.5, 0.6, 0.7, 0.8), new DoubleConfigValue("leadershipCharmFortitudePerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0, 1.0)))));
    public static final IConfigSetting<?> LEADERSHIP_CHARM_REJUVENATION_PER_LVL = registerConfigSetting(ConfigUnits.HP_PER_TICK, new ConfigSetting<>(
-         new ListConfigValue<>("leadershipCharmRejuvenationPerLvl", List.of(0.03, 0.04, 0.05, 0.06), new DoubleConfigValue("leadershipCharmRejuvenationPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
+         new ListConfigValue<>("leadershipCharmRejuvenationPerLvl", List.of(0.0675, 0.125, 0.25, 0.375), new DoubleConfigValue("leadershipCharmRejuvenationPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
    
    // Charm of Light
    public static final IConfigSetting<?> LIGHT_CHARM_PASSIVE_COOLDOWN = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
@@ -363,6 +381,10 @@ public class ArcanaConfig {
          new IntConfigValue("binaryBladesEnergyPerHit", 10, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> BINARY_BLADES_MAX_ENERGY = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
          new IntConfigValue("binaryBladesMaxEnergy", 100, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> BINARY_BLADES_MAX_CELERITY = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("binaryBladesMaxCelerity", 0.5, new DoubleConfigValue.DoubleLimits(0.0))));
+   public static final IConfigSetting<?> BINARY_BLADES_MAX_FERVOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("binaryBladesMaxFervor", 0.25, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> BINARY_BLADES_ENERGY_DECAY_RATE = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
          new IntConfigValue("binaryBladesEnergyDecayRate", 4, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> BINARY_BLADES_ENERGY_GRACE_PERIOD = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
@@ -395,6 +417,10 @@ public class ArcanaConfig {
          new IntConfigValue("chestTranslocatorCooldown", 30, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> CHEST_TRANSLOCATOR_COOLDOWN_PER_LVL = registerConfigSetting(ConfigUnits.SECONDS, new ConfigSetting<>(
          new ListConfigValue<>("chestTranslocatorCooldownPerLvl", List.of(0, 8, 16, 24), new IntConfigValue("chestTranslocatorCooldownPerLvl", 0, new IntConfigValue.IntLimits(0)))));
+   public static final IConfigSetting<?> CHEST_TRANSLOCATOR_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("chestTranslocatorTorpor", 0.45, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> CHEST_TRANSLOCATOR_LETHARGY = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("chestTranslocatorLethargy", 0.7, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    
    // Containment Circlet
    public static final IConfigSetting<?> CONTAINMENT_CIRCLET_HEALING_RATE = registerConfigSetting(ConfigUnits.HP_PER_SECOND, new ConfigSetting<>(
@@ -429,8 +455,12 @@ public class ArcanaConfig {
    // Graviton Maul
    public static final IConfigSetting<?> GRAVITON_MAUL_UP_SPEED = registerConfigSetting(ConfigUnits.BLOCKS_PER_TICK, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulUpSpeed", 0.75, new DoubleConfigValue.DoubleLimits(0.0))));
+   public static final IConfigSetting<?> GRAVITON_MAUL_LEVITY = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("gravitonMaulLevity", 1.0625, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_DOWN_SPEED = registerConfigSetting(ConfigUnits.BLOCKS_PER_TICK, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulDownSpeed", -1.0, new DoubleConfigValue.DoubleLimits(Integer.MIN_VALUE, 0.0))));
+   public static final IConfigSetting<?> GRAVITON_MAUL_GRAVITAS = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("gravitonMaulGravitas", 1.0, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_CRUSH_DMG = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulCrushDmg", 2.0, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_VORTEX_RANGE = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
@@ -442,7 +472,9 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> GRAVITON_MAUL_VORTEX_SUCK_POWER = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulVortexSuckPower", 0.2, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_VORTEX_FORTITUDE = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
-         new DoubleConfigValue("gravitonMaulVortexFortitude", 0.5, new DoubleConfigValue.DoubleLimits(0.0))));
+         new DoubleConfigValue("gravitonMaulVortexFortitude", 0.5, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> GRAVITON_MAUL_VORTEX_KNOCKBACK_RESISTANCE = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("gravitonMaulVortexKnockbackResistance", 0.5, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_AOE_RANGE = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
          new DoubleConfigValue("gravitonMaulAoeRange", 3.5, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> GRAVITON_MAUL_SLAM_DMG_PER_SPEED = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
@@ -477,6 +509,12 @@ public class ArcanaConfig {
          new IntConfigValue("nulMementoWardCooldown", 36000, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> NUL_MEMENTO_WARD_COOLDOWN_PER_LVL = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new ListConfigValue<>("nulMementoWardCooldownPerLvl", List.of(0, 12000, 24000), new IntConfigValue("nulMementoWardCooldownPerLvl", 0, new IntConfigValue.IntLimits(0)))));
+   public static final IConfigSetting<?> NUL_MEMENTO_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("nulMementoTorpor", 1.0, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> NUL_MEMENTO_LETHARGY = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("nulMementoLethargy", 1.0, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
+   public static final IConfigSetting<?> NUL_MEMENTO_FEEBLE = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("nulMementoFeeble", 1.0, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    
    // Overflowing Quiver
    public static final IConfigSetting<?> OVERFLOWING_QUIVER_RESTOCK_TIME = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
@@ -521,6 +559,8 @@ public class ArcanaConfig {
          new IntConfigValue("pickaxeOfCeptyusEnergyLoss", 10, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> PICKAXE_OF_CEPTYUS_ENERGY_PER_HASTE = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
          new DoubleConfigValue("pickaxeOfCeptyusEnergyPerHaste", 100.0, new DoubleConfigValue.DoubleLimits(0))));
+   public static final IConfigSetting<?> PICKAXE_OF_CEPTYUS_ALACRITY_PER_HASTE = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("pickaxeOfCeptyusAlacrityPerHaste", 0.2, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> PICKAXE_OF_CEPTYUS_VEIN_RANGE_PER_LVL = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
          new ListConfigValue<>("pickaxeOfCeptyusVeinRangePerLvl", List.of(8, 10, 12, 14, 16, 18), new IntConfigValue("pickaxeOfCeptyusVeinRangePerLvl", 0, new IntConfigValue.IntLimits(0)))));
    public static final IConfigSetting<?> PICKAXE_OF_CEPTYUS_VEIN_BLOCKS_PER_LVL = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
@@ -569,8 +609,8 @@ public class ArcanaConfig {
          new IntConfigValue("shieldOfFortitudeDuration", 200, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_DURATION_PER_LVL = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new ListConfigValue<>("shieldOfFortitudeDurationPerLvl", List.of(0, 100, 200, 300, 400, 500), new IntConfigValue("shieldOfFortitudeDurationPerLvl", 0, new IntConfigValue.IntLimits(0)))));
-   public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
-         new IntConfigValue("shieldOfFortitudeShieldBashSlowness", 4, new IntConfigValue.IntLimits(0))));
+   public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_SHIELD_BASH_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("shieldOfFortitudeShieldBashTorpor", 0.75, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_SHIELD_BASH_SLOWNESS_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new IntConfigValue("shieldOfFortitudeShieldBashSlownessDuration", 60, new IntConfigValue.IntLimits(0))));
    public static final IConfigSetting<?> SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_PER_ABSORPTION = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
@@ -587,12 +627,14 @@ public class ArcanaConfig {
          new IntConfigValue("sojournerBootsRamp", 2, new IntConfigValue.IntLimits(1))));
    public static final IConfigSetting<?> SOJOURNER_BOOTS_RAMP_PER_LVL = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
          new ListConfigValue<>("sojournerBootsRampPerLvl", List.of(0, 2, 4), new IntConfigValue("sojournerBootsRampPerLvl", 0, new IntConfigValue.IntLimits(0)))));
+   public static final IConfigSetting<?> SOJOURNER_BOOTS_CELERITY_PER_ENERGY = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("sojournerBootsCelerityPerEnergy", 0.01, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new DoubleConfigValue("sojournersBootsJuggernautVulnerability", 0.5, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
-         new IntConfigValue("sojournersBootsJuggernautVulnerabilityDuration", 100, new IntConfigValue.IntLimits(0))));
-   public static final IConfigSetting<?> SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
-         new IntConfigValue("sojournersBootsJuggernautSlowness", 4, new IntConfigValue.IntLimits(0))));
+         new IntConfigValue("sojournersBootsJuggernautVulnerabilityDuration", 100, new IntConfigValue.IntLimits(1))));
+   public static final IConfigSetting<?> SOJOURNERS_BOOTS_JUGGERNAUT_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("sojournersBootsJuggernautTorpor", 0.75, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> SOJOURNERS_BOOTS_JUGGERNAUT_SLOWNESS_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new IntConfigValue("sojournersBootsJuggernautSlownessDuration", 60, new IntConfigValue.IntLimits(0))));
    
@@ -604,7 +646,9 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> SPEAR_OF_TENBROUS_THROW_DMG = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
          new DoubleConfigValue("spearOfTenbrousThrowDmg", 11.0, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> SPEAR_OF_TENBROUS_STUN_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
-         new IntConfigValue("spearOfTenbrousStunDuration", 25, new IntConfigValue.IntLimits(0))));
+         new IntConfigValue("spearOfTenbrousStunDuration", 25, new IntConfigValue.IntLimits(1))));
+   public static final IConfigSetting<?> SPEAR_OF_TENBROUS_STUN_TORPOR = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("spearOfTenbrousStunTorpor", 1.0, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
    public static final IConfigSetting<?> SPEAR_OF_TENBROUS_STORM_DMG = registerConfigSetting(ConfigUnits.HP, new ConfigSetting<>(
          new DoubleConfigValue("spearOfTenbrousStormDmg", 6.0, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> SPEAR_OF_TENBROUS_STORM_RANGE = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
@@ -620,9 +664,9 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> STASIS_PEARL_REGEN_PER_LVL = registerConfigSetting(ConfigUnits.HP_PER_TICK, new ConfigSetting<>(
          new ListConfigValue<>("stasisPearlRegenPerLvl", List.of(0.0, 0.05, 0.1, 0.15), new DoubleConfigValue("stasisPearlRegenPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0)))));
    public static final IConfigSetting<?> STASIS_PEARL_FORTITUDE_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
-         new ListConfigValue<>("stasisPearlFortitudePerLvl", List.of(0.0, 0.1, 0.2, 0.3), new DoubleConfigValue("stasisPearlFortitudePerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0)))));
+         new ListConfigValue<>("stasisPearlFortitudePerLvl", List.of(0.0, 0.1, 0.2, 0.3), new DoubleConfigValue("stasisPearlFortitudePerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0, 1.0)))));
    public static final IConfigSetting<?> STASIS_PEARL_RECONSTRUCT_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
-         new IntConfigValue("stasisPearlReconstructDuration", 100, new IntConfigValue.IntLimits(0))));
+         new IntConfigValue("stasisPearlReconstructDuration", 100, new IntConfigValue.IntLimits(1))));
    
    // Totem of Vengeance
    public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
@@ -631,14 +675,14 @@ public class ArcanaConfig {
          new ListConfigValue<>("totemOfVengeanceDurationPerLvl", List.of(0, 300, 600, 900), new IntConfigValue("totemOfVengeanceDurationPerLvl", 0, new IntConfigValue.IntLimits(0)))));
    public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_DURATION_PERCENT_AGAINST_PLAYER = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new DoubleConfigValue("totemOfVengeanceDurationPercentAgainstPlayer", 0.5, new DoubleConfigValue.DoubleLimits(0.0, 1.0))));
-   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_SPEED = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
-         new IntConfigValue("totemOfVengeanceSpeed", 1, new IntConfigValue.IntLimits(0))));
-   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_SPEED_PER_LVL = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
-         new ListConfigValue<>("totemOfVengeanceSpeedPerLvl", List.of(0, 1, 2, 3), new IntConfigValue("totemOfVengeanceSpeedPerLvl", 0, new IntConfigValue.IntLimits(0)))));
-   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_STRENGTH = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
-         new IntConfigValue("totemOfVengeanceStrength", 1, new IntConfigValue.IntLimits(0))));
-   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_STRENGTH_PER_LVL = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
-         new ListConfigValue<>("totemOfVengeanceStrengthPerLvl", List.of(0, 1, 2, 3), new IntConfigValue("totemOfVengeanceStrengthPerLvl", 0, new IntConfigValue.IntLimits(0)))));
+   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_CELERITY = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("totemOfVengeanceCelerity", 0.4, new DoubleConfigValue.DoubleLimits(0.0))));
+   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_CELERITY_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new ListConfigValue<>("totemOfVengeanceCelerityPerLvl", List.of(0.0, 0.2, 0.4, 0.6), new DoubleConfigValue("totemOfVengeanceCelerityPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
+   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_MIGHT = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new DoubleConfigValue("totemOfVengeanceMight", 0.6, new DoubleConfigValue.DoubleLimits(0.0))));
+   public static final IConfigSetting<?> TOTEM_OF_VENGEANCE_MIGHT_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
+         new ListConfigValue<>("totemOfVengeanceMightPerLvl", List.of(0.0, 0.3, 0.6, 0.9), new DoubleConfigValue("totemOfVengeanceMightPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
    
    // Armored Wings of Enderia
    public static final IConfigSetting<?> WINGS_OF_ENDERIA_MAX_ENERGY = registerConfigSetting(ConfigUnits.NONE, new ConfigSetting<>(
@@ -774,7 +818,7 @@ public class ArcanaConfig {
    
    // Alchemical Arbalest
    public static final IConfigSetting<?> ALCHEMICAL_ARBALEST_VULNERABILITY_DURATION = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
-         new IntConfigValue("alchemicalArbalestVulnerabilityDuration", 100, new IntConfigValue.IntLimits(0))));
+         new IntConfigValue("alchemicalArbalestVulnerabilityDuration", 100, new IntConfigValue.IntLimits(1))));
    public static final IConfigSetting<?> ALCHEMICAL_ARBALEST_VULNERABILITY_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new ListConfigValue<>("alchemicalArbalestVulnerabilityPerLvl", List.of(0.5, 0.75, 1.0, 1.5), new DoubleConfigValue("alchemicalArbalestVulnerabilityPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));
    public static final IConfigSetting<?> ALCHEMICAL_ARBALEST_FIELD_RANGE_PER_LVL = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(

@@ -14,6 +14,7 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.NearsightCondition;
 import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -32,8 +33,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -179,14 +178,15 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
       }
       
       int stunDuration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SPEAR_OF_TENBROUS_STUN_DURATION);
-      MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, stunDuration, 9, false, false, true);
-      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SPEAR_OF_TENBROUS.getId()), stunDuration, 5.0f, false, true, false, AttributeModifier.Operation.ADD_VALUE, getOwner() != null ? getOwner().getUUID() : null);
+      float stunTorpor = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SPEAR_OF_TENBROUS_STUN_TORPOR);
+      ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SPEAR_OF_TENBROUS.getId()), stunDuration, stunTorpor, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, getOwner() != null ? getOwner().getUUID() : null);
+      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SPEAR_OF_TENBROUS.getId()), stunDuration, NearsightCondition.magnitudeForRadius(5.0f), false, true, false, AttributeModifier.Operation.ADD_VALUE, getOwner() != null ? getOwner().getUUID() : null);
       
       boolean blindRage = ArcanaAugments.getAugmentOnItem(pickupItemStack, ArcanaAugments.BLINDING_RAGE) > 0;
       boolean voidStorm = ArcanaAugments.getAugmentOnItem(pickupItemStack, ArcanaAugments.VOID_STORM) > 0;
       
       if(hitEntity instanceof LivingEntity living){
-         living.addEffect(slow);
+         Conditions.addCondition(living.level().getServer(), living, torpor);
          if(blindRage){
             Conditions.addCondition(living.level().getServer(), living, nearsight);
          }

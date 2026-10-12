@@ -180,7 +180,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
       
       public void applyCondition(ServerLevel world, LivingEntity entity, ConditionInstance condition){
          if(!world.dimension().identifier().toString().equals(blockWorld.dimension().identifier().toString())) return;
-         Conditions.addCondition(world.getServer(), entity, condition);
+         Conditions.addConditionIfStronger(world.getServer(), entity, condition);
       }
       
       @Override

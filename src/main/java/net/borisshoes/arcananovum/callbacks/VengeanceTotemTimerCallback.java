@@ -1,5 +1,12 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.minecraft.util.Mth;
+import net.minecraft.network.chat.Component;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.ChatFormatting;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.arcananovum.items.TotemOfVengeance;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.callbacks.login.VengeanceTotemLoginCallback;
@@ -14,11 +21,28 @@ import org.jetbrains.annotations.Nullable;
 public class VengeanceTotemTimerCallback extends TickTimerCallback {
    
    private final Entity attacker;
+   private final int duration;
    private boolean avenged;
    
    public VengeanceTotemTimerCallback(int time, ItemStack item, ServerPlayer player, @Nullable Entity attacker){
       super(time, item, player);
       this.attacker = attacker;
+      this.duration = Math.max(1, time);
+   }
+   
+   // Shows the time left on the vengeance timer above the hotbar
+   public void displayTimer(){
+      if(avenged || getTimer() % 5 != 0) return;
+      ServerPlayer player1 = player.level().getServer().getPlayerList().getPlayer(player.getUUID());
+      if(player1 == null) return;
+      int segments = 15;
+      int filled = Mth.clamp((int) Math.ceil((double) segments * getTimer() / duration), 0, segments);
+      player1.sendSystemMessage(Component.literal("")
+            .append(MinecraftUtils.getAtlasedTexture(AtlasIds.ITEMS, ArcanaRegistry.arcanaId("item/" + TotemOfVengeance.ID)))
+            .append(Component.literal(" " + "█".repeat(filled)).withStyle(ChatFormatting.DARK_RED))
+            .append(Component.literal("█".repeat(segments - filled) + " ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(Component.literal("⌛ ").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal((getTimer() + 19) / 20 + "s").withStyle(ChatFormatting.RED)), true);
    }
    
    @Override

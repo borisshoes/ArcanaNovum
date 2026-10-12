@@ -126,19 +126,12 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
       float mightStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_MIGHT_PER_LVL).get(invigor);
       float fortStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_FORTITUDE_PER_LVL).get(invigor);
       float rejuvStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_REJUVENATION_PER_LVL).get(invigor);
-      ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId() + "_" + invigor), 100, rejuvStr, true, true, false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
-      ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId() + "_" + invigor), 100, mightStr, true, true, false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
-      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId() + "_" + invigor), 100, -(fortStr), true, true, false, AttributeModifier.Operation.ADD_VALUE, causingEntity);
-      Conditions.addCondition(player.level().getServer(), player, rejuv);
-      Conditions.addCondition(player.level().getServer(), player, might);
-      Conditions.addCondition(player.level().getServer(), player, fortitude);
-      
-      MobEffectInstance str = new MobEffectInstance(MobEffects.STRENGTH, 20 * 5 + 5, 1 + invigor, false, false, true);
-      MobEffectInstance res = new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5 + 5, 1 + invigor / 2, false, false, true);
-      MobEffectInstance regen = new MobEffectInstance(MobEffects.REGENERATION, 20 * 5 + 5, 1 + invigor, false, false, true);
-      player.addEffect(str);
-      player.addEffect(res);
-      player.addEffect(regen);
+      ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, 20 * rejuvStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity);
+      ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, mightStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity);
+      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, fortStr, true, true, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, causingEntity);
+      Conditions.addConditionIfStronger(player.level().getServer(), player, rejuv);
+      Conditions.addConditionIfStronger(player.level().getServer(), player, might);
+      Conditions.addConditionIfStronger(player.level().getServer(), player, fortitude);
       
       // Repair Gear once per second
       if(player.level().getServer().getTickCount() % 20 == 0){

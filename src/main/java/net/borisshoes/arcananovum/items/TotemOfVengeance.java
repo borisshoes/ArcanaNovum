@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -29,7 +32,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaRegistry.arcanaId;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class TotemOfVengeance extends ArcanaItem {
@@ -60,7 +63,7 @@ public class TotemOfVengeance extends ArcanaItem {
       item = new TotemOfVengeanceItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_SOULSTONE, ResearchTasks.ADVANCEMENT_TOTEM_OF_UNDYING, ResearchTasks.KILL_EVOKER, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.EFFECT_STRENGTH, ResearchTasks.EFFECT_FIRE_RESISTANCE, ResearchTasks.EFFECT_SWIFTNESS};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION, ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PER_LVL, ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PERCENT_AGAINST_PLAYER, ArcanaConfig.TOTEM_OF_VENGEANCE_SPEED, ArcanaConfig.TOTEM_OF_VENGEANCE_SPEED_PER_LVL, ArcanaConfig.TOTEM_OF_VENGEANCE_STRENGTH, ArcanaConfig.TOTEM_OF_VENGEANCE_STRENGTH_PER_LVL, ArcanaConfig.XP_TOTEM_OF_VENGEANCE_ACTIVATE, ArcanaConfig.XP_TOTEM_OF_VENGEANCE_SURVIVE};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION, ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PER_LVL, ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PERCENT_AGAINST_PLAYER, ArcanaConfig.TOTEM_OF_VENGEANCE_CELERITY, ArcanaConfig.TOTEM_OF_VENGEANCE_CELERITY_PER_LVL, ArcanaConfig.TOTEM_OF_VENGEANCE_MIGHT, ArcanaConfig.TOTEM_OF_VENGEANCE_MIGHT_PER_LVL, ArcanaConfig.XP_TOTEM_OF_VENGEANCE_ACTIVATE, ArcanaConfig.XP_TOTEM_OF_VENGEANCE_SURVIVE};
    }
    
    @Override
@@ -115,18 +118,12 @@ public class TotemOfVengeance extends ArcanaItem {
       int extraDur = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PER_LVL).get(furyLevel);
       double playerMod = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PERCENT_AGAINST_PLAYER);
       int duration = byPlayer ? (int) ((baseDur + extraDur) * playerMod) : baseDur + extraDur;
-      int baseStr = ArcanaNovum.CONFIG.getInt(ArcanaConfig.TOTEM_OF_VENGEANCE_STRENGTH);
-      int extraStr = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.TOTEM_OF_VENGEANCE_STRENGTH_PER_LVL).get(furyLevel);
-      int baseSpd = ArcanaNovum.CONFIG.getInt(ArcanaConfig.TOTEM_OF_VENGEANCE_SPEED);
-      int extraSpd = ArcanaNovum.CONFIG.getIntList(ArcanaConfig.TOTEM_OF_VENGEANCE_SPEED_PER_LVL).get(furyLevel);
       return new DeathProtection(
             List.of(
                   new ClearAllStatusEffectsConsumeEffect(),
                   new ApplyStatusEffectsConsumeEffect(
                         List.of(
-                              new MobEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, duration, 1),
-                              new MobEffectInstance(MobEffects.STRENGTH, duration, baseStr + extraStr),
-                              new MobEffectInstance(MobEffects.SPEED, duration, baseSpd + extraSpd)
+                              new MobEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, duration, 1)
                         )
                   )
             )
@@ -151,6 +148,14 @@ public class TotemOfVengeance extends ArcanaItem {
          double playerMod = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.TOTEM_OF_VENGEANCE_DURATION_PERCENT_AGAINST_PLAYER);
          int duration = byPlayer ? (int) ((baseDur + extraDur) * playerMod) : baseDur + extraDur;
          BorisLib.addTickTimerCallback(new VengeanceTotemTimerCallback(duration, stack, player, attacker));
+         if(duration > 0){
+            float mightStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.TOTEM_OF_VENGEANCE_MIGHT) + ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.TOTEM_OF_VENGEANCE_MIGHT_PER_LVL).get(furyLvl);
+            float celerityStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.TOTEM_OF_VENGEANCE_CELERITY) + ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.TOTEM_OF_VENGEANCE_CELERITY_PER_LVL).get(furyLvl);
+            ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ID), duration, mightStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, null);
+            ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, arcanaId(ID), duration, celerityStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, null);
+            Conditions.addCondition(player.level().getServer(), player, might);
+            Conditions.addCondition(player.level().getServer(), player, celerity);
+         }
          player.level().sendParticles(ParticleTypes.ANGRY_VILLAGER, player.position().x, player.position().y + player.getBbHeight() / 2, player.position().z, 25, .5, .6, .5, 0.05);
          
          if(source.is(ArcanaDamageTypes.VENGEANCE_TOTEM)){

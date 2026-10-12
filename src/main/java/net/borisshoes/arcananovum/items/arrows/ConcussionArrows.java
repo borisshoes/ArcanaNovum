@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.conditions.NearsightCondition;
 import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.timers.GenericTimer;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -47,6 +48,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,7 +68,7 @@ public class ConcussionArrows extends RunicArrow {
       item = new ConcussionArrowsItem();
       displayName = Component.translatableWithFallback("item." + MOD_ID + "." + ID, name).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
       researchTasks = new ResourceKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX, ResearchTasks.UNLOCK_RADIANT_FLETCHERY, ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SQUID, ResearchTasks.ADVANCEMENT_DRAGON_BREATH, ResearchTasks.EFFECT_BLINDNESS, ResearchTasks.EFFECT_WEAKNESS, ResearchTasks.USE_FIREWORK};
-      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CONCUSSION_ARROW_DURATION_MOD, ArcanaConfig.CONCUSSION_ARROW_RANGE_MAX, ArcanaConfig.CONCUSSION_ARROW_RANGE_MIN, ArcanaConfig.CONCUSSION_ARROW_SHELLSHOCK_BOOST_PER_LVL};
+      relatedConfigs = new IConfigSetting[]{ArcanaConfig.CONCUSSION_ARROW_DURATION_MOD, ArcanaConfig.CONCUSSION_ARROW_TORPOR, ArcanaConfig.CONCUSSION_ARROW_LINGERING_TORPOR, ArcanaConfig.CONCUSSION_ARROW_LETHARGY, ArcanaConfig.CONCUSSION_ARROW_FEEBLE, ArcanaConfig.CONCUSSION_ARROW_RANGE_MAX, ArcanaConfig.CONCUSSION_ARROW_RANGE_MIN, ArcanaConfig.CONCUSSION_ARROW_SHELLSHOCK_BOOST_PER_LVL};
    }
    
    @Override
@@ -108,23 +110,28 @@ public class ConcussionArrows extends RunicArrow {
       
       List<Entity> entities = world.getEntities((Entity) null, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < range * range && e instanceof LivingEntity);
       float percent = durMod * (1 + extraDuration);
+      float torporStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_TORPOR);
+      float lingeringTorporStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_LINGERING_TORPOR);
+      float lethargyStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_LETHARGY);
+      float feebleStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CONCUSSION_ARROW_FEEBLE);
+      UUID inflicter = arrow.getOwner() != null ? arrow.getOwner().getUUID() : null;
       int mobsHit = 0;
       for(Entity entity : entities){
          if(entity instanceof LivingEntity e && !(entity instanceof EnderDragon || entity instanceof WitherBoss || entity instanceof NulConstructEntity)){
             if(e instanceof Mob) mobsHit++;
             
-            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), (int) (25 * percent), 3.5f, false, true, false, AttributeModifier.Operation.ADD_VALUE, arrow.getOwner() != null ? arrow.getOwner().getUUID() : null);
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), Math.max(1, (int) (25 * percent)), NearsightCondition.magnitudeForRadius(3.5f), false, true, false, AttributeModifier.Operation.ADD_VALUE, inflicter);
             MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA, (int) (120 * percent), 0, false, false, true);
-            MobEffectInstance slow = new MobEffectInstance(MobEffects.SLOWNESS, (int) (40 * percent), 4, false, false, true);
-            MobEffectInstance slow2 = new MobEffectInstance(MobEffects.SLOWNESS, (int) (120 * percent), 2, false, false, true);
-            MobEffectInstance fatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, (int) (80 * percent), 2, false, false, true);
-            MobEffectInstance weakness = new MobEffectInstance(MobEffects.WEAKNESS, (int) (120 * percent), 2, false, false, true);
+            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), Math.max(1, (int) (40 * percent)), torporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
+            ConditionInstance lingeringTorpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID + "_lingering"), Math.max(1, (int) (120 * percent)), lingeringTorporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
+            ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), Math.max(1, (int) (80 * percent)), lethargyStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
+            ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ID), Math.max(1, (int) (120 * percent)), feebleStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, inflicter);
             Conditions.addCondition(world.getServer(), e, nearsight);
+            Conditions.addCondition(world.getServer(), e, torpor);
+            Conditions.addCondition(world.getServer(), e, lingeringTorpor);
+            Conditions.addCondition(world.getServer(), e, lethargy);
+            Conditions.addCondition(world.getServer(), e, feeble);
             e.addEffect(nausea);
-            e.addEffect(slow);
-            e.addEffect(slow2);
-            e.addEffect(fatigue);
-            e.addEffect(weakness);
             
             if(world instanceof ServerLevel serverWorld){
                if(e instanceof Mob mob){
