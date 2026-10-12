@@ -24,6 +24,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.ConditionMath;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.config.IConfigSetting;
@@ -411,7 +412,7 @@ public class GravitonMaul extends ArcanaItem {
          float vortexFortitude = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_FORTITUDE);
          float vortexKnockbackRes = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_KNOCKBACK_RESISTANCE);
          float vortexTorpor = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_TORPOR);
-         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexFortitude, true, true, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
+         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, ConditionMath.reductionToMagnitude(vortexFortitude), true, true, true, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
          ConditionInstance poise = new ConditionInstance(Conditions.POISE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexKnockbackRes, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
          ConditionInstance damping = new ConditionInstance(Conditions.DAMPING, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexKnockbackRes, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
          Conditions.addCondition(player.level().getServer(), player, fortitude);

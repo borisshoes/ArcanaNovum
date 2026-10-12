@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.ConditionMath;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.borisshoes.borislib.config.IConfigSetting;
@@ -128,7 +129,7 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
       float rejuvStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_REJUVENATION_PER_LVL).get(invigor);
       ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, 20 * rejuvStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity);
       ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, mightStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity);
-      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, fortStr, true, true, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, causingEntity);
+      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, ConditionMath.reductionToMagnitude(fortStr), true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity);
       Conditions.addConditionIfStronger(player.level().getServer(), player, rejuv);
       Conditions.addConditionIfStronger(player.level().getServer(), player, might);
       Conditions.addConditionIfStronger(player.level().getServer(), player, fortitude);

@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.ConditionMath;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -109,7 +110,7 @@ public class BlinkArrows extends RunicArrow {
       float phaseInDamageMod = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BLINK_ARROW_PHASE_IN_DMG_MULTIPLIER);
       int duration = Math.min((int) (percentage * phaseInDuration), phaseInDuration);
       if(duration <= 0) return;
-      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(getId()), duration, 1 - phaseInDamageMod, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID());
+      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(getId()), duration, ConditionMath.reductionToMagnitude(1 - phaseInDamageMod), true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
       Conditions.addCondition(player.level().getServer(), player, fortitude);
    }
    

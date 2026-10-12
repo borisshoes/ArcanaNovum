@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.mixins.ThrowableItemProjectileAccessor;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.ConditionMath;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.particles.ParticleTypes;
@@ -153,7 +154,7 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
                float rejuvRate = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_REGEN_PER_LVL).get(reconstructLvl);
                float fortMod = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_FORTITUDE_PER_LVL).get(reconstructLvl);
                ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, 20 * rejuvRate, true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
-               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, fortMod, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, holder.getUUID());
+               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, ConditionMath.reductionToMagnitude(fortMod), true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID());
                Conditions.addCondition(holder.level().getServer(), holder, rejuv);
                Conditions.addCondition(holder.level().getServer(), holder, fortitude);
                
