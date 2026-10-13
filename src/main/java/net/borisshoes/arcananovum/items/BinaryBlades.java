@@ -461,6 +461,7 @@ public class BinaryBlades extends EnergyItem {
             }
             
             for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
+               if(hit.entity() == blocking) continue; // Blocked by a shield
                hit.entity().hurtServer(player.level(), ArcanaDamageTypes.of(player.level(), ArcanaDamageTypes.PHOTONIC, player), damage);
                ArcanaItem.putProperty(stack, BinaryBlades.LAST_HIT_TAG, delay);
                energyGain += perHit;

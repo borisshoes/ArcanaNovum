@@ -94,7 +94,9 @@ public class PhotonicArrows extends RunicArrow {
       float bonusDmg = 0;
       
       int killCount = 0;
+      LivingEntity blocking = lasercast.blockingEntity();
       for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
+         if(hit.entity() == blocking) continue; // Blocked by a shield
          float falloffDmg = (float) (falloff * hit.entity().position().distanceTo(lasercast.startPos()));
          float finalDmg = (float) ((hit.entity() instanceof ServerPlayer ? playerDmgMod : 1) * Math.max(minDamage, baseDmg + bonusDmg - falloffDmg));
          hit.entity().hurtServer(serverWorld, ArcanaDamageTypes.of(entity.level(), ArcanaDamageTypes.PHOTONIC, proj, entity), finalDmg);
@@ -103,8 +105,7 @@ public class PhotonicArrows extends RunicArrow {
          }
          bonusDmg = (float) Math.min(prismaticCap, bonusDmg + prismaticPerMob);
       }
-      
-      LivingEntity blocking = lasercast.blockingEntity();
+
       if(blocking != null){
          float falloffDmg = (float) (falloff * blocking.position().distanceTo(lasercast.startPos()));
          float finalDmg = (float) ((blocking instanceof ServerPlayer ? playerDmgMod : 1) * Math.max(minDamage, baseDmg + bonusDmg - falloffDmg));

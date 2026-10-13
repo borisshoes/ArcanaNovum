@@ -1063,6 +1063,7 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
                         
                         for(MinecraftUtils.LasercastEntityHit hit : lasercast.sortedHits()){
                            if(!(hit.entity() instanceof LivingEntity livingHit)) continue;
+                           if(livingHit == blocking) continue; // Blocked by a shield
                            livingHit.hurtServer(serverWorld, ArcanaDamageTypes.of(level(), ArcanaDamageTypes.NUL, this), damage);
                            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId("nul_construct_laser"), 40, NearsightCondition.magnitudeForRadius(24.0f), false, true, true, AttributeModifier.Operation.ADD_VALUE, getUUID());
                            MobEffectInstance wither = new MobEffectInstance(MobEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
