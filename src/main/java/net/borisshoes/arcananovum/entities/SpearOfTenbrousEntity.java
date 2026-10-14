@@ -26,6 +26,7 @@ import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SpellParticleOption;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -179,8 +180,8 @@ public class SpearOfTenbrousEntity extends AbstractArrow implements PolymerEntit
       
       int stunDuration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SPEAR_OF_TENBROUS_STUN_DURATION);
       float stunTorpor = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SPEAR_OF_TENBROUS_STUN_TORPOR);
-      ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SPEAR_OF_TENBROUS.getId()), stunDuration, stunTorpor, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, getOwner() != null ? getOwner().getUUID() : null);
-      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SPEAR_OF_TENBROUS.getId()), stunDuration, NearsightCondition.magnitudeForRadius(5.0f), false, true, false, AttributeModifier.Operation.ADD_VALUE, getOwner() != null ? getOwner().getUUID() : null);
+      ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SPEAR_OF_TENBROUS.getId()), stunDuration, stunTorpor, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, getOwner() != null ? getOwner().getUUID() : null).withName(Component.translatable("condition_source.arcananovum.spear_of_tenbrous_stun"));
+      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SPEAR_OF_TENBROUS.getId()), stunDuration, NearsightCondition.magnitudeForRadius(5.0f), false, true, false, AttributeModifier.Operation.ADD_VALUE, getOwner() != null ? getOwner().getUUID() : null).withName(Component.translatable("condition_source.arcananovum.spear_of_tenbrous_blinding_rage"));
       
       boolean blindRage = ArcanaAugments.getAugmentOnItem(pickupItemStack, ArcanaAugments.BLINDING_RAGE) > 0;
       boolean voidStorm = ArcanaAugments.getAugmentOnItem(pickupItemStack, ArcanaAugments.VOID_STORM) > 0;

@@ -294,7 +294,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                      player.addEffect(invis);
                   }
                   if(target instanceof LivingEntity living && blindDur > 0){
-                     ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), blindDur, NearsightCondition.magnitudeForRadius(2.0f), false, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
+                     ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), blindDur, NearsightCondition.magnitudeForRadius(2.0f), false, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.shadow_stalkers_glaive"));
                      Conditions.addCondition(world.getServer(), living, nearsight);
                   }
                   

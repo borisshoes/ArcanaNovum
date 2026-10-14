@@ -138,8 +138,8 @@ public class GravitonArrows extends RunicArrow {
             if(e instanceof Mob) mobsHit++;
             
             float torporAtDist = Mth.clamp(torporStr - torporFalloff * (float) diff.length(), 0, 1);
-            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), 20, torporAtDist, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
-            ConditionInstance gravitas = new ConditionInstance(Conditions.GRAVITAS, arcanaId(ID), 20, gravitasStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), 20, torporAtDist, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.graviton_arrows"));
+            ConditionInstance gravitas = new ConditionInstance(Conditions.GRAVITAS, arcanaId(ID), 20, gravitasStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.graviton_arrows"));
             Conditions.addCondition(world.getServer(), e, torpor);
             Conditions.addCondition(world.getServer(), e, gravitas);
          }

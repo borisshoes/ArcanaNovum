@@ -233,7 +233,7 @@ public class DragonBossFight {
                         guardianPhantoms[i] = DragonGoonHelper.makeGuardianPhantom(endWorld,numPlayers);
                         phantomBossBars[i] = endWorld.getServer().getCustomBossEvents().create(endWorld.getRandom(),Identifier.parse("guardianphantom-"+guardianPhantoms[i].getStringUUID()),guardianPhantoms[i].getCustomName());
                         phantomBossBars[i].setColor(BossEvent.BossBarColor.PURPLE);
-                        Conditions.addCondition(endWorld.getServer(), guardianPhantoms[i], new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 100, ConditionMath.reductionToMagnitude(1.0f), true, false, false, AttributeModifier.Operation.ADD_VALUE, null));
+                        Conditions.addCondition(endWorld.getServer(), guardianPhantoms[i], new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 100, ConditionMath.reductionToMagnitude(1.0f), true, false, false, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.dragon_boss_minion_shield")));
                         endWorld.addFreshEntityWithPassengers(guardianPhantoms[i]);
                         phantomData.add(StringTag.valueOf(guardianPhantoms[i].getStringUUID()));
                      }
@@ -247,7 +247,7 @@ public class DragonBossFight {
                         wizards[i].setPos(crystal.position().add(0,2,0));
                         wizards[i].setPermanentlyInvulnerable(true);
                         wizards[i].setCrystalId(crystal.getUUID());
-                        Conditions.addCondition(endWorld.getServer(), wizards[i], new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 100, ConditionMath.reductionToMagnitude(1.0f), true, false, false, AttributeModifier.Operation.ADD_VALUE, null));
+                        Conditions.addCondition(endWorld.getServer(), wizards[i], new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 100, ConditionMath.reductionToMagnitude(1.0f), true, false, false, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.dragon_boss_minion_shield")));
                         endWorld.addFreshEntityWithPassengers(wizards[i]);
                         wizardData.add(StringTag.valueOf(wizards[i].getStringUUID()));
                      }
@@ -396,15 +396,15 @@ public class DragonBossFight {
             for(Enderman enderman : endermen){
                if(dragonHP/dragonMax <= 0.5){
                   boolean enraged = dragonHP/dragonMax <= 0.25;
-                  ConditionInstance might = new ConditionInstance(Conditions.MIGHT, CONDITION_ID, 120, enraged ? 0.85f : 0.4f, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
-                  ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 120, ConditionMath.reductionToMagnitude(enraged ? 0.4f : 0.2f), true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+                  ConditionInstance might = new ConditionInstance(Conditions.MIGHT, CONDITION_ID, 120, enraged ? 0.85f : 0.4f, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.dragon_boss_enraged_enderman"));
+                  ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 120, ConditionMath.reductionToMagnitude(enraged ? 0.4f : 0.2f), true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.dragon_boss_enraged_enderman"));
                   Conditions.addCondition(endWorld.getServer(), enderman, might);
                   Conditions.addCondition(endWorld.getServer(), enderman, fortitude);
                }
                if(enderman.isCreepy()){
                   Player closestPlayer = endWorld.getNearestPlayer(enderman,4);
                   if(closestPlayer != null){
-                     ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, CONDITION_ID, 60, 0.45f, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, enderman.getUUID());
+                     ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, CONDITION_ID, 60, 0.45f, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, enderman.getUUID()).withName(Component.translatable("condition_source.arcananovum.dragon_boss_enderman_gaze"));
                      Conditions.addCondition(endWorld.getServer(), closestPlayer, torpor);
                   }
                }
@@ -1029,7 +1029,7 @@ public class DragonBossFight {
       ServerLevel endWorld = player.level().getServer().getLevel(Level.END);
       if(hasDied.contains(player) || override){
          player.teleport(new TeleportTransition(endWorld, new Vec3(100.5,51,0.5), Vec3.ZERO, 90, 0, TeleportTransition.PLACE_PORTAL_TICKET));
-         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 20*30, ConditionMath.reductionToMagnitude(1.0f), true, false, false, AttributeModifier.Operation.ADD_VALUE, null);
+         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 20*30, ConditionMath.reductionToMagnitude(1.0f), true, false, false, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.dragon_boss_respawn"));
          Conditions.addCondition(endWorld.getServer(), player, fortitude);
          MutableComponent msg = Component.literal("")
                .append(Component.literal("You are ").withStyle(ChatFormatting.AQUA))
@@ -1204,7 +1204,7 @@ public class DragonBossFight {
                   player.connection.send(new ClientboundSetEntityMotionPacket(player));
                }
                if(player != null && ticks % 5 == 0){
-                  ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 25, ConditionMath.reductionToMagnitude(1.0f), true, true, true, AttributeModifier.Operation.ADD_VALUE, null);
+                  ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, CONDITION_ID, 25, ConditionMath.reductionToMagnitude(1.0f), true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.dragon_boss_tower"));
                   Conditions.addCondition(endWorld.getServer(), player, fortitude);
                   endWorld.sendParticles(ParticleTypes.CLOUD,player.getX(),player.getY(),player.getZ(),5,0.25,0.25,0.25,0);
                }
@@ -1226,8 +1226,8 @@ public class DragonBossFight {
                if(shieldTicks % 20 == 0){
                   List<ServerPlayer> inRangePlayers = endWorld.getPlayers(p -> p.distanceToSqr(shieldPos) <= 5*5);
                   for(ServerPlayer plyr: inRangePlayers){
-                     ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, ArcanaRegistry.arcanaId("dragon_shield"), 20 * 5 + 5, ConditionMath.reductionToMagnitude(0.2f), true, true, true, AttributeModifier.Operation.ADD_VALUE, null);
-                     ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, ArcanaRegistry.arcanaId("dragon_shield"), 20 * 5 + 5, 5 / 3f, true, true, true, AttributeModifier.Operation.ADD_VALUE, null);
+                     ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, ArcanaRegistry.arcanaId("dragon_shield"), 20 * 5 + 5, ConditionMath.reductionToMagnitude(0.2f), true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.dragon_shield"));
+                     ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, ArcanaRegistry.arcanaId("dragon_shield"), 20 * 5 + 5, 5 / 3f, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.dragon_shield"));
                      Conditions.addCondition(endWorld.getServer(), plyr, fortitude);
                      Conditions.addCondition(endWorld.getServer(), plyr, rejuv);
                   }

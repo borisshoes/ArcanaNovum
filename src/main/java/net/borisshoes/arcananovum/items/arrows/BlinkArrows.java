@@ -110,7 +110,7 @@ public class BlinkArrows extends RunicArrow {
       float phaseInDamageMod = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BLINK_ARROW_PHASE_IN_DMG_MULTIPLIER);
       int duration = Math.min((int) (percentage * phaseInDuration), phaseInDuration);
       if(duration <= 0) return;
-      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(getId()), duration, ConditionMath.reductionToMagnitude(1 - phaseInDamageMod), true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID());
+      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(getId()), duration, ConditionMath.reductionToMagnitude(1 - phaseInDamageMod), true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.blink_arrows"));
       Conditions.addCondition(player.level().getServer(), player, fortitude);
    }
    

@@ -253,10 +253,10 @@ public class NulMemento extends EnergyItem {
       putProperty(stack, ACTIVE_TAG, true);
       
       int increments = 100;
-      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), increments * 5, NearsightCondition.magnitudeForRadius(1.0f), false, true, true, AttributeModifier.Operation.ADD_VALUE, null);
-      ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_TORPOR), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
-      ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_LETHARGY), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
-      ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_FEEBLE), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null);
+      ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), increments * 5, NearsightCondition.magnitudeForRadius(1.0f), false, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.nul_memento"));
+      ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_TORPOR), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.nul_memento"));
+      ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_LETHARGY), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.nul_memento"));
+      ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ID), increments * 5, ArcanaNovum.CONFIG.getFloat(ArcanaConfig.NUL_MEMENTO_FEEBLE), true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.nul_memento"));
       Conditions.addCondition(player.level().getServer(), player, nearsight);
       Conditions.addCondition(player.level().getServer(), player, torpor);
       Conditions.addCondition(player.level().getServer(), player, lethargy);

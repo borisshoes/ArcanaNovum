@@ -799,7 +799,7 @@ public class ItineranteurBlockEntity extends BlockEntity implements PolymerObjec
          }
          data.addMiscData(FED_TAG, ByteTag.valueOf(feed));
          if(speed > 0){
-            ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), 15, speed, true, false, true, AttributeModifier.Operation.ADD_VALUE, null);
+            ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ArcanaRegistry.ITINERANTEUR.getId()), 15, speed, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.itineranteur"));
             Conditions.addCondition(serverLevel.getServer(), player, celerity);
          }
       }else{
