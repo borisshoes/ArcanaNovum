@@ -322,7 +322,7 @@ public class GravitonMaul extends ArcanaItem {
          float levityStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_LEVITY);
          for(Entity affectedEntity : domain ? getAffectedEntities(player, true, domainRange) : List.of(player)){
             if(affectedEntity instanceof LivingEntity livingEntity){
-               ConditionInstance levity = new ConditionInstance(Conditions.LEVITY, arcanaId(ID), 2, levityStr, false, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.graviton_maul"));
+               ConditionInstance levity = new ConditionInstance(Conditions.LEVITY, arcanaId(ID), 2, levityStr, false, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.GRAVITON_MAUL.getConditionName("graviton_maul"));
                Conditions.addCondition(player.level().getServer(), livingEntity, levity);
             }else{
                affectedEntity.push(0, 0.085, 0);
@@ -344,7 +344,7 @@ public class GravitonMaul extends ArcanaItem {
          float gravitasStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_GRAVITAS);
          for(Entity affectedEntity : domain ? getAffectedEntities(player, true, domainRange) : List.of(player)){
             if(affectedEntity instanceof LivingEntity livingEntity){
-               ConditionInstance gravitas = new ConditionInstance(Conditions.GRAVITAS, arcanaId(ID), 2, gravitasStr, false, false, true, AttributeModifier.Operation.ADD_VALUE, livingEntity == player ? null : player.getUUID()).withName(Component.translatable("condition_source.arcananovum.graviton_maul"));
+               ConditionInstance gravitas = new ConditionInstance(Conditions.GRAVITAS, arcanaId(ID), 2, gravitasStr, false, false, true, AttributeModifier.Operation.ADD_VALUE, livingEntity == player ? null : player.getUUID()).withName(ArcanaRegistry.GRAVITON_MAUL.getConditionName("graviton_maul"));
                Conditions.addCondition(player.level().getServer(), livingEntity, gravitas);
             }
             player.level().sendParticles(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS, affectedEntity.getX(), affectedEntity.getY() + affectedEntity.getBbHeight() / 2, affectedEntity.getZ(), 5, affectedEntity.getBbWidth() / 2, affectedEntity.getBbHeight() / 2, affectedEntity.getBbWidth() / 2, 0.01);
@@ -401,7 +401,7 @@ public class GravitonMaul extends ArcanaItem {
             }
             
             if(affectedEntity instanceof LivingEntity livingEntity){
-               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ID), 10, vortexAmp, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.graviton_maul_maelstrom"));
+               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ID), 10, vortexAmp, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.GRAVITON_MAUL.getConditionName("graviton_maul_maelstrom"));
                Conditions.addCondition(player.level().getServer(), livingEntity, vulnerability);
                livingEntity.hurtServer(player.level(), player.damageSources().source(DamageTypes.CRAMMING,player), vortexDmg);
             }
@@ -412,14 +412,14 @@ public class GravitonMaul extends ArcanaItem {
          float vortexFortitude = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_FORTITUDE);
          float vortexKnockbackRes = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_KNOCKBACK_RESISTANCE);
          float vortexTorpor = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.GRAVITON_MAUL_VORTEX_TORPOR);
-         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, ConditionMath.reductionToMagnitude(vortexFortitude), true, true, true, AttributeModifier.Operation.ADD_VALUE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.graviton_maul_maelstrom"));
-         ConditionInstance poise = new ConditionInstance(Conditions.POISE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexKnockbackRes, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.graviton_maul_maelstrom"));
-         ConditionInstance damping = new ConditionInstance(Conditions.DAMPING, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexKnockbackRes, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.graviton_maul_maelstrom"));
+         ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, ConditionMath.reductionToMagnitude(vortexFortitude), true, true, true, AttributeModifier.Operation.ADD_VALUE, player.getUUID()).withName(ArcanaRegistry.GRAVITON_MAUL.getConditionName("graviton_maul_maelstrom"));
+         ConditionInstance poise = new ConditionInstance(Conditions.POISE, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexKnockbackRes, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID()).withName(ArcanaRegistry.GRAVITON_MAUL.getConditionName("graviton_maul_maelstrom"));
+         ConditionInstance damping = new ConditionInstance(Conditions.DAMPING, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexKnockbackRes, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID()).withName(ArcanaRegistry.GRAVITON_MAUL.getConditionName("graviton_maul_maelstrom"));
          Conditions.addCondition(player.level().getServer(), player, fortitude);
          Conditions.addCondition(player.level().getServer(), player, poise);
          Conditions.addCondition(player.level().getServer(), player, damping);
          if(vortexTorpor > 0){
-            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexTorpor, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.graviton_maul_maelstrom"));
+            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.GRAVITON_MAUL.getId()), 10, vortexTorpor, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(ArcanaRegistry.GRAVITON_MAUL.getConditionName("graviton_maul_maelstrom"));
             Conditions.addCondition(player.level().getServer(), player, torpor);
          }
          disableVortexCollision(player);

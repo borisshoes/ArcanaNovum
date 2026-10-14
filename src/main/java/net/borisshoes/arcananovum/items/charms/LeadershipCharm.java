@@ -127,9 +127,9 @@ public class LeadershipCharm extends ArcanaItem implements GeomanticStele.Intera
       float mightStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_MIGHT_PER_LVL).get(invigor);
       float fortStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_FORTITUDE_PER_LVL).get(invigor);
       float rejuvStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.LEADERSHIP_CHARM_REJUVENATION_PER_LVL).get(invigor);
-      ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, 20 * rejuvStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity).withName(Component.translatable("condition_source.arcananovum.leadership_charm"));
-      ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, mightStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity).withName(Component.translatable("condition_source.arcananovum.leadership_charm"));
-      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, ConditionMath.reductionToMagnitude(fortStr), true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity).withName(Component.translatable("condition_source.arcananovum.leadership_charm"));
+      ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, 20 * rejuvStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity).withName(ArcanaRegistry.LEADERSHIP_CHARM.getConditionName("leadership_charm"));
+      ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, mightStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity).withName(ArcanaRegistry.LEADERSHIP_CHARM.getConditionName("leadership_charm"));
+      ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.LEADERSHIP_CHARM.getId()), 100, ConditionMath.reductionToMagnitude(fortStr), true, true, true, AttributeModifier.Operation.ADD_VALUE, causingEntity).withName(ArcanaRegistry.LEADERSHIP_CHARM.getConditionName("leadership_charm"));
       Conditions.addConditionIfStronger(player.level().getServer(), player, rejuv);
       Conditions.addConditionIfStronger(player.level().getServer(), player, might);
       Conditions.addConditionIfStronger(player.level().getServer(), player, fortitude);

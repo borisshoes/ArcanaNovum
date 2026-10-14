@@ -14,7 +14,6 @@ import net.borisshoes.borislib.conditions.Conditions;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
@@ -137,7 +136,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
       if(effects.isEmpty()){
          int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ALCHEMICAL_ARBALEST_VULNERABILITY_DURATION);
          float vulnStr = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.ALCHEMICAL_ARBALEST_VULNERABILITY_PER_LVL).get(lvl);
-         ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.ALCHEMICAL_ARBALEST.getId()), duration, vulnStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.alchemical_arbalest"));
+         ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.ALCHEMICAL_ARBALEST.getId()), duration, vulnStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.ALCHEMICAL_ARBALEST.getConditionName("alchemical_arbalest"));
          effects.add(Either.right(vulnerability));
          effects.add(Either.left(new MobEffectInstance(MobEffects.GLOWING, duration, 0, false, true, true)));
       }

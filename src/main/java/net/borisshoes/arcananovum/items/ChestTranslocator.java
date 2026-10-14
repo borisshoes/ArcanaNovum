@@ -304,8 +304,8 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          if(!contents.isEmpty()){
             float torporStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CHEST_TRANSLOCATOR_TORPOR);
             float lethargyStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CHEST_TRANSLOCATOR_LETHARGY);
-            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), 20, torporStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.chest_translocator"));
-            ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), 20, lethargyStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.chest_translocator"));
+            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), 20, torporStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(ArcanaRegistry.CHEST_TRANSLOCATOR.getConditionName("chest_translocator"));
+            ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), 20, lethargyStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(ArcanaRegistry.CHEST_TRANSLOCATOR.getConditionName("chest_translocator"));
             Conditions.addCondition(serverWorld.getServer(), player, torpor);
             Conditions.addCondition(serverWorld.getServer(), player, lethargy);
          }

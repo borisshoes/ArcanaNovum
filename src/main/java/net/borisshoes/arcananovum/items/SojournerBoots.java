@@ -294,7 +294,7 @@ public class SojournerBoots extends EnergyItem {
                int energy = getEnergy(stack);
                if(energy > 0){
                   float celerityStr = energy * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SOJOURNER_BOOTS_CELERITY_PER_ENERGY);
-                  ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ID), 5, celerityStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.sojourner_boots"));
+                  ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ID), 5, celerityStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.SOJOURNER_BOOTS.getConditionName("sojourner_boots"));
                   Conditions.addCondition(world.getServer(), player, celerity);
                }
             }else{

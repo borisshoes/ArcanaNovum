@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -118,12 +119,12 @@ public class ConcussionArrows extends RunicArrow {
          if(entity instanceof LivingEntity e && !(entity instanceof EnderDragon || entity instanceof WitherBoss || entity instanceof NulConstructEntity)){
             if(e instanceof Mob) mobsHit++;
             
-            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), Math.max(1, (int) (25 * percent)), NearsightCondition.magnitudeForRadius(3.5f), false, true, false, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.concussion_arrows"));
+            ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ID), Math.max(1, (int) (25 * percent)), NearsightCondition.magnitudeForRadius(3.5f), false, true, false, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.CONCUSSION_ARROWS.getConditionName("concussion_arrows"));
             MobEffectInstance nausea = new MobEffectInstance(MobEffects.NAUSEA, (int) (120 * percent), 0, false, false, true);
-            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), Math.max(1, (int) (40 * percent)), torporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.concussion_arrows"));
-            ConditionInstance lingeringTorpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID + "_lingering"), Math.max(1, (int) (120 * percent)), lingeringTorporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.concussion_arrows"));
-            ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), Math.max(1, (int) (80 * percent)), lethargyStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.concussion_arrows"));
-            ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ID), Math.max(1, (int) (120 * percent)), feebleStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.concussion_arrows"));
+            ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID), Math.max(1, (int) (40 * percent)), torporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(ArcanaRegistry.CONCUSSION_ARROWS.getConditionName("concussion_arrows"));
+            ConditionInstance lingeringTorpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ID + "_lingering"), Math.max(1, (int) (120 * percent)), lingeringTorporStr, false, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(ArcanaRegistry.CONCUSSION_ARROWS.getConditionName("concussion_arrows"));
+            ConditionInstance lethargy = new ConditionInstance(Conditions.LETHARGY, arcanaId(ID), Math.max(1, (int) (80 * percent)), lethargyStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(ArcanaRegistry.CONCUSSION_ARROWS.getConditionName("concussion_arrows"));
+            ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ID), Math.max(1, (int) (120 * percent)), feebleStr, true, false, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(ArcanaRegistry.CONCUSSION_ARROWS.getConditionName("concussion_arrows"));
             Conditions.addCondition(world.getServer(), e, nearsight);
             Conditions.addCondition(world.getServer(), e, torpor);
             Conditions.addCondition(world.getServer(), e, lingeringTorpor);

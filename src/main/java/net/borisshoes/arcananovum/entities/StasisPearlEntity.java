@@ -18,7 +18,6 @@ import net.borisshoes.borislib.conditions.Conditions;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -154,8 +153,8 @@ public class StasisPearlEntity extends ThrownEnderpearl implements PolymerEntity
                int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.STASIS_PEARL_RECONSTRUCT_DURATION);
                float rejuvRate = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_REGEN_PER_LVL).get(reconstructLvl);
                float fortMod = ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.STASIS_PEARL_FORTITUDE_PER_LVL).get(reconstructLvl);
-               ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, 20 * rejuvRate, true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID()).withName(Component.translatable("condition_source.arcananovum.stasis_pearl"));
-               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, ConditionMath.reductionToMagnitude(fortMod), true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID()).withName(Component.translatable("condition_source.arcananovum.stasis_pearl"));
+               ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, 20 * rejuvRate, true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID()).withName(ArcanaRegistry.STASIS_PEARL.getConditionName("stasis_pearl"));
+               ConditionInstance fortitude = new ConditionInstance(Conditions.FORTITUDE, arcanaId(ArcanaRegistry.STASIS_PEARL.getId()), duration, ConditionMath.reductionToMagnitude(fortMod), true, true, false, AttributeModifier.Operation.ADD_VALUE, holder.getUUID()).withName(ArcanaRegistry.STASIS_PEARL.getConditionName("stasis_pearl"));
                Conditions.addCondition(holder.level().getServer(), holder, rejuv);
                Conditions.addCondition(holder.level().getServer(), holder, fortitude);
                

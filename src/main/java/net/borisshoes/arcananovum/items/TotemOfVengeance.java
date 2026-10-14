@@ -151,8 +151,8 @@ public class TotemOfVengeance extends ArcanaItem {
          if(duration > 0){
             float mightStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.TOTEM_OF_VENGEANCE_MIGHT) + ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.TOTEM_OF_VENGEANCE_MIGHT_PER_LVL).get(furyLvl);
             float celerityStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.TOTEM_OF_VENGEANCE_CELERITY) + ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.TOTEM_OF_VENGEANCE_CELERITY_PER_LVL).get(furyLvl);
-            ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ID), duration, mightStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.totem_of_vengeance"));
-            ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, arcanaId(ID), duration, celerityStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.totem_of_vengeance"));
+            ConditionInstance might = new ConditionInstance(Conditions.MIGHT, arcanaId(ID), duration, mightStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.TOTEM_OF_VENGEANCE.getConditionName("totem_of_vengeance"));
+            ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, arcanaId(ID), duration, celerityStr, true, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.TOTEM_OF_VENGEANCE.getConditionName("totem_of_vengeance"));
             Conditions.addCondition(player.level().getServer(), player, might);
             Conditions.addCondition(player.level().getServer(), player, celerity);
          }

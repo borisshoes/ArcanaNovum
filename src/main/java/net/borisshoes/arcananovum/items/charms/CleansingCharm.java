@@ -151,7 +151,7 @@ public class CleansingCharm extends EnergyItem implements GeomanticStele.Interac
          if(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.REJUVENATION) > 0){
             int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.CLEANSING_CHARM_REJUVENATION_DURATION);
             float hpPerTick = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.CLEANSING_CHARM_REJUVENATION_HEALTH_PER_TICK);
-            ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.CLEANSING_CHARM.getId()), duration, 20 * hpPerTick, true, true, false, AttributeModifier.Operation.ADD_VALUE, living.getUUID()).withName(Component.translatable("condition_source.arcananovum.cleansing_charm"));
+            ConditionInstance rejuv = new ConditionInstance(Conditions.REJUVENATION, arcanaId(ArcanaRegistry.CLEANSING_CHARM.getId()), duration, 20 * hpPerTick, true, true, false, AttributeModifier.Operation.ADD_VALUE, living.getUUID()).withName(ArcanaRegistry.CLEANSING_CHARM.getConditionName("cleansing_charm"));
             Conditions.addCondition(living.level().getServer(), living, rejuv);
          }
          

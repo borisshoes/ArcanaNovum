@@ -10,7 +10,6 @@ import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.conditions.NearsightCondition;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -130,8 +129,8 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          for(Entity affectedEntity : getAffectedEntities(world)){
             if(affectedEntity instanceof LivingEntity e){
                float feebleStr = e instanceof Mob ? ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SMOKE_ARROW_MOB_FEEBLE) : ArcanaNovum.CONFIG.getFloatList(ArcanaConfig.SMOKE_ARROW_PLAYER_FEEBLE_PER_LVL).get(gasLvl);
-               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, NearsightCondition.magnitudeForRadius(7.5f), false, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.smoke_arrows"));
-               ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, feebleStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(Component.translatable("condition_source.arcananovum.smoke_arrows"));
+               ConditionInstance nearsight = new ConditionInstance(Conditions.NEARSIGHT, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, NearsightCondition.magnitudeForRadius(7.5f), false, true, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.SMOKE_ARROWS.getConditionName("smoke_arrows"));
+               ConditionInstance feeble = new ConditionInstance(Conditions.FEEBLE, arcanaId(ArcanaRegistry.SMOKE_ARROWS.getId()), effectDur, feebleStr, true, false, true, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, null).withName(ArcanaRegistry.SMOKE_ARROWS.getConditionName("smoke_arrows"));
                MobEffectInstance invis = new MobEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, effectDur, 0, false, false, true);
                Conditions.addConditionIfStronger(world.getServer(), e, nearsight);
                Conditions.addConditionIfStronger(world.getServer(), e, feeble);

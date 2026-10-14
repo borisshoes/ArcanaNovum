@@ -235,7 +235,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
             profile.addMiscData(CEPTYUS_TICK, IntTag.valueOf(lastTick + 1));
             int speed = (int) (energy / energyPerHaste);
             float alacrityPerHaste = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.PICKAXE_OF_CEPTYUS_ALACRITY_PER_HASTE);
-            ConditionInstance alacrity = new ConditionInstance(Conditions.ALACRITY, arcanaId(ID), 100, alacrityPerHaste * (speed + 1), true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.pickaxe_of_ceptyus"));
+            ConditionInstance alacrity = new ConditionInstance(Conditions.ALACRITY, arcanaId(ID), 100, alacrityPerHaste * (speed + 1), true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.PICKAXE_OF_CEPTYUS.getConditionName("pickaxe_of_ceptyus"));
             Conditions.addCondition(serverWorld.getServer(), player, alacrity);
             if(speed == 10) ArcanaAchievements.progress(player, ArcanaAchievements.BACK_IN_THE_MINE, 1);
          }

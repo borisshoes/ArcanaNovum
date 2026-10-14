@@ -368,8 +368,8 @@ public class BinaryBlades extends EnergyItem {
                float charge = (float) energy / getMaxEnergy(stack);
                float celerityStr = charge * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BINARY_BLADES_MAX_CELERITY);
                float fervorStr = charge * ArcanaNovum.CONFIG.getFloat(ArcanaConfig.BINARY_BLADES_MAX_FERVOR);
-               ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ID), 5, celerityStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.binary_blades"));
-               ConditionInstance fervor = new ConditionInstance(Conditions.FERVOR, ArcanaRegistry.arcanaId(ID), 5, fervorStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(Component.translatable("condition_source.arcananovum.binary_blades"));
+               ConditionInstance celerity = new ConditionInstance(Conditions.CELERITY, ArcanaRegistry.arcanaId(ID), 5, celerityStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.BINARY_BLADES.getConditionName("binary_blades"));
+               ConditionInstance fervor = new ConditionInstance(Conditions.FERVOR, ArcanaRegistry.arcanaId(ID), 5, fervorStr, true, false, true, AttributeModifier.Operation.ADD_VALUE, null).withName(ArcanaRegistry.BINARY_BLADES.getConditionName("binary_blades"));
                Conditions.addCondition(world.getServer(), player, celerity);
                Conditions.addCondition(world.getServer(), player, fervor);
             }

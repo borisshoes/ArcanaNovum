@@ -59,6 +59,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.ITEM_DATA;
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    public static final String ORIGIN_TAG = "synthetic";
@@ -144,6 +145,10 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
    
    public Component getDisplayName(){
       return displayName;
+   }
+   
+   public MutableComponent getConditionName(String key){
+      return Component.translatable("condition_source." + MOD_ID + "." + key).withColor(displayName.getStyle().getColor().getValue());
    }
    
    public Item getItem(){

@@ -286,10 +286,10 @@ public abstract class LivingEntityMixin {
                float vulnStr = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SOJOURNERS_BOOTS_JUGGERNAUT_VULNERABILITY);
                
                if(slowDuration > 0){
-                  ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SOJOURNER_BOOTS.getId()), slowDuration, torporStr, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.sojourner_boots_juggernaut"));
+                  ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SOJOURNER_BOOTS.getId()), slowDuration, torporStr, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID()).withName(ArcanaRegistry.SOJOURNER_BOOTS.getConditionName("sojourner_boots_juggernaut"));
                   Conditions.addCondition(entity.level().getServer(), entity, torpor);
                }
-               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.SOJOURNER_BOOTS.getId()), vulnDuration, vulnStr, true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.sojourner_boots_juggernaut"));
+               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.SOJOURNER_BOOTS.getId()), vulnDuration, vulnStr, true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID()).withName(ArcanaRegistry.SOJOURNER_BOOTS.getConditionName("sojourner_boots_juggernaut"));
                Conditions.addCondition(entity.level().getServer(), entity, vulnerability);
                sojournerBoots.setEnergy(boots, 0);
                SoundUtils.playSound(player.level(), entity.blockPosition(), SoundEvents.IRON_GOLEM_HURT, SoundSource.PLAYERS, .5f, .8f);
@@ -325,10 +325,10 @@ public abstract class LivingEntityMixin {
                float vulnPerAbs = ArcanaNovum.CONFIG.getFloat(ArcanaConfig.SHIELD_OF_FORTITUDE_SHIELD_BASH_VULNERABILITY_PER_ABSORPTION);
                
                if(slowDur > 0){
-                  ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SHIELD_OF_FORTITUDE.getId()), slowDur, torporStr, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.shield_of_fortitude"));
+                  ConditionInstance torpor = new ConditionInstance(Conditions.TORPOR, arcanaId(ArcanaRegistry.SHIELD_OF_FORTITUDE.getId()), slowDur, torporStr, true, true, false, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, player.getUUID()).withName(ArcanaRegistry.SHIELD_OF_FORTITUDE.getConditionName("shield_of_fortitude"));
                   Conditions.addCondition(entity.level().getServer(), entity, torpor);
                }
-               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.SHIELD_OF_FORTITUDE.getId()), Math.max(1, (int) (shieldTotal * vulnDurPerAbs)), shieldTotal * vulnPerAbs, true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID()).withName(Component.translatable("condition_source.arcananovum.shield_of_fortitude"));
+               ConditionInstance vulnerability = new ConditionInstance(Conditions.VULNERABILITY, arcanaId(ArcanaRegistry.SHIELD_OF_FORTITUDE.getId()), Math.max(1, (int) (shieldTotal * vulnDurPerAbs)), shieldTotal * vulnPerAbs, true, true, false, AttributeModifier.Operation.ADD_VALUE, player.getUUID()).withName(ArcanaRegistry.SHIELD_OF_FORTITUDE.getConditionName("shield_of_fortitude"));
                Conditions.addCondition(entity.level().getServer(), entity, vulnerability);
                
                toRemove.forEach(ShieldTimerCallback::onTimer);
