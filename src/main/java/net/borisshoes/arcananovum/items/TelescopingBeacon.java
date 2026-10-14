@@ -339,11 +339,6 @@ public class TelescopingBeacon extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public InteractionResult useOn(UseOnContext context){
          Player playerEntity = context.getPlayer();
          InteractionHand hand = context.getHand();

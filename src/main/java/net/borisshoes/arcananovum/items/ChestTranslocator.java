@@ -316,11 +316,6 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public Item getPolymerItem(ItemStack itemStack, PacketContext context){
          if(!ArcanaItemUtils.isArcane(itemStack)) return vanillaItem;
          CompoundTag contents = getCompoundProperty(itemStack, CONTENTS_TAG);

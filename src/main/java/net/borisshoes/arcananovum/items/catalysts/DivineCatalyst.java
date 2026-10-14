@@ -100,11 +100,6 @@ public class DivineCatalyst extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public InteractionResult useOn(UseOnContext context){
          Level world = context.getLevel();
          Player playerEntity = context.getPlayer();

@@ -196,11 +196,6 @@ public class ContinuumAnchor extends ArcanaBlock {
       public ContinuumAnchorItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class ContinuumAnchorBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

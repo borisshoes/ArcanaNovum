@@ -133,10 +133,5 @@ public class ArcaneFlakArrows extends RunicArrow {
       public ArcaneFlakArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(7802273));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }

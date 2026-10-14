@@ -112,11 +112,6 @@ public class IgneousCollider extends ArcanaBlock {
       public IgneousColliderItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class IgneousColliderBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

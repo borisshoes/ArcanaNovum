@@ -121,11 +121,6 @@ public class SiphoningArrows extends RunicArrow {
       public SiphoningArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(15866018));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

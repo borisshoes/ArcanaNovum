@@ -190,11 +190,6 @@ public class ShieldOfFortitude extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public void inventoryTick(ItemStack itemStack, ServerLevel serverLevel, Entity entity, @org.jspecify.annotations.Nullable EquipmentSlot equipmentSlot){
          if(serverLevel.getServer().getTickCount() % 20 == 0 && entity instanceof ServerPlayer player){
             float shieldTotal = 0;

@@ -138,11 +138,6 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
       public TwilightAnvilItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class TwilightAnvilBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

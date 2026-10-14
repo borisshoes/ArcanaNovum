@@ -171,11 +171,6 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
          super(getThis(), block, getArcanaItemComponents());
       }
       
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
    }
    
    public class TransmutationAltarBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

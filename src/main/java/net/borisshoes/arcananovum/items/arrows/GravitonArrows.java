@@ -168,11 +168,6 @@ public class GravitonArrows extends RunicArrow {
       public GravitonArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(869887));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

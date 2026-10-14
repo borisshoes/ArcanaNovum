@@ -77,11 +77,6 @@ public class RunicMatrix extends ArcanaItem {
       public RunicMatrixItem(){
          super(getThis());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

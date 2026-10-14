@@ -142,11 +142,6 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       public StormcallerAltarItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class StormcallerAltarBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

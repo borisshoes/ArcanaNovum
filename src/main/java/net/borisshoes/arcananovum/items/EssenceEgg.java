@@ -202,11 +202,6 @@ public class EssenceEgg extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public InteractionResult useOn(UseOnContext context){
          ItemStack stack = context.getItemInHand();
          try{

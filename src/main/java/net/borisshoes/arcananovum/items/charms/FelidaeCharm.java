@@ -38,7 +38,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,11 +128,6 @@ public class FelidaeCharm extends ArcanaItem implements GeomanticStele.Interacti
          }
          baseStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(new ArrayList<>(), new ArrayList<>(), stringList, new ArrayList<>()));
          return baseStack;
-      }
-      
-      @Override
-      public @NonNull ItemStack getDefaultInstance(){
-         return prefItem;
       }
       
       @Override

@@ -178,11 +178,6 @@ public class ClockworkMultitool extends EnergyItem {
       }
       
       @Override
-      public @NonNull ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public void inventoryTick(@NonNull ItemStack stack, @NonNull ServerLevel world, @NonNull Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;

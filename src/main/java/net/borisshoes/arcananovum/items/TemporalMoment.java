@@ -79,11 +79,6 @@ public class TemporalMoment extends ArcanaItem {
       public TemporalMomentItem(){
          super(getThis());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

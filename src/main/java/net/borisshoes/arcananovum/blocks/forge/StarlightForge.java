@@ -178,11 +178,6 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       public StarlightForgeItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class StarlightForgeBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

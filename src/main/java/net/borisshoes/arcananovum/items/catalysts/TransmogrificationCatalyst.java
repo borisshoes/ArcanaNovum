@@ -136,11 +136,6 @@ public class TransmogrificationCatalyst extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public InteractionResult use(Level level, Player playerEntity, InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.SUCCESS_SERVER;

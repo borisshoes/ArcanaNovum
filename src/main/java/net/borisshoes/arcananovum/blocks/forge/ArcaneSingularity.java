@@ -180,11 +180,6 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       public ArcaneSingularityItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class ArcaneSingularityBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

@@ -112,11 +112,6 @@ public class DetonationArrows extends RunicArrow {
       public DetonationArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(11035949));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

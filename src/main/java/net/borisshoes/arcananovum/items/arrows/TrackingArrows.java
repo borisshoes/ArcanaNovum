@@ -102,11 +102,6 @@ public class TrackingArrows extends RunicArrow {
       public TrackingArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(16777063));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

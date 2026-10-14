@@ -297,11 +297,6 @@ public class Soulstone extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker){
          if(!(attacker instanceof Player playerEntity)) return;
          String type = getStringProperty(stack, TYPE_TAG);

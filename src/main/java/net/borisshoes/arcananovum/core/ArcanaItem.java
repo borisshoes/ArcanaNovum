@@ -162,6 +162,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       return this;
    }
    
+   // The pref item is only built once the server has started
+   public boolean hasPrefItem(){
+      return prefItem != null;
+   }
+
    // Returns item stack with preferred attributes but without a unique UUID
    public ItemStack getPrefItem(){
       if(prefItem == null){

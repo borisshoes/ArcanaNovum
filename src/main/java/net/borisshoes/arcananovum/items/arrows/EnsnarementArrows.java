@@ -120,11 +120,6 @@ public class EnsnarementArrows extends RunicArrow {
       public EnsnarementArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(5046527));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

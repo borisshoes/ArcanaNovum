@@ -192,11 +192,6 @@ public class ExpulsionArrows extends RunicArrow {
       public ExpulsionArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(889599));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

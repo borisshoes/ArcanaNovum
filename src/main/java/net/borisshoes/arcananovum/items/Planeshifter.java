@@ -454,11 +454,6 @@ public class Planeshifter extends EnergyItem {
          rotateDimension(stack,player,false);
          buildItemLore(stack, player.level().getServer());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

@@ -102,11 +102,6 @@ public class SmokeArrows extends RunicArrow {
       public SmokeArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(6908265));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

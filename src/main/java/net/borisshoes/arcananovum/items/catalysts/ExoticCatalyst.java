@@ -75,11 +75,6 @@ public class ExoticCatalyst extends ArcanaItem {
       public ExoticCatalystItem(){
          super(getThis());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

@@ -157,11 +157,6 @@ public class TetherArrows extends RunicArrow {
       public TetherArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(10724259));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

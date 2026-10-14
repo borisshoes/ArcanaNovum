@@ -63,6 +63,12 @@ public abstract class ArcanaPolymerArrowItem extends ArrowItem implements Polyme
       return new RunicArrowEntity(world, pos.x(), pos.y(), pos.z(), stack.copyWithCount(1), null);
    }
    
+   // Other mods can ask for this before the server starts, so it must never return null
+   @Override
+   public ItemStack getDefaultInstance(){
+      return arcanaItem.hasPrefItem() ? arcanaItem.getPrefItem() : super.getDefaultInstance();
+   }
+   
    @Override
    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
       ItemStack superStack = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context, lookup);

@@ -136,11 +136,6 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       public RadiantFletcheryItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class RadiantFletcheryBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

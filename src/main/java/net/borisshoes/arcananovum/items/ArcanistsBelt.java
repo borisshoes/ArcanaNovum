@@ -195,11 +195,6 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       public static final int[] BELT_SLOT_COUNT = new int[]{3, 4, 5, 7, 9};
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(entity instanceof ServerPlayer player)) return;

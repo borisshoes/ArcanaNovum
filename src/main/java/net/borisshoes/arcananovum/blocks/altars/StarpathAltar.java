@@ -178,11 +178,6 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       public StarpathAltarItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class StarpathAltarBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

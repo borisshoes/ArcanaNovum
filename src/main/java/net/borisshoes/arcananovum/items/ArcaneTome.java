@@ -87,11 +87,6 @@ public class ArcaneTome extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;
          ArcaneTomeGui tomeGui = new ArcaneTomeGui(player, ArcaneTomeGui.TomeMode.PROFILE).addModes();

@@ -211,11 +211,6 @@ public class FractalSponge extends ArcanaBlock {
       public FractalSpongeItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class FractalSpongeBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

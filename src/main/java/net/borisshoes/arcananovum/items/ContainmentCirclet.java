@@ -297,11 +297,6 @@ public class ContainmentCirclet extends ArcanaItem {
             buildItemLore(stack, serverWorld.getServer());
          }
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

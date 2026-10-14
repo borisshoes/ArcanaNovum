@@ -140,11 +140,6 @@ public class WingsOfEnderia extends EnergyItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot){
          if(!(entity instanceof ServerPlayer player)) return;
          ItemStack item = player.getItemBySlot(EquipmentSlot.CHEST);

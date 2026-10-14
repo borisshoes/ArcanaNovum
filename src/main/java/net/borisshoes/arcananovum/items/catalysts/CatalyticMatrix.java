@@ -83,11 +83,6 @@ public class CatalyticMatrix extends ArcanaItem {
          super(getThis(), getArcanaItemComponents().stacksTo(4));
          maxCount = 4;
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

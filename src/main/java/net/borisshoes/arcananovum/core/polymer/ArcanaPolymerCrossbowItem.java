@@ -76,6 +76,12 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
       }
    }
    
+   // Other mods can ask for this before the server starts, so it must never return null
+   @Override
+   public ItemStack getDefaultInstance(){
+      return arcanaItem.hasPrefItem() ? arcanaItem.getPrefItem() : super.getDefaultInstance();
+   }
+   
    @Override
    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
       ItemStack stack = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context, lookup);

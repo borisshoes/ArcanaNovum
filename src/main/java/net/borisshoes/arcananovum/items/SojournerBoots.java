@@ -237,11 +237,6 @@ public class SojournerBoots extends EnergyItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public InteractionResult use(Level world, Player user, InteractionHand hand){
          if(!(user instanceof ServerPlayer player)) return InteractionResult.PASS;
          if(player.isShiftKeyDown()){

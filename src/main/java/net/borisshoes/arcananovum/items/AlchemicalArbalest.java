@@ -171,11 +171,6 @@ public class AlchemicalArbalest extends ArcanaItem {
          return baseStack;
       }
       
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
       public void verifyEnchantments(ItemStack stack){
          boolean hasMulti = EnchantmentHelper.has(stack, EnchantmentEffectComponents.PROJECTILE_COUNT);
          boolean hasPierce = EnchantmentHelper.has(stack, EnchantmentEffectComponents.PROJECTILE_PIERCING);

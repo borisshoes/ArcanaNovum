@@ -64,7 +64,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -195,11 +194,6 @@ public class AstralGateway extends ArcanaBlock {
    public class AstralGatewayItem extends ArcanaPolymerBlockItem {
       public AstralGatewayItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
-      }
-      
-      @Override
-      public @NonNull ItemStack getDefaultInstance(){
-         return prefItem;
       }
    }
    

@@ -55,6 +55,12 @@ public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
       return arcanaItem.getDisplayName() != null ? arcanaItem.getDisplayName() : super.getName(stack);
    }
    
+   // Other mods can ask for this before the server starts, so it must never return null
+   @Override
+   public ItemStack getDefaultInstance(){
+      return arcanaItem.hasPrefItem() ? arcanaItem.getPrefItem() : super.getDefaultInstance();
+   }
+   
    @Override
    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipFlag tooltipType, PacketContext context, HolderLookup.Provider lookup){
       return PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context, lookup);

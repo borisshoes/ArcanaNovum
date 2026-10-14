@@ -141,11 +141,6 @@ public class PhotonicArrows extends RunicArrow {
       public PhotonicArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(11271167));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

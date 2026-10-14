@@ -75,11 +75,6 @@ public class MundaneCatalyst extends ArcanaItem {
       public MundaneCatalystItem(){
          super(getThis());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

@@ -293,11 +293,6 @@ public class ShulkerCore extends EnergyItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public InteractionResult useOn(UseOnContext context){
          Player playerEntity = context.getPlayer();
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;

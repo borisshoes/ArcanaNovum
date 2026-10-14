@@ -264,11 +264,6 @@ public class EnderCrate extends ArcanaBlock {
       }
       
       @Override
-      public @NonNull ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public @NonNull InteractionResult use(@NonNull Level world, Player playerEntity, @NonNull InteractionHand hand){
          ItemStack stack = playerEntity.getItemInHand(hand);
          if(!(playerEntity instanceof ServerPlayer player)) return InteractionResult.PASS;

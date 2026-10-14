@@ -75,11 +75,6 @@ public class EmpoweredCatalyst extends ArcanaItem {
       public EmpoweredCatalystItem(){
          super(getThis());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

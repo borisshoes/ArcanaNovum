@@ -56,7 +56,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,11 +155,6 @@ public class Interdictor extends ArcanaBlock implements MultiblockCore {
    public class InterdictorItem extends ArcanaPolymerBlockItem {
       public InterdictorItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
-      }
-      
-      @Override
-      public @NonNull ItemStack getDefaultInstance(){
-         return prefItem;
       }
    }
    

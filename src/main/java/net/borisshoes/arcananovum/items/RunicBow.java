@@ -157,11 +157,6 @@ public class RunicBow extends ArcanaItem {
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public Predicate<ItemStack> getAllSupportedProjectiles(){
          return RUNIC_BOW_PROJECTILES;
       }

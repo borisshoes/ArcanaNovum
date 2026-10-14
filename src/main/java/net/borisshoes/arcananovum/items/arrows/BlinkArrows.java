@@ -125,11 +125,6 @@ public class BlinkArrows extends RunicArrow {
       public BlinkArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(1404502));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

@@ -113,11 +113,6 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       public MidnightEnchanterItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class MidnightEnchanterBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

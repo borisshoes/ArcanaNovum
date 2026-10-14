@@ -162,11 +162,6 @@ public class ConcussionArrows extends RunicArrow {
       public ConcussionArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(14391821));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

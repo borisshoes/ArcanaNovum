@@ -619,11 +619,6 @@ public class CindersCharm extends EnergyItem implements LeftClickItem, Geomantic
       }
       
       @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
-      
-      @Override
       public InteractionResult use(Level world, Player playerEntity, InteractionHand hand){
          if(playerEntity.isShiftKeyDown()){
             return toggleActive((ServerPlayer) playerEntity, playerEntity.getItemInHand(hand));

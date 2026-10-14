@@ -737,11 +737,6 @@ public class NulMemento extends EnergyItem {
             inventoryDialog(player);
          }
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

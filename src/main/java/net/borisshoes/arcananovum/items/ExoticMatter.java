@@ -134,11 +134,6 @@ public class ExoticMatter extends EnergyItem {
       public ExoticMatterItem(){
          super(getThis());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 

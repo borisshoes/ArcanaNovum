@@ -175,11 +175,6 @@ public class SpawnerInfuser extends ArcanaBlock {
       public SpawnerInfuserItem(Block block){
          super(getThis(), block, getArcanaItemComponents());
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
    
    public class SpawnerInfuserBlock extends ArcanaPolymerBlockEntity implements FactoryBlock, PolymerTexturedBlock {

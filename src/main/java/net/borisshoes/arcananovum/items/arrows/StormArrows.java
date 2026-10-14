@@ -175,11 +175,6 @@ public class StormArrows extends RunicArrow {
       public StormArrowsItem(){
          super(getThis(), getArcanaArrowItemComponents(12040354));
       }
-      
-      @Override
-      public ItemStack getDefaultInstance(){
-         return prefItem;
-      }
    }
 }
 
