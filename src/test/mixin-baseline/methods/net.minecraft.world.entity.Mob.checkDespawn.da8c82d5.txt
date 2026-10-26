@@ -1,0 +1,107 @@
+// net/minecraft/world/entity/Mob.checkDespawn()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getDifficulty ()Lnet/minecraft/world/Difficulty;
+    GETSTATIC net/minecraft/world/Difficulty.PEACEFUL : Lnet/minecraft/world/Difficulty;
+    IF_ACMPNE L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getType ()Lnet/minecraft/world/entity/EntityType;
+    INVOKEVIRTUAL net/minecraft/world/entity/EntityType.isAllowedInPeaceful ()Z
+    IFNE L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.discard ()V
+    RETURN
+   L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.isPersistenceRequired ()Z
+    IFNE L1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.requiresCustomPersistence ()Z
+    IFEQ L2
+   L1
+    ICONST_1
+    GOTO L3
+   L2
+    ICONST_0
+   L3
+    ISTORE 1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 0
+    LDC -1.0D
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getNearestPlayer (Lnet/minecraft/world/entity/Entity;D)Lnet/minecraft/world/entity/player/Player;
+    ASTORE 2
+    ALOAD 2
+    IFNULL L4
+    ALOAD 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.distanceToSqr (Lnet/minecraft/world/entity/Entity;)D
+    DSTORE 3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getType ()Lnet/minecraft/world/entity/EntityType;
+    INVOKEVIRTUAL net/minecraft/world/entity/EntityType.getCategory ()Lnet/minecraft/world/entity/MobCategory;
+    INVOKEVIRTUAL net/minecraft/world/entity/MobCategory.getDespawnDistance ()I
+    ISTORE 5
+    ILOAD 5
+    ILOAD 5
+    IMUL
+    ISTORE 6
+    ILOAD 1
+    IFNE L5
+    DLOAD 3
+    ILOAD 6
+    I2D
+    DCMPL
+    IFLE L5
+    ALOAD 0
+    DLOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.removeWhenFarAway (D)Z
+    IFEQ L5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.discard ()V
+   L5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getType ()Lnet/minecraft/world/entity/EntityType;
+    INVOKEVIRTUAL net/minecraft/world/entity/EntityType.getCategory ()Lnet/minecraft/world/entity/MobCategory;
+    INVOKEVIRTUAL net/minecraft/world/entity/MobCategory.getNoDespawnDistance ()I
+    ISTORE 7
+    ILOAD 7
+    ILOAD 7
+    IMUL
+    ISTORE 8
+    ILOAD 1
+    IFNE L6
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/Mob.noActionTime : I
+    SIPUSH 600
+    IF_ICMPLE L6
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/Mob.random : Lnet/minecraft/util/RandomSource;
+    SIPUSH 800
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    IFNE L6
+    DLOAD 3
+    ILOAD 8
+    I2D
+    DCMPL
+    IFLE L6
+    ALOAD 0
+    DLOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.removeWhenFarAway (D)Z
+    IFEQ L6
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.discard ()V
+    GOTO L4
+   L6
+    DLOAD 3
+    ILOAD 8
+    I2D
+    DCMPG
+    IFGE L4
+    ALOAD 0
+    ICONST_0
+    PUTFIELD net/minecraft/world/entity/Mob.noActionTime : I
+   L4
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 9

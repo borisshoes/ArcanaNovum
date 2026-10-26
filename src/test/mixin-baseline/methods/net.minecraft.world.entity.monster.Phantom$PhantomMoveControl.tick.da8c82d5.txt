@@ -1,0 +1,250 @@
+// net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    GETFIELD net/minecraft/world/entity/monster/Phantom.horizontalCollision : Z
+    IFEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getYRot ()F
+    LDC 180.0F
+    FADD
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.setYRot (F)V
+    ALOAD 0
+    LDC 0.1F
+    PUTFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    GETFIELD net/minecraft/world/entity/monster/Phantom.moveTargetPoint : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getX ()D
+    DSUB
+    DSTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    GETFIELD net/minecraft/world/entity/monster/Phantom.moveTargetPoint : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.y : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getY ()D
+    DSUB
+    DSTORE 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    GETFIELD net/minecraft/world/entity/monster/Phantom.moveTargetPoint : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getZ ()D
+    DSUB
+    DSTORE 5
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    DSTORE 7
+    DLOAD 7
+    INVOKESTATIC java/lang/Math.abs (D)D
+    LDC 9.999999747378752E-6D
+    DCMPL
+    IFLE L1
+    DCONST_1
+    DLOAD 3
+    LDC 0.699999988079071D
+    DMUL
+    INVOKESTATIC java/lang/Math.abs (D)D
+    DLOAD 7
+    DDIV
+    DSUB
+    DSTORE 9
+    DLOAD 1
+    DLOAD 9
+    DMUL
+    DSTORE 1
+    DLOAD 5
+    DLOAD 9
+    DMUL
+    DSTORE 5
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    DSTORE 7
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    DLOAD 3
+    DLOAD 3
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    DSTORE 11
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getYRot ()F
+    FSTORE 13
+    DLOAD 5
+    DLOAD 1
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    D2F
+    FSTORE 14
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getYRot ()F
+    LDC 90.0F
+    FADD
+    INVOKESTATIC net/minecraft/util/Mth.wrapDegrees (F)F
+    FSTORE 15
+    FLOAD 14
+    LDC 57.295776F
+    FMUL
+    INVOKESTATIC net/minecraft/util/Mth.wrapDegrees (F)F
+    FSTORE 16
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    FLOAD 15
+    FLOAD 16
+    LDC 4.0F
+    INVOKESTATIC net/minecraft/util/Mth.approachDegrees (FFF)F
+    LDC 90.0F
+    FSUB
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/monster/Phantom.yBodyRot : F
+    FLOAD 13
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getYRot ()F
+    INVOKESTATIC net/minecraft/util/Mth.degreesDifferenceAbs (FF)F
+    LDC 3.0F
+    FCMPG
+    IFGE L2
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+    LDC 1.8F
+    LDC 0.005F
+    LDC 1.8F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+    FDIV
+    FMUL
+    INVOKESTATIC net/minecraft/util/Mth.approach (FFF)F
+    PUTFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+    GOTO L3
+   L2
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+    LDC 0.2F
+    LDC 0.025F
+    INVOKESTATIC net/minecraft/util/Mth.approach (FFF)F
+    PUTFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+   L3
+    DLOAD 3
+    DNEG
+    DLOAD 7
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    LDC 57.2957763671875D
+    DMUL
+    DNEG
+    D2F
+    FSTORE 17
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    FLOAD 17
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.setXRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getYRot ()F
+    LDC 90.0F
+    FADD
+    FSTORE 18
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+    FLOAD 18
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC net/minecraft/util/Mth.cos (D)F
+    FMUL
+    F2D
+    DLOAD 1
+    DLOAD 11
+    DDIV
+    INVOKESTATIC java/lang/Math.abs (D)D
+    DMUL
+    DSTORE 19
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+    FLOAD 18
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC net/minecraft/util/Mth.sin (D)F
+    FMUL
+    F2D
+    DLOAD 5
+    DLOAD 11
+    DDIV
+    INVOKESTATIC java/lang/Math.abs (D)D
+    DMUL
+    DSTORE 21
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.speed : F
+    FLOAD 17
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC net/minecraft/util/Mth.sin (D)F
+    FMUL
+    F2D
+    DLOAD 3
+    DLOAD 11
+    DDIV
+    INVOKESTATIC java/lang/Math.abs (D)D
+    DMUL
+    DSTORE 23
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ASTORE 25
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    ALOAD 25
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    DLOAD 19
+    DLOAD 23
+    DLOAD 21
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    ALOAD 25
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.subtract (Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+    LDC 0.2D
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.scale (D)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+   L1
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 26

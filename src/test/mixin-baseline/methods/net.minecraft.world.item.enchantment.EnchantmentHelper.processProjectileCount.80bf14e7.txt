@@ -1,0 +1,29 @@
+// net/minecraft/world/item/enchantment/EnchantmentHelper.processProjectileCount(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;I)I
+    NEW org/apache/commons/lang3/mutable/MutableFloat
+    DUP
+    ILOAD 3
+    I2F
+    INVOKESPECIAL org/apache/commons/lang3/mutable/MutableFloat.<init> (F)V
+    ASTORE 4
+    ALOAD 1
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    ALOAD 4
+    INVOKEDYNAMIC accept(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lorg/apache/commons/lang3/mutable/MutableFloat;)Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/core/Holder;I)V,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/world/item/enchantment/EnchantmentHelper.lambda$processProjectileCount$0(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lorg/apache/commons/lang3/mutable/MutableFloat;Lnet/minecraft/core/Holder;I)V,
+      (Lnet/minecraft/core/Holder;I)V
+    ]
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.runIterationOnItem (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor;)V
+    ICONST_0
+    ALOAD 4
+    INVOKEVIRTUAL org/apache/commons/lang3/mutable/MutableFloat.intValue ()I
+    INVOKESTATIC java/lang/Math.max (II)I
+    IRETURN
+    MAXSTACK = 5
+    MAXLOCALS = 5

@@ -1,0 +1,50 @@
+// net/minecraft/server/level/ServerPlayer.teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSleeping ()Z
+    IFEQ L0
+    ALOAD 0
+    ICONST_1
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.stopSleepInBed (ZZ)V
+   L0
+    ILOAD 11
+    IFEQ L1
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setCamera (Lnet/minecraft/world/entity/Entity;)V
+   L1
+    ALOAD 0
+    ALOAD 1
+    DLOAD 2
+    DLOAD 4
+    DLOAD 6
+    ALOAD 8
+    FLOAD 9
+    FLOAD 10
+    ILOAD 11
+    INVOKESPECIAL net/minecraft/world/entity/player/Player.teleportTo (Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z
+    ISTORE 12
+    ILOAD 12
+    IFEQ L2
+    ALOAD 0
+    ALOAD 8
+    GETSTATIC net/minecraft/world/entity/Relative.Y_ROT : Lnet/minecraft/world/entity/Relative;
+    INVOKEINTERFACE java/util/Set.contains (Ljava/lang/Object;)Z (itf)
+    IFEQ L3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getYHeadRot ()F
+    FLOAD 9
+    FADD
+    GOTO L4
+   L3
+    FLOAD 9
+   L4
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setYHeadRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.connection : Lnet/minecraft/server/network/ServerGamePacketListenerImpl;
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.resetFlyingTicks ()V
+   L2
+    ILOAD 12
+    IRETURN
+    MAXSTACK = 12
+    MAXLOCALS = 13

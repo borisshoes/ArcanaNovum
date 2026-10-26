@@ -1,0 +1,28 @@
+// net/minecraft/world/item/consume_effects/RemoveStatusEffectsConsumeEffect.apply(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)Z
+    ICONST_0
+    ISTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/item/consume_effects/RemoveStatusEffectsConsumeEffect.effects : Lnet/minecraft/core/HolderSet;
+    INVOKEINTERFACE net/minecraft/core/HolderSet.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 5
+   L0
+    ALOAD 5
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 5
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/core/Holder
+    ASTORE 6
+    ALOAD 3
+    ALOAD 6
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.removeEffect (Lnet/minecraft/core/Holder;)Z
+    IFEQ L2
+    ICONST_1
+    ISTORE 4
+   L2
+    GOTO L0
+   L1
+    ILOAD 4
+    IRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 7

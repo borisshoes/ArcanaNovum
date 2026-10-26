@@ -1,0 +1,45 @@
+// net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/rabbit/Rabbit
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/rabbit/Rabbit.onGround ()Z
+    IFEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/rabbit/Rabbit
+    INVOKESTATIC net/minecraft/world/entity/animal/rabbit/Rabbit.access$000 (Lnet/minecraft/world/entity/animal/rabbit/Rabbit;)Z
+    IFNE L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/rabbit/Rabbit
+    INVOKESTATIC net/minecraft/world/entity/animal/rabbit/Rabbit.access$100 (Lnet/minecraft/world/entity/animal/rabbit/Rabbit;)Lnet/minecraft/world/entity/ai/control/JumpControl;
+    CHECKCAST net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitJumpControl
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitJumpControl.wantJump ()Z
+    IFNE L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/rabbit/Rabbit
+    DCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/rabbit/Rabbit.setSpeedModifier (D)V
+    GOTO L1
+   L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.hasWanted ()Z
+    IFNE L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.JUMPING : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L1
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/rabbit/Rabbit
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.nextJumpSpeed : D
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/rabbit/Rabbit.setSpeedModifier (D)V
+   L1
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/ai/control/MoveControl.tick ()V
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 1

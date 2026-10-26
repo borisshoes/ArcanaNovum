@@ -1,0 +1,81 @@
+// net/minecraft/world/level/NaturalSpawner.createState(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/NaturalSpawner$ChunkGetter;Lnet/minecraft/world/level/LocalMobCapCalculator;)Lnet/minecraft/world/level/NaturalSpawner$SpawnState;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getAllEntities ()Ljava/lang/Iterable;
+    ASTORE 4
+    NEW net/minecraft/world/level/PotentialCalculator
+    DUP
+    INVOKESPECIAL net/minecraft/world/level/PotentialCalculator.<init> ()V
+    ASTORE 5
+    NEW it/unimi/dsi/fastutil/objects/Object2IntOpenHashMap
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/objects/Object2IntOpenHashMap.<init> ()V
+    ASTORE 6
+    ALOAD 4
+    INVOKEINTERFACE java/lang/Iterable.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 7
+   L0
+    ALOAD 7
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 7
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/entity/Entity
+    ASTORE 8
+    ALOAD 8
+    INSTANCEOF net/minecraft/world/entity/Mob
+    IFEQ L2
+    ALOAD 8
+    CHECKCAST net/minecraft/world/entity/Mob
+    ASTORE 9
+    ALOAD 9
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.isPersistenceRequired ()Z
+    IFNE L0
+    ALOAD 9
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.requiresCustomPersistence ()Z
+    IFEQ L2
+    GOTO L0
+   L2
+    ALOAD 8
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getType ()Lnet/minecraft/world/entity/EntityType;
+    INVOKEVIRTUAL net/minecraft/world/entity/EntityType.getCategory ()Lnet/minecraft/world/entity/MobCategory;
+    ASTORE 9
+    ALOAD 9
+    GETSTATIC net/minecraft/world/entity/MobCategory.MISC : Lnet/minecraft/world/entity/MobCategory;
+    IF_ACMPNE L3
+    GOTO L0
+   L3
+    ALOAD 8
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.blockPosition ()Lnet/minecraft/core/BlockPos;
+    ASTORE 10
+    ALOAD 2
+    ALOAD 10
+    INVOKESTATIC net/minecraft/world/level/ChunkPos.pack (Lnet/minecraft/core/BlockPos;)J
+    ALOAD 1
+    ALOAD 10
+    ALOAD 8
+    ALOAD 5
+    ALOAD 3
+    ALOAD 9
+    ALOAD 6
+    INVOKEDYNAMIC accept(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/PotentialCalculator;Lnet/minecraft/world/level/LocalMobCapCalculator;Lnet/minecraft/world/entity/MobCategory;Lit/unimi/dsi/fastutil/objects/Object2IntOpenHashMap;)Ljava/util/function/Consumer; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)V,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/world/level/NaturalSpawner.lambda$createState$0(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/PotentialCalculator;Lnet/minecraft/world/level/LocalMobCapCalculator;Lnet/minecraft/world/entity/MobCategory;Lit/unimi/dsi/fastutil/objects/Object2IntOpenHashMap;Lnet/minecraft/world/level/chunk/LevelChunk;)V,
+      (Lnet/minecraft/world/level/chunk/LevelChunk;)V
+    ]
+    INVOKEINTERFACE net/minecraft/world/level/NaturalSpawner$ChunkGetter.query (JLjava/util/function/Consumer;)V (itf)
+    GOTO L0
+   L1
+    NEW net/minecraft/world/level/NaturalSpawner$SpawnState
+    DUP
+    ILOAD 0
+    ALOAD 6
+    ALOAD 5
+    ALOAD 3
+    INVOKESPECIAL net/minecraft/world/level/NaturalSpawner$SpawnState.<init> (ILit/unimi/dsi/fastutil/objects/Object2IntOpenHashMap;Lnet/minecraft/world/level/PotentialCalculator;Lnet/minecraft/world/level/LocalMobCapCalculator;)V
+    ARETURN
+    MAXSTACK = 10
+    MAXLOCALS = 11

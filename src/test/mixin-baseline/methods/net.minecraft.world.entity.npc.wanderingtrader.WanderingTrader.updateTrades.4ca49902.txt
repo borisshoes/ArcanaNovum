@@ -1,0 +1,22 @@
+// net/minecraft/world/entity/npc/wanderingtrader/WanderingTrader.updateTrades(Lnet/minecraft/server/level/ServerLevel;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/npc/wanderingtrader/WanderingTrader.getOffers ()Lnet/minecraft/world/item/trading/MerchantOffers;
+    ASTORE 2
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    GETSTATIC net/minecraft/world/item/trading/TradeSets.WANDERING_TRADER_BUYING : Lnet/minecraft/resources/ResourceKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/npc/wanderingtrader/WanderingTrader.addOffersFromTradeSet (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/trading/MerchantOffers;Lnet/minecraft/resources/ResourceKey;)V
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    GETSTATIC net/minecraft/world/item/trading/TradeSets.WANDERING_TRADER_UNCOMMON : Lnet/minecraft/resources/ResourceKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/npc/wanderingtrader/WanderingTrader.addOffersFromTradeSet (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/trading/MerchantOffers;Lnet/minecraft/resources/ResourceKey;)V
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    GETSTATIC net/minecraft/world/item/trading/TradeSets.WANDERING_TRADER_COMMON : Lnet/minecraft/resources/ResourceKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/npc/wanderingtrader/WanderingTrader.addOffersFromTradeSet (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/trading/MerchantOffers;Lnet/minecraft/resources/ResourceKey;)V
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 3

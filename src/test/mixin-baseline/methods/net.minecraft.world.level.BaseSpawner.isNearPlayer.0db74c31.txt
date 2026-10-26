@@ -1,0 +1,24 @@
+// net/minecraft/world/level/BaseSpawner.isNearPlayer(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getX ()I
+    I2D
+    LDC 0.5D
+    DADD
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getY ()I
+    I2D
+    LDC 0.5D
+    DADD
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getZ ()I
+    I2D
+    LDC 0.5D
+    DADD
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/BaseSpawner.requiredPlayerRange : I
+    I2D
+    INVOKEVIRTUAL net/minecraft/world/level/Level.hasNearbyAlivePlayer (DDDD)Z
+    IRETURN
+    MAXSTACK = 9
+    MAXLOCALS = 3

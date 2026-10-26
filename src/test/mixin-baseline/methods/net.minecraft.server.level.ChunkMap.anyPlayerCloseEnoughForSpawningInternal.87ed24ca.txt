@@ -1,0 +1,28 @@
+// net/minecraft/server/level/ChunkMap.anyPlayerCloseEnoughForSpawningInternal(Lnet/minecraft/world/level/ChunkPos;)Z
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ChunkMap.playerMap : Lnet/minecraft/server/level/PlayerMap;
+    INVOKEVIRTUAL net/minecraft/server/level/PlayerMap.getAllPlayers ()Ljava/util/Set;
+    INVOKEINTERFACE java/util/Set.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 2
+   L0
+    ALOAD 2
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 2
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 3
+    ALOAD 0
+    ALOAD 3
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkMap.playerIsCloseEnoughForSpawning (Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/level/ChunkPos;)Z
+    IFEQ L2
+    ICONST_1
+    IRETURN
+   L2
+    GOTO L0
+   L1
+    ICONST_0
+    IRETURN
+    MAXSTACK = 3
+    MAXLOCALS = 4

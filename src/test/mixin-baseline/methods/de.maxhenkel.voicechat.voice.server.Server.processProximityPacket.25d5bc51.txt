@@ -1,0 +1,163 @@
+// de/maxhenkel/voicechat/voice/server/Server.processProximityPacket(Lde/maxhenkel/voicechat/voice/common/PlayerState;Lnet/minecraft/server/level/ServerPlayer;Lde/maxhenkel/voicechat/voice/common/MicPacket;)V
+    ALOAD 1
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/PlayerState.getGroup ()Ljava/util/UUID;
+    ASTORE 4
+    ALOAD 3
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/MicPacket.isWhispering ()Z
+    IFEQ L0
+    GETSTATIC de/maxhenkel/voicechat/Voicechat.SERVER_CONFIG : Lde/maxhenkel/voicechat/config/ServerConfig;
+    GETFIELD de/maxhenkel/voicechat/config/ServerConfig.whisperDistance : Lde/maxhenkel/voicechat/configbuilder/entry/ConfigEntry;
+    INVOKEINTERFACE de/maxhenkel/voicechat/configbuilder/entry/ConfigEntry.get ()Ljava/lang/Object; (itf)
+    CHECKCAST java/lang/Double
+    INVOKEVIRTUAL java/lang/Double.floatValue ()F
+    FSTORE 5
+    GOTO L1
+   L0
+    INVOKESTATIC de/maxhenkel/voicechat/voice/common/Utils.getDefaultDistanceServer ()F
+    FSTORE 5
+   L1
+    INVOKESTATIC de/maxhenkel/voicechat/plugins/PluginManager.instance ()Lde/maxhenkel/voicechat/plugins/PluginManager;
+    ALOAD 2
+    ALOAD 1
+    ALOAD 3
+    FLOAD 5
+    INVOKEVIRTUAL de/maxhenkel/voicechat/plugins/PluginManager.getDistance (Lnet/minecraft/server/level/ServerPlayer;Lde/maxhenkel/voicechat/voice/common/PlayerState;Lde/maxhenkel/voicechat/voice/common/MicPacket;F)F
+    FSTORE 5
+    ACONST_NULL
+    ASTORE 6
+    ACONST_NULL
+    ASTORE 7
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSpectator ()Z
+    IFEQ L2
+    GETSTATIC de/maxhenkel/voicechat/Voicechat.SERVER_CONFIG : Lde/maxhenkel/voicechat/config/ServerConfig;
+    GETFIELD de/maxhenkel/voicechat/config/ServerConfig.spectatorPlayerPossession : Lde/maxhenkel/voicechat/configbuilder/entry/ConfigEntry;
+    INVOKEINTERFACE de/maxhenkel/voicechat/configbuilder/entry/ConfigEntry.get ()Ljava/lang/Object; (itf)
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+    IFEQ L3
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getCamera ()Lnet/minecraft/world/entity/Entity;
+    ASTORE 8
+    ALOAD 8
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFEQ L3
+    ALOAD 8
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 9
+    ALOAD 9
+    ALOAD 2
+    IF_ACMPEQ L3
+    ALOAD 0
+    GETFIELD de/maxhenkel/voicechat/voice/server/Server.playerStateManager : Lde/maxhenkel/voicechat/voice/server/PlayerStateManager;
+    ALOAD 9
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getUUID ()Ljava/util/UUID;
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/server/PlayerStateManager.getState (Ljava/util/UUID;)Lde/maxhenkel/voicechat/voice/common/PlayerState;
+    ASTORE 10
+    ALOAD 10
+    IFNONNULL L4
+    RETURN
+   L4
+    NEW de/maxhenkel/voicechat/voice/common/GroupSoundPacket
+    DUP
+    ALOAD 1
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/PlayerState.getUuid ()Ljava/util/UUID;
+    ALOAD 1
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/PlayerState.getUuid ()Ljava/util/UUID;
+    ALOAD 3
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/MicPacket.getData ()[B
+    ALOAD 3
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/MicPacket.getSequenceNumber ()J
+    ACONST_NULL
+    INVOKESPECIAL de/maxhenkel/voicechat/voice/common/GroupSoundPacket.<init> (Ljava/util/UUID;Ljava/util/UUID;[BJLjava/lang/String;)V
+    ASTORE 11
+    ALOAD 0
+    ALOAD 10
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/PlayerState.getUuid ()Ljava/util/UUID;
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/server/Server.getConnection (Ljava/util/UUID;)Lde/maxhenkel/voicechat/voice/server/ClientConnection;
+    ASTORE 12
+    ALOAD 0
+    ALOAD 2
+    ALOAD 1
+    ALOAD 9
+    ALOAD 10
+    ALOAD 12
+    ALOAD 11
+    LDC "spectator"
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/server/Server.sendSoundPacket (Lnet/minecraft/server/level/ServerPlayer;Lde/maxhenkel/voicechat/voice/common/PlayerState;Lnet/minecraft/server/level/ServerPlayer;Lde/maxhenkel/voicechat/voice/common/PlayerState;Lde/maxhenkel/voicechat/voice/server/ClientConnection;Lde/maxhenkel/voicechat/voice/common/SoundPacket;Ljava/lang/String;)V
+    RETURN
+   L3
+    GETSTATIC de/maxhenkel/voicechat/Voicechat.SERVER_CONFIG : Lde/maxhenkel/voicechat/config/ServerConfig;
+    GETFIELD de/maxhenkel/voicechat/config/ServerConfig.spectatorInteraction : Lde/maxhenkel/voicechat/configbuilder/entry/ConfigEntry;
+    INVOKEINTERFACE de/maxhenkel/voicechat/configbuilder/entry/ConfigEntry.get ()Ljava/lang/Object; (itf)
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+    IFEQ L2
+    NEW de/maxhenkel/voicechat/voice/common/LocationSoundPacket
+    DUP
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getUUID ()Ljava/util/UUID;
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getUUID ()Ljava/util/UUID;
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getEyePosition ()Lnet/minecraft/world/phys/Vec3;
+    ALOAD 3
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/MicPacket.getData ()[B
+    ALOAD 3
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/MicPacket.getSequenceNumber ()J
+    FLOAD 5
+    ACONST_NULL
+    INVOKESPECIAL de/maxhenkel/voicechat/voice/common/LocationSoundPacket.<init> (Ljava/util/UUID;Ljava/util/UUID;Lnet/minecraft/world/phys/Vec3;[BJFLjava/lang/String;)V
+    ASTORE 6
+    LDC "spectator"
+    ASTORE 7
+   L2
+    ALOAD 6
+    IFNONNULL L5
+    NEW de/maxhenkel/voicechat/voice/common/PlayerSoundPacket
+    DUP
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getUUID ()Ljava/util/UUID;
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getUUID ()Ljava/util/UUID;
+    ALOAD 3
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/MicPacket.getData ()[B
+    ALOAD 3
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/MicPacket.getSequenceNumber ()J
+    ALOAD 3
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/common/MicPacket.isWhispering ()Z
+    FLOAD 5
+    ACONST_NULL
+    INVOKESPECIAL de/maxhenkel/voicechat/voice/common/PlayerSoundPacket.<init> (Ljava/util/UUID;Ljava/util/UUID;[BJZFLjava/lang/String;)V
+    ASTORE 6
+    LDC "proximity"
+    ASTORE 7
+   L5
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.position ()Lnet/minecraft/world/phys/Vec3;
+    ALOAD 0
+    FLOAD 5
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/server/Server.getBroadcastRange (F)D
+    ALOAD 2
+    INVOKEDYNAMIC test(Lnet/minecraft/server/level/ServerPlayer;)Ljava/util/function/Predicate; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)Z,
+      // handle kind 0x6 : INVOKESTATIC
+      de/maxhenkel/voicechat/voice/server/Server.lambda$processProximityPacket$0(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/level/ServerPlayer;)Z,
+      (Lnet/minecraft/server/level/ServerPlayer;)Z
+    ]
+    INVOKESTATIC de/maxhenkel/voicechat/voice/server/ServerPlayerManager.getPlayersInRange (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/phys/Vec3;DLjava/util/function/Predicate;)Ljava/util/Collection;
+    ALOAD 6
+    ALOAD 2
+    ALOAD 1
+    ALOAD 4
+    ALOAD 7
+    INVOKEVIRTUAL de/maxhenkel/voicechat/voice/server/Server.broadcast (Ljava/util/Collection;Lde/maxhenkel/voicechat/voice/common/SoundPacket;Lnet/minecraft/server/level/ServerPlayer;Lde/maxhenkel/voicechat/voice/common/PlayerState;Ljava/util/UUID;Ljava/lang/String;)V
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 13

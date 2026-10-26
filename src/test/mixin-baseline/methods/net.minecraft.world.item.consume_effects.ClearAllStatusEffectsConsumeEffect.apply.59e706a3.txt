@@ -1,0 +1,6 @@
+// net/minecraft/world/item/consume_effects/ClearAllStatusEffectsConsumeEffect.apply(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)Z
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.removeAllEffects ()Z
+    IRETURN
+    MAXSTACK = 1
+    MAXLOCALS = 4

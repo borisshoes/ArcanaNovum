@@ -1,0 +1,62 @@
+// net/minecraft/world/inventory/MerchantResultSlot.onTake(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;)V
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/inventory/MerchantResultSlot.checkTakeAchievements (Lnet/minecraft/world/item/ItemStack;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/inventory/MerchantResultSlot.slots : Lnet/minecraft/world/inventory/MerchantContainer;
+    INVOKEVIRTUAL net/minecraft/world/inventory/MerchantContainer.getActiveOffer ()Lnet/minecraft/world/item/trading/MerchantOffer;
+    ASTORE 3
+    ALOAD 3
+    IFNULL L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/inventory/MerchantResultSlot.slots : Lnet/minecraft/world/inventory/MerchantContainer;
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/world/inventory/MerchantContainer.getItem (I)Lnet/minecraft/world/item/ItemStack;
+    ASTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/inventory/MerchantResultSlot.slots : Lnet/minecraft/world/inventory/MerchantContainer;
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/inventory/MerchantContainer.getItem (I)Lnet/minecraft/world/item/ItemStack;
+    ASTORE 5
+    ALOAD 3
+    ALOAD 4
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/item/trading/MerchantOffer.take (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z
+    IFNE L1
+    ALOAD 3
+    ALOAD 5
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/trading/MerchantOffer.take (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z
+    IFEQ L2
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/inventory/MerchantResultSlot.merchant : Lnet/minecraft/world/item/trading/Merchant;
+    ALOAD 3
+    INVOKEINTERFACE net/minecraft/world/item/trading/Merchant.notifyTrade (Lnet/minecraft/world/item/trading/MerchantOffer;)V (itf)
+    ALOAD 1
+    GETSTATIC net/minecraft/stats/Stats.TRADED_WITH_VILLAGER : Lnet/minecraft/resources/Identifier;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.awardStat (Lnet/minecraft/resources/Identifier;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/inventory/MerchantResultSlot.slots : Lnet/minecraft/world/inventory/MerchantContainer;
+    ICONST_0
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/inventory/MerchantContainer.setItem (ILnet/minecraft/world/item/ItemStack;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/inventory/MerchantResultSlot.slots : Lnet/minecraft/world/inventory/MerchantContainer;
+    ICONST_1
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/inventory/MerchantContainer.setItem (ILnet/minecraft/world/item/ItemStack;)V
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/inventory/MerchantResultSlot.merchant : Lnet/minecraft/world/item/trading/Merchant;
+    ALOAD 0
+    GETFIELD net/minecraft/world/inventory/MerchantResultSlot.merchant : Lnet/minecraft/world/item/trading/Merchant;
+    INVOKEINTERFACE net/minecraft/world/item/trading/Merchant.getVillagerXp ()I (itf)
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/item/trading/MerchantOffer.getXp ()I
+    IADD
+    INVOKEINTERFACE net/minecraft/world/item/trading/Merchant.overrideXp (I)V (itf)
+   L0
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 6

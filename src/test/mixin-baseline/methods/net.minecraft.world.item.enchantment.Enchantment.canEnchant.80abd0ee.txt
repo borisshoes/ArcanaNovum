@@ -1,0 +1,10 @@
+// net/minecraft/world/item/enchantment/Enchantment.canEnchant(Lnet/minecraft/world/item/ItemStack;)Z
+    ALOAD 0
+    GETFIELD net/minecraft/world/item/enchantment/Enchantment.definition : Lnet/minecraft/world/item/enchantment/Enchantment$EnchantmentDefinition;
+    INVOKEVIRTUAL net/minecraft/world/item/enchantment/Enchantment$EnchantmentDefinition.supportedItems ()Lnet/minecraft/core/HolderSet;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.typeHolder ()Lnet/minecraft/core/Holder;
+    INVOKEINTERFACE net/minecraft/core/HolderSet.contains (Lnet/minecraft/core/Holder;)Z (itf)
+    IRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2

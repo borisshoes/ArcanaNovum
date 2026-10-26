@@ -1,0 +1,248 @@
+// net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.applyGravity : Z
+    IFEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.isInWater ()Z
+    IFEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    DCONST_0
+    LDC 0.005D
+    DCONST_0
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getNavigation ()Lnet/minecraft/world/entity/ai/navigation/PathNavigation;
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/navigation/PathNavigation.isDone ()Z
+    IFEQ L2
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setXxa (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setYya (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setZza (F)V
+    RETURN
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.wantedX : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getX ()D
+    DSUB
+    DSTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.wantedY : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getY ()D
+    DSUB
+    DSTORE 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.wantedZ : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getZ ()D
+    DSUB
+    DSTORE 5
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 3
+    DLOAD 3
+    DMUL
+    DADD
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    DSTORE 7
+    DLOAD 7
+    LDC 2.500000277905201E-7D
+    DCMPG
+    IFGE L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setZza (F)V
+    RETURN
+   L3
+    DLOAD 5
+    DLOAD 1
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    LDC 57.2957763671875D
+    DMUL
+    D2F
+    LDC 90.0F
+    FSUB
+    FSTORE 9
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getYRot ()F
+    FLOAD 9
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.maxTurnY : I
+    I2F
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.rotlerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/Mob.yBodyRot : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/Mob.yHeadRot : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    FSTORE 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.isInWater ()Z
+    IFEQ L4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FLOAD 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.inWaterSpeedModifier : F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setSpeed (F)V
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    DSTORE 11
+    DLOAD 3
+    INVOKESTATIC java/lang/Math.abs (D)D
+    LDC 9.999999747378752E-6D
+    DCMPL
+    IFGT L5
+    DLOAD 11
+    INVOKESTATIC java/lang/Math.abs (D)D
+    LDC 9.999999747378752E-6D
+    DCMPL
+    IFLE L6
+   L5
+    DLOAD 3
+    DLOAD 11
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    LDC 57.2957763671875D
+    DMUL
+    D2F
+    FNEG
+    FSTORE 13
+    FLOAD 13
+    INVOKESTATIC net/minecraft/util/Mth.wrapDegrees (F)F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.maxTurnX : I
+    INEG
+    I2F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.maxTurnX : I
+    I2F
+    INVOKESTATIC net/minecraft/util/Mth.clamp (FFF)F
+    FSTORE 13
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getXRot ()F
+    FLOAD 13
+    LDC 5.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.rotateTowards (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setXRot (F)V
+   L6
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getXRot ()F
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC net/minecraft/util/Mth.cos (D)F
+    FSTORE 13
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getXRot ()F
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC net/minecraft/util/Mth.sin (D)F
+    FSTORE 14
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FLOAD 13
+    FLOAD 10
+    FMUL
+    PUTFIELD net/minecraft/world/entity/Mob.zza : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FLOAD 14
+    FNEG
+    FLOAD 10
+    FMUL
+    PUTFIELD net/minecraft/world/entity/Mob.yya : F
+    GOTO L7
+   L4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getYRot ()F
+    FLOAD 9
+    FSUB
+    INVOKESTATIC net/minecraft/util/Mth.wrapDegrees (F)F
+    INVOKESTATIC java/lang/Math.abs (F)F
+    FSTORE 11
+    FLOAD 11
+    INVOKESTATIC net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.getTurningSpeedFactor (F)F
+    FSTORE 12
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FLOAD 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.outsideWaterSpeedModifier : F
+    FMUL
+    FLOAD 12
+    FMUL
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setSpeed (F)V
+   L7
+    RETURN
+    MAXSTACK = 8
+    MAXLOCALS = 15

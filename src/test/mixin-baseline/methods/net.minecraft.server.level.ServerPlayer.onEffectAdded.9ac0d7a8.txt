@@ -1,0 +1,37 @@
+// net/minecraft/server/level/ServerPlayer.onEffectAdded(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)V
+  @Lorg/jspecify/annotations/Nullable;(
+) : METHOD_FORMAL_PARAMETER 1, null
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKESPECIAL net/minecraft/world/entity/player/Player.onEffectAdded (Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.connection : Lnet/minecraft/server/network/ServerGamePacketListenerImpl;
+    NEW net/minecraft/network/protocol/game/ClientboundUpdateMobEffectPacket
+    DUP
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getId ()I
+    ALOAD 1
+    ICONST_1
+    INVOKESPECIAL net/minecraft/network/protocol/game/ClientboundUpdateMobEffectPacket.<init> (ILnet/minecraft/world/effect/MobEffectInstance;Z)V
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.send (Lnet/minecraft/network/protocol/Packet;)V
+    ALOAD 1
+    GETSTATIC net/minecraft/world/effect/MobEffects.LEVITATION : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.is (Lnet/minecraft/core/Holder;)Z
+    IFEQ L0
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.tickCount : I
+    PUTFIELD net/minecraft/server/level/ServerPlayer.levitationStartTime : I
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.position ()Lnet/minecraft/world/phys/Vec3;
+    PUTFIELD net/minecraft/server/level/ServerPlayer.levitationStartPos : Lnet/minecraft/world/phys/Vec3;
+   L0
+    GETSTATIC net/minecraft/advancements/triggers/CriteriaTriggers.EFFECTS_CHANGED : Lnet/minecraft/advancements/triggers/EffectsChangedTrigger;
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/advancements/triggers/EffectsChangedTrigger.trigger (Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/Entity;)V
+    RETURN
+    MAXSTACK = 6
+    MAXLOCALS = 3

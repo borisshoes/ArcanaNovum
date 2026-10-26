@@ -1,0 +1,165 @@
+// net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    GETSTATIC net/minecraft/tags/FluidTags.WATER : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.isEyeInFluid (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    DCONST_0
+    LDC 0.005D
+    DCONST_0
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getNavigation ()Lnet/minecraft/world/entity/ai/navigation/PathNavigation;
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/navigation/PathNavigation.isDone ()Z
+    IFEQ L2
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.setSpeed (F)V
+    RETURN
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    FSTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    LDC 0.125F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getSpeed ()F
+    FLOAD 1
+    INVOKESTATIC net/minecraft/util/Mth.lerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.wantedX : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getX ()D
+    DSUB
+    DSTORE 2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.wantedY : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getY ()D
+    DSUB
+    DSTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.wantedZ : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getZ ()D
+    DSUB
+    DSTORE 6
+    DLOAD 4
+    DCONST_0
+    DCMPL
+    IFEQ L3
+    DLOAD 2
+    DLOAD 2
+    DMUL
+    DLOAD 4
+    DLOAD 4
+    DMUL
+    DADD
+    DLOAD 6
+    DLOAD 6
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    DSTORE 8
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    DCONST_0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getSpeed ()F
+    F2D
+    DLOAD 4
+    DLOAD 8
+    DDIV
+    DMUL
+    LDC 0.1D
+    DMUL
+    DCONST_0
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+   L3
+    DLOAD 2
+    DCONST_0
+    DCMPL
+    IFNE L4
+    DLOAD 6
+    DCONST_0
+    DCMPL
+    IFEQ L5
+   L4
+    DLOAD 6
+    DLOAD 2
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    LDC 57.2957763671875D
+    DMUL
+    D2F
+    LDC 90.0F
+    FSUB
+    FSTORE 8
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getYRot ()F
+    FLOAD 8
+    LDC 90.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.rotlerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/fish/AbstractFish
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/fish/AbstractFish.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/animal/fish/AbstractFish.yBodyRot : F
+   L5
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 10

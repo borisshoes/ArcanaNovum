@@ -1,0 +1,75 @@
+// net/minecraft/world/entity/LivingEntity.onEquipItem(Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.isClientSide ()Z
+    IFNE L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isSpectator ()Z
+    IFEQ L1
+   L0
+    RETURN
+   L1
+    ALOAD 2
+    ALOAD 3
+    INVOKESTATIC net/minecraft/world/item/ItemStack.isSameItemSameComponents (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z
+    IFNE L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.firstTick : Z
+    IFEQ L3
+   L2
+    RETURN
+   L3
+    ALOAD 3
+    GETSTATIC net/minecraft/core/component/DataComponents.EQUIPPABLE : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.get (Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/item/equipment/Equippable
+    ASTORE 4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isSilent ()Z
+    IFNE L4
+    ALOAD 4
+    IFNULL L4
+    ALOAD 1
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/equipment/Equippable.slot ()Lnet/minecraft/world/entity/EquipmentSlot;
+    IF_ACMPNE L4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ACONST_NULL
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getX ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getY ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getZ ()D
+    ALOAD 0
+    ALOAD 1
+    ALOAD 3
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getEquipSound (Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/equipment/Equippable;)Lnet/minecraft/core/Holder;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getSoundSource ()Lnet/minecraft/sounds/SoundSource;
+    FCONST_1
+    FCONST_1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.random : Lnet/minecraft/util/RandomSource;
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextLong ()J (itf)
+    INVOKEVIRTUAL net/minecraft/world/level/Level.playSeededSound (Lnet/minecraft/world/entity/Entity;DDDLnet/minecraft/core/Holder;Lnet/minecraft/sounds/SoundSource;FFJ)V
+   L4
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.doesEmitEquipEvent (Lnet/minecraft/world/entity/EquipmentSlot;)Z
+    IFEQ L5
+    ALOAD 0
+    ALOAD 4
+    IFNULL L6
+    GETSTATIC net/minecraft/world/level/gameevent/GameEvent.EQUIP : Lnet/minecraft/core/Holder$Reference;
+    GOTO L7
+   L6
+    GETSTATIC net/minecraft/world/level/gameevent/GameEvent.UNEQUIP : Lnet/minecraft/core/Holder$Reference;
+   L7
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.gameEvent (Lnet/minecraft/core/Holder;)V
+   L5
+    RETURN
+    MAXSTACK = 14
+    MAXLOCALS = 5

@@ -1,0 +1,22 @@
+// net/minecraft/world/entity/LivingEntity.updateInvisibilityStatus()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.activeEffects : Ljava/util/Map;
+    INVOKEINTERFACE java/util/Map.isEmpty ()Z (itf)
+    IFEQ L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.removeEffectParticles ()V
+    ALOAD 0
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setInvisible (Z)V
+    RETURN
+   L0
+    ALOAD 0
+    ALOAD 0
+    GETSTATIC net/minecraft/world/effect/MobEffects.INVISIBILITY : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hasEffect (Lnet/minecraft/core/Holder;)Z
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setInvisible (Z)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.updateSynchronizedMobEffectParticles ()V
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 1

@@ -1,0 +1,110 @@
+// net/minecraft/server/level/ServerPlayer.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.connection : Lnet/minecraft/server/network/ServerGamePacketListenerImpl;
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.tickClientLoadTimeout ()V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.gameMode : Lnet/minecraft/server/level/ServerPlayerGameMode;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayerGameMode.tick ()V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.wardenSpawnTracker : Lnet/minecraft/world/entity/monster/warden/WardenSpawnTracker;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/warden/WardenSpawnTracker.tick ()V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.damageCooldownTime : I
+    IFLE L0
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/server/level/ServerPlayer.damageCooldownTime : I
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/server/level/ServerPlayer.damageCooldownTime : I
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.containerMenu : Lnet/minecraft/world/inventory/AbstractContainerMenu;
+    INVOKEVIRTUAL net/minecraft/world/inventory/AbstractContainerMenu.broadcastChanges ()V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.containerMenu : Lnet/minecraft/world/inventory/AbstractContainerMenu;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/inventory/AbstractContainerMenu.stillValid (Lnet/minecraft/world/entity/player/Player;)Z
+    IFNE L1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.closeContainer ()V
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.inventoryMenu : Lnet/minecraft/world/inventory/InventoryMenu;
+    PUTFIELD net/minecraft/server/level/ServerPlayer.containerMenu : Lnet/minecraft/world/inventory/AbstractContainerMenu;
+   L1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getCamera ()Lnet/minecraft/world/entity/Entity;
+    ASTORE 1
+    ALOAD 1
+    ALOAD 0
+    IF_ACMPEQ L2
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.isAlive ()Z
+    IFEQ L3
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getX ()D
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getY ()D
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getZ ()D
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getYRot ()F
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getXRot ()F
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.absSnapTo (DDDFF)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getChunkSource ()Lnet/minecraft/server/level/ServerChunkCache;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerChunkCache.move (Lnet/minecraft/server/level/ServerPlayer;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.wantsToStopRiding ()Z
+    IFEQ L2
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setCamera (Lnet/minecraft/world/entity/Entity;)V
+    GOTO L2
+   L3
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setCamera (Lnet/minecraft/world/entity/Entity;)V
+   L2
+    GETSTATIC net/minecraft/advancements/triggers/CriteriaTriggers.TICK : Lnet/minecraft/advancements/triggers/PlayerTrigger;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/advancements/triggers/PlayerTrigger.trigger (Lnet/minecraft/server/level/ServerPlayer;)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.levitationStartPos : Lnet/minecraft/world/phys/Vec3;
+    IFNULL L4
+    GETSTATIC net/minecraft/advancements/triggers/CriteriaTriggers.LEVITATION : Lnet/minecraft/advancements/triggers/LevitationTrigger;
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.levitationStartPos : Lnet/minecraft/world/phys/Vec3;
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.tickCount : I
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.levitationStartTime : I
+    ISUB
+    INVOKEVIRTUAL net/minecraft/advancements/triggers/LevitationTrigger.trigger (Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/phys/Vec3;I)V
+   L4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.trackStartFallingPosition ()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.trackEnteredOrExitedLavaOnVehicle ()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.updatePlayerAttributes ()V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.advancements : Lnet/minecraft/server/PlayerAdvancements;
+    ALOAD 0
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/server/PlayerAdvancements.flushDirty (Lnet/minecraft/server/level/ServerPlayer;Z)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.postEffectsDirty : Z
+    IFEQ L5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.sendPostEffects ()V
+   L5
+    RETURN
+    MAXSTACK = 9
+    MAXLOCALS = 2

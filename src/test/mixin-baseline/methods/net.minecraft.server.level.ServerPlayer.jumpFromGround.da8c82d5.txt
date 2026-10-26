@@ -1,0 +1,21 @@
+// net/minecraft/server/level/ServerPlayer.jumpFromGround()V
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/player/Player.jumpFromGround ()V
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.JUMP : Lnet/minecraft/resources/Identifier;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSprinting ()Z
+    IFEQ L0
+    ALOAD 0
+    LDC 0.2F
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.causeFoodExhaustion (F)V
+    GOTO L1
+   L0
+    ALOAD 0
+    LDC 0.05F
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.causeFoodExhaustion (F)V
+   L1
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 1

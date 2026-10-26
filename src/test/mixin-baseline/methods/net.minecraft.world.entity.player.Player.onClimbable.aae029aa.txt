@@ -1,0 +1,13 @@
+// net/minecraft/world/entity/player/Player.onClimbable()Z
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.abilities : Lnet/minecraft/world/entity/player/Abilities;
+    GETFIELD net/minecraft/world/entity/player/Abilities.flying : Z
+    IFEQ L0
+    ICONST_0
+    IRETURN
+   L0
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/Avatar.onClimbable ()Z
+    IRETURN
+    MAXSTACK = 1
+    MAXLOCALS = 1

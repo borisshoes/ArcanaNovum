@@ -1,0 +1,195 @@
+// net/borisshoes/borislib/conditions/Conditions.addCondition(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/world/entity/LivingEntity;Lnet/borisshoes/borislib/conditions/ConditionInstance;Z)Lnet/borisshoes/borislib/conditions/Conditions$AddResult;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ASTORE 5
+    ALOAD 5
+    INSTANCEOF net/minecraft/server/level/ServerLevel
+    IFEQ L0
+    ALOAD 5
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 4
+    GOTO L1
+   L0
+    GETSTATIC net/borisshoes/borislib/conditions/Conditions$AddResult.REJECTED : Lnet/borisshoes/borislib/conditions/Conditions$AddResult;
+    ARETURN
+   L1
+    ALOAD 2
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getCondition ()Lnet/minecraft/core/Holder;
+    ASTORE 5
+    ALOAD 5
+    INVOKEINTERFACE net/minecraft/core/Holder.value ()Ljava/lang/Object; (itf)
+    CHECKCAST net/borisshoes/borislib/conditions/Condition
+    ASTORE 6
+    ALOAD 6
+    ALOAD 1
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/Condition.canApply (Lnet/minecraft/world/entity/LivingEntity;)Z
+    IFNE L2
+    GETSTATIC net/borisshoes/borislib/conditions/Conditions$AddResult.REJECTED : Lnet/borisshoes/borislib/conditions/Conditions$AddResult;
+    ARETURN
+   L2
+    ALOAD 6
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/Condition.isHarmful ()Z
+    IFEQ L3
+    ALOAD 2
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getInflictedBy ()Ljava/util/UUID;
+    IFNULL L3
+    ALOAD 0
+    ALOAD 4
+    ALOAD 2
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getInflictedBy ()Ljava/util/UUID;
+    INVOKESTATIC net/borisshoes/borislib/conditions/Conditions.findInflicter (Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/server/level/ServerLevel;Ljava/util/UUID;)Lnet/minecraft/world/entity/LivingEntity;
+    ASTORE 7
+    ALOAD 7
+    IFNULL L3
+    ALOAD 7
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isAlliedTo (Lnet/minecraft/world/entity/Entity;)Z
+    IFEQ L4
+    GETSTATIC net/borisshoes/borislib/conditions/Conditions$AddResult.REJECTED : Lnet/borisshoes/borislib/conditions/Conditions$AddResult;
+    ARETURN
+   L4
+    ALOAD 1
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFEQ L3
+    ALOAD 1
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 8
+    ALOAD 7
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFEQ L3
+    ALOAD 7
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 9
+    ALOAD 9
+    ALOAD 8
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.canHarmPlayer (Lnet/minecraft/world/entity/player/Player;)Z
+    IFNE L3
+    GETSTATIC net/borisshoes/borislib/conditions/Conditions$AddResult.REJECTED : Lnet/borisshoes/borislib/conditions/Conditions$AddResult;
+    ARETURN
+   L3
+    INVOKESTATIC net/borisshoes/borislib/conditions/Conditions.getConditionData ()Lnet/borisshoes/borislib/datastorage/ConditionData;
+    ASTORE 7
+    ALOAD 7
+    ALOAD 1
+    INVOKESTATIC net/borisshoes/borislib/conditions/Conditions.resolveRecord (Lnet/borisshoes/borislib/datastorage/ConditionData;Lnet/minecraft/world/entity/LivingEntity;)Lnet/borisshoes/borislib/conditions/EntityConditions;
+    ASTORE 8
+    ALOAD 8
+    IFNONNULL L5
+    ACONST_NULL
+    GOTO L6
+   L5
+    ALOAD 8
+    ALOAD 5
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions.getState (Lnet/minecraft/core/Holder;)Lnet/borisshoes/borislib/conditions/EntityConditions$TypeState;
+   L6
+    ASTORE 9
+    ALOAD 9
+    IFNONNULL L7
+    ICONST_M1
+    GOTO L8
+   L7
+    ALOAD 9
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions$TypeState.instances ()Ljava/util/ArrayList;
+    ALOAD 2
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getId ()Lnet/minecraft/resources/Identifier;
+    INVOKESTATIC net/borisshoes/borislib/conditions/Conditions.indexOf (Ljava/util/ArrayList;Lnet/minecraft/resources/Identifier;)I
+   L8
+    ISTORE 10
+    ILOAD 10
+    IFLT L9
+    ILOAD 3
+    IFEQ L9
+    ALOAD 2
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getValue ()F
+    ALOAD 9
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions$TypeState.instances ()Ljava/util/ArrayList;
+    ILOAD 10
+    INVOKEVIRTUAL java/util/ArrayList.get (I)Ljava/lang/Object;
+    CHECKCAST net/borisshoes/borislib/conditions/ConditionInstance
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getValue ()F
+    FCMPG
+    IFGE L9
+    GETSTATIC net/borisshoes/borislib/conditions/Conditions$AddResult.REJECTED : Lnet/borisshoes/borislib/conditions/Conditions$AddResult;
+    ARETURN
+   L9
+    ALOAD 8
+    IFNONNULL L10
+    ALOAD 7
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getUUID ()Ljava/util/UUID;
+    INVOKEVIRTUAL net/borisshoes/borislib/datastorage/ConditionData.getOrCreate (Ljava/util/UUID;)Lnet/borisshoes/borislib/conditions/EntityConditions;
+    ASTORE 8
+    ALOAD 1
+    CHECKCAST net/borisshoes/borislib/conditions/ConditionHolder
+    ALOAD 8
+    INVOKEINTERFACE net/borisshoes/borislib/conditions/ConditionHolder.borislib$setConditions (Lnet/borisshoes/borislib/conditions/EntityConditions;)V (itf)
+   L10
+    ALOAD 8
+    ALOAD 5
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions.getOrCreateState (Lnet/minecraft/core/Holder;)Lnet/borisshoes/borislib/conditions/EntityConditions$TypeState;
+    ASTORE 11
+    ILOAD 10
+    IFLT L11
+    ALOAD 11
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions$TypeState.instances ()Ljava/util/ArrayList;
+    ILOAD 10
+    ALOAD 2
+    INVOKEVIRTUAL java/util/ArrayList.set (ILjava/lang/Object;)Ljava/lang/Object;
+    CHECKCAST net/borisshoes/borislib/conditions/ConditionInstance
+    ASTORE 13
+    ALOAD 13
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getParticles ()Ljava/util/Optional;
+    ALOAD 2
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getParticles ()Ljava/util/Optional;
+    INVOKEVIRTUAL java/util/Optional.equals (Ljava/lang/Object;)Z
+    IFNE L12
+    ALOAD 8
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions.emitter ()Lnet/borisshoes/borislib/conditions/ConditionParticleEmitter;
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionParticleEmitter.markChanged ()V
+   L12
+    GETSTATIC net/borisshoes/borislib/conditions/Conditions$AddResult.REPLACED : Lnet/borisshoes/borislib/conditions/Conditions$AddResult;
+    ASTORE 12
+    GOTO L13
+   L11
+    ALOAD 11
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions$TypeState.instances ()Ljava/util/ArrayList;
+    ALOAD 2
+    INVOKEVIRTUAL java/util/ArrayList.add (Ljava/lang/Object;)Z
+    POP
+    ALOAD 8
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions.emitter ()Lnet/borisshoes/borislib/conditions/ConditionParticleEmitter;
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionParticleEmitter.markChanged ()V
+    ALOAD 8
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions.emitter ()Lnet/borisshoes/borislib/conditions/ConditionParticleEmitter;
+    ALOAD 2
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionInstance.getParticles ()Ljava/util/Optional;
+    ALOAD 6
+    DUP
+    INVOKESTATIC java/util/Objects.requireNonNull (Ljava/lang/Object;)Ljava/lang/Object;
+    POP
+    INVOKEDYNAMIC get(Lnet/borisshoes/borislib/conditions/Condition;)Ljava/util/function/Supplier; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      ()Ljava/lang/Object;,
+      // handle kind 0x5 : INVOKEVIRTUAL
+      net/borisshoes/borislib/conditions/Condition.getDefaultParticles()Lnet/borisshoes/borislib/conditions/ConditionParticles;,
+      ()Lnet/borisshoes/borislib/conditions/ConditionParticles;
+    ]
+    INVOKEVIRTUAL java/util/Optional.orElseGet (Ljava/util/function/Supplier;)Ljava/lang/Object;
+    CHECKCAST net/borisshoes/borislib/conditions/ConditionParticles
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/ConditionParticleEmitter.queueBurst (Lnet/borisshoes/borislib/conditions/ConditionParticles;)V
+    GETSTATIC net/borisshoes/borislib/conditions/Conditions$AddResult.ADDED : Lnet/borisshoes/borislib/conditions/Conditions$AddResult;
+    ASTORE 12
+   L13
+    ICONST_1
+    PUTSTATIC net/borisshoes/borislib/conditions/Conditions.dirty : Z
+    ALOAD 0
+    ALOAD 1
+    ALOAD 8
+    ALOAD 5
+    INVOKESTATIC net/borisshoes/borislib/conditions/Conditions.recompute (Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/world/entity/LivingEntity;Lnet/borisshoes/borislib/conditions/EntityConditions;Lnet/minecraft/core/Holder;)V
+    ALOAD 12
+    ARETURN
+    MAXSTACK = 4
+    MAXLOCALS = 14

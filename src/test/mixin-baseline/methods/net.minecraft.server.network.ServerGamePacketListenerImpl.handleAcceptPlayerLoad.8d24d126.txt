@@ -1,0 +1,12 @@
+// net/minecraft/server/network/ServerGamePacketListenerImpl.handleAcceptPlayerLoad(Lnet/minecraft/network/protocol/game/ServerboundPlayerLoadedPacket;)V
+    ALOAD 1
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKESTATIC net/minecraft/network/protocol/PacketUtils.ensureRunningOnSameThread (Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.markClientLoaded ()V
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 2

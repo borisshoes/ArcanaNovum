@@ -1,0 +1,38 @@
+// net/minecraft/world/item/crafting/RepairItemRecipe.canCombine(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z
+    ALOAD 1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.is (Ljava/lang/Object;)Z
+    IFEQ L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ICONST_1
+    IF_ICMPNE L0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ICONST_1
+    IF_ICMPNE L0
+    ALOAD 0
+    GETSTATIC net/minecraft/core/component/DataComponents.MAX_DAMAGE : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.has (Lnet/minecraft/core/component/DataComponentType;)Z
+    IFEQ L0
+    ALOAD 1
+    GETSTATIC net/minecraft/core/component/DataComponents.MAX_DAMAGE : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.has (Lnet/minecraft/core/component/DataComponentType;)Z
+    IFEQ L0
+    ALOAD 0
+    GETSTATIC net/minecraft/core/component/DataComponents.DAMAGE : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.has (Lnet/minecraft/core/component/DataComponentType;)Z
+    IFEQ L0
+    ALOAD 1
+    GETSTATIC net/minecraft/core/component/DataComponents.DAMAGE : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.has (Lnet/minecraft/core/component/DataComponentType;)Z
+    IFEQ L0
+    ICONST_1
+    GOTO L1
+   L0
+    ICONST_0
+   L1
+    IRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2

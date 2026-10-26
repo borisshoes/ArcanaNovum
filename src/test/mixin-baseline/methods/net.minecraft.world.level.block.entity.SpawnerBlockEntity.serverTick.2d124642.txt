@@ -1,0 +1,10 @@
+// net/minecraft/world/level/block/entity/SpawnerBlockEntity.serverTick(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/SpawnerBlockEntity;)V
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/SpawnerBlockEntity.spawner : Lnet/minecraft/world/level/BaseSpawner;
+    ALOAD 0
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.serverTick (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)V
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 4

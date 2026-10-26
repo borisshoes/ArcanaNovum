@@ -1,0 +1,68 @@
+// net/minecraft/world/item/ProjectileWeaponItem.useAmmo(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Z)Lnet/minecraft/world/item/ItemStack;
+    ILOAD 3
+    IFNE L0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hasInfiniteMaterials ()Z
+    IFNE L0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ASTORE 6
+    ALOAD 6
+    INSTANCEOF net/minecraft/server/level/ServerLevel
+    IFEQ L0
+    ALOAD 6
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 5
+    ALOAD 5
+    ALOAD 0
+    ALOAD 1
+    ICONST_1
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.processAmmoUse (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;I)I
+    GOTO L1
+   L0
+    ICONST_0
+   L1
+    ISTORE 4
+    ILOAD 4
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    IF_ICMPLE L2
+    GETSTATIC net/minecraft/world/item/ItemStack.EMPTY : Lnet/minecraft/world/item/ItemStack;
+    ARETURN
+   L2
+    ILOAD 4
+    IFNE L3
+    ALOAD 1
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.copyWithCount (I)Lnet/minecraft/world/item/ItemStack;
+    ASTORE 5
+    ALOAD 5
+    GETSTATIC net/minecraft/core/component/DataComponents.INTANGIBLE_PROJECTILE : Lnet/minecraft/core/component/DataComponentType;
+    GETSTATIC net/minecraft/util/Unit.INSTANCE : Lnet/minecraft/util/Unit;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.set (Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object;
+    POP
+    ALOAD 5
+    ARETURN
+   L3
+    ALOAD 1
+    ILOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.split (I)Lnet/minecraft/world/item/ItemStack;
+    ASTORE 5
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFEQ L4
+    ALOAD 2
+    INSTANCEOF net/minecraft/world/entity/player/Player
+    IFEQ L4
+    ALOAD 2
+    CHECKCAST net/minecraft/world/entity/player/Player
+    ASTORE 6
+    ALOAD 6
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getInventory ()Lnet/minecraft/world/entity/player/Inventory;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.removeItem (Lnet/minecraft/world/item/ItemStack;)V
+   L4
+    ALOAD 5
+    ARETURN
+    MAXSTACK = 4
+    MAXLOCALS = 7

@@ -1,0 +1,321 @@
+// net/minecraft/core/dispenser/DispenseItemBehavior.bootStrap()V
+    GETSTATIC net/minecraft/world/item/Items.ARROW : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.TIPPED_ARROW : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.SPECTRAL_ARROW : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.EGG : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.BLUE_EGG : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.BROWN_EGG : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.SNOWBALL : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.EXPERIENCE_BOTTLE : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.SPLASH_POTION : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.LINGERING_POTION : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.FIREWORK_ROCKET : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.FIRE_CHARGE : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.WIND_CHARGE : Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerProjectileBehavior (Lnet/minecraft/world/level/ItemLike;)V
+    GETSTATIC net/minecraft/world/item/Items.ARMOR_STAND : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$1
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$1.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.CHEST : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$2
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$2.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.OAK_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.OAK_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.SPRUCE_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.SPRUCE_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.BIRCH_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.BIRCH_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.JUNGLE_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.JUNGLE_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.DARK_OAK_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.DARK_OAK_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.ACACIA_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.ACACIA_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.CHERRY_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.CHERRY_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.MANGROVE_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.MANGROVE_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.POPLAR_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.POPLAR_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.PALE_OAK_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.PALE_OAK_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.BAMBOO_RAFT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.BAMBOO_RAFT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.OAK_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.OAK_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.SPRUCE_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.SPRUCE_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.BIRCH_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.BIRCH_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.JUNGLE_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.JUNGLE_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.DARK_OAK_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.DARK_OAK_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.ACACIA_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.ACACIA_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.CHERRY_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.CHERRY_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.MANGROVE_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.MANGROVE_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.POPLAR_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.POPLAR_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.PALE_OAK_CHEST_BOAT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.PALE_OAK_CHEST_BOAT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.BAMBOO_CHEST_RAFT : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/BoatDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.BAMBOO_CHEST_RAFT : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/BoatDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$3
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$3.<init> ()V
+    ASTORE 0
+    GETSTATIC net/minecraft/world/item/Items.LAVA_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.WATER_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.POWDER_SNOW_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.SALMON_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.COD_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.PUFFERFISH_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.TROPICAL_FISH_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.AXOLOTL_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.SULFUR_CUBE_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.TADPOLE_BUCKET : Lnet/minecraft/world/item/Item;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.BUCKET : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$4
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$4.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.FLINT_AND_STEEL : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/FlintAndSteelDispenseItemBehavior
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/FlintAndSteelDispenseItemBehavior.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.BONE_MEAL : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$5
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$5.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/level/block/Blocks.TNT : Lnet/minecraft/world/level/block/Block;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$6
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$6.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.WITHER_SKELETON_SKULL : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$7
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$7.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/level/block/Blocks.CARVED_PUMPKIN : Lnet/minecraft/world/level/block/Block;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$8
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$8.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    NEW net/minecraft/core/dispenser/ShulkerBoxDispenseBehavior
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/ShulkerBoxDispenseBehavior.<init> ()V
+    ASTORE 1
+    GETSTATIC net/minecraft/world/item/Items.SHULKER_BOX : Lnet/minecraft/world/item/Item;
+    ALOAD 1
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.DYED_SHULKER_BOX : Lnet/minecraft/world/level/block/ColorCollection;
+    ALOAD 1
+    INVOKEDYNAMIC accept(Lnet/minecraft/core/dispenser/ShulkerBoxDispenseBehavior;)Ljava/util/function/Consumer; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)V,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/dispenser/DispenseItemBehavior.lambda$bootStrap$0(Lnet/minecraft/core/dispenser/ShulkerBoxDispenseBehavior;Lnet/minecraft/world/item/Item;)V itf,
+      (Lnet/minecraft/world/item/Item;)V
+    ]
+    INVOKEVIRTUAL net/minecraft/world/level/block/ColorCollection.forEach (Ljava/util/function/Consumer;)V
+    GETSTATIC net/minecraft/world/item/Items.GLASS_BOTTLE : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$9
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$9.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.GLOWSTONE : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$10
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$10.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.SHEARS : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/ShearsDispenseItemBehavior
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/ShearsDispenseItemBehavior.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.BRUSH : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$11
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$11.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.HONEYCOMB : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$12
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$12.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.POTION : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/DispenseItemBehavior$13
+    DUP
+    INVOKESPECIAL net/minecraft/core/dispenser/DispenseItemBehavior$13.<init> ()V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.MINECART : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/MinecartDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.MINECART : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/MinecartDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.CHEST_MINECART : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/MinecartDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.CHEST_MINECART : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/MinecartDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.FURNACE_MINECART : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/MinecartDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.FURNACE_MINECART : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/MinecartDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.TNT_MINECART : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/MinecartDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.TNT_MINECART : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/MinecartDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.HOPPER_MINECART : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/MinecartDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.HOPPER_MINECART : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/MinecartDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    GETSTATIC net/minecraft/world/item/Items.COMMAND_BLOCK_MINECART : Lnet/minecraft/world/item/Item;
+    NEW net/minecraft/core/dispenser/MinecartDispenseItemBehavior
+    DUP
+    GETSTATIC net/minecraft/world/entity/EntityTypes.COMMAND_BLOCK_MINECART : Lnet/minecraft/world/entity/EntityType;
+    INVOKESPECIAL net/minecraft/core/dispenser/MinecartDispenseItemBehavior.<init> (Lnet/minecraft/world/entity/EntityType;)V
+    INVOKESTATIC net/minecraft/world/level/block/DispenserBlock.registerBehavior (Lnet/minecraft/world/level/ItemLike;Lnet/minecraft/core/dispenser/DispenseItemBehavior;)V
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 2

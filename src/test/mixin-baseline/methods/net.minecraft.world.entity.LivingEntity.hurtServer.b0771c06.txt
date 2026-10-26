@@ -1,0 +1,356 @@
+// net/minecraft/world/entity/LivingEntity.hurtServer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isInvulnerableTo (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;)Z
+    IFEQ L0
+    ICONST_0
+    IRETURN
+   L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isDeadOrDying ()Z
+    IFEQ L1
+    ICONST_0
+    IRETURN
+   L1
+    ALOAD 2
+    GETSTATIC net/minecraft/tags/DamageTypeTags.IS_FIRE : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L2
+    ALOAD 0
+    GETSTATIC net/minecraft/world/effect/MobEffects.FIRE_RESISTANCE : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hasEffect (Lnet/minecraft/core/Holder;)Z
+    IFEQ L2
+    ICONST_0
+    IRETURN
+   L2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isSleeping ()Z
+    IFEQ L3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.stopSleeping ()V
+   L3
+    ALOAD 0
+    ICONST_0
+    PUTFIELD net/minecraft/world/entity/LivingEntity.noActionTime : I
+    FLOAD 3
+    FCONST_0
+    FCMPG
+    IFGE L4
+    FCONST_0
+    FSTORE 3
+   L4
+    FLOAD 3
+    FSTORE 4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getUseItem ()Lnet/minecraft/world/item/ItemStack;
+    ASTORE 5
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    FLOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.applyItemBlocking (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)F
+    FSTORE 6
+    FLOAD 3
+    FLOAD 6
+    FSUB
+    FSTORE 3
+    FLOAD 6
+    FCONST_0
+    FCMPL
+    IFLE L5
+    ICONST_1
+    GOTO L6
+   L5
+    ICONST_0
+   L6
+    ISTORE 7
+    ALOAD 2
+    GETSTATIC net/minecraft/tags/DamageTypeTags.IS_FREEZING : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L7
+    ALOAD 0
+    GETSTATIC net/minecraft/tags/EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.is (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L7
+    FLOAD 3
+    LDC 5.0F
+    FMUL
+    FSTORE 3
+   L7
+    ALOAD 2
+    GETSTATIC net/minecraft/tags/DamageTypeTags.DAMAGES_HELMET : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L8
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/EquipmentSlot.HEAD : Lnet/minecraft/world/entity/EquipmentSlot;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getItemBySlot (Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFNE L8
+    ALOAD 0
+    ALOAD 2
+    FLOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hurtHelmet (Lnet/minecraft/world/damagesource/DamageSource;F)V
+    FLOAD 3
+    LDC 0.75F
+    FMUL
+    FSTORE 3
+   L8
+    FLOAD 3
+    INVOKESTATIC java/lang/Float.isNaN (F)Z
+    IFNE L9
+    FLOAD 3
+    INVOKESTATIC java/lang/Float.isInfinite (F)Z
+    IFEQ L10
+   L9
+    LDC 3.4028235E38F
+    FSTORE 3
+   L10
+    ICONST_1
+    ISTORE 8
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.damageCooldownTime : I
+    I2F
+    LDC 10.0F
+    FCMPL
+    IFLE L11
+    ALOAD 2
+    GETSTATIC net/minecraft/tags/DamageTypeTags.BYPASSES_COOLDOWN : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFNE L11
+    FLOAD 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.lastHurt : F
+    FCMPG
+    IFGT L12
+    ICONST_0
+    IRETURN
+   L12
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    FLOAD 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.lastHurt : F
+    FSUB
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.actuallyHurt (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)V
+    ALOAD 0
+    FLOAD 3
+    PUTFIELD net/minecraft/world/entity/LivingEntity.lastHurt : F
+    ICONST_0
+    ISTORE 8
+    GOTO L13
+   L11
+    ALOAD 0
+    FLOAD 3
+    PUTFIELD net/minecraft/world/entity/LivingEntity.lastHurt : F
+    ALOAD 0
+    BIPUSH 20
+    PUTFIELD net/minecraft/world/entity/LivingEntity.damageCooldownTime : I
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    FLOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.actuallyHurt (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)V
+    ALOAD 0
+    BIPUSH 10
+    PUTFIELD net/minecraft/world/entity/LivingEntity.hurtDuration : I
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.hurtDuration : I
+    PUTFIELD net/minecraft/world/entity/LivingEntity.hurtTime : I
+   L13
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.resolveMobResponsibleForDamage (Lnet/minecraft/world/damagesource/DamageSource;)V
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.resolvePlayerResponsibleForDamage (Lnet/minecraft/world/damagesource/DamageSource;)Lnet/minecraft/world/entity/player/Player;
+    POP
+    ILOAD 8
+    IFEQ L14
+    ALOAD 5
+    GETSTATIC net/minecraft/core/component/DataComponents.BLOCKS_ATTACKS : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.get (Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/item/component/BlocksAttacks
+    ASTORE 9
+    ILOAD 7
+    IFEQ L15
+    ALOAD 9
+    IFNULL L15
+    ALOAD 9
+    ALOAD 1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/item/component/BlocksAttacks.onBlocked (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+    GOTO L16
+   L15
+    ALOAD 1
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.broadcastDamageEvent (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)V
+   L16
+    ALOAD 2
+    GETSTATIC net/minecraft/tags/DamageTypeTags.NO_IMPACT : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFNE L17
+    ILOAD 7
+    IFEQ L18
+    FLOAD 3
+    FCONST_0
+    FCMPL
+    IFLE L17
+   L18
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.markHurt ()V
+   L17
+    ILOAD 7
+    IFEQ L19
+    FLOAD 3
+    FCONST_0
+    FCMPG
+    IFGT L19
+    ICONST_1
+    GOTO L20
+   L19
+    ICONST_0
+   L20
+    ISTORE 10
+    ALOAD 2
+    GETSTATIC net/minecraft/tags/DamageTypeTags.NO_KNOCKBACK : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFNE L14
+    ILOAD 10
+    IFNE L14
+    ALOAD 0
+    ALOAD 2
+    FLOAD 3
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.dealDefaultKnockback (Lnet/minecraft/world/damagesource/DamageSource;FZ)V
+   L14
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isDeadOrDying ()Z
+    IFEQ L21
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.checkTotemDeathProtection (Lnet/minecraft/world/damagesource/DamageSource;)Z
+    IFNE L22
+    ILOAD 8
+    IFEQ L23
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getDeathSound ()Lnet/minecraft/sounds/SoundEvent;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.makeSound (Lnet/minecraft/sounds/SoundEvent;)V
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.playSecondaryHurtSound (Lnet/minecraft/world/damagesource/DamageSource;)V
+   L23
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.die (Lnet/minecraft/world/damagesource/DamageSource;)V
+    GOTO L22
+   L21
+    ILOAD 8
+    IFEQ L22
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.playHurtSound (Lnet/minecraft/world/damagesource/DamageSource;)V
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.playSecondaryHurtSound (Lnet/minecraft/world/damagesource/DamageSource;)V
+   L22
+    ILOAD 7
+    IFEQ L24
+    FLOAD 3
+    FCONST_0
+    FCMPL
+    IFLE L25
+   L24
+    ICONST_1
+    GOTO L26
+   L25
+    ICONST_0
+   L26
+    ISTORE 9
+    ILOAD 9
+    IFEQ L27
+    ALOAD 0
+    ALOAD 2
+    PUTFIELD net/minecraft/world/entity/LivingEntity.lastDamageSource : Lnet/minecraft/world/damagesource/DamageSource;
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getGameTime ()J
+    PUTFIELD net/minecraft/world/entity/LivingEntity.lastDamageStamp : J
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getActiveEffects ()Ljava/util/Collection;
+    INVOKEINTERFACE java/util/Collection.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 10
+   L28
+    ALOAD 10
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L27
+    ALOAD 10
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/effect/MobEffectInstance
+    ASTORE 11
+    ALOAD 11
+    ALOAD 1
+    ALOAD 0
+    ALOAD 2
+    FLOAD 3
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.onMobHurt (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/damagesource/DamageSource;F)V
+    GOTO L28
+   L27
+    ALOAD 0
+    ASTORE 11
+    ALOAD 11
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFEQ L29
+    ALOAD 11
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 10
+    GETSTATIC net/minecraft/advancements/triggers/CriteriaTriggers.ENTITY_HURT_PLAYER : Lnet/minecraft/advancements/triggers/EntityHurtPlayerTrigger;
+    ALOAD 10
+    ALOAD 2
+    FLOAD 4
+    FLOAD 3
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/advancements/triggers/EntityHurtPlayerTrigger.trigger (Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/damagesource/DamageSource;FFZ)V
+    FLOAD 6
+    FCONST_0
+    FCMPL
+    IFLE L29
+    FLOAD 6
+    LDC 3.4028235E37F
+    FCMPG
+    IFGE L29
+    ALOAD 10
+    GETSTATIC net/minecraft/stats/Stats.DAMAGE_BLOCKED_BY_SHIELD : Lnet/minecraft/resources/Identifier;
+    FLOAD 6
+    LDC 10.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+   L29
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.getEntity ()Lnet/minecraft/world/entity/Entity;
+    ASTORE 11
+    ALOAD 11
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFEQ L30
+    ALOAD 11
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 10
+    GETSTATIC net/minecraft/advancements/triggers/CriteriaTriggers.PLAYER_HURT_ENTITY : Lnet/minecraft/advancements/triggers/PlayerHurtEntityTrigger;
+    ALOAD 10
+    ALOAD 0
+    ALOAD 2
+    FLOAD 4
+    FLOAD 3
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/advancements/triggers/PlayerHurtEntityTrigger.trigger (Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;FFZ)V
+   L30
+    ILOAD 9
+    IRETURN
+    MAXSTACK = 7
+    MAXLOCALS = 12

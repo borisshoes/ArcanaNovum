@@ -1,0 +1,35 @@
+// net/minecraft/server/level/ServerEntity.addPairing(Lnet/minecraft/server/level/ServerPlayer;)V
+    NEW java/util/ArrayList
+    DUP
+    INVOKESPECIAL java/util/ArrayList.<init> ()V
+    ASTORE 2
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    DUP
+    INVOKESTATIC java/util/Objects.requireNonNull (Ljava/lang/Object;)Ljava/lang/Object;
+    POP
+    INVOKEDYNAMIC accept(Ljava/util/List;)Ljava/util/function/Consumer; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)V,
+      // handle kind 0x9 : INVOKEINTERFACE
+      java/util/List.add(Ljava/lang/Object;)Z itf,
+      (Lnet/minecraft/network/protocol/Packet;)V
+    ]
+    INVOKEVIRTUAL net/minecraft/server/level/ServerEntity.sendPairingData (Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerPlayer.connection : Lnet/minecraft/server/network/ServerGamePacketListenerImpl;
+    NEW net/minecraft/network/protocol/game/ClientboundBundlePacket
+    DUP
+    ALOAD 2
+    INVOKESPECIAL net/minecraft/network/protocol/game/ClientboundBundlePacket.<init> (Ljava/lang/Iterable;)V
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.send (Lnet/minecraft/network/protocol/Packet;)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerEntity.entity : Lnet/minecraft/world/entity/Entity;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.startSeenByPlayer (Lnet/minecraft/server/level/ServerPlayer;)V
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 3

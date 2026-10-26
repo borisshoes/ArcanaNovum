@@ -1,0 +1,17 @@
+// net/minecraft/world/level/LocalMobCapCalculator.<init>(Lnet/minecraft/server/level/ChunkMap;)V
+    ALOAD 0
+    INVOKESPECIAL java/lang/Object.<init> ()V
+    ALOAD 0
+    NEW it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.<init> ()V
+    PUTFIELD net/minecraft/world/level/LocalMobCapCalculator.playersNearChunk : Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;
+    ALOAD 0
+    INVOKESTATIC com/google/common/collect/Maps.newHashMap ()Ljava/util/HashMap;
+    PUTFIELD net/minecraft/world/level/LocalMobCapCalculator.playerMobCounts : Ljava/util/Map;
+    ALOAD 0
+    ALOAD 1
+    PUTFIELD net/minecraft/world/level/LocalMobCapCalculator.chunkMap : Lnet/minecraft/server/level/ChunkMap;
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 2

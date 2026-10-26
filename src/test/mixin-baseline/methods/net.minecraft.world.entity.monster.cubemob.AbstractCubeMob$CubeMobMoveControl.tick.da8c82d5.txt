@@ -1,0 +1,148 @@
+// net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getYRot ()F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.yRot : F
+    LDC 90.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.rotlerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.yHeadRot : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.yBodyRot : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.setZza (F)V
+    RETURN
+   L0
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.WAIT : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    PUTFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.onGround ()Z
+    IFEQ L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.setSpeed (F)V
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.jumpDelay : I
+    DUP_X1
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.jumpDelay : I
+    IFGT L2
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getJumpDelay ()I
+    PUTFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.jumpDelay : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.isAggressive : Z
+    IFEQ L3
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.jumpDelay : I
+    ICONST_3
+    IDIV
+    PUTFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.jumpDelay : I
+   L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getJumpControl ()Lnet/minecraft/world/entity/ai/control/JumpControl;
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/JumpControl.jump ()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.doPlayJumpSound ()Z
+    IFEQ L4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getJumpSound ()Lnet/minecraft/sounds/SoundEvent;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getSoundVolume ()F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getSoundPitch ()F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.playSound (Lnet/minecraft/sounds/SoundEvent;FF)V
+    GOTO L4
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    FCONST_0
+    PUTFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.xxa : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    FCONST_0
+    PUTFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.zza : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.setSpeed (F)V
+    GOTO L4
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/cubemob/AbstractCubeMob
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/cubemob/AbstractCubeMob.setSpeed (F)V
+   L4
+    RETURN
+    MAXSTACK = 5
+    MAXLOCALS = 1

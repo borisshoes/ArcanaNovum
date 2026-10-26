@@ -1,0 +1,34 @@
+// net/minecraft/world/item/ProjectileWeaponItem.createProjectile(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/entity/projectile/Projectile;
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    ASTORE 8
+    ALOAD 8
+    INSTANCEOF net/minecraft/world/item/ArrowItem
+    IFEQ L0
+    ALOAD 8
+    CHECKCAST net/minecraft/world/item/ArrowItem
+    ASTORE 7
+    ALOAD 7
+    GOTO L1
+   L0
+    GETSTATIC net/minecraft/world/item/Items.ARROW : Lnet/minecraft/world/item/Item;
+    CHECKCAST net/minecraft/world/item/ArrowItem
+   L1
+    ASTORE 6
+    ALOAD 6
+    ALOAD 1
+    ALOAD 4
+    ALOAD 2
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/item/ArrowItem.createArrow (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;
+    ASTORE 7
+    ILOAD 5
+    IFEQ L2
+    ALOAD 7
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/arrow/AbstractArrow.setCritArrow (Z)V
+   L2
+    ALOAD 7
+    ARETURN
+    MAXSTACK = 5
+    MAXLOCALS = 9

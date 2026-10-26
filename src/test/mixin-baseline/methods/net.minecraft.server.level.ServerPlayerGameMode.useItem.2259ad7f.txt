@@ -1,0 +1,107 @@
+// net/minecraft/server/level/ServerPlayerGameMode.useItem(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayerGameMode.gameModeForPlayer : Lnet/minecraft/world/level/GameType;
+    GETSTATIC net/minecraft/world/level/GameType.SPECTATOR : Lnet/minecraft/world/level/GameType;
+    IF_ACMPNE L0
+    GETSTATIC net/minecraft/world/InteractionResult.PASS : Lnet/minecraft/world/InteractionResult$Pass;
+    ARETURN
+   L0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getCooldowns ()Lnet/minecraft/world/item/ItemCooldowns;
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/item/ItemCooldowns.isOnCooldown (Lnet/minecraft/world/item/ItemStack;)Z
+    IFEQ L1
+    GETSTATIC net/minecraft/world/InteractionResult.PASS : Lnet/minecraft/world/InteractionResult$Pass;
+    ARETURN
+   L1
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ISTORE 5
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getDamageValue ()I
+    ISTORE 6
+    ALOAD 3
+    ALOAD 2
+    ALOAD 1
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.use (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;
+    ASTORE 7
+    ALOAD 7
+    INSTANCEOF net/minecraft/world/InteractionResult$Success
+    IFEQ L2
+    ALOAD 7
+    CHECKCAST net/minecraft/world/InteractionResult$Success
+    ASTORE 9
+    ALOAD 9
+    INVOKEVIRTUAL net/minecraft/world/InteractionResult$Success.heldItemTransformedTo ()Lnet/minecraft/world/item/ItemStack;
+    ALOAD 1
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getItemInHand (Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;
+    INVOKESTATIC java/util/Objects.requireNonNullElse (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/item/ItemStack
+    ASTORE 8
+    GOTO L3
+   L2
+    ALOAD 1
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getItemInHand (Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;
+    ASTORE 8
+   L3
+    ALOAD 8
+    ALOAD 3
+    IF_ACMPNE L4
+    ALOAD 8
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ILOAD 5
+    IF_ICMPNE L4
+    ALOAD 8
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getUseDuration (Lnet/minecraft/world/entity/LivingEntity;)I
+    IFGT L4
+    ALOAD 8
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getDamageValue ()I
+    ILOAD 6
+    IF_ICMPNE L4
+    ALOAD 7
+    ARETURN
+   L4
+    ALOAD 7
+    INSTANCEOF net/minecraft/world/InteractionResult$Fail
+    IFEQ L5
+    ALOAD 8
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getUseDuration (Lnet/minecraft/world/entity/LivingEntity;)I
+    IFLE L5
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isUsingItem ()Z
+    IFNE L5
+    ALOAD 7
+    ARETURN
+   L5
+    ALOAD 3
+    ALOAD 8
+    IF_ACMPEQ L6
+    ALOAD 1
+    ALOAD 4
+    ALOAD 8
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setItemInHand (Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)V
+   L6
+    ALOAD 8
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFEQ L7
+    ALOAD 1
+    ALOAD 4
+    GETSTATIC net/minecraft/world/item/ItemStack.EMPTY : Lnet/minecraft/world/item/ItemStack;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setItemInHand (Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)V
+   L7
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isUsingItem ()Z
+    IFNE L8
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerPlayer.inventoryMenu : Lnet/minecraft/world/inventory/InventoryMenu;
+    INVOKEVIRTUAL net/minecraft/world/inventory/InventoryMenu.sendAllDataToRemote ()V
+   L8
+    ALOAD 7
+    ARETURN
+    MAXSTACK = 4
+    MAXLOCALS = 10

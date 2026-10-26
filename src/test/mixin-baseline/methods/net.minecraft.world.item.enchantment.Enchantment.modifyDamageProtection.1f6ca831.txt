@@ -1,0 +1,25 @@
+// net/minecraft/world/item/enchantment/Enchantment.modifyDamageProtection(Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lorg/apache/commons/lang3/mutable/MutableFloat;)V
+    ALOAD 0
+    GETSTATIC net/minecraft/world/item/enchantment/EnchantmentEffectComponents.DAMAGE_PROTECTION : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/enchantment/Enchantment.getEffects (Lnet/minecraft/core/component/DataComponentType;)Ljava/util/List;
+    ALOAD 1
+    ILOAD 2
+    ALOAD 4
+    ALOAD 5
+    INVOKESTATIC net/minecraft/world/item/enchantment/Enchantment.damageContext (Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)Lnet/minecraft/world/level/storage/loot/LootContext;
+    ALOAD 6
+    ILOAD 2
+    ALOAD 4
+    INVOKEDYNAMIC apply(ILnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/item/enchantment/Enchantment$FloatAction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;F)F,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/world/item/enchantment/Enchantment.lambda$modifyDamageProtection$0(ILnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/enchantment/effects/EnchantmentValueEffect;F)F,
+      (Lnet/minecraft/world/item/enchantment/effects/EnchantmentValueEffect;F)F
+    ]
+    INVOKESTATIC net/minecraft/world/item/enchantment/Enchantment.applyEffects (Ljava/util/List;Lnet/minecraft/world/level/storage/loot/LootContext;Lorg/apache/commons/lang3/mutable/MutableFloat;Lnet/minecraft/world/item/enchantment/Enchantment$FloatAction;)V
+    RETURN
+    MAXSTACK = 5
+    MAXLOCALS = 7

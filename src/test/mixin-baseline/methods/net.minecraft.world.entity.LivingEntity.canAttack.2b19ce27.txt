@@ -1,0 +1,17 @@
+// net/minecraft/world/entity/LivingEntity.canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z
+    ALOAD 1
+    INSTANCEOF net/minecraft/world/entity/player/Player
+    IFEQ L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getDifficulty ()Lnet/minecraft/world/Difficulty;
+    GETSTATIC net/minecraft/world/Difficulty.PEACEFUL : Lnet/minecraft/world/Difficulty;
+    IF_ACMPNE L0
+    ICONST_0
+    IRETURN
+   L0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.canBeSeenAsEnemy ()Z
+    IRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2

@@ -1,0 +1,146 @@
+// net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.tick()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.updateSpeed ()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getNavigation ()Lnet/minecraft/world/entity/ai/navigation/PathNavigation;
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/navigation/PathNavigation.isDone ()Z
+    IFEQ L1
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.setSpeed (F)V
+    RETURN
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.wantedX : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getX ()D
+    DSUB
+    DSTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.wantedY : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getY ()D
+    DSUB
+    DSTORE 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.wantedZ : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getZ ()D
+    DSUB
+    DSTORE 5
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 3
+    DLOAD 3
+    DMUL
+    DADD
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    DSTORE 7
+    DLOAD 7
+    LDC 9.999999747378752E-6D
+    DCMPG
+    IFGE L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.setSpeed (F)V
+    RETURN
+   L2
+    DLOAD 3
+    DLOAD 7
+    DDIV
+    DSTORE 3
+    DLOAD 5
+    DLOAD 1
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    LDC 57.2957763671875D
+    DMUL
+    D2F
+    LDC 90.0F
+    FSUB
+    FSTORE 9
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getYRot ()F
+    FLOAD 9
+    LDC 90.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.rotlerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/animal/turtle/Turtle.yBodyRot : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    FSTORE 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    LDC 0.125F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getSpeed ()F
+    FLOAD 10
+    INVOKESTATIC net/minecraft/util/Mth.lerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    DCONST_0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/animal/turtle/Turtle
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.getSpeed ()F
+    F2D
+    DLOAD 3
+    DMUL
+    LDC 0.1D
+    DMUL
+    DCONST_0
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/turtle/Turtle.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+    RETURN
+    MAXSTACK = 8
+    MAXLOCALS = 11

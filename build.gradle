@@ -12,6 +12,28 @@ base {
 
 loom {
     accessWidenerPath = file("src/main/resources/arcananovum.accesswidener")
+
+    // The test source set is its own small mod (arcananovum-test) that holds the game tests
+    mods {
+        arcananovum {
+            sourceSet sourceSets.main
+        }
+        "arcananovum-test" {
+            sourceSet sourceSets.test
+        }
+    }
+
+    runs {
+        // ./gradlew runGameTest - boots a headless game test server and runs every @GameTest in src/test
+        gameTest {
+            inherit server
+            configName = "Game Test"
+            source sourceSets.test
+            property "fabric-api.gametest"
+            property "fabric-api.gametest.report-file", file("build/test-results/gameTest/TEST-gameTest.xml").absolutePath
+            runDir "build/run/gameTest"
+        }
+    }
 }
 
 fabricApi {
@@ -79,6 +101,44 @@ dependencies {
     include(implementation("io.github.ladysnake:PlayerAbilityLib:${pal_version}"))
 
     implementation "maven.modrinth:simple-voice-chat:fabric-${voicechat_version}"
+
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+    testImplementation platform("org.junit:junit-bom:${project.junit_version}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+// ./gradlew test - unit tests plus the mixin snapshot check
+// ./gradlew test -PupdateMixinBaseline - rewrite src/test/mixin-baseline after reviewing the reported changes
+test {
+    useJUnitPlatform()
+    // Game tests only run inside runGameTest, and mixin classes can't be loaded directly
+    exclude "net/borisshoes/arcananovum/test/gametest/**", "net/borisshoes/arcananovum/test/mixins/**"
+    // fabric-loader-junit boots the mods, which write their config folders into the working directory
+    workingDir = file("build/run/junit")
+    doFirst { workingDir.mkdirs() }
+    systemProperty "arcananovum.test.mixinBaseline", file("src/test/mixin-baseline").absolutePath
+    systemProperty "arcananovum.test.mixinReport", file("build/reports/mixin-snapshot").absolutePath
+    systemProperty "arcananovum.test.updateMixinBaseline", project.hasProperty("updateMixinBaseline")
+    inputs.files(fileTree("src/test/mixin-baseline"))
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
+}
+
+// ./gradlew mixinSnapshot -PmcJar=<path to another merged Minecraft jar>
+// Checks every mixin injection point against a different Minecraft version before porting to it.
+// Optional: -PmixinBaseline=<dir> compares against another baseline, -PupdateMixinBaseline writes it instead
+tasks.register("mixinSnapshot", JavaExec) {
+    group = "verification"
+    description = "Compares mixin injection points against the baseline, optionally using a different Minecraft jar"
+    dependsOn "testClasses"
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "net.borisshoes.arcananovum.test.mixin.MixinSnapshotTool"
+    args file(project.findProperty("mixinBaseline") ?: "src/test/mixin-baseline").absolutePath, file("build/reports/mixin-snapshot").absolutePath
+    if(project.hasProperty("mcJar")) args "--mc-jar", file(project.property("mcJar")).absolutePath
+    if(project.hasProperty("updateMixinBaseline")) args "--update"
 }
 
 processResources {

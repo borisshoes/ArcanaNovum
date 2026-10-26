@@ -1,0 +1,133 @@
+// net/minecraft/world/entity/monster/Vex$VexMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPEQ L0
+    RETURN
+   L0
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.wantedX : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getX ()D
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.wantedY : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getY ()D
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.wantedZ : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getZ ()D
+    DSUB
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    ASTORE 1
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.length ()D
+    DSTORE 2
+    DLOAD 2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getBoundingBox ()Lnet/minecraft/world/phys/AABB;
+    INVOKEVIRTUAL net/minecraft/world/phys/AABB.getSize ()D
+    DCMPG
+    IFGE L1
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.WAIT : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    PUTFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    LDC 0.5D
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.scale (D)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+    GOTO L2
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ALOAD 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.speedModifier : D
+    LDC 0.05D
+    DMUL
+    DLOAD 2
+    DDIV
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.scale (D)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getTarget ()Lnet/minecraft/world/entity/LivingEntity;
+    IFNONNULL L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ASTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    ALOAD 4
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    ALOAD 4
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    D2F
+    FNEG
+    LDC 57.295776F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/monster/Vex.yBodyRot : F
+    GOTO L2
+   L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getTarget ()Lnet/minecraft/world/entity/LivingEntity;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getX ()D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getX ()D
+    DSUB
+    DSTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getTarget ()Lnet/minecraft/world/entity/LivingEntity;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getZ ()D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getZ ()D
+    DSUB
+    DSTORE 6
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    DLOAD 4
+    DLOAD 6
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    D2F
+    FNEG
+    LDC 57.295776F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Vex$VexMoveControl.this$0 : Lnet/minecraft/world/entity/monster/Vex;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Vex.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/monster/Vex.yBodyRot : F
+   L2
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 8

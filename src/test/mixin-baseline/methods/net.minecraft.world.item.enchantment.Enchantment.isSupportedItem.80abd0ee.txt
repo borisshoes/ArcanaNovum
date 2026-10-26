@@ -1,0 +1,9 @@
+// net/minecraft/world/item/enchantment/Enchantment.isSupportedItem(Lnet/minecraft/world/item/ItemStack;)Z
+    ALOAD 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/item/enchantment/Enchantment.definition : Lnet/minecraft/world/item/enchantment/Enchantment$EnchantmentDefinition;
+    GETFIELD net/minecraft/world/item/enchantment/Enchantment$EnchantmentDefinition.supportedItems : Lnet/minecraft/core/HolderSet;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.is (Lnet/minecraft/core/HolderSet;)Z
+    IRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2

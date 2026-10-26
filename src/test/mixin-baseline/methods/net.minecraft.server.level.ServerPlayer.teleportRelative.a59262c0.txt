@@ -1,0 +1,20 @@
+// net/minecraft/server/level/ServerPlayer.teleportRelative(DDD)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.connection : Lnet/minecraft/server/network/ServerGamePacketListenerImpl;
+    NEW net/minecraft/world/entity/PositionMoveRotation
+    DUP
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    DLOAD 1
+    DLOAD 3
+    DLOAD 5
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    GETSTATIC net/minecraft/world/phys/Vec3.ZERO : Lnet/minecraft/world/phys/Vec3;
+    FCONST_0
+    FCONST_0
+    INVOKESPECIAL net/minecraft/world/entity/PositionMoveRotation.<init> (Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;FF)V
+    GETSTATIC net/minecraft/world/entity/Relative.ALL : Ljava/util/Set;
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.teleport (Lnet/minecraft/world/entity/PositionMoveRotation;Ljava/util/Set;)V
+    RETURN
+    MAXSTACK = 11
+    MAXLOCALS = 7

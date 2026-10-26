@@ -1,0 +1,426 @@
+// net/minecraft/world/level/BaseSpawner.serverTick(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)V
+    TRYCATCHBLOCK L0 L1 L2 java/lang/Throwable
+    TRYCATCHBLOCK L3 L4 L2 java/lang/Throwable
+    TRYCATCHBLOCK L5 L6 L2 java/lang/Throwable
+    TRYCATCHBLOCK L7 L8 L2 java/lang/Throwable
+    TRYCATCHBLOCK L9 L10 L2 java/lang/Throwable
+    TRYCATCHBLOCK L11 L12 L2 java/lang/Throwable
+    TRYCATCHBLOCK L13 L14 L2 java/lang/Throwable
+    TRYCATCHBLOCK L15 L16 L2 java/lang/Throwable
+    TRYCATCHBLOCK L17 L18 L2 java/lang/Throwable
+    TRYCATCHBLOCK L19 L20 L2 java/lang/Throwable
+    TRYCATCHBLOCK L21 L22 L2 java/lang/Throwable
+    TRYCATCHBLOCK L23 L24 L25 java/lang/Throwable
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.isNearPlayer (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z
+    IFEQ L26
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.isSpawnerBlockEnabled ()Z
+    IFNE L27
+   L26
+    RETURN
+   L27
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/BaseSpawner.spawnDelay : I
+    ICONST_M1
+    IF_ICMPNE L28
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.delay (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+   L28
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/BaseSpawner.spawnDelay : I
+    IFLE L29
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/level/BaseSpawner.spawnDelay : I
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/level/BaseSpawner.spawnDelay : I
+    RETURN
+   L29
+    ICONST_0
+    ISTORE 3
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getRandom ()Lnet/minecraft/util/RandomSource;
+    ASTORE 4
+    ALOAD 0
+    ALOAD 1
+    ALOAD 4
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.getOrCreateNextSpawnData (Lnet/minecraft/world/level/Level;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/SpawnData;
+    ASTORE 5
+    ICONST_0
+    ISTORE 6
+   L30
+    ILOAD 6
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/BaseSpawner.spawnCount : I
+    IF_ICMPGE L31
+    NEW net/minecraft/util/ProblemReporter$ScopedCollector
+    DUP
+    ALOAD 0
+    INVOKEDYNAMIC get(Lnet/minecraft/world/level/BaseSpawner;)Lnet/minecraft/util/ProblemReporter$PathElement; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      ()Ljava/lang/String;,
+      // handle kind 0x5 : INVOKEVIRTUAL
+      java/lang/Object.toString()Ljava/lang/String;,
+      ()Ljava/lang/String;
+    ]
+    GETSTATIC net/minecraft/world/level/BaseSpawner.LOGGER : Lorg/slf4j/Logger;
+    INVOKESPECIAL net/minecraft/util/ProblemReporter$ScopedCollector.<init> (Lnet/minecraft/util/ProblemReporter$PathElement;Lorg/slf4j/Logger;)V
+    ASTORE 7
+   L0
+    ALOAD 7
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.registryAccess ()Lnet/minecraft/core/RegistryAccess;
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/level/SpawnData.getEntityToSpawn ()Lnet/minecraft/nbt/CompoundTag;
+    INVOKESTATIC net/minecraft/world/level/storage/TagValueInput.create (Lnet/minecraft/util/ProblemReporter;Lnet/minecraft/core/HolderLookup$Provider;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/storage/ValueInput;
+    ASTORE 8
+    ALOAD 8
+    INVOKESTATIC net/minecraft/world/entity/EntityType.by (Lnet/minecraft/world/level/storage/ValueInput;)Ljava/util/Optional;
+    ASTORE 9
+    ALOAD 9
+    INVOKEVIRTUAL java/util/Optional.isEmpty ()Z
+    IFEQ L3
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.delay (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+   L1
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    RETURN
+   L3
+    ALOAD 8
+    LDC "Pos"
+    GETSTATIC net/minecraft/world/phys/Vec3.CODEC : Lcom/mojang/serialization/Codec;
+    INVOKEINTERFACE net/minecraft/world/level/storage/ValueInput.read (Ljava/lang/String;Lcom/mojang/serialization/Codec;)Ljava/util/Optional; (itf)
+    ALOAD 0
+    ALOAD 2
+    ALOAD 4
+    INVOKEDYNAMIC get(Lnet/minecraft/world/level/BaseSpawner;Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)Ljava/util/function/Supplier; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      ()Ljava/lang/Object;,
+      // handle kind 0x5 : INVOKEVIRTUAL
+      net/minecraft/world/level/BaseSpawner.lambda$serverTick$0(Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)Lnet/minecraft/world/phys/Vec3;,
+      ()Lnet/minecraft/world/phys/Vec3;
+    ]
+    INVOKEVIRTUAL java/util/Optional.orElseGet (Ljava/util/function/Supplier;)Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/phys/Vec3
+    ASTORE 10
+    ALOAD 1
+    ALOAD 9
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/entity/EntityType
+    ALOAD 10
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    ALOAD 10
+    GETFIELD net/minecraft/world/phys/Vec3.y : D
+    ALOAD 10
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    INVOKEVIRTUAL net/minecraft/world/entity/EntityType.getSpawnAABB (DDD)Lnet/minecraft/world/phys/AABB;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.noCollision (Lnet/minecraft/world/phys/AABB;)Z
+    IFNE L5
+   L4
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    GOTO L32
+   L5
+    ALOAD 10
+    INVOKESTATIC net/minecraft/core/BlockPos.containing (Lnet/minecraft/core/Position;)Lnet/minecraft/core/BlockPos;
+    ASTORE 11
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/level/SpawnData.getCustomSpawnRules ()Ljava/util/Optional;
+    INVOKEVIRTUAL java/util/Optional.isPresent ()Z
+    IFEQ L33
+    ALOAD 9
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/entity/EntityType
+    INVOKEVIRTUAL net/minecraft/world/entity/EntityType.getCategory ()Lnet/minecraft/world/entity/MobCategory;
+    INVOKEVIRTUAL net/minecraft/world/entity/MobCategory.isFriendly ()Z
+    IFNE L7
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getDifficulty ()Lnet/minecraft/world/Difficulty;
+    GETSTATIC net/minecraft/world/Difficulty.PEACEFUL : Lnet/minecraft/world/Difficulty;
+    IF_ACMPNE L7
+   L6
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    GOTO L32
+   L7
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/level/SpawnData.getCustomSpawnRules ()Ljava/util/Optional;
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/level/SpawnData$CustomSpawnRules
+    ASTORE 12
+    ALOAD 12
+    ALOAD 11
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/level/SpawnData$CustomSpawnRules.isValidPosition (Lnet/minecraft/core/BlockPos;Lnet/minecraft/server/level/ServerLevel;)Z
+    IFNE L9
+   L8
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    GOTO L32
+   L9
+    GOTO L11
+   L33
+    ALOAD 9
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/entity/EntityType
+    ALOAD 1
+    GETSTATIC net/minecraft/world/entity/EntitySpawnReason.SPAWNER : Lnet/minecraft/world/entity/EntitySpawnReason;
+    ALOAD 11
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getRandom ()Lnet/minecraft/util/RandomSource;
+    INVOKESTATIC net/minecraft/world/entity/SpawnPlacements.checkSpawnRules (Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)Z
+    IFNE L11
+   L10
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    GOTO L32
+   L11
+    ALOAD 8
+    ALOAD 1
+    GETSTATIC net/minecraft/world/entity/EntitySpawnReason.SPAWNER : Lnet/minecraft/world/entity/EntitySpawnReason;
+    ALOAD 10
+    INVOKEDYNAMIC process(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/entity/EntityProcessor; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/entity/Entity;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/world/level/BaseSpawner.lambda$serverTick$1(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/entity/Entity;,
+      (Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/entity/Entity;
+    ]
+    INVOKESTATIC net/minecraft/world/entity/EntityType.loadEntityRecursive (Lnet/minecraft/world/level/storage/ValueInput;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/world/entity/EntityProcessor;)Lnet/minecraft/world/entity/Entity;
+    ASTORE 12
+    ALOAD 12
+    IFNONNULL L13
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.delay (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+   L12
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    RETURN
+   L13
+    ALOAD 1
+    ALOAD 12
+    INVOKEVIRTUAL java/lang/Object.getClass ()Ljava/lang/Class;
+    INVOKESTATIC net/minecraft/world/level/entity/EntityTypeTest.forExactClass (Ljava/lang/Class;)Lnet/minecraft/world/level/entity/EntityTypeTest; (itf)
+    NEW net/minecraft/world/phys/AABB
+    DUP
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getX ()I
+    I2D
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getY ()I
+    I2D
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getZ ()I
+    I2D
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getX ()I
+    ICONST_1
+    IADD
+    I2D
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getY ()I
+    ICONST_1
+    IADD
+    I2D
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getZ ()I
+    ICONST_1
+    IADD
+    I2D
+    INVOKESPECIAL net/minecraft/world/phys/AABB.<init> (DDDDDD)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/BaseSpawner.spawnRange : I
+    I2D
+    INVOKEVIRTUAL net/minecraft/world/phys/AABB.inflate (D)Lnet/minecraft/world/phys/AABB;
+    GETSTATIC net/minecraft/world/entity/EntitySelector.NO_SPECTATORS : Ljava/util/function/Predicate;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getEntities (Lnet/minecraft/world/level/entity/EntityTypeTest;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;
+    INVOKEINTERFACE java/util/List.size ()I (itf)
+    ISTORE 13
+    ILOAD 13
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/BaseSpawner.maxNearbyEntities : I
+    IF_ICMPLT L15
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.delay (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+   L14
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    RETURN
+   L15
+    ALOAD 12
+    ALOAD 12
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getX ()D
+    ALOAD 12
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getY ()D
+    ALOAD 12
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getZ ()D
+    ALOAD 4
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextFloat ()F (itf)
+    LDC 360.0F
+    FMUL
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.snapTo (DDDFF)V
+    ALOAD 12
+    INSTANCEOF net/minecraft/world/entity/Mob
+    IFEQ L34
+    ALOAD 12
+    CHECKCAST net/minecraft/world/entity/Mob
+    ASTORE 14
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/level/SpawnData.getCustomSpawnRules ()Ljava/util/Optional;
+    INVOKEVIRTUAL java/util/Optional.isEmpty ()Z
+    IFEQ L17
+    ALOAD 14
+    ALOAD 1
+    GETSTATIC net/minecraft/world/entity/EntitySpawnReason.SPAWNER : Lnet/minecraft/world/entity/EntitySpawnReason;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.checkSpawnRules (Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/world/entity/EntitySpawnReason;)Z
+    IFNE L17
+   L16
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    GOTO L32
+   L17
+    ALOAD 14
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.checkSpawnObstruction (Lnet/minecraft/world/level/LevelReader;)Z
+    IFNE L19
+   L18
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    GOTO L32
+   L19
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/level/SpawnData.getEntityToSpawn ()Lnet/minecraft/nbt/CompoundTag;
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.size ()I
+    ICONST_1
+    IF_ICMPNE L35
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/level/SpawnData.getEntityToSpawn ()Lnet/minecraft/nbt/CompoundTag;
+    LDC "id"
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.getString (Ljava/lang/String;)Ljava/util/Optional;
+    INVOKEVIRTUAL java/util/Optional.isPresent ()Z
+    IFEQ L35
+    ICONST_1
+    GOTO L36
+   L35
+    ICONST_0
+   L36
+    ISTORE 15
+    ILOAD 15
+    IFEQ L37
+    ALOAD 12
+    CHECKCAST net/minecraft/world/entity/Mob
+    ALOAD 1
+    ALOAD 1
+    ALOAD 12
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.blockPosition ()Lnet/minecraft/core/BlockPos;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getCurrentDifficultyAt (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/DifficultyInstance;
+    GETSTATIC net/minecraft/world/entity/EntitySpawnReason.SPAWNER : Lnet/minecraft/world/entity/EntitySpawnReason;
+    ACONST_NULL
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.finalizeSpawn (Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/world/entity/SpawnGroupData;)Lnet/minecraft/world/entity/SpawnGroupData;
+    POP
+   L37
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/level/SpawnData.getEquipment ()Ljava/util/Optional;
+    ALOAD 14
+    DUP
+    INVOKESTATIC java/util/Objects.requireNonNull (Ljava/lang/Object;)Ljava/lang/Object;
+    POP
+    INVOKEDYNAMIC accept(Lnet/minecraft/world/entity/Mob;)Ljava/util/function/Consumer; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)V,
+      // handle kind 0x5 : INVOKEVIRTUAL
+      net/minecraft/world/entity/Mob.equip(Lnet/minecraft/world/entity/EquipmentTable;)V,
+      (Lnet/minecraft/world/entity/EquipmentTable;)V
+    ]
+    INVOKEVIRTUAL java/util/Optional.ifPresent (Ljava/util/function/Consumer;)V
+   L34
+    ALOAD 1
+    ALOAD 12
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.tryAddFreshEntityWithPassengers (Lnet/minecraft/world/entity/Entity;)Z
+    IFNE L21
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.delay (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+   L20
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    RETURN
+   L21
+    ALOAD 1
+    SIPUSH 2004
+    ALOAD 2
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.levelEvent (ILnet/minecraft/core/BlockPos;I)V
+    ALOAD 1
+    ALOAD 12
+    GETSTATIC net/minecraft/world/level/gameevent/GameEvent.ENTITY_PLACE : Lnet/minecraft/core/Holder$Reference;
+    ALOAD 11
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.gameEvent (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/Holder;Lnet/minecraft/core/BlockPos;)V
+    ALOAD 12
+    INSTANCEOF net/minecraft/world/entity/Mob
+    IFEQ L38
+    ALOAD 12
+    CHECKCAST net/minecraft/world/entity/Mob
+    ASTORE 14
+    ALOAD 14
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.spawnAnim ()V
+   L38
+    ICONST_1
+    ISTORE 3
+   L22
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+    GOTO L32
+   L2
+    ASTORE 8
+   L23
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/util/ProblemReporter$ScopedCollector.close ()V
+   L24
+    GOTO L39
+   L25
+    ASTORE 9
+    ALOAD 8
+    ALOAD 9
+    INVOKEVIRTUAL java/lang/Throwable.addSuppressed (Ljava/lang/Throwable;)V
+   L39
+    ALOAD 8
+    ATHROW
+   L32
+    IINC 6 1
+    GOTO L30
+   L31
+    ILOAD 3
+    IFEQ L40
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/BaseSpawner.delay (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+   L40
+    RETURN
+    MAXSTACK = 16
+    MAXLOCALS = 16

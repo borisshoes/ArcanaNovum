@@ -1,0 +1,21 @@
+// net/minecraft/world/inventory/AbstractContainerMenu.stillValid(Lnet/minecraft/world/inventory/ContainerLevelAccess;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/block/Block;)Z
+    ALOAD 0
+    ALOAD 2
+    ALOAD 1
+    INVOKEDYNAMIC apply(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/entity/player/Player;)Ljava/util/function/BiFunction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/world/inventory/AbstractContainerMenu.lambda$stillValid$0(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Ljava/lang/Boolean;,
+      (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Ljava/lang/Boolean;
+    ]
+    ICONST_1
+    INVOKESTATIC java/lang/Boolean.valueOf (Z)Ljava/lang/Boolean;
+    INVOKEINTERFACE net/minecraft/world/inventory/ContainerLevelAccess.evaluate (Ljava/util/function/BiFunction;Ljava/lang/Object;)Ljava/lang/Object; (itf)
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+    IRETURN
+    MAXSTACK = 3
+    MAXLOCALS = 3

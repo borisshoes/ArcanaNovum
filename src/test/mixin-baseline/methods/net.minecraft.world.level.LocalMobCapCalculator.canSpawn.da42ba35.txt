@@ -1,0 +1,36 @@
+// net/minecraft/world/level/LocalMobCapCalculator.canSpawn(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/world/level/ChunkPos;)Z
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/LocalMobCapCalculator.getPlayersNear (Lnet/minecraft/world/level/ChunkPos;)Ljava/util/List;
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 3
+   L0
+    ALOAD 3
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 3
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/LocalMobCapCalculator.playerMobCounts : Ljava/util/Map;
+    ALOAD 4
+    INVOKEINTERFACE java/util/Map.get (Ljava/lang/Object;)Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/level/LocalMobCapCalculator$MobCounts
+    ASTORE 5
+    ALOAD 5
+    IFNULL L2
+    ALOAD 5
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/level/LocalMobCapCalculator$MobCounts.canSpawn (Lnet/minecraft/world/entity/MobCategory;)Z
+    IFEQ L3
+   L2
+    ICONST_1
+    IRETURN
+   L3
+    GOTO L0
+   L1
+    ICONST_0
+    IRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 6

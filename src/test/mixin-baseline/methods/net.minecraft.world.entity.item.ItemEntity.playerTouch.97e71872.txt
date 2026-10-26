@@ -1,0 +1,60 @@
+// net/minecraft/world/entity/item/ItemEntity.playerTouch(Lnet/minecraft/world/entity/player/Player;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.isClientSide ()Z
+    IFEQ L0
+    RETURN
+   L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getItem ()Lnet/minecraft/world/item/ItemStack;
+    ASTORE 2
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    ASTORE 3
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ISTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.pickupDelay : I
+    IFNE L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.target : Ljava/util/UUID;
+    IFNULL L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.target : Ljava/util/UUID;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getUUID ()Ljava/util/UUID;
+    INVOKEVIRTUAL java/util/UUID.equals (Ljava/lang/Object;)Z
+    IFEQ L1
+   L2
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getInventory ()Lnet/minecraft/world/entity/player/Inventory;
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.add (Lnet/minecraft/world/item/ItemStack;)Z
+    IFEQ L1
+    ALOAD 1
+    ALOAD 0
+    ILOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.take (Lnet/minecraft/world/entity/Entity;I)V
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFEQ L3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.discard ()V
+    ALOAD 2
+    ILOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.setCount (I)V
+   L3
+    ALOAD 1
+    GETSTATIC net/minecraft/stats/Stats.ITEM_PICKED_UP : Lnet/minecraft/stats/StatType;
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/stats/StatType.get (Ljava/lang/Object;)Lnet/minecraft/stats/Stat;
+    ILOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.awardStat (Lnet/minecraft/stats/Stat;I)V
+    ALOAD 1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.onItemPickup (Lnet/minecraft/world/entity/item/ItemEntity;)V
+   L1
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 5

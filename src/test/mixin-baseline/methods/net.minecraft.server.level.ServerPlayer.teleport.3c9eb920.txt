@@ -1,0 +1,9 @@
+// net/minecraft/server/level/ServerPlayer.teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/world/entity/Entity;
+  @Lorg/jspecify/annotations/Nullable;(
+) : METHOD_RETURN, null
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.teleport (Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;
+    ARETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2

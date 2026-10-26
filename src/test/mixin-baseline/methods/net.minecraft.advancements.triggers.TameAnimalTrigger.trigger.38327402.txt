@@ -1,0 +1,21 @@
+// net/minecraft/advancements/triggers/TameAnimalTrigger.trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/animal/Animal;)V
+    ALOAD 1
+    ALOAD 2
+    INVOKESTATIC net/minecraft/advancements/predicates/entity/EntityPredicate.createContext (Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/storage/loot/LootContext;
+    ASTORE 3
+    ALOAD 0
+    ALOAD 1
+    ALOAD 3
+    INVOKEDYNAMIC test(Lnet/minecraft/world/level/storage/loot/LootContext;)Ljava/util/function/Predicate; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)Z,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/advancements/triggers/TameAnimalTrigger.lambda$trigger$0(Lnet/minecraft/world/level/storage/loot/LootContext;Lnet/minecraft/advancements/triggers/TameAnimalTrigger$TriggerInstance;)Z,
+      (Lnet/minecraft/advancements/triggers/TameAnimalTrigger$TriggerInstance;)Z
+    ]
+    INVOKEVIRTUAL net/minecraft/advancements/triggers/TameAnimalTrigger.trigger (Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Predicate;)V
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 4

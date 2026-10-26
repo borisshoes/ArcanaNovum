@@ -1,0 +1,101 @@
+// net/minecraft/world/entity/monster/Creeper.registerGoals()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.goalSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    ICONST_1
+    NEW net/minecraft/world/entity/ai/goal/FloatGoal
+    DUP
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/FloatGoal.<init> (Lnet/minecraft/world/entity/Mob;)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.goalSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    ICONST_2
+    NEW net/minecraft/world/entity/ai/goal/SwellGoal
+    DUP
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/SwellGoal.<init> (Lnet/minecraft/world/entity/monster/Creeper;)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.goalSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    ICONST_3
+    NEW net/minecraft/world/entity/ai/goal/AvoidEntityGoal
+    DUP
+    ALOAD 0
+    LDC Lnet/minecraft/world/entity/animal/feline/Ocelot;.class
+    LDC 6.0F
+    DCONST_1
+    LDC 1.2D
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/AvoidEntityGoal.<init> (Lnet/minecraft/world/entity/PathfinderMob;Ljava/lang/Class;FDD)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.goalSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    ICONST_3
+    NEW net/minecraft/world/entity/ai/goal/AvoidEntityGoal
+    DUP
+    ALOAD 0
+    LDC Lnet/minecraft/world/entity/animal/feline/Cat;.class
+    LDC 6.0F
+    DCONST_1
+    LDC 1.2D
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/AvoidEntityGoal.<init> (Lnet/minecraft/world/entity/PathfinderMob;Ljava/lang/Class;FDD)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.goalSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    ICONST_4
+    NEW net/minecraft/world/entity/ai/goal/MeleeAttackGoal
+    DUP
+    ALOAD 0
+    DCONST_1
+    ICONST_0
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/MeleeAttackGoal.<init> (Lnet/minecraft/world/entity/PathfinderMob;DZ)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.goalSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    ICONST_5
+    NEW net/minecraft/world/entity/ai/goal/WaterAvoidingRandomStrollGoal
+    DUP
+    ALOAD 0
+    LDC 0.8D
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/WaterAvoidingRandomStrollGoal.<init> (Lnet/minecraft/world/entity/PathfinderMob;D)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.goalSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    BIPUSH 6
+    NEW net/minecraft/world/entity/ai/goal/LookAtPlayerGoal
+    DUP
+    ALOAD 0
+    LDC Lnet/minecraft/world/entity/player/Player;.class
+    LDC 8.0F
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/LookAtPlayerGoal.<init> (Lnet/minecraft/world/entity/Mob;Ljava/lang/Class;F)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.goalSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    BIPUSH 6
+    NEW net/minecraft/world/entity/ai/goal/RandomLookAroundGoal
+    DUP
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/RandomLookAroundGoal.<init> (Lnet/minecraft/world/entity/Mob;)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.targetSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    ICONST_1
+    NEW net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal
+    DUP
+    ALOAD 0
+    LDC Lnet/minecraft/world/entity/player/Player;.class
+    ICONST_1
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal.<init> (Lnet/minecraft/world/entity/Mob;Ljava/lang/Class;Z)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Creeper.targetSelector : Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+    ICONST_2
+    NEW net/minecraft/world/entity/ai/goal/target/HurtByTargetGoal
+    DUP
+    ALOAD 0
+    ICONST_0
+    ANEWARRAY java/lang/Class
+    INVOKESPECIAL net/minecraft/world/entity/ai/goal/target/HurtByTargetGoal.<init> (Lnet/minecraft/world/entity/PathfinderMob;[Ljava/lang/Class;)V
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/goal/GoalSelector.addGoal (ILnet/minecraft/world/entity/ai/goal/Goal;)V
+    RETURN
+    MAXSTACK = 11
+    MAXLOCALS = 1

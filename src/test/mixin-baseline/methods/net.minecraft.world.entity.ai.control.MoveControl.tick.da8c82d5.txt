@@ -1,0 +1,309 @@
+// net/minecraft/world/entity/ai/control/MoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.STRAFE : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    D2F
+    FSTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.speedModifier : D
+    D2F
+    FLOAD 1
+    FMUL
+    FSTORE 2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.strafeForwards : F
+    FSTORE 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.strafeRight : F
+    FSTORE 4
+    FLOAD 3
+    FLOAD 3
+    FMUL
+    FLOAD 4
+    FLOAD 4
+    FMUL
+    FADD
+    INVOKESTATIC net/minecraft/util/Mth.sqrt (F)F
+    FSTORE 5
+    FLOAD 5
+    FCONST_1
+    FCMPG
+    IFGE L1
+    FCONST_1
+    FSTORE 5
+   L1
+    FLOAD 2
+    FLOAD 5
+    FDIV
+    FSTORE 5
+    FLOAD 3
+    FLOAD 5
+    FMUL
+    FSTORE 3
+    FLOAD 4
+    FLOAD 5
+    FMUL
+    FSTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getYRot ()F
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC net/minecraft/util/Mth.sin (D)F
+    FSTORE 6
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getYRot ()F
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC net/minecraft/util/Mth.cos (D)F
+    FSTORE 7
+    FLOAD 3
+    FLOAD 7
+    FMUL
+    FLOAD 4
+    FLOAD 6
+    FMUL
+    FSUB
+    FSTORE 8
+    FLOAD 4
+    FLOAD 7
+    FMUL
+    FLOAD 3
+    FLOAD 6
+    FMUL
+    FADD
+    FSTORE 9
+    ALOAD 0
+    FLOAD 8
+    FLOAD 9
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/MoveControl.isWalkable (FF)Z
+    IFNE L2
+    ALOAD 0
+    FCONST_1
+    PUTFIELD net/minecraft/world/entity/ai/control/MoveControl.strafeForwards : F
+    ALOAD 0
+    FCONST_0
+    PUTFIELD net/minecraft/world/entity/ai/control/MoveControl.strafeRight : F
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FLOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.strafeForwards : F
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setZza (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.strafeRight : F
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setXxa (F)V
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.WAIT : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    PUTFIELD net/minecraft/world/entity/ai/control/MoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GOTO L3
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L4
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.WAIT : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    PUTFIELD net/minecraft/world/entity/ai/control/MoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.wantedX : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getX ()D
+    DSUB
+    DSTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.wantedZ : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getZ ()D
+    DSUB
+    DSTORE 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.wantedY : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getY ()D
+    DSUB
+    DSTORE 5
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    DLOAD 3
+    DLOAD 3
+    DMUL
+    DADD
+    DSTORE 7
+    DLOAD 7
+    LDC 2.500000277905201E-7D
+    DCMPG
+    IFGE L5
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setZza (F)V
+    RETURN
+   L5
+    DLOAD 3
+    DLOAD 1
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    LDC 57.2957763671875D
+    DMUL
+    D2F
+    LDC 90.0F
+    FSUB
+    FSTORE 9
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getYRot ()F
+    FLOAD 9
+    LDC 90.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/MoveControl.rotlerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.blockPosition ()Lnet/minecraft/core/BlockPos;
+    ASTORE 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getBlockState (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
+    ASTORE 11
+    ALOAD 11
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/level/block/state/BlockState.getCollisionShape (Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;
+    ASTORE 12
+    DLOAD 5
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.maxUpStep ()F
+    F2D
+    DCMPL
+    IFLE L6
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 3
+    DLOAD 3
+    DMUL
+    DADD
+    FCONST_1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getBbWidth ()F
+    INVOKESTATIC java/lang/Math.max (FF)F
+    F2D
+    DCMPG
+    IFLT L7
+   L6
+    ALOAD 12
+    INVOKEVIRTUAL net/minecraft/world/phys/shapes/VoxelShape.isEmpty ()Z
+    IFNE L8
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getY ()D
+    ALOAD 12
+    GETSTATIC net/minecraft/core/Direction$Axis.Y : Lnet/minecraft/core/Direction$Axis;
+    INVOKEVIRTUAL net/minecraft/world/phys/shapes/VoxelShape.max (Lnet/minecraft/core/Direction$Axis;)D
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getY ()I
+    I2D
+    DADD
+    DCMPG
+    IFGE L8
+    ALOAD 11
+    GETSTATIC net/minecraft/tags/BlockTags.DOORS : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/level/block/state/BlockState.is (Lnet/minecraft/tags/TagKey;)Z
+    IFNE L8
+    ALOAD 11
+    GETSTATIC net/minecraft/tags/BlockTags.FENCES : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/level/block/state/BlockState.is (Lnet/minecraft/tags/TagKey;)Z
+    IFNE L8
+   L7
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getJumpControl ()Lnet/minecraft/world/entity/ai/control/JumpControl;
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/JumpControl.jump ()V
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.JUMPING : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    PUTFIELD net/minecraft/world/entity/ai/control/MoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+   L8
+    GOTO L3
+   L4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.JUMPING : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L9
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.onGround ()Z
+    IFNE L10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.isInLiquid ()Z
+    IFEQ L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.isAffectedByFluids ()Z
+    IFEQ L3
+   L10
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.WAIT : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    PUTFIELD net/minecraft/world/entity/ai/control/MoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GOTO L3
+   L9
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/control/MoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setZza (F)V
+   L3
+    RETURN
+    MAXSTACK = 6
+    MAXLOCALS = 13

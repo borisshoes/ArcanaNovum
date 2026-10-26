@@ -1,0 +1,100 @@
+// net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.canContinueToUse()Z
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getTarget ()Lnet/minecraft/world/entity/LivingEntity;
+    ASTORE 1
+    ALOAD 1
+    IFNONNULL L0
+    ICONST_0
+    IRETURN
+   L0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isAlive ()Z
+    IFNE L1
+    ICONST_0
+    IRETURN
+   L1
+    ALOAD 1
+    INSTANCEOF net/minecraft/world/entity/player/Player
+    IFEQ L2
+    ALOAD 1
+    CHECKCAST net/minecraft/world/entity/player/Player
+    ASTORE 2
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isSpectator ()Z
+    IFNE L3
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.isCreative ()Z
+    IFEQ L2
+   L3
+    ICONST_0
+    IRETURN
+   L2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.canUse ()Z
+    IFNE L4
+    ICONST_0
+    IRETURN
+   L4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    GETFIELD net/minecraft/world/entity/monster/Phantom.tickCount : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.catSearchTick : I
+    IF_ICMPLE L5
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    GETFIELD net/minecraft/world/entity/monster/Phantom.tickCount : I
+    BIPUSH 20
+    IADD
+    PUTFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.catSearchTick : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.level ()Lnet/minecraft/world/level/Level;
+    LDC Lnet/minecraft/world/entity/animal/feline/Cat;.class
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.this$0 : Lnet/minecraft/world/entity/monster/Phantom;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.getBoundingBox ()Lnet/minecraft/world/phys/AABB;
+    LDC 16.0D
+    INVOKEVIRTUAL net/minecraft/world/phys/AABB.inflate (D)Lnet/minecraft/world/phys/AABB;
+    GETSTATIC net/minecraft/world/entity/EntitySelector.ENTITY_STILL_ALIVE : Ljava/util/function/Predicate;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getEntitiesOfClass (Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;
+    ASTORE 2
+    ALOAD 2
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 3
+   L6
+    ALOAD 3
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L7
+    ALOAD 3
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/entity/animal/feline/Cat
+    ASTORE 4
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/animal/feline/Cat.hiss ()V
+    GOTO L6
+   L7
+    ALOAD 0
+    ALOAD 2
+    INVOKEINTERFACE java/util/List.isEmpty ()Z (itf)
+    IFNE L8
+    ICONST_1
+    GOTO L9
+   L8
+    ICONST_0
+   L9
+    PUTFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.isScaredOfCat : Z
+   L5
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.isScaredOfCat : Z
+    IFNE L10
+    ICONST_1
+    GOTO L11
+   L10
+    ICONST_0
+   L11
+    IRETURN
+    MAXSTACK = 5
+    MAXLOCALS = 5

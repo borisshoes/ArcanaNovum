@@ -1,0 +1,21 @@
+// net/minecraft/server/level/ChunkMap.anyPlayerCloseEnoughForSpawning(Lnet/minecraft/world/level/ChunkPos;)Z
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ChunkMap.distanceManager : Lnet/minecraft/server/level/ChunkMap$DistanceManager;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/level/ChunkPos.pack ()J
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkMap$DistanceManager.hasPlayersNearby (J)Lnet/minecraft/util/TriState;
+    ASTORE 2
+    ALOAD 2
+    GETSTATIC net/minecraft/util/TriState.DEFAULT : Lnet/minecraft/util/TriState;
+    IF_ACMPNE L0
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkMap.anyPlayerCloseEnoughForSpawningInternal (Lnet/minecraft/world/level/ChunkPos;)Z
+    IRETURN
+   L0
+    ALOAD 2
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/util/TriState.toBoolean (Z)Z
+    IRETURN
+    MAXSTACK = 3
+    MAXLOCALS = 3

@@ -1,0 +1,34 @@
+// net/minecraft/world/item/enchantment/EnchantmentHelper.updateEnchantments(Lnet/minecraft/world/item/ItemStack;Ljava/util/function/Consumer;)Lnet/minecraft/world/item/enchantment/ItemEnchantments;
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.getComponentType (Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/core/component/DataComponentType;
+    ASTORE 2
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.get (Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/item/enchantment/ItemEnchantments
+    ASTORE 3
+    ALOAD 3
+    IFNONNULL L0
+    GETSTATIC net/minecraft/world/item/enchantment/ItemEnchantments.EMPTY : Lnet/minecraft/world/item/enchantment/ItemEnchantments;
+    ARETURN
+   L0
+    NEW net/minecraft/world/item/enchantment/ItemEnchantments$Mutable
+    DUP
+    ALOAD 3
+    INVOKESPECIAL net/minecraft/world/item/enchantment/ItemEnchantments$Mutable.<init> (Lnet/minecraft/world/item/enchantment/ItemEnchantments;)V
+    ASTORE 4
+    ALOAD 1
+    ALOAD 4
+    INVOKEINTERFACE java/util/function/Consumer.accept (Ljava/lang/Object;)V (itf)
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/enchantment/ItemEnchantments$Mutable.toImmutable ()Lnet/minecraft/world/item/enchantment/ItemEnchantments;
+    ASTORE 5
+    ALOAD 0
+    ALOAD 2
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.set (Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object;
+    POP
+    ALOAD 5
+    ARETURN
+    MAXSTACK = 3
+    MAXLOCALS = 6

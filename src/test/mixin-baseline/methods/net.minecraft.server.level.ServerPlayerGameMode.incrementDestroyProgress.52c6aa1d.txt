@@ -1,0 +1,40 @@
+// net/minecraft/server/level/ServerPlayerGameMode.incrementDestroyProgress(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;I)F
+    ALOAD 1
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayerGameMode.player : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayerGameMode.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/block/state/BlockState.getDestroyProgress (Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F
+    ILOAD 3
+    ICONST_1
+    IADD
+    I2F
+    FMUL
+    FSTORE 4
+    FLOAD 4
+    LDC 10.0F
+    FMUL
+    F2I
+    ISTORE 5
+    ILOAD 5
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayerGameMode.lastSentState : I
+    IF_ICMPEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayerGameMode.level : Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayerGameMode.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getId ()I
+    ALOAD 2
+    ILOAD 5
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.destroyBlockProgress (ILnet/minecraft/core/BlockPos;I)V
+    ALOAD 0
+    ILOAD 5
+    PUTFIELD net/minecraft/server/level/ServerPlayerGameMode.lastSentState : I
+   L0
+    FLOAD 4
+    FRETURN
+    MAXSTACK = 4
+    MAXLOCALS = 6

@@ -1,0 +1,403 @@
+// net/minecraft/world/entity/boss/wither/WitherBoss.customServerAiStep(Lnet/minecraft/server/level/ServerLevel;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getInvulnerableTicks ()I
+    IFLE L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getInvulnerableTicks ()I
+    ICONST_1
+    ISUB
+    ISTORE 2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.bossEvent : Lnet/minecraft/server/level/ServerBossEvent;
+    FCONST_1
+    ILOAD 2
+    I2F
+    LDC 220.0F
+    FDIV
+    FSUB
+    INVOKEVIRTUAL net/minecraft/server/level/ServerBossEvent.setProgress (F)V
+    ILOAD 2
+    IFGT L1
+    ALOAD 1
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getX ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getEyeY ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getZ ()D
+    LDC 7.0F
+    ICONST_0
+    GETSTATIC net/minecraft/world/level/Level$ExplosionInteraction.MOB : Lnet/minecraft/world/level/Level$ExplosionInteraction;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.explode (Lnet/minecraft/world/entity/Entity;DDDFZLnet/minecraft/world/level/Level$ExplosionInteraction;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.isSilent ()Z
+    IFNE L1
+    ALOAD 1
+    SIPUSH 1023
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.blockPosition ()Lnet/minecraft/core/BlockPos;
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.globalLevelEvent (ILnet/minecraft/core/BlockPos;I)V
+   L1
+    ALOAD 0
+    ILOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.setInvulnerableTicks (I)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.tickCount : I
+    BIPUSH 10
+    IREM
+    IFNE L2
+    ALOAD 0
+    LDC 10.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.heal (F)V
+   L2
+    RETURN
+   L0
+    ALOAD 0
+    ALOAD 1
+    INVOKESPECIAL net/minecraft/world/entity/monster/Monster.customServerAiStep (Lnet/minecraft/server/level/ServerLevel;)V
+    ICONST_1
+    ISTORE 2
+   L3
+    ILOAD 2
+    ICONST_3
+    IF_ICMPGE L4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.tickCount : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.nextHeadUpdate : [I
+    ILOAD 2
+    ICONST_1
+    ISUB
+    IALOAD
+    IF_ICMPLT L5
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.nextHeadUpdate : [I
+    ILOAD 2
+    ICONST_1
+    ISUB
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.tickCount : I
+    BIPUSH 10
+    IADD
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.random : Lnet/minecraft/util/RandomSource;
+    BIPUSH 10
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    IADD
+    IASTORE
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getDifficulty ()Lnet/minecraft/world/Difficulty;
+    GETSTATIC net/minecraft/world/Difficulty.NORMAL : Lnet/minecraft/world/Difficulty;
+    IF_ACMPEQ L6
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getDifficulty ()Lnet/minecraft/world/Difficulty;
+    GETSTATIC net/minecraft/world/Difficulty.HARD : Lnet/minecraft/world/Difficulty;
+    IF_ACMPNE L7
+   L6
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.idleHeadUpdates : [I
+    ILOAD 2
+    ICONST_1
+    ISUB
+    DUP2
+    IALOAD
+    DUP_X2
+    ICONST_1
+    IADD
+    IASTORE
+    BIPUSH 15
+    IF_ICMPLE L7
+    LDC 10.0F
+    FSTORE 3
+    LDC 5.0F
+    FSTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.random : Lnet/minecraft/util/RandomSource;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getX ()D
+    LDC 10.0D
+    DSUB
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getX ()D
+    LDC 10.0D
+    DADD
+    INVOKESTATIC net/minecraft/util/Mth.nextDouble (Lnet/minecraft/util/RandomSource;DD)D
+    DSTORE 5
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.random : Lnet/minecraft/util/RandomSource;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getY ()D
+    LDC 5.0D
+    DSUB
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getY ()D
+    LDC 5.0D
+    DADD
+    INVOKESTATIC net/minecraft/util/Mth.nextDouble (Lnet/minecraft/util/RandomSource;DD)D
+    DSTORE 7
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.random : Lnet/minecraft/util/RandomSource;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getZ ()D
+    LDC 10.0D
+    DSUB
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getZ ()D
+    LDC 10.0D
+    DADD
+    INVOKESTATIC net/minecraft/util/Mth.nextDouble (Lnet/minecraft/util/RandomSource;DD)D
+    DSTORE 9
+    ALOAD 0
+    ILOAD 2
+    ICONST_1
+    IADD
+    DLOAD 5
+    DLOAD 7
+    DLOAD 9
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.performRangedAttack (IDDDZ)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.idleHeadUpdates : [I
+    ILOAD 2
+    ICONST_1
+    ISUB
+    ICONST_0
+    IASTORE
+   L7
+    ALOAD 0
+    ILOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getAlternativeTarget (I)I
+    ISTORE 3
+    ILOAD 3
+    IFLE L8
+    ALOAD 1
+    ILOAD 3
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getEntity (I)Lnet/minecraft/world/entity/Entity;
+    CHECKCAST net/minecraft/world/entity/LivingEntity
+    ASTORE 4
+    ALOAD 4
+    IFNULL L9
+    ALOAD 0
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.canAttack (Lnet/minecraft/world/entity/LivingEntity;)Z
+    IFEQ L9
+    ALOAD 0
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.distanceToSqr (Lnet/minecraft/world/entity/Entity;)D
+    LDC 900.0D
+    DCMPL
+    IFGT L9
+    ALOAD 0
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.hasLineOfSight (Lnet/minecraft/world/entity/Entity;)Z
+    IFNE L10
+   L9
+    ALOAD 0
+    ILOAD 2
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.setAlternativeTarget (II)V
+    GOTO L11
+   L10
+    ALOAD 0
+    ILOAD 2
+    ICONST_1
+    IADD
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.performRangedAttack (ILnet/minecraft/world/entity/LivingEntity;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.nextHeadUpdate : [I
+    ILOAD 2
+    ICONST_1
+    ISUB
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.tickCount : I
+    BIPUSH 40
+    IADD
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.random : Lnet/minecraft/util/RandomSource;
+    BIPUSH 20
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    IADD
+    IASTORE
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.idleHeadUpdates : [I
+    ILOAD 2
+    ICONST_1
+    ISUB
+    ICONST_0
+    IASTORE
+   L11
+    GOTO L5
+   L8
+    ALOAD 1
+    LDC Lnet/minecraft/world/entity/LivingEntity;.class
+    GETSTATIC net/minecraft/world/entity/boss/wither/WitherBoss.TARGETING_CONDITIONS : Lnet/minecraft/world/entity/ai/targeting/TargetingConditions;
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBoundingBox ()Lnet/minecraft/world/phys/AABB;
+    LDC 20.0D
+    LDC 8.0D
+    LDC 20.0D
+    INVOKEVIRTUAL net/minecraft/world/phys/AABB.inflate (DDD)Lnet/minecraft/world/phys/AABB;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getNearbyEntities (Ljava/lang/Class;Lnet/minecraft/world/entity/ai/targeting/TargetingConditions;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;
+    ASTORE 4
+    ALOAD 4
+    INVOKEINTERFACE java/util/List.isEmpty ()Z (itf)
+    IFNE L5
+    ALOAD 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.random : Lnet/minecraft/util/RandomSource;
+    ALOAD 4
+    INVOKEINTERFACE java/util/List.size ()I (itf)
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    INVOKEINTERFACE java/util/List.get (I)Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/entity/LivingEntity
+    ASTORE 5
+    ALOAD 0
+    ILOAD 2
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getId ()I
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.setAlternativeTarget (II)V
+   L5
+    IINC 2 1
+    GOTO L3
+   L4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getTarget ()Lnet/minecraft/world/entity/LivingEntity;
+    IFNULL L12
+    ALOAD 0
+    ICONST_0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getTarget ()Lnet/minecraft/world/entity/LivingEntity;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getId ()I
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.setAlternativeTarget (II)V
+    GOTO L13
+   L12
+    ALOAD 0
+    ICONST_0
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.setAlternativeTarget (II)V
+   L13
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.destroyBlocksTick : I
+    IFLE L14
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.destroyBlocksTick : I
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/entity/boss/wither/WitherBoss.destroyBlocksTick : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.destroyBlocksTick : I
+    IFNE L14
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getGameRules ()Lnet/minecraft/world/level/gamerules/GameRules;
+    GETSTATIC net/minecraft/world/level/gamerules/GameRules.MOB_GRIEFING : Lnet/minecraft/world/level/gamerules/GameRule;
+    INVOKEVIRTUAL net/minecraft/world/level/gamerules/GameRules.get (Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+    IFEQ L14
+    ICONST_0
+    ISTORE 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBbWidth ()F
+    FCONST_2
+    FDIV
+    FCONST_1
+    FADD
+    INVOKESTATIC net/minecraft/util/Mth.floor (F)I
+    ISTORE 3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBbHeight ()F
+    INVOKESTATIC net/minecraft/util/Mth.floor (F)I
+    ISTORE 4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBlockX ()I
+    ILOAD 3
+    ISUB
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBlockY ()I
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBlockZ ()I
+    ILOAD 3
+    ISUB
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBlockX ()I
+    ILOAD 3
+    IADD
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBlockY ()I
+    ILOAD 4
+    IADD
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getBlockZ ()I
+    ILOAD 3
+    IADD
+    INVOKESTATIC net/minecraft/core/BlockPos.betweenClosed (IIIIII)Ljava/lang/Iterable;
+    INVOKEINTERFACE java/lang/Iterable.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 5
+   L15
+    ALOAD 5
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L16
+    ALOAD 5
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/core/BlockPos
+    ASTORE 6
+    ALOAD 1
+    ALOAD 6
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getBlockState (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
+    ASTORE 7
+    ALOAD 7
+    INVOKESTATIC net/minecraft/world/entity/boss/wither/WitherBoss.canDestroy (Lnet/minecraft/world/level/block/state/BlockState;)Z
+    IFEQ L17
+    ALOAD 1
+    ALOAD 6
+    ICONST_1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.destroyBlock (Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/entity/Entity;)Z
+    IFNE L18
+    ILOAD 2
+    IFEQ L19
+   L18
+    ICONST_1
+    GOTO L20
+   L19
+    ICONST_0
+   L20
+    ISTORE 2
+   L17
+    GOTO L15
+   L16
+    ILOAD 2
+    IFEQ L14
+    ALOAD 1
+    ACONST_NULL
+    SIPUSH 1022
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.blockPosition ()Lnet/minecraft/core/BlockPos;
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.levelEvent (Lnet/minecraft/world/entity/Entity;ILnet/minecraft/core/BlockPos;I)V
+   L14
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.tickCount : I
+    BIPUSH 20
+    IREM
+    IFNE L21
+    ALOAD 0
+    FCONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.heal (F)V
+   L21
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/boss/wither/WitherBoss.bossEvent : Lnet/minecraft/server/level/ServerBossEvent;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getHealth ()F
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/boss/wither/WitherBoss.getMaxHealth ()F
+    FDIV
+    INVOKEVIRTUAL net/minecraft/server/level/ServerBossEvent.setProgress (F)V
+    RETURN
+    MAXSTACK = 11
+    MAXLOCALS = 11

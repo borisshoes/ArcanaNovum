@@ -1,0 +1,42 @@
+// net/minecraft/world/entity/projectile/FishingHook.pullEntity(Lnet/minecraft/world/entity/Entity;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/FishingHook.getOwner ()Lnet/minecraft/world/entity/Entity;
+    ASTORE 2
+    ALOAD 2
+    IFNULL L0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.canSimulateMovement ()Z
+    IFNE L1
+   L0
+    RETURN
+   L1
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getX ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/FishingHook.getX ()D
+    DSUB
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getY ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/FishingHook.getY ()D
+    DSUB
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getZ ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/FishingHook.getZ ()D
+    DSUB
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    LDC 0.1D
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.scale (D)Lnet/minecraft/world/phys/Vec3;
+    ASTORE 3
+    ALOAD 1
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 4

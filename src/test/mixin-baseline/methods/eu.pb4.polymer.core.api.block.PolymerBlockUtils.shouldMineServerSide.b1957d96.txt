@@ -1,0 +1,59 @@
+// eu/pb4/polymer/core/api/block/PolymerBlockUtils.shouldMineServerSide(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z
+    GETSTATIC net/minecraft/core/registries/BuiltInRegistries.BLOCK : Lnet/minecraft/core/DefaultedRegistry;
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/block/state/BlockState.getBlock ()Lnet/minecraft/world/level/block/Block;
+    INVOKESTATIC eu/pb4/polymer/core/api/utils/PolymerSyncedObject.getSyncedObject (Lnet/minecraft/core/Registry;Ljava/lang/Object;)Leu/pb4/polymer/core/api/utils/PolymerSyncedObject; (itf)
+    ASTORE 5
+    ALOAD 5
+    INSTANCEOF eu/pb4/polymer/core/api/block/PolymerBlock
+    IFEQ L0
+    ALOAD 5
+    CHECKCAST eu/pb4/polymer/core/api/block/PolymerBlock
+    ASTORE 4
+    ALOAD 4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getMainHandItem ()Lnet/minecraft/world/item/ItemStack;
+    ALOAD 2
+    ALOAD 1
+    ALOAD 0
+    INVOKEINTERFACE eu/pb4/polymer/core/api/block/PolymerBlock.handleMiningOnServer (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/server/level/ServerPlayer;)Z (itf)
+    IFNE L1
+   L0
+    GETSTATIC net/minecraft/core/registries/BuiltInRegistries.ITEM : Lnet/minecraft/core/DefaultedRegistry;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getMainHandItem ()Lnet/minecraft/world/item/ItemStack;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    INVOKESTATIC eu/pb4/polymer/core/api/utils/PolymerSyncedObject.getSyncedObject (Lnet/minecraft/core/Registry;Ljava/lang/Object;)Leu/pb4/polymer/core/api/utils/PolymerSyncedObject; (itf)
+    ASTORE 5
+    ALOAD 5
+    INSTANCEOF eu/pb4/polymer/core/api/item/PolymerItem
+    IFEQ L2
+    ALOAD 5
+    CHECKCAST eu/pb4/polymer/core/api/item/PolymerItem
+    ASTORE 3
+    ALOAD 3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getMainHandItem ()Lnet/minecraft/world/item/ItemStack;
+    ALOAD 2
+    ALOAD 1
+    ALOAD 0
+    INVOKEINTERFACE eu/pb4/polymer/core/api/item/PolymerItem.handleMiningOnServer (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/server/level/ServerPlayer;)Z (itf)
+    IFNE L1
+   L2
+    GETSTATIC eu/pb4/polymer/core/api/block/PolymerBlockUtils.SERVER_SIDE_MINING_CHECK : Lnet/fabricmc/fabric/api/event/Event;
+    INVOKEVIRTUAL net/fabricmc/fabric/api/event/Event.invoker ()Ljava/lang/Object;
+    CHECKCAST eu/pb4/polymer/core/api/block/PolymerBlockUtils$MineEventListener
+    ALOAD 2
+    ALOAD 1
+    ALOAD 0
+    INVOKEINTERFACE eu/pb4/polymer/core/api/block/PolymerBlockUtils$MineEventListener.onBlockMine (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/server/level/ServerPlayer;)Z (itf)
+    IFEQ L3
+   L1
+    ICONST_1
+    GOTO L4
+   L3
+    ICONST_0
+   L4
+    IRETURN
+    MAXSTACK = 5
+    MAXLOCALS = 6

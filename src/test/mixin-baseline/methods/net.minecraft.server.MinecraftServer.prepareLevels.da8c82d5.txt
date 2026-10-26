@@ -1,0 +1,69 @@
+// net/minecraft/server/MinecraftServer.prepareLevels()V
+    NEW net/minecraft/server/level/ChunkLoadCounter
+    DUP
+    INVOKESPECIAL net/minecraft/server/level/ChunkLoadCounter.<init> ()V
+    ASTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/server/MinecraftServer.levels : Ljava/util/Map;
+    INVOKEINTERFACE java/util/Map.values ()Ljava/util/Collection; (itf)
+    INVOKEINTERFACE java/util/Collection.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 2
+   L0
+    ALOAD 2
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 2
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 3
+    ALOAD 1
+    ALOAD 3
+    ALOAD 3
+    INVOKEDYNAMIC run(Lnet/minecraft/server/level/ServerLevel;)Ljava/lang/Runnable; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      ()V,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/server/MinecraftServer.lambda$prepareLevels$0(Lnet/minecraft/server/level/ServerLevel;)V,
+      ()V
+    ]
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkLoadCounter.track (Lnet/minecraft/server/level/ServerLevel;Ljava/lang/Runnable;)V
+    GOTO L0
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/server/MinecraftServer.levelLoadListener : Lnet/minecraft/server/level/progress/LevelLoadListener;
+    GETSTATIC net/minecraft/server/level/progress/LevelLoadListener$Stage.LOAD_INITIAL_CHUNKS : Lnet/minecraft/server/level/progress/LevelLoadListener$Stage;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkLoadCounter.totalChunks ()I
+    INVOKEINTERFACE net/minecraft/server/level/progress/LevelLoadListener.start (Lnet/minecraft/server/level/progress/LevelLoadListener$Stage;I)V (itf)
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/server/MinecraftServer.levelLoadListener : Lnet/minecraft/server/level/progress/LevelLoadListener;
+    GETSTATIC net/minecraft/server/level/progress/LevelLoadListener$Stage.LOAD_INITIAL_CHUNKS : Lnet/minecraft/server/level/progress/LevelLoadListener$Stage;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkLoadCounter.readyChunks ()I
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkLoadCounter.totalChunks ()I
+    INVOKEINTERFACE net/minecraft/server/level/progress/LevelLoadListener.update (Lnet/minecraft/server/level/progress/LevelLoadListener$Stage;II)V (itf)
+    ALOAD 0
+    INVOKESTATIC net/minecraft/util/Util.getNanos ()J
+    GETSTATIC net/minecraft/server/MinecraftServer.PREPARE_LEVELS_DEFAULT_DELAY_NANOS : J
+    LADD
+    PUTFIELD net/minecraft/server/MinecraftServer.nextTickTimeNanos : J
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.waitUntilNextTick ()V
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkLoadCounter.pendingChunks ()I
+    IFGT L2
+    ALOAD 0
+    GETFIELD net/minecraft/server/MinecraftServer.levelLoadListener : Lnet/minecraft/server/level/progress/LevelLoadListener;
+    GETSTATIC net/minecraft/server/level/progress/LevelLoadListener$Stage.LOAD_INITIAL_CHUNKS : Lnet/minecraft/server/level/progress/LevelLoadListener$Stage;
+    INVOKEINTERFACE net/minecraft/server/level/progress/LevelLoadListener.finish (Lnet/minecraft/server/level/progress/LevelLoadListener$Stage;)V (itf)
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.updateMobSpawningFlags ()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.updateEffectiveRespawnData ()V
+    RETURN
+    MAXSTACK = 5
+    MAXLOCALS = 4

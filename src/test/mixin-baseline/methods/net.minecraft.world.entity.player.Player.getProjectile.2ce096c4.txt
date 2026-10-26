@@ -1,0 +1,65 @@
+// net/minecraft/world/entity/player/Player.getProjectile(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    INSTANCEOF net/minecraft/world/item/ProjectileWeaponItem
+    IFNE L0
+    GETSTATIC net/minecraft/world/item/ItemStack.EMPTY : Lnet/minecraft/world/item/ItemStack;
+    ARETURN
+   L0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    CHECKCAST net/minecraft/world/item/ProjectileWeaponItem
+    INVOKEVIRTUAL net/minecraft/world/item/ProjectileWeaponItem.getSupportedHeldProjectiles ()Ljava/util/function/Predicate;
+    ASTORE 2
+    ALOAD 0
+    ALOAD 2
+    INVOKESTATIC net/minecraft/world/item/ProjectileWeaponItem.getHeldProjectile (Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/world/item/ItemStack;
+    ASTORE 3
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFNE L1
+    ALOAD 3
+    ARETURN
+   L1
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    CHECKCAST net/minecraft/world/item/ProjectileWeaponItem
+    INVOKEVIRTUAL net/minecraft/world/item/ProjectileWeaponItem.getAllSupportedProjectiles ()Ljava/util/function/Predicate;
+    ASTORE 2
+    ICONST_0
+    ISTORE 4
+   L2
+    ILOAD 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.inventory : Lnet/minecraft/world/entity/player/Inventory;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.getContainerSize ()I
+    IF_ICMPGE L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.inventory : Lnet/minecraft/world/entity/player/Inventory;
+    ILOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.getItem (I)Lnet/minecraft/world/item/ItemStack;
+    ASTORE 5
+    ALOAD 2
+    ALOAD 5
+    INVOKEINTERFACE java/util/function/Predicate.test (Ljava/lang/Object;)Z (itf)
+    IFEQ L4
+    ALOAD 5
+    ARETURN
+   L4
+    IINC 4 1
+    GOTO L2
+   L3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.hasInfiniteMaterials ()Z
+    IFEQ L5
+    NEW net/minecraft/world/item/ItemStack
+    DUP
+    GETSTATIC net/minecraft/world/item/Items.ARROW : Lnet/minecraft/world/item/Item;
+    INVOKESPECIAL net/minecraft/world/item/ItemStack.<init> (Lnet/minecraft/world/level/ItemLike;)V
+    GOTO L6
+   L5
+    GETSTATIC net/minecraft/world/item/ItemStack.EMPTY : Lnet/minecraft/world/item/ItemStack;
+   L6
+    ARETURN
+    MAXSTACK = 3
+    MAXLOCALS = 6

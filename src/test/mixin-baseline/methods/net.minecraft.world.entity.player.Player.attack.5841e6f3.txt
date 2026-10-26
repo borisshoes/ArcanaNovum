@@ -1,0 +1,211 @@
+// net/minecraft/world/entity/player/Player.attack(Lnet/minecraft/world/entity/Entity;)V
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.cannotAttack (Lnet/minecraft/world/entity/Entity;)Z
+    IFEQ L0
+    RETURN
+   L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.isAutoSpinAttack ()Z
+    IFEQ L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.autoSpinAttackDmg : F
+    GOTO L2
+   L1
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.ATTACK_DAMAGE : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    D2F
+   L2
+    FSTORE 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getWeaponItem ()Lnet/minecraft/world/item/ItemStack;
+    ASTORE 3
+    ALOAD 0
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.createAttackSource (Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/damagesource/DamageSource;
+    ASTORE 4
+    ALOAD 0
+    LDC 0.5F
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getAttackStrengthScale (F)F
+    FSTORE 5
+    FLOAD 5
+    ALOAD 0
+    ALOAD 1
+    FLOAD 2
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getEnchantedDamage (Lnet/minecraft/world/entity/Entity;FLnet/minecraft/world/damagesource/DamageSource;)F
+    FLOAD 2
+    FSUB
+    FMUL
+    FSTORE 6
+    FLOAD 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.baseDamageScaleFactor ()F
+    FMUL
+    FSTORE 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.onAttack ()V
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.deflectProjectile (Lnet/minecraft/world/entity/Entity;)Z
+    IFEQ L3
+    RETURN
+   L3
+    FLOAD 2
+    FCONST_0
+    FCMPL
+    IFGT L4
+    FLOAD 6
+    FCONST_0
+    FCMPL
+    IFLE L5
+   L4
+    FLOAD 5
+    LDC 0.9F
+    FCMPL
+    IFLE L6
+    ICONST_1
+    GOTO L7
+   L6
+    ICONST_0
+   L7
+    ISTORE 7
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.isSprinting ()Z
+    IFEQ L8
+    ILOAD 7
+    IFEQ L8
+    ALOAD 0
+    GETSTATIC net/minecraft/sounds/SoundEvents.PLAYER_ATTACK_KNOCKBACK : Lnet/minecraft/sounds/SoundEvent;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.playServerSideSound (Lnet/minecraft/sounds/SoundEvent;)V
+    ICONST_1
+    ISTORE 8
+    GOTO L9
+   L8
+    ICONST_0
+    ISTORE 8
+   L9
+    FLOAD 2
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    ALOAD 1
+    FLOAD 2
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/Item.getAttackDamageBonus (Lnet/minecraft/world/entity/Entity;FLnet/minecraft/world/damagesource/DamageSource;)F
+    FADD
+    FSTORE 2
+    ILOAD 7
+    IFEQ L10
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.canCriticalAttack (Lnet/minecraft/world/entity/Entity;)Z
+    IFEQ L10
+    ICONST_1
+    GOTO L11
+   L10
+    ICONST_0
+   L11
+    ISTORE 9
+    ILOAD 9
+    IFEQ L12
+    FLOAD 2
+    LDC 1.5F
+    FMUL
+    FSTORE 2
+   L12
+    FLOAD 2
+    FLOAD 6
+    FADD
+    FSTORE 10
+    ALOAD 0
+    ILOAD 7
+    ILOAD 9
+    ILOAD 8
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.isSweepAttack (ZZZ)Z
+    ISTORE 11
+    FCONST_0
+    FSTORE 12
+    ALOAD 1
+    INSTANCEOF net/minecraft/world/entity/LivingEntity
+    IFEQ L13
+    ALOAD 1
+    CHECKCAST net/minecraft/world/entity/LivingEntity
+    ASTORE 13
+    ALOAD 13
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getHealth ()F
+    FSTORE 12
+   L13
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ASTORE 13
+    ALOAD 1
+    ALOAD 4
+    FLOAD 10
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.hurtOrSimulate (Lnet/minecraft/world/damagesource/DamageSource;F)Z
+    ISTORE 14
+    ILOAD 14
+    IFEQ L14
+    ALOAD 0
+    ALOAD 1
+    ALOAD 0
+    ALOAD 1
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getKnockback (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)F
+    ILOAD 8
+    IFEQ L15
+    LDC 0.5F
+    GOTO L16
+   L15
+    FCONST_0
+   L16
+    FADD
+    ALOAD 13
+    ALOAD 4
+    FLOAD 10
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.causeExtraKnockback (Lnet/minecraft/world/entity/Entity;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/damagesource/DamageSource;FZ)V
+    ILOAD 11
+    IFEQ L17
+    ALOAD 0
+    ALOAD 1
+    FLOAD 2
+    ALOAD 4
+    FLOAD 5
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.doSweepAttack (Lnet/minecraft/world/entity/Entity;FLnet/minecraft/world/damagesource/DamageSource;F)V
+   L17
+    ALOAD 0
+    ALOAD 1
+    ILOAD 9
+    ILOAD 11
+    ILOAD 7
+    ICONST_0
+    FLOAD 6
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.attackVisualEffects (Lnet/minecraft/world/entity/Entity;ZZZZF)V
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.setLastHurtMob (Lnet/minecraft/world/entity/Entity;)V
+    ALOAD 0
+    ALOAD 1
+    ALOAD 3
+    ALOAD 4
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.itemAttackInteraction (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/damagesource/DamageSource;Z)V
+    ALOAD 0
+    ALOAD 1
+    FLOAD 12
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.damageStatsAndHearts (Lnet/minecraft/world/entity/Entity;F)V
+    ALOAD 0
+    LDC 0.1F
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.causeFoodExhaustion (F)V
+    GOTO L5
+   L14
+    ALOAD 0
+    GETSTATIC net/minecraft/sounds/SoundEvents.PLAYER_ATTACK_NODAMAGE : Lnet/minecraft/sounds/SoundEvent;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.playServerSideSound (Lnet/minecraft/sounds/SoundEvent;)V
+   L5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.postPiercingAttack ()V
+    RETURN
+    MAXSTACK = 7
+    MAXLOCALS = 15

@@ -1,0 +1,13 @@
+// net/minecraft/world/level/ServerExplosion.interactsWithBlocks()Z
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.blockInteraction : Lnet/minecraft/world/level/Explosion$BlockInteraction;
+    GETSTATIC net/minecraft/world/level/Explosion$BlockInteraction.KEEP : Lnet/minecraft/world/level/Explosion$BlockInteraction;
+    IF_ACMPEQ L0
+    ICONST_1
+    GOTO L1
+   L0
+    ICONST_0
+   L1
+    IRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 1

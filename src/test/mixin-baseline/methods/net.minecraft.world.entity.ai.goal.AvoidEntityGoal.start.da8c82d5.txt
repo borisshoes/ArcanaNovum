@@ -1,0 +1,12 @@
+// net/minecraft/world/entity/ai/goal/AvoidEntityGoal.start()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/goal/AvoidEntityGoal.pathNav : Lnet/minecraft/world/entity/ai/navigation/PathNavigation;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/goal/AvoidEntityGoal.path : Lnet/minecraft/world/level/pathfinder/Path;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/ai/goal/AvoidEntityGoal.walkSpeedModifier : D
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/navigation/PathNavigation.moveTo (Lnet/minecraft/world/level/pathfinder/Path;D)Z
+    POP
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 1

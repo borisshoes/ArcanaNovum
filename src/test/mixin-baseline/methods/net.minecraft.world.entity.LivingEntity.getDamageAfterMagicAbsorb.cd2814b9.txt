@@ -1,0 +1,131 @@
+// net/minecraft/world/entity/LivingEntity.getDamageAfterMagicAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F
+    ALOAD 1
+    GETSTATIC net/minecraft/tags/DamageTypeTags.BYPASSES_EFFECTS : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L0
+    FLOAD 2
+    FRETURN
+   L0
+    ALOAD 0
+    GETSTATIC net/minecraft/world/effect/MobEffects.RESISTANCE : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hasEffect (Lnet/minecraft/core/Holder;)Z
+    IFEQ L1
+    ALOAD 1
+    GETSTATIC net/minecraft/tags/DamageTypeTags.BYPASSES_RESISTANCE : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFNE L1
+    ALOAD 0
+    GETSTATIC net/minecraft/world/effect/MobEffects.RESISTANCE : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getEffect (Lnet/minecraft/core/Holder;)Lnet/minecraft/world/effect/MobEffectInstance;
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.getAmplifier ()I
+    ICONST_1
+    IADD
+    ICONST_5
+    IMUL
+    ISTORE 3
+    BIPUSH 25
+    ILOAD 3
+    ISUB
+    ISTORE 4
+    FLOAD 2
+    ILOAD 4
+    I2F
+    FMUL
+    FSTORE 5
+    FLOAD 2
+    FSTORE 6
+    FLOAD 5
+    LDC 25.0F
+    FDIV
+    FCONST_0
+    INVOKESTATIC java/lang/Math.max (FF)F
+    FSTORE 2
+    FLOAD 6
+    FLOAD 2
+    FSUB
+    FSTORE 7
+    FLOAD 7
+    FCONST_0
+    FCMPL
+    IFLE L1
+    FLOAD 7
+    LDC 3.4028235E37F
+    FCMPG
+    IFGE L1
+    ALOAD 0
+    ASTORE 9
+    ALOAD 9
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFEQ L2
+    ALOAD 9
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 8
+    ALOAD 8
+    GETSTATIC net/minecraft/stats/Stats.DAMAGE_RESISTED : Lnet/minecraft/resources/Identifier;
+    FLOAD 7
+    LDC 10.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    GOTO L1
+   L2
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.getEntity ()Lnet/minecraft/world/entity/Entity;
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFEQ L1
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.getEntity ()Lnet/minecraft/world/entity/Entity;
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    GETSTATIC net/minecraft/stats/Stats.DAMAGE_DEALT_RESISTED : Lnet/minecraft/resources/Identifier;
+    FLOAD 7
+    LDC 10.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+   L1
+    FLOAD 2
+    FCONST_0
+    FCMPG
+    IFGT L3
+    FCONST_0
+    FRETURN
+   L3
+    ALOAD 1
+    GETSTATIC net/minecraft/tags/DamageTypeTags.BYPASSES_ENCHANTMENTS : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L4
+    FLOAD 2
+    FRETURN
+   L4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ASTORE 5
+    ALOAD 5
+    INSTANCEOF net/minecraft/server/level/ServerLevel
+    IFEQ L5
+    ALOAD 5
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 4
+    ALOAD 4
+    ALOAD 0
+    ALOAD 1
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.getDamageProtection (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/damagesource/DamageSource;)F
+    FSTORE 3
+    GOTO L6
+   L5
+    FCONST_0
+    FSTORE 3
+   L6
+    FLOAD 3
+    FCONST_0
+    FCMPL
+    IFLE L7
+    FLOAD 2
+    FLOAD 3
+    INVOKESTATIC net/minecraft/world/damagesource/CombatRules.getDamageAfterMagicAbsorb (FF)F
+    FSTORE 2
+   L7
+    FLOAD 2
+    FRETURN
+    MAXSTACK = 4
+    MAXLOCALS = 10

@@ -1,0 +1,245 @@
+// net/minecraft/world/level/NaturalSpawner.spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.structureManager ()Lnet/minecraft/world/level/StructureManager;
+    ASTORE 6
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getChunkSource ()Lnet/minecraft/server/level/ServerChunkCache;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerChunkCache.getGenerator ()Lnet/minecraft/world/level/chunk/ChunkGenerator;
+    ASTORE 7
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getY ()I
+    ISTORE 8
+    ALOAD 2
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/level/chunk/ChunkAccess.getBlockState (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
+    ASTORE 9
+    ALOAD 9
+    ALOAD 2
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/level/block/state/BlockState.isRedstoneConductor (Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z
+    IFEQ L0
+    RETURN
+   L0
+    NEW net/minecraft/core/BlockPos$MutableBlockPos
+    DUP
+    INVOKESPECIAL net/minecraft/core/BlockPos$MutableBlockPos.<init> ()V
+    ASTORE 10
+    ICONST_0
+    ISTORE 11
+    ICONST_0
+    ISTORE 12
+   L1
+    ILOAD 12
+    ICONST_3
+    IF_ICMPGE L2
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getX ()I
+    ISTORE 13
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getZ ()I
+    ISTORE 14
+    BIPUSH 6
+    ISTORE 15
+    ACONST_NULL
+    ASTORE 16
+    ACONST_NULL
+    ASTORE 17
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerLevel.random : Lnet/minecraft/util/RandomSource;
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextFloat ()F (itf)
+    LDC 4.0F
+    FMUL
+    INVOKESTATIC net/minecraft/util/Mth.ceil (F)I
+    ISTORE 18
+    ICONST_0
+    ISTORE 19
+    ICONST_0
+    ISTORE 20
+   L3
+    ILOAD 20
+    ILOAD 18
+    IF_ICMPGE L4
+    ILOAD 13
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerLevel.random : Lnet/minecraft/util/RandomSource;
+    BIPUSH 6
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerLevel.random : Lnet/minecraft/util/RandomSource;
+    BIPUSH 6
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    ISUB
+    IADD
+    ISTORE 13
+    ILOAD 14
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerLevel.random : Lnet/minecraft/util/RandomSource;
+    BIPUSH 6
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerLevel.random : Lnet/minecraft/util/RandomSource;
+    BIPUSH 6
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    ISUB
+    IADD
+    ISTORE 14
+    ALOAD 10
+    ILOAD 13
+    ILOAD 8
+    ILOAD 14
+    INVOKEVIRTUAL net/minecraft/core/BlockPos$MutableBlockPos.set (III)Lnet/minecraft/core/BlockPos$MutableBlockPos;
+    POP
+    ILOAD 13
+    I2D
+    LDC 0.5D
+    DADD
+    DSTORE 21
+    ILOAD 14
+    I2D
+    LDC 0.5D
+    DADD
+    DSTORE 23
+    ALOAD 1
+    DLOAD 21
+    ILOAD 8
+    I2D
+    DLOAD 23
+    LDC -1.0D
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getNearestPlayer (DDDDZ)Lnet/minecraft/world/entity/player/Player;
+    ASTORE 25
+    ALOAD 25
+    IFNONNULL L5
+    GOTO L6
+   L5
+    ALOAD 25
+    DLOAD 21
+    ILOAD 8
+    I2D
+    DLOAD 23
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.distanceToSqr (DDD)D
+    DSTORE 26
+    ALOAD 1
+    ALOAD 2
+    ALOAD 10
+    DLOAD 26
+    INVOKESTATIC net/minecraft/world/level/NaturalSpawner.isRightDistanceToPlayerAndSpawnPoint (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos$MutableBlockPos;D)Z
+    IFNE L7
+    GOTO L6
+   L7
+    ALOAD 16
+    IFNONNULL L8
+    ALOAD 1
+    ALOAD 6
+    ALOAD 7
+    ALOAD 0
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerLevel.random : Lnet/minecraft/util/RandomSource;
+    ALOAD 10
+    INVOKESTATIC net/minecraft/world/level/NaturalSpawner.getRandomSpawnMobAt (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)Ljava/util/Optional;
+    ASTORE 28
+    ALOAD 28
+    INVOKEVIRTUAL java/util/Optional.isEmpty ()Z
+    IFEQ L9
+    GOTO L4
+   L9
+    ALOAD 28
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/level/biome/MobSpawnSettings$SpawnerData
+    ASTORE 16
+    ALOAD 16
+    INVOKEVIRTUAL net/minecraft/world/level/biome/MobSpawnSettings$SpawnerData.count ()Lnet/minecraft/util/valueproviders/IntProvider;
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerLevel.random : Lnet/minecraft/util/RandomSource;
+    INVOKEINTERFACE net/minecraft/util/valueproviders/IntProvider.sample (Lnet/minecraft/util/RandomSource;)I (itf)
+    ISTORE 18
+   L8
+    ALOAD 1
+    ALOAD 0
+    ALOAD 6
+    ALOAD 7
+    ALOAD 16
+    ALOAD 10
+    DLOAD 26
+    INVOKESTATIC net/minecraft/world/level/NaturalSpawner.isValidSpawnPostitionForType (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/level/biome/MobSpawnSettings$SpawnerData;Lnet/minecraft/core/BlockPos$MutableBlockPos;D)Z
+    IFNE L10
+    GOTO L6
+   L10
+    ALOAD 4
+    ALOAD 16
+    INVOKEVIRTUAL net/minecraft/world/level/biome/MobSpawnSettings$SpawnerData.type ()Lnet/minecraft/world/entity/EntityType;
+    ALOAD 1
+    ALOAD 10
+    ALOAD 2
+    INVOKEINTERFACE net/minecraft/world/level/NaturalSpawner$SpawnPredicate.test (Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/chunk/ChunkAccess;)Z (itf)
+    IFNE L11
+    GOTO L6
+   L11
+    ALOAD 1
+    ALOAD 16
+    INVOKEVIRTUAL net/minecraft/world/level/biome/MobSpawnSettings$SpawnerData.type ()Lnet/minecraft/world/entity/EntityType;
+    INVOKESTATIC net/minecraft/world/level/NaturalSpawner.getMobForSpawn (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/EntityType;)Lnet/minecraft/world/entity/Mob;
+    ASTORE 28
+    ALOAD 28
+    IFNONNULL L12
+    RETURN
+   L12
+    ALOAD 28
+    DLOAD 21
+    ILOAD 8
+    I2D
+    DLOAD 23
+    ALOAD 1
+    GETFIELD net/minecraft/server/level/ServerLevel.random : Lnet/minecraft/util/RandomSource;
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextFloat ()F (itf)
+    LDC 360.0F
+    FMUL
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.snapTo (DDDFF)V
+    ALOAD 1
+    ALOAD 28
+    DLOAD 26
+    INVOKESTATIC net/minecraft/world/level/NaturalSpawner.isValidPositionForMob (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Mob;D)Z
+    IFNE L13
+    GOTO L6
+   L13
+    ALOAD 28
+    ALOAD 1
+    ALOAD 1
+    ALOAD 28
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.blockPosition ()Lnet/minecraft/core/BlockPos;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getCurrentDifficultyAt (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/DifficultyInstance;
+    GETSTATIC net/minecraft/world/entity/EntitySpawnReason.NATURAL : Lnet/minecraft/world/entity/EntitySpawnReason;
+    ALOAD 17
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.finalizeSpawn (Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/world/entity/SpawnGroupData;)Lnet/minecraft/world/entity/SpawnGroupData;
+    ASTORE 17
+    IINC 11 1
+    IINC 19 1
+    ALOAD 1
+    ALOAD 28
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.addFreshEntityWithPassengers (Lnet/minecraft/world/entity/Entity;)V
+    ALOAD 5
+    ALOAD 28
+    ALOAD 2
+    INVOKEINTERFACE net/minecraft/world/level/NaturalSpawner$AfterSpawnCallback.run (Lnet/minecraft/world/entity/Mob;Lnet/minecraft/world/level/chunk/ChunkAccess;)V (itf)
+    ILOAD 11
+    ALOAD 28
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getMaxSpawnClusterSize ()I
+    IF_ICMPLT L14
+    RETURN
+   L14
+    ALOAD 28
+    ILOAD 19
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.isMaxGroupSizeReached (I)Z
+    IFEQ L6
+    GOTO L4
+   L6
+    IINC 20 1
+    GOTO L3
+   L4
+    IINC 12 1
+    GOTO L1
+   L2
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 29

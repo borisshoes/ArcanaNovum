@@ -1,0 +1,206 @@
+// net/minecraft/world/level/levelgen/PhantomSpawner.tick(Lnet/minecraft/server/level/ServerLevel;Z)V
+    ILOAD 2
+    IFNE L0
+    RETURN
+   L0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getGameRules ()Lnet/minecraft/world/level/gamerules/GameRules;
+    GETSTATIC net/minecraft/world/level/gamerules/GameRules.SPAWN_PHANTOMS : Lnet/minecraft/world/level/gamerules/GameRule;
+    INVOKEVIRTUAL net/minecraft/world/level/gamerules/GameRules.get (Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+    IFNE L1
+    RETURN
+   L1
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getRandom ()Lnet/minecraft/util/RandomSource;
+    ASTORE 3
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/level/levelgen/PhantomSpawner.nextTick : I
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/level/levelgen/PhantomSpawner.nextTick : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/PhantomSpawner.nextTick : I
+    IFLE L2
+    RETURN
+   L2
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/level/levelgen/PhantomSpawner.nextTick : I
+    BIPUSH 60
+    ALOAD 3
+    BIPUSH 60
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    IADD
+    BIPUSH 20
+    IMUL
+    IADD
+    PUTFIELD net/minecraft/world/level/levelgen/PhantomSpawner.nextTick : I
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getSkyDarken ()I
+    ICONST_5
+    IF_ICMPGE L3
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.dimensionType ()Lnet/minecraft/world/level/dimension/DimensionType;
+    INVOKEVIRTUAL net/minecraft/world/level/dimension/DimensionType.hasSkyLight ()Z
+    IFEQ L3
+    RETURN
+   L3
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.players ()Ljava/util/List;
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 4
+   L4
+    ALOAD 4
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L5
+    ALOAD 4
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 5
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSpectator ()Z
+    IFEQ L6
+    GOTO L4
+   L6
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.blockPosition ()Lnet/minecraft/core/BlockPos;
+    ASTORE 6
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.dimensionType ()Lnet/minecraft/world/level/dimension/DimensionType;
+    INVOKEVIRTUAL net/minecraft/world/level/dimension/DimensionType.hasSkyLight ()Z
+    IFEQ L7
+    ALOAD 6
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getY ()I
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getSeaLevel ()I
+    IF_ICMPLT L4
+    ALOAD 1
+    ALOAD 6
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.canSeeSky (Lnet/minecraft/core/BlockPos;)Z
+    IFNE L7
+    GOTO L4
+   L7
+    ALOAD 1
+    ALOAD 6
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getCurrentDifficultyAt (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/DifficultyInstance;
+    ASTORE 7
+    ALOAD 7
+    ALOAD 3
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextFloat ()F (itf)
+    LDC 3.0F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/world/DifficultyInstance.isHarderThan (F)Z
+    IFNE L8
+    GOTO L4
+   L8
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getStats ()Lnet/minecraft/stats/ServerStatsCounter;
+    ASTORE 8
+    ALOAD 8
+    GETSTATIC net/minecraft/stats/Stats.CUSTOM : Lnet/minecraft/stats/StatType;
+    GETSTATIC net/minecraft/stats/Stats.TIME_SINCE_REST : Lnet/minecraft/resources/Identifier;
+    INVOKEVIRTUAL net/minecraft/stats/StatType.get (Ljava/lang/Object;)Lnet/minecraft/stats/Stat;
+    INVOKEVIRTUAL net/minecraft/stats/ServerStatsCounter.getValue (Lnet/minecraft/stats/Stat;)I
+    ICONST_1
+    LDC 2147483647
+    INVOKESTATIC net/minecraft/util/Mth.clamp (III)I
+    ISTORE 9
+    SIPUSH 24000
+    ISTORE 10
+    ALOAD 3
+    ILOAD 9
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    LDC 72000
+    IF_ICMPGE L9
+    GOTO L4
+   L9
+    ALOAD 6
+    BIPUSH 20
+    ALOAD 3
+    BIPUSH 15
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    IADD
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.above (I)Lnet/minecraft/core/BlockPos;
+    BIPUSH -10
+    ALOAD 3
+    BIPUSH 21
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    IADD
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.east (I)Lnet/minecraft/core/BlockPos;
+    BIPUSH -10
+    ALOAD 3
+    BIPUSH 21
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    IADD
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.south (I)Lnet/minecraft/core/BlockPos;
+    ASTORE 11
+    ALOAD 1
+    ALOAD 11
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getBlockState (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
+    ASTORE 12
+    ALOAD 1
+    ALOAD 11
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getFluidState (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/material/FluidState;
+    ASTORE 13
+    ALOAD 1
+    ALOAD 11
+    ALOAD 12
+    ALOAD 13
+    GETSTATIC net/minecraft/world/entity/EntityTypes.PHANTOM : Lnet/minecraft/world/entity/EntityType;
+    INVOKESTATIC net/minecraft/world/level/NaturalSpawner.isValidEmptySpawnBlock (Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/world/entity/EntityType;)Z
+    IFNE L10
+    GOTO L4
+   L10
+    ACONST_NULL
+    ASTORE 14
+    ICONST_1
+    ALOAD 3
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/world/DifficultyInstance.getDifficulty ()Lnet/minecraft/world/Difficulty;
+    INVOKEVIRTUAL net/minecraft/world/Difficulty.getId ()I
+    ICONST_1
+    IADD
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    IADD
+    ISTORE 15
+    ICONST_0
+    ISTORE 16
+   L11
+    ILOAD 16
+    ILOAD 15
+    IF_ICMPGE L12
+    GETSTATIC net/minecraft/world/entity/EntityTypes.PHANTOM : Lnet/minecraft/world/entity/EntityType;
+    ALOAD 1
+    GETSTATIC net/minecraft/world/entity/EntitySpawnReason.NATURAL : Lnet/minecraft/world/entity/EntitySpawnReason;
+    INVOKEVIRTUAL net/minecraft/world/entity/EntityType.create (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/EntitySpawnReason;)Lnet/minecraft/world/entity/Entity;
+    CHECKCAST net/minecraft/world/entity/monster/Phantom
+    ASTORE 17
+    ALOAD 17
+    IFNULL L13
+    ALOAD 17
+    ALOAD 11
+    FCONST_0
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.snapTo (Lnet/minecraft/core/BlockPos;FF)V
+    ALOAD 17
+    ALOAD 1
+    ALOAD 7
+    GETSTATIC net/minecraft/world/entity/EntitySpawnReason.NATURAL : Lnet/minecraft/world/entity/EntitySpawnReason;
+    ALOAD 14
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Phantom.finalizeSpawn (Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/world/entity/SpawnGroupData;)Lnet/minecraft/world/entity/SpawnGroupData;
+    ASTORE 14
+    ALOAD 1
+    ALOAD 17
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.addFreshEntityWithPassengers (Lnet/minecraft/world/entity/Entity;)V
+   L13
+    IINC 16 1
+    GOTO L11
+   L12
+    GOTO L4
+   L5
+    RETURN
+    MAXSTACK = 5
+    MAXLOCALS = 18

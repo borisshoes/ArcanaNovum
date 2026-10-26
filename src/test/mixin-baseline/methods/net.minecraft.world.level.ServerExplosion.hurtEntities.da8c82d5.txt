@@ -1,0 +1,280 @@
+// net/minecraft/world/level/ServerExplosion.hurtEntities()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.radius : F
+    LDC 1.0E-5F
+    FCMPG
+    IFGE L0
+    RETURN
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.radius : F
+    FCONST_2
+    FMUL
+    FSTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    FLOAD 1
+    F2D
+    DSUB
+    DCONST_1
+    DSUB
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ISTORE 2
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    FLOAD 1
+    F2D
+    DADD
+    DCONST_1
+    DADD
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ISTORE 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.y : D
+    FLOAD 1
+    F2D
+    DSUB
+    DCONST_1
+    DSUB
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ISTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.y : D
+    FLOAD 1
+    F2D
+    DADD
+    DCONST_1
+    DADD
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ISTORE 5
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    FLOAD 1
+    F2D
+    DSUB
+    DCONST_1
+    DSUB
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ISTORE 6
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    FLOAD 1
+    F2D
+    DADD
+    DCONST_1
+    DADD
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ISTORE 7
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.level : Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.source : Lnet/minecraft/world/entity/Entity;
+    NEW net/minecraft/world/phys/AABB
+    DUP
+    ILOAD 2
+    I2D
+    ILOAD 4
+    I2D
+    ILOAD 6
+    I2D
+    ILOAD 3
+    I2D
+    ILOAD 5
+    I2D
+    ILOAD 7
+    I2D
+    INVOKESPECIAL net/minecraft/world/phys/AABB.<init> (DDDDDD)V
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getEntities (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;
+    ASTORE 8
+    ALOAD 8
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 9
+   L1
+    ALOAD 9
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L2
+    ALOAD 9
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/entity/Entity
+    ASTORE 10
+    ALOAD 10
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.ignoreExplosion (Lnet/minecraft/world/level/Explosion;)Z
+    IFEQ L3
+    GOTO L1
+   L3
+    ALOAD 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.distanceToSqr (Lnet/minecraft/world/phys/Vec3;)D
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    FLOAD 1
+    F2D
+    DDIV
+    DSTORE 11
+    DLOAD 11
+    DCONST_1
+    DCMPL
+    IFLE L4
+    GOTO L1
+   L4
+    ALOAD 10
+    INSTANCEOF net/minecraft/world/entity/item/PrimedTnt
+    IFEQ L5
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.position ()Lnet/minecraft/world/phys/Vec3;
+    GOTO L6
+   L5
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getEyePosition ()Lnet/minecraft/world/phys/Vec3;
+   L6
+    ASTORE 13
+    ALOAD 13
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.subtract (Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.normalize ()Lnet/minecraft/world/phys/Vec3;
+    ASTORE 14
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.damageCalculator : Lnet/minecraft/world/level/ExplosionDamageCalculator;
+    ALOAD 0
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/level/ExplosionDamageCalculator.shouldDamageEntity (Lnet/minecraft/world/level/Explosion;Lnet/minecraft/world/entity/Entity;)Z
+    ISTORE 15
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.damageCalculator : Lnet/minecraft/world/level/ExplosionDamageCalculator;
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/level/ExplosionDamageCalculator.getKnockbackMultiplier (Lnet/minecraft/world/entity/Entity;)F
+    FSTORE 16
+    ILOAD 15
+    IFNE L7
+    FLOAD 16
+    FCONST_0
+    FCMPL
+    IFEQ L8
+   L7
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.center : Lnet/minecraft/world/phys/Vec3;
+    ALOAD 10
+    INVOKESTATIC net/minecraft/world/level/ServerExplosion.getSeenPercent (Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/Entity;)F
+    GOTO L9
+   L8
+    FCONST_0
+   L9
+    FSTORE 17
+    ILOAD 15
+    IFEQ L10
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.source : Lnet/minecraft/world/entity/Entity;
+    IFNULL L11
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.source : Lnet/minecraft/world/entity/Entity;
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.doTeamsAllowDamage (Lnet/minecraft/world/entity/Entity;)Z
+    IFEQ L10
+   L11
+    ALOAD 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.level : Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.damageSource : Lnet/minecraft/world/damagesource/DamageSource;
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.damageCalculator : Lnet/minecraft/world/level/ExplosionDamageCalculator;
+    ALOAD 0
+    ALOAD 10
+    FLOAD 17
+    INVOKEVIRTUAL net/minecraft/world/level/ExplosionDamageCalculator.getEntityDamageAmount (Lnet/minecraft/world/level/Explosion;Lnet/minecraft/world/entity/Entity;F)F
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.hurtServer (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z
+    POP
+   L10
+    ALOAD 10
+    INSTANCEOF net/minecraft/world/entity/LivingEntity
+    IFEQ L12
+    ALOAD 10
+    CHECKCAST net/minecraft/world/entity/LivingEntity
+    ASTORE 20
+    ALOAD 20
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.EXPLOSION_KNOCKBACK_RESISTANCE : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    GOTO L13
+   L12
+    DCONST_0
+   L13
+    DSTORE 18
+    DCONST_1
+    DLOAD 11
+    DSUB
+    FLOAD 17
+    F2D
+    DMUL
+    FLOAD 16
+    F2D
+    DMUL
+    DCONST_1
+    DLOAD 18
+    DSUB
+    DMUL
+    DSTORE 20
+    ALOAD 14
+    DLOAD 20
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.scale (D)Lnet/minecraft/world/phys/Vec3;
+    ASTORE 22
+    ALOAD 10
+    ALOAD 22
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.pushFromExplosion (Lnet/minecraft/world/phys/Vec3;)V
+    ALOAD 10
+    GETSTATIC net/minecraft/tags/EntityTypeTags.REDIRECTABLE_PROJECTILE : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.is (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L14
+    ALOAD 10
+    INSTANCEOF net/minecraft/world/entity/projectile/Projectile
+    IFEQ L14
+    ALOAD 10
+    CHECKCAST net/minecraft/world/entity/projectile/Projectile
+    ASTORE 23
+    ALOAD 23
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.damageSource : Lnet/minecraft/world/damagesource/DamageSource;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.getEntity ()Lnet/minecraft/world/entity/Entity;
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/Projectile.setOwner (Lnet/minecraft/world/entity/Entity;)V
+    GOTO L15
+   L14
+    ALOAD 10
+    INSTANCEOF net/minecraft/world/entity/player/Player
+    IFEQ L15
+    ALOAD 10
+    CHECKCAST net/minecraft/world/entity/player/Player
+    ASTORE 24
+    ALOAD 24
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.isSpectator ()Z
+    IFNE L15
+    ALOAD 24
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.isCreative ()Z
+    IFEQ L16
+    ALOAD 24
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getAbilities ()Lnet/minecraft/world/entity/player/Abilities;
+    GETFIELD net/minecraft/world/entity/player/Abilities.flying : Z
+    IFNE L15
+   L16
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.hitPlayers : Ljava/util/Map;
+    ALOAD 24
+    ALOAD 22
+    INVOKEINTERFACE java/util/Map.put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; (itf)
+    POP
+   L15
+    ALOAD 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/ServerExplosion.source : Lnet/minecraft/world/entity/Entity;
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.onExplosionHit (Lnet/minecraft/world/entity/Entity;)V
+    GOTO L1
+   L2
+    RETURN
+    MAXSTACK = 16
+    MAXLOCALS = 25

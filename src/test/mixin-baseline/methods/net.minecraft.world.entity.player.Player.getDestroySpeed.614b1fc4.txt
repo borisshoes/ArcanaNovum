@@ -1,0 +1,89 @@
+// net/minecraft/world/entity/player/Player.getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.inventory : Lnet/minecraft/world/entity/player/Inventory;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.getSelectedItem ()Lnet/minecraft/world/item/ItemStack;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getDestroySpeed (Lnet/minecraft/world/level/block/state/BlockState;)F
+    FSTORE 2
+    FLOAD 2
+    FCONST_1
+    FCMPL
+    IFLE L0
+    FLOAD 2
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MINING_EFFICIENCY : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    D2F
+    FADD
+    FSTORE 2
+   L0
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/effect/MobEffectUtil.hasDigSpeed (Lnet/minecraft/world/entity/LivingEntity;)Z
+    IFEQ L1
+    FLOAD 2
+    FCONST_1
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/effect/MobEffectUtil.getDigSpeedAmplification (Lnet/minecraft/world/entity/LivingEntity;)I
+    ICONST_1
+    IADD
+    I2F
+    LDC 0.2F
+    FMUL
+    FADD
+    FMUL
+    FSTORE 2
+   L1
+    ALOAD 0
+    GETSTATIC net/minecraft/world/effect/MobEffects.MINING_FATIGUE : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.hasEffect (Lnet/minecraft/core/Holder;)Z
+    IFEQ L2
+    ALOAD 0
+    GETSTATIC net/minecraft/world/effect/MobEffects.MINING_FATIGUE : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getEffect (Lnet/minecraft/core/Holder;)Lnet/minecraft/world/effect/MobEffectInstance;
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.getAmplifier ()I
+    ISTORE 3
+    LDC 0.3D
+    ILOAD 3
+    ICONST_1
+    IADD
+    I2D
+    INVOKESTATIC java/lang/Math.pow (DD)D
+    D2F
+    FSTORE 4
+    FLOAD 2
+    FLOAD 4
+    FMUL
+    FSTORE 2
+   L2
+    FLOAD 2
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.BLOCK_BREAK_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    D2F
+    FMUL
+    FSTORE 2
+    ALOAD 0
+    GETSTATIC net/minecraft/tags/FluidTags.WATER : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.isEyeInFluid (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L3
+    FLOAD 2
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.SUBMERGED_MINING_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getAttribute (Lnet/minecraft/core/Holder;)Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/attributes/AttributeInstance.getValue ()D
+    D2F
+    FMUL
+    FSTORE 2
+   L3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.onGround ()Z
+    IFNE L4
+    FLOAD 2
+    LDC 5.0F
+    FDIV
+    FSTORE 2
+   L4
+    FLOAD 2
+    FRETURN
+    MAXSTACK = 4
+    MAXLOCALS = 5

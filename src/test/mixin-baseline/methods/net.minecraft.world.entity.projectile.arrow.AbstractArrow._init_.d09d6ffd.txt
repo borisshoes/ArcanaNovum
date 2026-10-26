@@ -1,0 +1,67 @@
+// net/minecraft/world/entity/projectile/arrow/AbstractArrow.<init>(Lnet/minecraft/world/entity/EntityType;DDDLnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V
+  @Lorg/jspecify/annotations/Nullable;(
+) : METHOD_FORMAL_PARAMETER 6, null
+    ALOAD 0
+    ALOAD 1
+    ALOAD 8
+    INVOKESPECIAL net/minecraft/world/entity/projectile/arrow/AbstractArrow.<init> (Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V
+    ALOAD 0
+    ALOAD 9
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.copy ()Lnet/minecraft/world/item/ItemStack;
+    PUTFIELD net/minecraft/world/entity/projectile/arrow/AbstractArrow.pickupItemStack : Lnet/minecraft/world/item/ItemStack;
+    ALOAD 0
+    ALOAD 9
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/arrow/AbstractArrow.applyComponentsFromItemStack (Lnet/minecraft/world/item/ItemStack;)V
+    ALOAD 9
+    GETSTATIC net/minecraft/core/component/DataComponents.INTANGIBLE_PROJECTILE : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.remove (Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;
+    CHECKCAST net/minecraft/util/Unit
+    ASTORE 11
+    ALOAD 11
+    IFNULL L0
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/projectile/arrow/AbstractArrow$Pickup.CREATIVE_ONLY : Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow$Pickup;
+    PUTFIELD net/minecraft/world/entity/projectile/arrow/AbstractArrow.pickup : Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow$Pickup;
+   L0
+    ALOAD 0
+    DLOAD 2
+    DLOAD 4
+    DLOAD 6
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/arrow/AbstractArrow.setPos (DDD)V
+    ALOAD 10
+    IFNULL L1
+    ALOAD 8
+    INSTANCEOF net/minecraft/server/level/ServerLevel
+    IFEQ L1
+    ALOAD 8
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 12
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFEQ L2
+    NEW java/lang/IllegalArgumentException
+    DUP
+    LDC "Invalid weapon firing an arrow"
+    INVOKESPECIAL java/lang/IllegalArgumentException.<init> (Ljava/lang/String;)V
+    ATHROW
+   L2
+    ALOAD 0
+    ALOAD 10
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.copy ()Lnet/minecraft/world/item/ItemStack;
+    PUTFIELD net/minecraft/world/entity/projectile/arrow/AbstractArrow.firedFromWeapon : Lnet/minecraft/world/item/ItemStack;
+    ALOAD 12
+    ALOAD 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/projectile/arrow/AbstractArrow.pickupItemStack : Lnet/minecraft/world/item/ItemStack;
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.getPiercingCount (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)I
+    ISTORE 13
+    ILOAD 13
+    IFLE L1
+    ALOAD 0
+    ILOAD 13
+    I2B
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/arrow/AbstractArrow.setPierceLevel (B)V
+   L1
+    RETURN
+    MAXSTACK = 7
+    MAXLOCALS = 14

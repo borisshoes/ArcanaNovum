@@ -1,0 +1,157 @@
+// net/minecraft/world/entity/player/Inventory.add(ILnet/minecraft/world/item/ItemStack;)Z
+    TRYCATCHBLOCK L0 L1 L2 java/lang/Throwable
+    TRYCATCHBLOCK L3 L4 L2 java/lang/Throwable
+    TRYCATCHBLOCK L5 L6 L2 java/lang/Throwable
+    TRYCATCHBLOCK L7 L8 L2 java/lang/Throwable
+    TRYCATCHBLOCK L9 L10 L2 java/lang/Throwable
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFEQ L0
+    ICONST_0
+    IRETURN
+   L0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isDamaged ()Z
+    IFNE L5
+   L11
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ISTORE 3
+    ILOAD 1
+    ICONST_M1
+    IF_ICMPNE L12
+    ALOAD 2
+    ALOAD 0
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.addResource (Lnet/minecraft/world/item/ItemStack;)I
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.setCount (I)V
+    GOTO L13
+   L12
+    ALOAD 2
+    ALOAD 0
+    ILOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.addResource (ILnet/minecraft/world/item/ItemStack;)I
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.setCount (I)V
+   L13
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFNE L14
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ILOAD 3
+    IF_ICMPLT L11
+   L14
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ILOAD 3
+    IF_ICMPNE L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Inventory.player : Lnet/minecraft/world/entity/player/Player;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.hasInfiniteMaterials ()Z
+    IFEQ L3
+    ALOAD 2
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.setCount (I)V
+    ICONST_1
+   L1
+    IRETURN
+   L3
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getCount ()I
+    ILOAD 3
+    IF_ICMPGE L15
+    ICONST_1
+    GOTO L4
+   L15
+    ICONST_0
+   L4
+    IRETURN
+   L5
+    ILOAD 1
+    ICONST_M1
+    IF_ICMPNE L16
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.getFreeSlot ()I
+    ISTORE 1
+   L16
+    ILOAD 1
+    IFLT L7
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Inventory.items : Lnet/minecraft/core/NonNullList;
+    ILOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.copyAndClear ()Lnet/minecraft/world/item/ItemStack;
+    INVOKEVIRTUAL net/minecraft/core/NonNullList.set (ILjava/lang/Object;)Ljava/lang/Object;
+    POP
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Inventory.items : Lnet/minecraft/core/NonNullList;
+    ILOAD 1
+    INVOKEVIRTUAL net/minecraft/core/NonNullList.get (I)Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/item/ItemStack
+    ICONST_5
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.setPopTime (I)V
+    ICONST_1
+   L6
+    IRETURN
+   L7
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Inventory.player : Lnet/minecraft/world/entity/player/Player;
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.hasInfiniteMaterials ()Z
+    IFEQ L9
+    ALOAD 2
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.setCount (I)V
+    ICONST_1
+   L8
+    IRETURN
+   L9
+    ICONST_0
+   L10
+    IRETURN
+   L2
+    ASTORE 3
+    ALOAD 3
+    LDC "Adding item to inventory"
+    INVOKESTATIC net/minecraft/CrashReport.forThrowable (Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/CrashReport;
+    ASTORE 4
+    ALOAD 4
+    LDC "Item being added"
+    INVOKEVIRTUAL net/minecraft/CrashReport.addCategory (Ljava/lang/String;)Lnet/minecraft/CrashReportCategory;
+    ASTORE 5
+    ALOAD 5
+    LDC "Item ID"
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    INVOKESTATIC net/minecraft/world/item/Item.getId (Lnet/minecraft/world/item/Item;)I
+    INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;
+    INVOKEVIRTUAL net/minecraft/CrashReportCategory.setDetail (Ljava/lang/String;Ljava/lang/Object;)Lnet/minecraft/CrashReportCategory;
+    POP
+    ALOAD 5
+    LDC "Item data"
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getDamageValue ()I
+    INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;
+    INVOKEVIRTUAL net/minecraft/CrashReportCategory.setDetail (Ljava/lang/String;Ljava/lang/Object;)Lnet/minecraft/CrashReportCategory;
+    POP
+    ALOAD 5
+    LDC "Item name"
+    ALOAD 2
+    INVOKEDYNAMIC call(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/CrashReportDetail; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      ()Ljava/lang/Object;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/world/entity/player/Inventory.lambda$add$0(Lnet/minecraft/world/item/ItemStack;)Ljava/lang/String;,
+      ()Ljava/lang/String;
+    ]
+    INVOKEVIRTUAL net/minecraft/CrashReportCategory.setDetail (Ljava/lang/String;Lnet/minecraft/CrashReportDetail;)Lnet/minecraft/CrashReportCategory;
+    POP
+    NEW net/minecraft/ReportedException
+    DUP
+    ALOAD 4
+    INVOKESPECIAL net/minecraft/ReportedException.<init> (Lnet/minecraft/CrashReport;)V
+    ATHROW
+    MAXSTACK = 4
+    MAXLOCALS = 6

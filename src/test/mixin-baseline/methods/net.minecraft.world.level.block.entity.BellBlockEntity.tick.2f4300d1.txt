@@ -1,0 +1,74 @@
+// net/minecraft/world/level/block/entity/BellBlockEntity.tick(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/BellBlockEntity;Lnet/minecraft/world/level/block/entity/BellBlockEntity$ResonationEndAction;)V
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.shaking : Z
+    IFEQ L0
+    ALOAD 3
+    DUP
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.ticks : I
+    ICONST_1
+    IADD
+    PUTFIELD net/minecraft/world/level/block/entity/BellBlockEntity.ticks : I
+   L0
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.ticks : I
+    BIPUSH 50
+    IF_ICMPLT L1
+    ALOAD 3
+    ICONST_0
+    PUTFIELD net/minecraft/world/level/block/entity/BellBlockEntity.shaking : Z
+    ALOAD 3
+    ICONST_0
+    PUTFIELD net/minecraft/world/level/block/entity/BellBlockEntity.ticks : I
+   L1
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.ticks : I
+    ICONST_5
+    IF_ICMPLT L2
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.resonationTicks : I
+    IFNE L2
+    ALOAD 1
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.nearbyEntities : Ljava/util/List;
+    INVOKESTATIC net/minecraft/world/level/block/entity/BellBlockEntity.areRaidersNearby (Lnet/minecraft/core/BlockPos;Ljava/util/List;)Z
+    IFEQ L2
+    ALOAD 3
+    ICONST_1
+    PUTFIELD net/minecraft/world/level/block/entity/BellBlockEntity.resonating : Z
+    ALOAD 0
+    ACONST_NULL
+    ALOAD 1
+    GETSTATIC net/minecraft/sounds/SoundEvents.BELL_RESONATE : Lnet/minecraft/sounds/SoundEvent;
+    GETSTATIC net/minecraft/sounds/SoundSource.BLOCKS : Lnet/minecraft/sounds/SoundSource;
+    FCONST_1
+    FCONST_1
+    INVOKEVIRTUAL net/minecraft/world/level/Level.playSound (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V
+   L2
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.resonating : Z
+    IFEQ L3
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.resonationTicks : I
+    BIPUSH 40
+    IF_ICMPGE L4
+    ALOAD 3
+    DUP
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.resonationTicks : I
+    ICONST_1
+    IADD
+    PUTFIELD net/minecraft/world/level/block/entity/BellBlockEntity.resonationTicks : I
+    GOTO L3
+   L4
+    ALOAD 4
+    ALOAD 0
+    ALOAD 1
+    ALOAD 3
+    GETFIELD net/minecraft/world/level/block/entity/BellBlockEntity.nearbyEntities : Ljava/util/List;
+    INVOKEINTERFACE net/minecraft/world/level/block/entity/BellBlockEntity$ResonationEndAction.run (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Ljava/util/List;)V (itf)
+    ALOAD 3
+    ICONST_0
+    PUTFIELD net/minecraft/world/level/block/entity/BellBlockEntity.resonating : Z
+   L3
+    RETURN
+    MAXSTACK = 7
+    MAXLOCALS = 5

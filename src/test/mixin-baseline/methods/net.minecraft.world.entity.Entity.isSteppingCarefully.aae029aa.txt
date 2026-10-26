@@ -1,0 +1,6 @@
+// net/minecraft/world/entity/Entity.isSteppingCarefully()Z
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.isShiftKeyDown ()Z
+    IRETURN
+    MAXSTACK = 1
+    MAXLOCALS = 1

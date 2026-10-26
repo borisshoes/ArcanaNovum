@@ -1,0 +1,76 @@
+// net/minecraft/world/level/block/FarmlandBlock.fallOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;D)V
+    ALOAD 1
+    INSTANCEOF net/minecraft/server/level/ServerLevel
+    IFEQ L0
+    ALOAD 1
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 7
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getRandom ()Lnet/minecraft/util/RandomSource;
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextFloat ()F (itf)
+    F2D
+    DLOAD 5
+    LDC 0.5D
+    DSUB
+    DCMPG
+    IFGE L0
+    ALOAD 4
+    INSTANCEOF net/minecraft/world/entity/LivingEntity
+    IFEQ L0
+    ALOAD 4
+    INSTANCEOF net/minecraft/world/entity/player/Player
+    IFEQ L1
+    ALOAD 4
+    CHECKCAST net/minecraft/world/entity/player/Player
+    ASTORE 9
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getServer ()Lnet/minecraft/server/MinecraftServer;
+    ALOAD 7
+    ALOAD 3
+    ALOAD 9
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.isUnderSpawnProtection (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z
+    IFNE L2
+    ICONST_1
+    GOTO L3
+   L2
+    ICONST_0
+    GOTO L3
+   L1
+    ALOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getGameRules ()Lnet/minecraft/world/level/gamerules/GameRules;
+    GETSTATIC net/minecraft/world/level/gamerules/GameRules.MOB_GRIEFING : Lnet/minecraft/world/level/gamerules/GameRule;
+    INVOKEVIRTUAL net/minecraft/world/level/gamerules/GameRules.get (Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+   L3
+    ISTORE 8
+    ILOAD 8
+    IFEQ L0
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getBbWidth ()F
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getBbWidth ()F
+    FMUL
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.getBbHeight ()F
+    FMUL
+    LDC 0.512F
+    FCMPL
+    IFLE L0
+    ALOAD 0
+    ALOAD 4
+    ALOAD 2
+    ALOAD 1
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/level/block/FarmlandBlock.turnToBaseBlock (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+   L0
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    ALOAD 3
+    ALOAD 4
+    DLOAD 5
+    INVOKESPECIAL net/minecraft/world/level/block/Block.fallOn (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;D)V
+    RETURN
+    MAXSTACK = 7
+    MAXLOCALS = 10

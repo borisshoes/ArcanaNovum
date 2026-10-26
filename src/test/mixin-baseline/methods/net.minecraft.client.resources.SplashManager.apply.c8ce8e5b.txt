@@ -1,0 +1,8 @@
+// net/minecraft/client/resources/SplashManager.apply(Ljava/util/List;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V
+    ALOAD 0
+    ALOAD 1
+    INVOKESTATIC java/util/List.copyOf (Ljava/util/Collection;)Ljava/util/List; (itf)
+    PUTFIELD net/minecraft/client/resources/SplashManager.splashes : Ljava/util/List;
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 4

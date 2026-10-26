@@ -1,0 +1,578 @@
+// net/minecraft/server/network/ServerGamePacketListenerImpl.handlePlayerPositionChange(DDDFFZZ)V
+    DLOAD 1
+    INVOKESTATIC net/minecraft/server/network/ServerGamePacketListenerImpl.clampHorizontal (D)D
+    DSTORE 11
+    DLOAD 3
+    INVOKESTATIC net/minecraft/server/network/ServerGamePacketListenerImpl.clampVertical (D)D
+    DSTORE 13
+    DLOAD 5
+    INVOKESTATIC net/minecraft/server/network/ServerGamePacketListenerImpl.clampHorizontal (D)D
+    DSTORE 15
+    FLOAD 7
+    INVOKESTATIC net/minecraft/util/Mth.wrapDegrees (F)F
+    FSTORE 17
+    FLOAD 8
+    INVOKESTATIC net/minecraft/util/Mth.wrapDegrees (F)F
+    FSTORE 18
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isPassenger ()Z
+    IFEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    FLOAD 17
+    FLOAD 18
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.absSnapTo (DDDFF)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getChunkSource ()Lnet/minecraft/server/level/ServerChunkCache;
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerChunkCache.move (Lnet/minecraft/server/level/ServerPlayer;)V
+    RETURN
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    DSTORE 19
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    DSTORE 21
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    DSTORE 23
+    DLOAD 11
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.firstGoodX : D
+    DSUB
+    DSTORE 25
+    DLOAD 13
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.firstGoodY : D
+    DSUB
+    DSTORE 27
+    DLOAD 15
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.firstGoodZ : D
+    DSUB
+    DSTORE 29
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.lengthSqr ()D
+    DSTORE 31
+    DLOAD 25
+    DLOAD 25
+    DMUL
+    DLOAD 27
+    DLOAD 27
+    DMUL
+    DADD
+    DLOAD 29
+    DLOAD 29
+    DMUL
+    DADD
+    DSTORE 33
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSleeping ()Z
+    IFEQ L1
+    DLOAD 33
+    DCONST_1
+    DCMPL
+    IFLE L2
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    FLOAD 17
+    FLOAD 18
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.teleport (DDDFF)V
+   L2
+    RETURN
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isFallFlying ()Z
+    ISTORE 35
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    ASTORE 36
+    ALOAD 36
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.tickRateManager ()Lnet/minecraft/world/TickRateManager;
+    INVOKEVIRTUAL net/minecraft/world/TickRateManager.runsNormally ()Z
+    IFEQ L3
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.receivedMovePacketCount : I
+    ICONST_1
+    IADD
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.receivedMovePacketCount : I
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.receivedMovePacketCount : I
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.knownMovePacketCount : I
+    ISUB
+    ISTORE 37
+    ILOAD 37
+    ICONST_5
+    IF_ICMPLE L4
+    GETSTATIC net/minecraft/server/network/ServerGamePacketListenerImpl.LOGGER : Lorg/slf4j/Logger;
+    LDC "{} is sending move packets too frequently ({} packets since last tick)"
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getPlainTextName ()Ljava/lang/String;
+    ILOAD 37
+    INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;
+    INVOKEINTERFACE org/slf4j/Logger.debug (Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V (itf)
+    ICONST_1
+    ISTORE 37
+   L4
+    ALOAD 0
+    ILOAD 35
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.shouldCheckPlayerMovement (Z)Z
+    IFEQ L3
+    ILOAD 35
+    IFEQ L5
+    LDC 300.0F
+    GOTO L6
+   L5
+    LDC 100.0F
+   L6
+    FSTORE 38
+    DLOAD 33
+    DLOAD 31
+    DSUB
+    FLOAD 38
+    ILOAD 37
+    I2F
+    FMUL
+    F2D
+    DCMPL
+    IFLE L3
+    GETSTATIC net/minecraft/server/network/ServerGamePacketListenerImpl.LOGGER : Lorg/slf4j/Logger;
+    LDC "{} moved too quickly! {},{},{}"
+    ICONST_4
+    ANEWARRAY java/lang/Object
+    DUP
+    ICONST_0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getPlainTextName ()Ljava/lang/String;
+    AASTORE
+    DUP
+    ICONST_1
+    DLOAD 25
+    INVOKESTATIC java/lang/Double.valueOf (D)Ljava/lang/Double;
+    AASTORE
+    DUP
+    ICONST_2
+    DLOAD 27
+    INVOKESTATIC java/lang/Double.valueOf (D)Ljava/lang/Double;
+    AASTORE
+    DUP
+    ICONST_3
+    DLOAD 29
+    INVOKESTATIC java/lang/Double.valueOf (D)Ljava/lang/Double;
+    AASTORE
+    INVOKEINTERFACE org/slf4j/Logger.warn (Ljava/lang/String;[Ljava/lang/Object;)V (itf)
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getYRot ()F
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getXRot ()F
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.teleport (DDDFF)V
+    RETURN
+   L3
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getBoundingBox ()Lnet/minecraft/world/phys/AABB;
+    ASTORE 37
+    DLOAD 11
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.lastGoodX : D
+    DSUB
+    DSTORE 25
+    DLOAD 13
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.lastGoodY : D
+    DSUB
+    DSTORE 27
+    DLOAD 15
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.lastGoodZ : D
+    DSUB
+    DSTORE 29
+    DLOAD 27
+    DCONST_0
+    DCMPL
+    IFLE L7
+    ICONST_1
+    GOTO L8
+   L7
+    ICONST_0
+   L8
+    ISTORE 38
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.onGround ()Z
+    IFEQ L9
+    ILOAD 9
+    IFNE L9
+    ILOAD 38
+    IFEQ L9
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.jumpFromGround ()V
+   L9
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    GETFIELD net/minecraft/server/level/ServerPlayer.verticalCollisionBelow : Z
+    ISTORE 39
+    ILOAD 9
+    IFEQ L10
+    ILOAD 39
+    IFNE L10
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.forceSendPlayerSupportBlocks ()V
+   L10
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    GETSTATIC net/minecraft/world/entity/MoverType.PLAYER : Lnet/minecraft/world/entity/MoverType;
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    DLOAD 25
+    DLOAD 27
+    DLOAD 29
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.move (Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V
+    DLOAD 27
+    DSTORE 40
+    DLOAD 11
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    DSUB
+    DSTORE 25
+    DLOAD 13
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    DSUB
+    DSTORE 27
+    DLOAD 27
+    LDC -0.5D
+    DCMPL
+    IFGT L11
+    DLOAD 27
+    LDC 0.5D
+    DCMPG
+    IFGE L12
+   L11
+    DCONST_0
+    DSTORE 27
+   L12
+    DLOAD 15
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    DSUB
+    DSTORE 29
+    DLOAD 25
+    DLOAD 25
+    DMUL
+    DLOAD 27
+    DLOAD 27
+    DMUL
+    DADD
+    DLOAD 29
+    DLOAD 29
+    DMUL
+    DADD
+    DSTORE 33
+    ICONST_0
+    ISTORE 42
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isChangingDimension ()Z
+    IFNE L13
+    DLOAD 33
+    LDC 0.0625D
+    DCMPL
+    IFLE L13
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSleeping ()Z
+    IFNE L13
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isCreative ()Z
+    IFNE L13
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSpectator ()Z
+    IFNE L13
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isInPostImpulseGraceTime ()Z
+    IFNE L13
+    ICONST_1
+    ISTORE 42
+    GETSTATIC net/minecraft/server/network/ServerGamePacketListenerImpl.LOGGER : Lorg/slf4j/Logger;
+    LDC "{} moved wrongly!"
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getPlainTextName ()Ljava/lang/String;
+    INVOKEINTERFACE org/slf4j/Logger.warn (Ljava/lang/String;Ljava/lang/Object;)V (itf)
+   L13
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    GETFIELD net/minecraft/server/level/ServerPlayer.noPhysics : Z
+    IFNE L14
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSleeping ()Z
+    IFNE L14
+    ILOAD 42
+    IFEQ L15
+    ALOAD 36
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 37
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.noCollision (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Z
+    IFNE L16
+   L15
+    ALOAD 0
+    ALOAD 36
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 37
+    DLOAD 11
+    DLOAD 13
+    DLOAD 15
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.isEntityCollidingWithAnythingNew (Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;DDD)Z
+    IFEQ L14
+   L16
+    ALOAD 0
+    DLOAD 19
+    DLOAD 21
+    DLOAD 23
+    FLOAD 17
+    FLOAD 18
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.teleport (DDDFF)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    DLOAD 19
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    DLOAD 21
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    DLOAD 23
+    DSUB
+    ILOAD 9
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.doCheckFallDamage (DDDZ)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.removeLatestMovementRecording ()V
+    RETURN
+   L14
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    DLOAD 11
+    DLOAD 13
+    DLOAD 15
+    FLOAD 17
+    FLOAD 18
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.absSnapTo (DDDFF)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isAutoSpinAttack ()Z
+    ISTORE 43
+    ALOAD 0
+    DLOAD 40
+    LDC -0.03125D
+    DCMPL
+    IFLT L17
+    ILOAD 39
+    IFNE L17
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSpectator ()Z
+    IFNE L17
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.server : Lnet/minecraft/server/MinecraftServer;
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.allowFlight ()Z
+    IFNE L17
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getAbilities ()Lnet/minecraft/world/entity/player/Abilities;
+    GETFIELD net/minecraft/world/entity/player/Abilities.mayfly : Z
+    IFNE L17
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    GETSTATIC net/minecraft/world/effect/MobEffects.LEVITATION : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.hasEffect (Lnet/minecraft/core/Holder;)Z
+    IFNE L17
+    ILOAD 35
+    IFNE L17
+    ILOAD 43
+    IFNE L17
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.noBlocksAround (Lnet/minecraft/world/entity/Entity;)Z
+    IFEQ L17
+    ICONST_1
+    GOTO L18
+   L17
+    ICONST_0
+   L18
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.clientIsFloating : Z
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getChunkSource ()Lnet/minecraft/server/level/ServerChunkCache;
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerChunkCache.move (Lnet/minecraft/server/level/ServerPlayer;)V
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    DLOAD 19
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    DLOAD 21
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    DLOAD 23
+    DSUB
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    ASTORE 44
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    ILOAD 9
+    ILOAD 10
+    ALOAD 44
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setOnGroundWithMovement (ZZLnet/minecraft/world/phys/Vec3;)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 44
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    ALOAD 44
+    GETFIELD net/minecraft/world/phys/Vec3.y : D
+    ALOAD 44
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    ILOAD 9
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.doCheckFallDamage (DDDZ)V
+    ALOAD 0
+    ALOAD 44
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.handlePlayerKnownMovement (Lnet/minecraft/world/phys/Vec3;)V
+    ILOAD 38
+    IFEQ L19
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.resetFallDistance ()V
+   L19
+    ILOAD 9
+    IFNE L20
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.hasLandedInLiquid ()Z
+    IFNE L20
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.onClimbable ()Z
+    IFNE L20
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSpectator ()Z
+    IFNE L20
+    ILOAD 35
+    IFNE L20
+    ILOAD 43
+    IFEQ L21
+   L20
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.tryResetCurrentImpulseContext ()V
+   L21
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    DLOAD 19
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    DLOAD 21
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    DLOAD 23
+    DSUB
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.checkMovementStatistics (DDD)V
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getX ()D
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.lastGoodX : D
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getY ()D
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.lastGoodY : D
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getZ ()D
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.lastGoodZ : D
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 45

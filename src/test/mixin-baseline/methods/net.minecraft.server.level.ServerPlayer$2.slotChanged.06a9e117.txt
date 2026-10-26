@@ -1,0 +1,28 @@
+// net/minecraft/server/level/ServerPlayer$2.slotChanged(Lnet/minecraft/world/inventory/AbstractContainerMenu;ILnet/minecraft/world/item/ItemStack;)V
+    ALOAD 1
+    ILOAD 2
+    INVOKEVIRTUAL net/minecraft/world/inventory/AbstractContainerMenu.getSlot (I)Lnet/minecraft/world/inventory/Slot;
+    ASTORE 4
+    ALOAD 4
+    INSTANCEOF net/minecraft/world/inventory/ResultSlot
+    IFEQ L0
+    RETURN
+   L0
+    ALOAD 4
+    GETFIELD net/minecraft/world/inventory/Slot.container : Lnet/minecraft/world/Container;
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer$2.this$0 : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getInventory ()Lnet/minecraft/world/entity/player/Inventory;
+    IF_ACMPNE L1
+    GETSTATIC net/minecraft/advancements/triggers/CriteriaTriggers.INVENTORY_CHANGED : Lnet/minecraft/advancements/triggers/InventoryChangeTrigger;
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer$2.this$0 : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer$2.this$0 : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getInventory ()Lnet/minecraft/world/entity/player/Inventory;
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/advancements/triggers/InventoryChangeTrigger.trigger (Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/item/ItemStack;)V
+   L1
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 5

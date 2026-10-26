@@ -1,0 +1,241 @@
+// net/minecraft/server/level/ChunkMap.<init>(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Ljava/util/concurrent/Executor;Lnet/minecraft/util/thread/BlockableEventLoop;Lnet/minecraft/world/level/chunk/LightChunkGetter;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/level/entity/ChunkStatusUpdateListener;Lnet/minecraft/world/level/TicketStorage;IZ)V
+    ALOAD 0
+    NEW net/minecraft/world/level/chunk/storage/RegionStorageInfo
+    DUP
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess.getLevelId ()Ljava/lang/String;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.dimension ()Lnet/minecraft/resources/ResourceKey;
+    LDC "chunk"
+    INVOKESPECIAL net/minecraft/world/level/chunk/storage/RegionStorageInfo.<init> (Ljava/lang/String;Lnet/minecraft/resources/ResourceKey;Ljava/lang/String;)V
+    ALOAD 2
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.dimension ()Lnet/minecraft/resources/ResourceKey;
+    INVOKEVIRTUAL net/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess.getDimensionPath (Lnet/minecraft/resources/ResourceKey;)Ljava/nio/file/Path;
+    LDC "region"
+    INVOKEINTERFACE java/nio/file/Path.resolve (Ljava/lang/String;)Ljava/nio/file/Path; (itf)
+    ALOAD 3
+    ILOAD 12
+    GETSTATIC net/minecraft/util/datafix/DataFixTypes.CHUNK : Lnet/minecraft/util/datafix/DataFixTypes;
+    INVOKESPECIAL net/minecraft/world/level/chunk/storage/SimpleRegionStorage.<init> (Lnet/minecraft/world/level/chunk/storage/RegionStorageInfo;Ljava/nio/file/Path;Lcom/mojang/datafixers/DataFixer;ZLnet/minecraft/util/datafix/DataFixTypes;)V
+    ALOAD 0
+    NEW it/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.updatingChunkMap : Lit/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap;
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ChunkMap.updatingChunkMap : Lit/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap;
+    INVOKEVIRTUAL it/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap.clone ()Lit/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap;
+    PUTFIELD net/minecraft/server/level/ChunkMap.visibleChunkMap : Lit/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap;
+    ALOAD 0
+    NEW it/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.pendingUnloads : Lit/unimi/dsi/fastutil/longs/Long2ObjectLinkedOpenHashMap;
+    ALOAD 0
+    NEW java/util/ArrayList
+    DUP
+    INVOKESPECIAL java/util/ArrayList.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.pendingGenerationTasks : Ljava/util/List;
+    ALOAD 0
+    NEW it/unimi/dsi/fastutil/longs/LongOpenHashSet
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/longs/LongOpenHashSet.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.toDrop : Lit/unimi/dsi/fastutil/longs/LongSet;
+    ALOAD 0
+    NEW net/minecraft/server/level/PlayerMap
+    DUP
+    INVOKESPECIAL net/minecraft/server/level/PlayerMap.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.playerMap : Lnet/minecraft/server/level/PlayerMap;
+    ALOAD 0
+    NEW it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.entityMap : Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+    ALOAD 0
+    NEW it/unimi/dsi/fastutil/longs/Long2ByteOpenHashMap
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/longs/Long2ByteOpenHashMap.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.chunkTypeCache : Lit/unimi/dsi/fastutil/longs/Long2ByteMap;
+    ALOAD 0
+    NEW it/unimi/dsi/fastutil/longs/Long2LongOpenHashMap
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/longs/Long2LongOpenHashMap.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.nextChunkSaveTime : Lit/unimi/dsi/fastutil/longs/Long2LongMap;
+    ALOAD 0
+    NEW it/unimi/dsi/fastutil/longs/LongLinkedOpenHashSet
+    DUP
+    INVOKESPECIAL it/unimi/dsi/fastutil/longs/LongLinkedOpenHashSet.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.chunksToEagerlySave : Lit/unimi/dsi/fastutil/longs/LongSet;
+    ALOAD 0
+    INVOKESTATIC com/google/common/collect/Queues.newConcurrentLinkedQueue ()Ljava/util/concurrent/ConcurrentLinkedQueue;
+    PUTFIELD net/minecraft/server/level/ChunkMap.unloadQueue : Ljava/util/Queue;
+    ALOAD 0
+    NEW java/util/concurrent/atomic/AtomicInteger
+    DUP
+    INVOKESPECIAL java/util/concurrent/atomic/AtomicInteger.<init> ()V
+    PUTFIELD net/minecraft/server/level/ChunkMap.activeChunkWrites : Ljava/util/concurrent/atomic/AtomicInteger;
+    ALOAD 2
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.dimension ()Lnet/minecraft/resources/ResourceKey;
+    INVOKEVIRTUAL net/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess.getDimensionPath (Lnet/minecraft/resources/ResourceKey;)Ljava/nio/file/Path;
+    ASTORE 13
+    ALOAD 0
+    ALOAD 1
+    PUTFIELD net/minecraft/server/level/ChunkMap.level : Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.registryAccess ()Lnet/minecraft/core/RegistryAccess;
+    ASTORE 14
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getSeed ()J
+    LSTORE 15
+    ALOAD 8
+    INSTANCEOF net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator
+    IFEQ L0
+    ALOAD 8
+    CHECKCAST net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator
+    ASTORE 17
+    ALOAD 0
+    ALOAD 14
+    GETSTATIC net/minecraft/core/registries/Registries.NOISE : Lnet/minecraft/resources/ResourceKey;
+    INVOKEINTERFACE net/minecraft/core/RegistryAccess.lookupOrThrow (Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/Registry; (itf)
+    LLOAD 15
+    ALOAD 17
+    INVOKEVIRTUAL net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.generatorSettings ()Lnet/minecraft/core/Holder;
+    INVOKEINTERFACE net/minecraft/core/Holder.value ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/level/levelgen/NoiseGeneratorSettings
+    INVOKESTATIC net/minecraft/world/level/levelgen/RandomState.create (Lnet/minecraft/core/HolderGetter;JLnet/minecraft/world/level/levelgen/NoiseGeneratorSettings;)Lnet/minecraft/world/level/levelgen/RandomState;
+    PUTFIELD net/minecraft/server/level/ChunkMap.randomState : Lnet/minecraft/world/level/levelgen/RandomState;
+    GOTO L1
+   L0
+    ALOAD 0
+    ALOAD 14
+    GETSTATIC net/minecraft/core/registries/Registries.NOISE : Lnet/minecraft/resources/ResourceKey;
+    INVOKEINTERFACE net/minecraft/core/RegistryAccess.lookupOrThrow (Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/Registry; (itf)
+    LLOAD 15
+    ICONST_0
+    GETSTATIC net/minecraft/world/level/block/Blocks.STONE : Lnet/minecraft/world/level/block/Block;
+    INVOKEVIRTUAL net/minecraft/world/level/block/Block.defaultBlockState ()Lnet/minecraft/world/level/block/state/BlockState;
+    BIPUSH 63
+    INVOKESTATIC net/minecraft/world/level/levelgen/NoiseRouterData.none ()Lnet/minecraft/world/level/levelgen/NoiseRouter;
+    INVOKESTATIC net/minecraft/world/level/levelgen/RandomState.create (Lnet/minecraft/core/HolderGetter;JZLnet/minecraft/world/level/block/state/BlockState;ILnet/minecraft/world/level/levelgen/NoiseRouter;)Lnet/minecraft/world/level/levelgen/RandomState;
+    PUTFIELD net/minecraft/server/level/ChunkMap.randomState : Lnet/minecraft/world/level/levelgen/RandomState;
+   L1
+    ALOAD 0
+    ALOAD 8
+    ALOAD 14
+    GETSTATIC net/minecraft/core/registries/Registries.STRUCTURE_SET : Lnet/minecraft/resources/ResourceKey;
+    INVOKEINTERFACE net/minecraft/core/RegistryAccess.lookupOrThrow (Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/Registry; (itf)
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ChunkMap.randomState : Lnet/minecraft/world/level/levelgen/RandomState;
+    LLOAD 15
+    INVOKEVIRTUAL net/minecraft/world/level/chunk/ChunkGenerator.createState (Lnet/minecraft/core/HolderLookup;Lnet/minecraft/world/level/levelgen/RandomState;J)Lnet/minecraft/world/level/chunk/ChunkGeneratorStructureState;
+    PUTFIELD net/minecraft/server/level/ChunkMap.chunkGeneratorState : Lnet/minecraft/world/level/chunk/ChunkGeneratorStructureState;
+    ALOAD 0
+    ALOAD 6
+    PUTFIELD net/minecraft/server/level/ChunkMap.mainThreadExecutor : Lnet/minecraft/util/thread/BlockableEventLoop;
+    NEW net/minecraft/util/thread/ConsecutiveExecutor
+    DUP
+    ALOAD 5
+    LDC "worldgen"
+    INVOKESPECIAL net/minecraft/util/thread/ConsecutiveExecutor.<init> (Ljava/util/concurrent/Executor;Ljava/lang/String;)V
+    ASTORE 17
+    ALOAD 0
+    ALOAD 9
+    PUTFIELD net/minecraft/server/level/ChunkMap.chunkStatusListener : Lnet/minecraft/world/level/entity/ChunkStatusUpdateListener;
+    NEW net/minecraft/util/thread/ConsecutiveExecutor
+    DUP
+    ALOAD 5
+    LDC "light"
+    INVOKESPECIAL net/minecraft/util/thread/ConsecutiveExecutor.<init> (Ljava/util/concurrent/Executor;Ljava/lang/String;)V
+    ASTORE 18
+    ALOAD 0
+    NEW net/minecraft/server/level/ChunkTaskDispatcher
+    DUP
+    ALOAD 17
+    ALOAD 5
+    INVOKESPECIAL net/minecraft/server/level/ChunkTaskDispatcher.<init> (Lnet/minecraft/util/thread/TaskScheduler;Ljava/util/concurrent/Executor;)V
+    PUTFIELD net/minecraft/server/level/ChunkMap.worldgenTaskDispatcher : Lnet/minecraft/server/level/ChunkTaskDispatcher;
+    ALOAD 0
+    NEW net/minecraft/server/level/ChunkTaskDispatcher
+    DUP
+    ALOAD 18
+    ALOAD 5
+    INVOKESPECIAL net/minecraft/server/level/ChunkTaskDispatcher.<init> (Lnet/minecraft/util/thread/TaskScheduler;Ljava/util/concurrent/Executor;)V
+    PUTFIELD net/minecraft/server/level/ChunkMap.lightTaskDispatcher : Lnet/minecraft/server/level/ChunkTaskDispatcher;
+    ALOAD 0
+    NEW net/minecraft/server/level/ThreadedLevelLightEngine
+    DUP
+    ALOAD 7
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ChunkMap.level : Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.dimensionType ()Lnet/minecraft/world/level/dimension/DimensionType;
+    INVOKEVIRTUAL net/minecraft/world/level/dimension/DimensionType.hasSkyLight ()Z
+    ALOAD 18
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ChunkMap.lightTaskDispatcher : Lnet/minecraft/server/level/ChunkTaskDispatcher;
+    INVOKESPECIAL net/minecraft/server/level/ThreadedLevelLightEngine.<init> (Lnet/minecraft/world/level/chunk/LightChunkGetter;Lnet/minecraft/server/level/ChunkMap;ZLnet/minecraft/util/thread/ConsecutiveExecutor;Lnet/minecraft/server/level/ChunkTaskDispatcher;)V
+    PUTFIELD net/minecraft/server/level/ChunkMap.lightEngine : Lnet/minecraft/server/level/ThreadedLevelLightEngine;
+    ALOAD 0
+    NEW net/minecraft/server/level/ChunkMap$DistanceManager
+    DUP
+    ALOAD 0
+    ALOAD 10
+    ALOAD 5
+    ALOAD 6
+    INVOKESPECIAL net/minecraft/server/level/ChunkMap$DistanceManager.<init> (Lnet/minecraft/server/level/ChunkMap;Lnet/minecraft/world/level/TicketStorage;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;)V
+    PUTFIELD net/minecraft/server/level/ChunkMap.distanceManager : Lnet/minecraft/server/level/ChunkMap$DistanceManager;
+    ALOAD 0
+    ALOAD 10
+    PUTFIELD net/minecraft/server/level/ChunkMap.ticketStorage : Lnet/minecraft/world/level/TicketStorage;
+    ALOAD 0
+    NEW net/minecraft/world/entity/ai/village/poi/PoiManager
+    DUP
+    NEW net/minecraft/world/level/chunk/storage/RegionStorageInfo
+    DUP
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess.getLevelId ()Ljava/lang/String;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.dimension ()Lnet/minecraft/resources/ResourceKey;
+    LDC "poi"
+    INVOKESPECIAL net/minecraft/world/level/chunk/storage/RegionStorageInfo.<init> (Ljava/lang/String;Lnet/minecraft/resources/ResourceKey;Ljava/lang/String;)V
+    ALOAD 13
+    LDC "poi"
+    INVOKEINTERFACE java/nio/file/Path.resolve (Ljava/lang/String;)Ljava/nio/file/Path; (itf)
+    ALOAD 3
+    ILOAD 12
+    ALOAD 14
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getServer ()Lnet/minecraft/server/MinecraftServer;
+    ALOAD 1
+    INVOKESPECIAL net/minecraft/world/entity/ai/village/poi/PoiManager.<init> (Lnet/minecraft/world/level/chunk/storage/RegionStorageInfo;Ljava/nio/file/Path;Lcom/mojang/datafixers/DataFixer;ZLnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/level/chunk/storage/ChunkIOErrorReporter;Lnet/minecraft/world/level/LevelHeightAccessor;)V
+    PUTFIELD net/minecraft/server/level/ChunkMap.poiManager : Lnet/minecraft/world/entity/ai/village/poi/PoiManager;
+    ALOAD 0
+    ILOAD 11
+    INVOKEVIRTUAL net/minecraft/server/level/ChunkMap.setServerViewDistance (I)V
+    ALOAD 0
+    NEW net/minecraft/world/level/chunk/status/WorldGenContext
+    DUP
+    ALOAD 1
+    ALOAD 8
+    ALOAD 4
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ChunkMap.lightEngine : Lnet/minecraft/server/level/ThreadedLevelLightEngine;
+    ALOAD 6
+    ALOAD 0
+    INVOKEDYNAMIC setUnsaved(Lnet/minecraft/server/level/ChunkMap;)Lnet/minecraft/world/level/chunk/LevelChunk$UnsavedListener; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/level/ChunkPos;)V,
+      // handle kind 0x5 : INVOKEVIRTUAL
+      net/minecraft/server/level/ChunkMap.setChunkUnsaved(Lnet/minecraft/world/level/ChunkPos;)V,
+      (Lnet/minecraft/world/level/ChunkPos;)V
+    ]
+    INVOKESPECIAL net/minecraft/world/level/chunk/status/WorldGenContext.<init> (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Lnet/minecraft/server/level/ThreadedLevelLightEngine;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/chunk/LevelChunk$UnsavedListener;)V
+    PUTFIELD net/minecraft/server/level/ChunkMap.worldGenContext : Lnet/minecraft/world/level/chunk/status/WorldGenContext;
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 19

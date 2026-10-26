@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "arcananovum-test",
+  "version": "1.0.0",
+  "name": "Arcana Novum Tests",
+  "description": "Game tests for Arcana Novum. Only loaded in the gameTest run and the JUnit test task.",
+  "license": "OSL-3.0",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "net.borisshoes.arcananovum.test.gametest.MixinGameTests",
+      "net.borisshoes.arcananovum.test.gametest.RecipeIntegrityGameTests",
+      "net.borisshoes.arcananovum.test.gametest.GuiStackGameTests",
+      "net.borisshoes.arcananovum.test.gametest.RegressionGameTests"
+    ]
+  },
+  "mixins": [
+    "arcananovum-test.mixins.json"
+  ],
+  "depends": {
+    "arcananovum": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

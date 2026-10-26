@@ -1,0 +1,278 @@
+// net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getNavigation ()Lnet/minecraft/world/entity/ai/navigation/PathNavigation;
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/navigation/PathNavigation.isDone ()Z
+    IFEQ L1
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.setMoving (Z)V
+    RETURN
+   L1
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.wantedX : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getX ()D
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.wantedY : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getY ()D
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.wantedZ : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getZ ()D
+    DSUB
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    ASTORE 1
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.length ()D
+    DSTORE 2
+    ALOAD 1
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    DLOAD 2
+    DDIV
+    DSTORE 4
+    ALOAD 1
+    GETFIELD net/minecraft/world/phys/Vec3.y : D
+    DLOAD 2
+    DDIV
+    DSTORE 6
+    ALOAD 1
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    DLOAD 2
+    DDIV
+    DSTORE 8
+    ALOAD 1
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    ALOAD 1
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    LDC 57.2957763671875D
+    DMUL
+    D2F
+    LDC 90.0F
+    FSUB
+    FSTORE 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getYRot ()F
+    FLOAD 10
+    LDC 90.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.rotlerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/monster/Guardian.yBodyRot : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    FSTORE 11
+    LDC 0.125F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getSpeed ()F
+    FLOAD 11
+    INVOKESTATIC net/minecraft/util/Mth.lerp (FFF)F
+    FSTORE 12
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    FLOAD 12
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    GETFIELD net/minecraft/world/entity/monster/Guardian.tickCount : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getId ()I
+    IADD
+    I2D
+    LDC 0.5D
+    DMUL
+    INVOKESTATIC java/lang/Math.sin (D)D
+    LDC 0.05D
+    DMUL
+    DSTORE 13
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getYRot ()F
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC java/lang/Math.cos (D)D
+    DSTORE 15
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getYRot ()F
+    LDC 0.017453292F
+    FMUL
+    F2D
+    INVOKESTATIC java/lang/Math.sin (D)D
+    DSTORE 17
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    GETFIELD net/minecraft/world/entity/monster/Guardian.tickCount : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getId ()I
+    IADD
+    I2D
+    LDC 0.75D
+    DMUL
+    INVOKESTATIC java/lang/Math.sin (D)D
+    LDC 0.05D
+    DMUL
+    DSTORE 19
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    DLOAD 13
+    DLOAD 15
+    DMUL
+    DLOAD 19
+    DLOAD 17
+    DLOAD 15
+    DADD
+    DMUL
+    LDC 0.25D
+    DMUL
+    FLOAD 12
+    F2D
+    DLOAD 6
+    DMUL
+    LDC 0.1D
+    DMUL
+    DADD
+    DLOAD 13
+    DLOAD 17
+    DMUL
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getLookControl ()Lnet/minecraft/world/entity/ai/control/LookControl;
+    ASTORE 21
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getX ()D
+    DLOAD 4
+    LDC 2.0D
+    DMUL
+    DADD
+    DSTORE 22
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getEyeY ()D
+    DLOAD 6
+    DLOAD 2
+    DDIV
+    DADD
+    DSTORE 24
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getZ ()D
+    DLOAD 8
+    LDC 2.0D
+    DMUL
+    DADD
+    DSTORE 26
+    ALOAD 21
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/LookControl.getWantedX ()D
+    DSTORE 28
+    ALOAD 21
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/LookControl.getWantedY ()D
+    DSTORE 30
+    ALOAD 21
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/LookControl.getWantedZ ()D
+    DSTORE 32
+    ALOAD 21
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/LookControl.isLookingAtTarget ()Z
+    IFNE L2
+    DLOAD 22
+    DSTORE 28
+    DLOAD 24
+    DSTORE 30
+    DLOAD 26
+    DSTORE 32
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.getLookControl ()Lnet/minecraft/world/entity/ai/control/LookControl;
+    LDC 0.125D
+    DLOAD 28
+    DLOAD 22
+    INVOKESTATIC net/minecraft/util/Mth.lerp (DDD)D
+    LDC 0.125D
+    DLOAD 30
+    DLOAD 24
+    INVOKESTATIC net/minecraft/util/Mth.lerp (DDD)D
+    LDC 0.125D
+    DLOAD 32
+    DLOAD 26
+    INVOKESTATIC net/minecraft/util/Mth.lerp (DDD)D
+    LDC 10.0F
+    LDC 40.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/control/LookControl.setLookAt (DDDFF)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/Guardian
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Guardian.setMoving (Z)V
+    RETURN
+    MAXSTACK = 11
+    MAXLOCALS = 34

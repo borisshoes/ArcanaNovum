@@ -1,0 +1,17 @@
+// net/minecraft/server/network/ServerCommonPacketListenerImpl.handleCustomClickAction(Lnet/minecraft/network/protocol/common/ServerboundCustomClickActionPacket;)V
+    ALOAD 1
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerCommonPacketListenerImpl.server : Lnet/minecraft/server/MinecraftServer;
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.packetProcessor ()Lnet/minecraft/network/PacketProcessor;
+    INVOKESTATIC net/minecraft/network/protocol/PacketUtils.ensureRunningOnSameThread (Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerCommonPacketListenerImpl.server : Lnet/minecraft/server/MinecraftServer;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/network/protocol/common/ServerboundCustomClickActionPacket.id ()Lnet/minecraft/resources/Identifier;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/network/protocol/common/ServerboundCustomClickActionPacket.payload ()Ljava/util/Optional;
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.handleCustomClickAction (Lnet/minecraft/resources/Identifier;Ljava/util/Optional;)V
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 2

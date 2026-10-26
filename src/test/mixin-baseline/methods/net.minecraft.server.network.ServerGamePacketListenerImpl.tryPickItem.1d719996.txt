@@ -1,0 +1,56 @@
+// net/minecraft/server/network/ServerGamePacketListenerImpl.tryPickItem(Lnet/minecraft/world/item/ItemStack;)V
+    ALOAD 1
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.enabledFeatures ()Lnet/minecraft/world/flag/FeatureFlagSet;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isItemEnabled (Lnet/minecraft/world/flag/FeatureFlagSet;)Z
+    IFNE L0
+    RETURN
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getInventory ()Lnet/minecraft/world/entity/player/Inventory;
+    ASTORE 2
+    ALOAD 2
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.findSlotMatchingItem (Lnet/minecraft/world/item/ItemStack;)I
+    ISTORE 3
+    ILOAD 3
+    ICONST_M1
+    IF_ICMPEQ L1
+    ILOAD 3
+    INVOKESTATIC net/minecraft/world/entity/player/Inventory.isHotbarSlot (I)Z
+    IFEQ L2
+    ALOAD 2
+    ILOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.setSelectedSlot (I)V
+    GOTO L3
+   L2
+    ALOAD 2
+    ILOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.pickSlot (I)V
+    GOTO L3
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.hasInfiniteMaterials ()Z
+    IFEQ L3
+    ALOAD 2
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.addAndPickItem (Lnet/minecraft/world/item/ItemStack;)V
+   L3
+    ALOAD 0
+    NEW net/minecraft/network/protocol/game/ClientboundSetHeldSlotPacket
+    DUP
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Inventory.getSelectedSlot ()I
+    INVOKESPECIAL net/minecraft/network/protocol/game/ClientboundSetHeldSlotPacket.<init> (I)V
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.send (Lnet/minecraft/network/protocol/Packet;)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    GETFIELD net/minecraft/server/level/ServerPlayer.inventoryMenu : Lnet/minecraft/world/inventory/InventoryMenu;
+    INVOKEVIRTUAL net/minecraft/world/inventory/InventoryMenu.broadcastChanges ()V
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 4

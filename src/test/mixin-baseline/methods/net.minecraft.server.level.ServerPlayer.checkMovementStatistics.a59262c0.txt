@@ -1,0 +1,254 @@
+// net/minecraft/server/level/ServerPlayer.checkMovementStatistics(DDD)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isPassenger ()Z
+    IFNE L0
+    DLOAD 1
+    DLOAD 3
+    DLOAD 5
+    INVOKESTATIC net/minecraft/server/level/ServerPlayer.didNotMove (DDD)Z
+    IFEQ L1
+   L0
+    RETURN
+   L1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSwimming ()Z
+    IFEQ L2
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 3
+    DLOAD 3
+    DMUL
+    DADD
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    D2F
+    LDC 100.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    ISTORE 7
+    ILOAD 7
+    IFLE L3
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.SWIM_ONE_CM : Lnet/minecraft/resources/Identifier;
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    ALOAD 0
+    LDC 0.01F
+    ILOAD 7
+    I2F
+    FMUL
+    LDC 0.01F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.causeFoodExhaustion (F)V
+   L3
+    GOTO L4
+   L2
+    ALOAD 0
+    GETSTATIC net/minecraft/tags/FluidTags.WATER : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isEyeInFluid (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L5
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 3
+    DLOAD 3
+    DMUL
+    DADD
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    D2F
+    LDC 100.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    ISTORE 7
+    ILOAD 7
+    IFLE L6
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.WALK_UNDER_WATER_ONE_CM : Lnet/minecraft/resources/Identifier;
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    ALOAD 0
+    LDC 0.01F
+    ILOAD 7
+    I2F
+    FMUL
+    LDC 0.01F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.causeFoodExhaustion (F)V
+   L6
+    GOTO L4
+   L5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isInWater ()Z
+    IFEQ L7
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    D2F
+    LDC 100.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    ISTORE 7
+    ILOAD 7
+    IFLE L8
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.WALK_ON_WATER_ONE_CM : Lnet/minecraft/resources/Identifier;
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    ALOAD 0
+    LDC 0.01F
+    ILOAD 7
+    I2F
+    FMUL
+    LDC 0.01F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.causeFoodExhaustion (F)V
+   L8
+    GOTO L4
+   L7
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.onClimbable ()Z
+    IFEQ L9
+    DLOAD 3
+    DCONST_0
+    DCMPL
+    IFLE L4
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.CLIMB_ONE_CM : Lnet/minecraft/resources/Identifier;
+    DLOAD 3
+    LDC 100.0D
+    DMUL
+    INVOKESTATIC java/lang/Math.round (D)J
+    L2I
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    GOTO L4
+   L9
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.onGround ()Z
+    IFEQ L10
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    D2F
+    LDC 100.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    ISTORE 7
+    ILOAD 7
+    IFLE L11
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSprinting ()Z
+    IFEQ L12
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.SPRINT_ONE_CM : Lnet/minecraft/resources/Identifier;
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    ALOAD 0
+    LDC 0.1F
+    ILOAD 7
+    I2F
+    FMUL
+    LDC 0.01F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.causeFoodExhaustion (F)V
+    GOTO L11
+   L12
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isCrouching ()Z
+    IFEQ L13
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.CROUCH_ONE_CM : Lnet/minecraft/resources/Identifier;
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    ALOAD 0
+    FCONST_0
+    ILOAD 7
+    I2F
+    FMUL
+    LDC 0.01F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.causeFoodExhaustion (F)V
+    GOTO L11
+   L13
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.WALK_ONE_CM : Lnet/minecraft/resources/Identifier;
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    ALOAD 0
+    FCONST_0
+    ILOAD 7
+    I2F
+    FMUL
+    LDC 0.01F
+    FMUL
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.causeFoodExhaustion (F)V
+   L11
+    GOTO L4
+   L10
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isFallFlying ()Z
+    IFEQ L14
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 3
+    DLOAD 3
+    DMUL
+    DADD
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    D2F
+    LDC 100.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    ISTORE 7
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.AVIATE_ONE_CM : Lnet/minecraft/resources/Identifier;
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+    GOTO L4
+   L14
+    DLOAD 1
+    DLOAD 1
+    DMUL
+    DLOAD 5
+    DLOAD 5
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    D2F
+    LDC 100.0F
+    FMUL
+    INVOKESTATIC java/lang/Math.round (F)I
+    ISTORE 7
+    ILOAD 7
+    BIPUSH 25
+    IF_ICMPLE L4
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.FLY_ONE_CM : Lnet/minecraft/resources/Identifier;
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;I)V
+   L4
+    RETURN
+    MAXSTACK = 6
+    MAXLOCALS = 8

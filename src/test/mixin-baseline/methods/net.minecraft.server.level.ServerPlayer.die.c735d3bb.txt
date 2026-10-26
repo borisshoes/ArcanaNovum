@@ -1,0 +1,192 @@
+// net/minecraft/server/level/ServerPlayer.die(Lnet/minecraft/world/damagesource/DamageSource;)V
+    ALOAD 0
+    GETSTATIC net/minecraft/world/level/gameevent/GameEvent.ENTITY_DIE : Lnet/minecraft/core/Holder$Reference;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.gameEvent (Lnet/minecraft/core/Holder;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getGameRules ()Lnet/minecraft/world/level/gamerules/GameRules;
+    GETSTATIC net/minecraft/world/level/gamerules/GameRules.SHOW_DEATH_MESSAGES : Lnet/minecraft/world/level/gamerules/GameRule;
+    INVOKEVIRTUAL net/minecraft/world/level/gamerules/GameRules.get (Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+    ISTORE 2
+    ILOAD 2
+    IFEQ L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getCombatTracker ()Lnet/minecraft/world/damagesource/CombatTracker;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/CombatTracker.getDeathMessage ()Lnet/minecraft/network/chat/Component;
+    ASTORE 3
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.connection : Lnet/minecraft/server/network/ServerGamePacketListenerImpl;
+    NEW net/minecraft/network/protocol/game/ClientboundPlayerCombatKillPacket
+    DUP
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getId ()I
+    ALOAD 3
+    INVOKESPECIAL net/minecraft/network/protocol/game/ClientboundPlayerCombatKillPacket.<init> (ILnet/minecraft/network/chat/Component;)V
+    ALOAD 0
+    ALOAD 3
+    INVOKEDYNAMIC get(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/Component;)Ljava/util/function/Supplier; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      ()Ljava/lang/Object;,
+      // handle kind 0x5 : INVOKEVIRTUAL
+      net/minecraft/server/level/ServerPlayer.lambda$die$0(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/protocol/Packet;,
+      ()Lnet/minecraft/network/protocol/Packet;
+    ]
+    INVOKESTATIC net/minecraft/network/PacketSendListener.exceptionallySend (Ljava/util/function/Supplier;)Lio/netty/channel/ChannelFutureListener;
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.send (Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getTeam ()Lnet/minecraft/world/scores/PlayerTeam;
+    ASTORE 4
+    ALOAD 4
+    IFNULL L1
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/scores/Team.getDeathMessageVisibility ()Lnet/minecraft/world/scores/Team$Visibility;
+    GETSTATIC net/minecraft/world/scores/Team$Visibility.ALWAYS : Lnet/minecraft/world/scores/Team$Visibility;
+    IF_ACMPNE L2
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.server : Lnet/minecraft/server/MinecraftServer;
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.getPlayerList ()Lnet/minecraft/server/players/PlayerList;
+    ALOAD 3
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/server/players/PlayerList.broadcastSystemMessage (Lnet/minecraft/network/chat/Component;Z)V
+    GOTO L3
+   L2
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/scores/Team.getDeathMessageVisibility ()Lnet/minecraft/world/scores/Team$Visibility;
+    GETSTATIC net/minecraft/world/scores/Team$Visibility.HIDE_FOR_OTHER_TEAMS : Lnet/minecraft/world/scores/Team$Visibility;
+    IF_ACMPNE L4
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.server : Lnet/minecraft/server/MinecraftServer;
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.getPlayerList ()Lnet/minecraft/server/players/PlayerList;
+    ALOAD 0
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/server/players/PlayerList.broadcastSystemToTeam (Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/network/chat/Component;)V
+    GOTO L3
+   L4
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/scores/Team.getDeathMessageVisibility ()Lnet/minecraft/world/scores/Team$Visibility;
+    GETSTATIC net/minecraft/world/scores/Team$Visibility.HIDE_FOR_OWN_TEAM : Lnet/minecraft/world/scores/Team$Visibility;
+    IF_ACMPNE L3
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.server : Lnet/minecraft/server/MinecraftServer;
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.getPlayerList ()Lnet/minecraft/server/players/PlayerList;
+    ALOAD 0
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/server/players/PlayerList.broadcastSystemToAllExceptTeam (Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/network/chat/Component;)V
+   L3
+    GOTO L5
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.connection : Lnet/minecraft/server/network/ServerGamePacketListenerImpl;
+    NEW net/minecraft/network/protocol/game/ClientboundPlayerCombatKillPacket
+    DUP
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getId ()I
+    GETSTATIC net/minecraft/network/chat/CommonComponents.EMPTY : Lnet/minecraft/network/chat/Component;
+    INVOKESPECIAL net/minecraft/network/protocol/game/ClientboundPlayerCombatKillPacket.<init> (ILnet/minecraft/network/chat/Component;)V
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.send (Lnet/minecraft/network/protocol/Packet;)V
+   L5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.removeEntitiesOnShoulder ()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getGameRules ()Lnet/minecraft/world/level/gamerules/GameRules;
+    GETSTATIC net/minecraft/world/level/gamerules/GameRules.FORGIVE_DEAD_PLAYERS : Lnet/minecraft/world/level/gamerules/GameRule;
+    INVOKEVIRTUAL net/minecraft/world/level/gamerules/GameRules.get (Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+    IFEQ L6
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.tellNeutralMobsThatIDied ()V
+   L6
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.isSpectator ()Z
+    IFNE L7
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.dropAllDeathLoot (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;)V
+   L7
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getScoreboard ()Lnet/minecraft/server/ServerScoreboard;
+    GETSTATIC net/minecraft/world/scores/criteria/ObjectiveCriteria.DEATH_COUNT : Lnet/minecraft/world/scores/criteria/ObjectiveCriteria;
+    ALOAD 0
+    INVOKEDYNAMIC accept()Ljava/util/function/Consumer; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)V,
+      // handle kind 0x9 : INVOKEINTERFACE
+      net/minecraft/world/scores/ScoreAccess.increment()I itf,
+      (Lnet/minecraft/world/scores/ScoreAccess;)V
+    ]
+    INVOKEVIRTUAL net/minecraft/server/ServerScoreboard.forAllObjectives (Lnet/minecraft/world/scores/criteria/ObjectiveCriteria;Lnet/minecraft/world/scores/ScoreHolder;Ljava/util/function/Consumer;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getKillCredit ()Lnet/minecraft/world/entity/LivingEntity;
+    ASTORE 3
+    ALOAD 3
+    IFNULL L8
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.ENTITY_KILLED_BY : Lnet/minecraft/stats/StatType;
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getType ()Lnet/minecraft/world/entity/EntityType;
+    INVOKEVIRTUAL net/minecraft/stats/StatType.get (Ljava/lang/Object;)Lnet/minecraft/stats/Stat;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/stats/Stat;)V
+    ALOAD 3
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.awardKillScore (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)V
+    ALOAD 0
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.createWitherRose (Lnet/minecraft/world/entity/LivingEntity;)V
+   L8
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 0
+    ICONST_3
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.broadcastEntityEvent (Lnet/minecraft/world/entity/Entity;B)V
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.DEATHS : Lnet/minecraft/resources/Identifier;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/resources/Identifier;)V
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.CUSTOM : Lnet/minecraft/stats/StatType;
+    GETSTATIC net/minecraft/stats/Stats.TIME_SINCE_DEATH : Lnet/minecraft/resources/Identifier;
+    INVOKEVIRTUAL net/minecraft/stats/StatType.get (Ljava/lang/Object;)Lnet/minecraft/stats/Stat;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.resetStat (Lnet/minecraft/stats/Stat;)V
+    ALOAD 0
+    GETSTATIC net/minecraft/stats/Stats.CUSTOM : Lnet/minecraft/stats/StatType;
+    GETSTATIC net/minecraft/stats/Stats.TIME_SINCE_REST : Lnet/minecraft/resources/Identifier;
+    INVOKEVIRTUAL net/minecraft/stats/StatType.get (Ljava/lang/Object;)Lnet/minecraft/stats/Stat;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.resetStat (Lnet/minecraft/stats/Stat;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.clearFire ()V
+    ALOAD 0
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setTicksFrozen (I)V
+    ALOAD 0
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setSharedFlagOnFire (Z)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getCombatTracker ()Lnet/minecraft/world/damagesource/CombatTracker;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/CombatTracker.recheckStatus ()V
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.dimension ()Lnet/minecraft/resources/ResourceKey;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.blockPosition ()Lnet/minecraft/core/BlockPos;
+    INVOKESTATIC net/minecraft/core/GlobalPos.of (Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/core/GlobalPos;
+    INVOKESTATIC java/util/Optional.of (Ljava/lang/Object;)Ljava/util/Optional;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.setLastDeathLocation (Ljava/util/Optional;)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/level/ServerPlayer.connection : Lnet/minecraft/server/network/ServerGamePacketListenerImpl;
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.markClientUnloadedAfterDeath ()V
+    RETURN
+    MAXSTACK = 5
+    MAXLOCALS = 5

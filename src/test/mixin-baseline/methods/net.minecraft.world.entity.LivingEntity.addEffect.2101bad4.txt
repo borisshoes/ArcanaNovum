@@ -1,0 +1,58 @@
+// net/minecraft/world/entity/LivingEntity.addEffect(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)Z
+  @Lorg/jspecify/annotations/Nullable;(
+) : METHOD_FORMAL_PARAMETER 1, null
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.canBeAffected (Lnet/minecraft/world/effect/MobEffectInstance;)Z
+    IFNE L0
+    ICONST_0
+    IRETURN
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.activeEffects : Ljava/util/Map;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.getEffect ()Lnet/minecraft/core/Holder;
+    INVOKEINTERFACE java/util/Map.get (Ljava/lang/Object;)Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/effect/MobEffectInstance
+    ASTORE 3
+    ICONST_0
+    ISTORE 4
+    ALOAD 3
+    IFNONNULL L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.activeEffects : Ljava/util/Map;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.getEffect ()Lnet/minecraft/core/Holder;
+    ALOAD 1
+    INVOKEINTERFACE java/util/Map.put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; (itf)
+    POP
+    ALOAD 0
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.onEffectAdded (Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)V
+    ICONST_1
+    ISTORE 4
+    ALOAD 1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.onEffectAdded (Lnet/minecraft/world/entity/LivingEntity;)V
+    GOTO L2
+   L1
+    ALOAD 3
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.update (Lnet/minecraft/world/effect/MobEffectInstance;)Z
+    IFEQ L2
+    ALOAD 0
+    ALOAD 3
+    ICONST_1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.onEffectUpdated (Lnet/minecraft/world/effect/MobEffectInstance;ZLnet/minecraft/world/entity/Entity;)V
+    ICONST_1
+    ISTORE 4
+   L2
+    ALOAD 1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/effect/MobEffectInstance.onEffectStarted (Lnet/minecraft/world/entity/LivingEntity;)V
+    ILOAD 4
+    IRETURN
+    MAXSTACK = 4
+    MAXLOCALS = 5

@@ -1,0 +1,29 @@
+// net/minecraft/server/network/ServerGamePacketListenerImpl.handlePunch(Lnet/minecraft/network/protocol/game/ServerboundPunchPacket;)V
+    ALOAD 1
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKESTATIC net/minecraft/network/protocol/PacketUtils.ensureRunningOnSameThread (Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.resetLastActionTime ()V
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    GETSTATIC net/minecraft/world/InteractionHand.MAIN_HAND : Lnet/minecraft/world/InteractionHand;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.getItemInHand (Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getAttackAnimation ()Lnet/minecraft/world/item/component/SwingAnimation;
+    ASTORE 2
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    GETSTATIC net/minecraft/world/InteractionHand.MAIN_HAND : Lnet/minecraft/world/InteractionHand;
+    ALOAD 2
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.swing (Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/component/SwingAnimation;Z)Z
+    POP
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.resetAttackStrengthTicker ()V
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 3

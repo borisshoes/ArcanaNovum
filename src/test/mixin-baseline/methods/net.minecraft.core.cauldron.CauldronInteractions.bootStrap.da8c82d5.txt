@@ -1,0 +1,118 @@
+// net/minecraft/core/cauldron/CauldronInteractions.bootStrap()V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.EMPTY : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    INVOKESTATIC net/minecraft/core/cauldron/CauldronInteractions.addDefaultInteractions (Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.EMPTY : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    GETSTATIC net/minecraft/world/item/Items.POTION : Lnet/minecraft/world/item/Item;
+    INVOKEDYNAMIC interact()Lnet/minecraft/core/cauldron/CauldronInteraction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.lambda$bootStrap$0(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;
+    ]
+    INVOKEVIRTUAL net/minecraft/core/cauldron/CauldronInteraction$Dispatcher.put (Lnet/minecraft/world/item/Item;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.WATER : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    INVOKESTATIC net/minecraft/core/cauldron/CauldronInteractions.addDefaultInteractions (Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.WATER : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    GETSTATIC net/minecraft/world/item/Items.BUCKET : Lnet/minecraft/world/item/Item;
+    INVOKEDYNAMIC interact()Lnet/minecraft/core/cauldron/CauldronInteraction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.lambda$bootStrap$1(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;
+    ]
+    INVOKEVIRTUAL net/minecraft/core/cauldron/CauldronInteraction$Dispatcher.put (Lnet/minecraft/world/item/Item;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.WATER : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    GETSTATIC net/minecraft/world/item/Items.GLASS_BOTTLE : Lnet/minecraft/world/item/Item;
+    INVOKEDYNAMIC interact()Lnet/minecraft/core/cauldron/CauldronInteraction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.lambda$bootStrap$3(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;
+    ]
+    INVOKEVIRTUAL net/minecraft/core/cauldron/CauldronInteraction$Dispatcher.put (Lnet/minecraft/world/item/Item;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.WATER : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    GETSTATIC net/minecraft/world/item/Items.POTION : Lnet/minecraft/world/item/Item;
+    INVOKEDYNAMIC interact()Lnet/minecraft/core/cauldron/CauldronInteraction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.lambda$bootStrap$4(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;
+    ]
+    INVOKEVIRTUAL net/minecraft/core/cauldron/CauldronInteraction$Dispatcher.put (Lnet/minecraft/world/item/Item;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.WATER : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    GETSTATIC net/minecraft/tags/ItemTags.CAULDRON_CAN_REMOVE_DYE : Lnet/minecraft/tags/TagKey;
+    INVOKEDYNAMIC interact()Lnet/minecraft/core/cauldron/CauldronInteraction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.dyedItemIteration(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;
+    ]
+    INVOKEVIRTUAL net/minecraft/core/cauldron/CauldronInteraction$Dispatcher.put (Lnet/minecraft/tags/TagKey;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+    GETSTATIC net/minecraft/world/item/Items.BANNER : Lnet/minecraft/world/level/block/ColorCollection;
+    INVOKEDYNAMIC accept()Ljava/util/function/Consumer; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)V,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.lambda$bootStrap$5(Lnet/minecraft/world/item/Item;)V,
+      (Lnet/minecraft/world/item/Item;)V
+    ]
+    INVOKEVIRTUAL net/minecraft/world/level/block/ColorCollection.forEach (Ljava/util/function/Consumer;)V
+    GETSTATIC net/minecraft/world/item/Items.DYED_SHULKER_BOX : Lnet/minecraft/world/level/block/ColorCollection;
+    INVOKEDYNAMIC accept()Ljava/util/function/Consumer; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)V,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.lambda$bootStrap$6(Lnet/minecraft/world/item/Item;)V,
+      (Lnet/minecraft/world/item/Item;)V
+    ]
+    INVOKEVIRTUAL net/minecraft/world/level/block/ColorCollection.forEach (Ljava/util/function/Consumer;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.LAVA : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    GETSTATIC net/minecraft/world/item/Items.BUCKET : Lnet/minecraft/world/item/Item;
+    INVOKEDYNAMIC interact()Lnet/minecraft/core/cauldron/CauldronInteraction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.lambda$bootStrap$7(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;
+    ]
+    INVOKEVIRTUAL net/minecraft/core/cauldron/CauldronInteraction$Dispatcher.put (Lnet/minecraft/world/item/Item;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.LAVA : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    INVOKESTATIC net/minecraft/core/cauldron/CauldronInteractions.addDefaultInteractions (Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.POWDER_SNOW : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    GETSTATIC net/minecraft/world/item/Items.BUCKET : Lnet/minecraft/world/item/Item;
+    INVOKEDYNAMIC interact()Lnet/minecraft/core/cauldron/CauldronInteraction; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/core/cauldron/CauldronInteractions.lambda$bootStrap$9(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;,
+      (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;
+    ]
+    INVOKEVIRTUAL net/minecraft/core/cauldron/CauldronInteraction$Dispatcher.put (Lnet/minecraft/world/item/Item;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+    GETSTATIC net/minecraft/core/cauldron/CauldronInteractions.POWDER_SNOW : Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;
+    INVOKESTATIC net/minecraft/core/cauldron/CauldronInteractions.addDefaultInteractions (Lnet/minecraft/core/cauldron/CauldronInteraction$Dispatcher;)V
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 0

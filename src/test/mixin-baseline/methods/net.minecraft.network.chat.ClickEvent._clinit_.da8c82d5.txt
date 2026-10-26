@@ -1,0 +1,26 @@
+// net/minecraft/network/chat/ClickEvent.<clinit>()V
+    GETSTATIC net/minecraft/network/chat/ClickEvent$Action.CODEC : Lcom/mojang/serialization/Codec;
+    LDC "action"
+    INVOKEDYNAMIC apply()Ljava/util/function/Function; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)Ljava/lang/Object;,
+      // handle kind 0x9 : INVOKEINTERFACE
+      net/minecraft/network/chat/ClickEvent.action()Lnet/minecraft/network/chat/ClickEvent$Action; itf,
+      (Lnet/minecraft/network/chat/ClickEvent;)Lnet/minecraft/network/chat/ClickEvent$Action;
+    ]
+    INVOKEDYNAMIC apply()Ljava/util/function/Function; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)Ljava/lang/Object;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/network/chat/ClickEvent.lambda$static$0(Lnet/minecraft/network/chat/ClickEvent$Action;)Lcom/mojang/serialization/MapCodec; itf,
+      (Lnet/minecraft/network/chat/ClickEvent$Action;)Lcom/mojang/serialization/MapCodec;
+    ]
+    INVOKEINTERFACE com/mojang/serialization/Codec.dispatch (Ljava/lang/String;Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec; (itf)
+    PUTSTATIC net/minecraft/network/chat/ClickEvent.CODEC : Lcom/mojang/serialization/Codec;
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 0

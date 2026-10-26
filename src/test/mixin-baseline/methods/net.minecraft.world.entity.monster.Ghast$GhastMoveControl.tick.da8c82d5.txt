@@ -1,0 +1,91 @@
+// net/minecraft/world/entity/monster/Ghast$GhastMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.shouldBeStopped : Ljava/util/function/BooleanSupplier;
+    INVOKEINTERFACE java/util/function/BooleanSupplier.getAsBoolean ()Z (itf)
+    IFEQ L0
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.WAIT : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    PUTFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.stopInPlace ()V
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPEQ L1
+    RETURN
+   L1
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.floatDuration : I
+    DUP_X1
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.floatDuration : I
+    IFGT L2
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.floatDuration : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getRandom ()Lnet/minecraft/util/RandomSource;
+    ICONST_5
+    INVOKEINTERFACE net/minecraft/util/RandomSource.nextInt (I)I (itf)
+    ICONST_2
+    IADD
+    IADD
+    PUTFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.floatDuration : I
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.wantedX : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getX ()D
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.wantedY : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getY ()D
+    DSUB
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.wantedZ : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getZ ()D
+    DSUB
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    ASTORE 1
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/Ghast$GhastMoveControl.canReach (Lnet/minecraft/world/phys/Vec3;)Z
+    IFEQ L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.normalize ()Lnet/minecraft/world/phys/Vec3;
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.FLYING_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    LDC 5.0D
+    DMUL
+    LDC 3.0D
+    DDIV
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.scale (D)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/Mob.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+    GOTO L2
+   L3
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.WAIT : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    PUTFIELD net/minecraft/world/entity/monster/Ghast$GhastMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+   L2
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 2

@@ -1,0 +1,90 @@
+// net/minecraft/world/entity/LivingEntity.die(Lnet/minecraft/world/damagesource/DamageSource;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isRemoved ()Z
+    IFNE L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.dead : Z
+    IFEQ L1
+   L0
+    RETURN
+   L1
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.getEntity ()Lnet/minecraft/world/entity/Entity;
+    ASTORE 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getKillCredit ()Lnet/minecraft/world/entity/LivingEntity;
+    ASTORE 3
+    ALOAD 3
+    IFNULL L2
+    ALOAD 3
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.awardKillScore (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)V
+   L2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isSleeping ()Z
+    IFEQ L3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.stopSleeping ()V
+   L3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.stopUsingItem ()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.isClientSide ()Z
+    IFNE L4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hasCustomName ()Z
+    IFEQ L4
+    GETSTATIC net/minecraft/world/entity/LivingEntity.LOGGER : Lorg/slf4j/Logger;
+    LDC "Named entity {} died: {}"
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getCombatTracker ()Lnet/minecraft/world/damagesource/CombatTracker;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/CombatTracker.getDeathMessage ()Lnet/minecraft/network/chat/Component;
+    INVOKEINTERFACE net/minecraft/network/chat/Component.getString ()Ljava/lang/String; (itf)
+    INVOKEINTERFACE org/slf4j/Logger.info (Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V (itf)
+   L4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.handleKillingBlow ()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ASTORE 5
+    ALOAD 5
+    INSTANCEOF net/minecraft/server/level/ServerLevel
+    IFEQ L5
+    ALOAD 5
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 4
+    ALOAD 2
+    IFNULL L6
+    ALOAD 2
+    ALOAD 4
+    ALOAD 0
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.killedEntity (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/damagesource/DamageSource;)Z
+    IFEQ L7
+   L6
+    ALOAD 0
+    GETSTATIC net/minecraft/world/level/gameevent/GameEvent.ENTITY_DIE : Lnet/minecraft/core/Holder$Reference;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.gameEvent (Lnet/minecraft/core/Holder;)V
+    ALOAD 0
+    ALOAD 4
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.dropAllDeathLoot (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;)V
+    ALOAD 0
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.createWitherRose (Lnet/minecraft/world/entity/LivingEntity;)V
+   L7
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 0
+    ICONST_3
+    INVOKEVIRTUAL net/minecraft/world/level/Level.broadcastEntityEvent (Lnet/minecraft/world/entity/Entity;B)V
+   L5
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/Pose.DYING : Lnet/minecraft/world/entity/Pose;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setPose (Lnet/minecraft/world/entity/Pose;)V
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 6

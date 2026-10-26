@@ -1,0 +1,94 @@
+// net/minecraft/world/entity/player/Player.giveExperiencePoints(I)V
+    ALOAD 0
+    ILOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.increaseScore (I)V
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    ILOAD 1
+    I2F
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getXpNeededForNextLevel ()I
+    I2F
+    FDIV
+    FADD
+    PUTFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.totalExperience : I
+    ILOAD 1
+    IADD
+    ICONST_0
+    LDC 2147483647
+    INVOKESTATIC net/minecraft/util/Mth.clamp (III)I
+    PUTFIELD net/minecraft/world/entity/player/Player.totalExperience : I
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    FCONST_0
+    FCMPG
+    IFGE L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getXpNeededForNextLevel ()I
+    I2F
+    FMUL
+    FSTORE 2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.experienceLevel : I
+    IFLE L2
+    ALOAD 0
+    ICONST_M1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.giveExperienceLevels (I)V
+    ALOAD 0
+    FCONST_1
+    FLOAD 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getXpNeededForNextLevel ()I
+    I2F
+    FDIV
+    FADD
+    PUTFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    GOTO L3
+   L2
+    ALOAD 0
+    ICONST_M1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.giveExperienceLevels (I)V
+    ALOAD 0
+    FCONST_0
+    PUTFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+   L3
+    GOTO L0
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    FCONST_1
+    FCMPL
+    IFLT L4
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    FCONST_1
+    FSUB
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getXpNeededForNextLevel ()I
+    I2F
+    FMUL
+    PUTFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    ALOAD 0
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.giveExperienceLevels (I)V
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getXpNeededForNextLevel ()I
+    I2F
+    FDIV
+    PUTFIELD net/minecraft/world/entity/player/Player.experienceProgress : F
+    GOTO L1
+   L4
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 3

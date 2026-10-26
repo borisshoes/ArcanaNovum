@@ -1,0 +1,210 @@
+// net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.tick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getTarget ()Lnet/minecraft/world/entity/LivingEntity;
+    ASTORE 1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.wantsToSwim ()Z
+    IFEQ L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.isInWater ()Z
+    IFEQ L0
+    ALOAD 1
+    IFNULL L1
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getY ()D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getY ()D
+    DCMPL
+    IFGT L2
+   L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.isSearchingForLand ()Z
+    IFEQ L3
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    DCONST_0
+    LDC 0.002D
+    DCONST_0
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+   L3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.operation : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    GETSTATIC net/minecraft/world/entity/ai/control/MoveControl$Operation.MOVE_TO : Lnet/minecraft/world/entity/ai/control/MoveControl$Operation;
+    IF_ACMPNE L4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getNavigation ()Lnet/minecraft/world/entity/ai/navigation/PathNavigation;
+    INVOKEVIRTUAL net/minecraft/world/entity/ai/navigation/PathNavigation.isDone ()Z
+    IFEQ L5
+   L4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    FCONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.setSpeed (F)V
+    RETURN
+   L5
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.wantedX : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getX ()D
+    DSUB
+    DSTORE 2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.wantedY : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getY ()D
+    DSUB
+    DSTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.wantedZ : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getZ ()D
+    DSUB
+    DSTORE 6
+    DLOAD 2
+    DLOAD 2
+    DMUL
+    DLOAD 4
+    DLOAD 4
+    DMUL
+    DADD
+    DLOAD 6
+    DLOAD 6
+    DMUL
+    DADD
+    INVOKESTATIC java/lang/Math.sqrt (D)D
+    DSTORE 8
+    DLOAD 4
+    DLOAD 8
+    DDIV
+    DSTORE 4
+    DLOAD 6
+    DLOAD 2
+    INVOKESTATIC net/minecraft/util/Mth.atan2 (DD)D
+    LDC 57.2957763671875D
+    DMUL
+    D2F
+    LDC 90.0F
+    FSUB
+    FSTORE 10
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getYRot ()F
+    FLOAD 10
+    LDC 90.0F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.rotlerp (FFF)F
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.setYRot (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getYRot ()F
+    PUTFIELD net/minecraft/world/entity/monster/zombie/Drowned.yBodyRot : F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.speedModifier : D
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    GETSTATIC net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED : Lnet/minecraft/core/Holder;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getAttributeValue (Lnet/minecraft/core/Holder;)D
+    DMUL
+    D2F
+    FSTORE 11
+    LDC 0.125F
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getSpeed ()F
+    FLOAD 11
+    INVOKESTATIC net/minecraft/util/Mth.lerp (FFF)F
+    FSTORE 12
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    FLOAD 12
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.setSpeed (F)V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    FLOAD 12
+    F2D
+    DLOAD 2
+    DMUL
+    LDC 0.005D
+    DMUL
+    FLOAD 12
+    F2D
+    DLOAD 4
+    DMUL
+    LDC 0.1D
+    DMUL
+    FLOAD 12
+    F2D
+    DLOAD 6
+    DMUL
+    LDC 0.005D
+    DMUL
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+    GOTO L6
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.onGround ()Z
+    IFNE L7
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.mob : Lnet/minecraft/world/entity/Mob;
+    CHECKCAST net/minecraft/world/entity/monster/zombie/Drowned
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    DCONST_0
+    LDC -0.008D
+    DCONST_0
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.add (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/monster/zombie/Drowned.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+   L7
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/ai/control/MoveControl.tick ()V
+   L6
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 13

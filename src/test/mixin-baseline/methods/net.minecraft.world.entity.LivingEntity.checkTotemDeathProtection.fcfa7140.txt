@@ -1,0 +1,97 @@
+// net/minecraft/world/entity/LivingEntity.checkTotemDeathProtection(Lnet/minecraft/world/damagesource/DamageSource;)Z
+    ALOAD 1
+    GETSTATIC net/minecraft/tags/DamageTypeTags.BYPASSES_INVULNERABILITY : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L0
+    ICONST_0
+    IRETURN
+   L0
+    ACONST_NULL
+    ASTORE 2
+    ACONST_NULL
+    ASTORE 3
+    INVOKESTATIC net/minecraft/world/InteractionHand.values ()[Lnet/minecraft/world/InteractionHand;
+    ASTORE 5
+    ALOAD 5
+    ARRAYLENGTH
+    ISTORE 6
+    ICONST_0
+    ISTORE 7
+   L1
+    ILOAD 7
+    ILOAD 6
+    IF_ICMPGE L2
+    ALOAD 5
+    ILOAD 7
+    AALOAD
+    ASTORE 8
+    ALOAD 0
+    ALOAD 8
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getItemInHand (Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;
+    ASTORE 4
+    ALOAD 4
+    GETSTATIC net/minecraft/core/component/DataComponents.DEATH_PROTECTION : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.get (Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/item/component/DeathProtection
+    ASTORE 3
+    ALOAD 3
+    IFNULL L3
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.copy ()Lnet/minecraft/world/item/ItemStack;
+    ASTORE 2
+    ALOAD 4
+    ICONST_1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.shrink (I)V
+    GOTO L2
+   L3
+    IINC 7 1
+    GOTO L1
+   L2
+    ALOAD 2
+    IFNULL L4
+    ALOAD 0
+    ASTORE 6
+    ALOAD 6
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFEQ L5
+    ALOAD 6
+    CHECKCAST net/minecraft/server/level/ServerPlayer
+    ASTORE 5
+    ALOAD 5
+    GETSTATIC net/minecraft/stats/Stats.ITEM_USED : Lnet/minecraft/stats/StatType;
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getItem ()Lnet/minecraft/world/item/Item;
+    INVOKEVIRTUAL net/minecraft/stats/StatType.get (Ljava/lang/Object;)Lnet/minecraft/stats/Stat;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.awardStat (Lnet/minecraft/stats/Stat;)V
+    GETSTATIC net/minecraft/advancements/triggers/CriteriaTriggers.USED_TOTEM : Lnet/minecraft/advancements/triggers/UsedTotemTrigger;
+    ALOAD 5
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/advancements/triggers/UsedTotemTrigger.trigger (Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/item/ItemStack;)V
+    ALOAD 2
+    ALOAD 0
+    GETSTATIC net/minecraft/world/level/gameevent/GameEvent.ITEM_INTERACT_FINISH : Lnet/minecraft/core/Holder$Reference;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.causeUseVibration (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/Holder$Reference;)V
+   L5
+    ALOAD 0
+    FCONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setHealth (F)V
+    ALOAD 3
+    ALOAD 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/item/component/DeathProtection.applyEffects (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 0
+    BIPUSH 35
+    INVOKEVIRTUAL net/minecraft/world/level/Level.broadcastEntityEvent (Lnet/minecraft/world/entity/Entity;B)V
+   L4
+    ALOAD 3
+    IFNULL L6
+    ICONST_1
+    GOTO L7
+   L6
+    ICONST_0
+   L7
+    IRETURN
+    MAXSTACK = 3
+    MAXLOCALS = 9

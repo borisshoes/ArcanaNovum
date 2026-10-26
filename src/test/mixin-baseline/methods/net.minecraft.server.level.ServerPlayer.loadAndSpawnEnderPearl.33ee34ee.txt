@@ -1,0 +1,62 @@
+// net/minecraft/server/level/ServerPlayer.loadAndSpawnEnderPearl(Lnet/minecraft/world/level/storage/ValueInput;)V
+    ALOAD 1
+    LDC "ender_pearl_dimension"
+    GETSTATIC net/minecraft/world/level/Level.RESOURCE_KEY_CODEC : Lcom/mojang/serialization/Codec;
+    INVOKEINTERFACE net/minecraft/world/level/storage/ValueInput.read (Ljava/lang/String;Lcom/mojang/serialization/Codec;)Ljava/util/Optional; (itf)
+    ASTORE 2
+    ALOAD 2
+    INVOKEVIRTUAL java/util/Optional.isEmpty ()Z
+    IFEQ L0
+    RETURN
+   L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getServer ()Lnet/minecraft/server/MinecraftServer;
+    ALOAD 2
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    CHECKCAST net/minecraft/resources/ResourceKey
+    INVOKEVIRTUAL net/minecraft/server/MinecraftServer.getLevel (Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/server/level/ServerLevel;
+    ASTORE 3
+    ALOAD 3
+    IFNULL L1
+    ALOAD 1
+    ALOAD 3
+    GETSTATIC net/minecraft/world/entity/EntitySpawnReason.LOAD : Lnet/minecraft/world/entity/EntitySpawnReason;
+    ALOAD 3
+    INVOKEDYNAMIC process(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/entity/EntityProcessor; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/entity/Entity;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/server/level/ServerPlayer.lambda$loadAndSpawnEnderPearl$0(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/entity/Entity;,
+      (Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/entity/Entity;
+    ]
+    INVOKESTATIC net/minecraft/world/entity/EntityType.loadEntityRecursive (Lnet/minecraft/world/level/storage/ValueInput;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/world/entity/EntityProcessor;)Lnet/minecraft/world/entity/Entity;
+    ASTORE 4
+    ALOAD 4
+    IFNULL L2
+    ALOAD 3
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.chunkPosition ()Lnet/minecraft/world/level/ChunkPos;
+    INVOKESTATIC net/minecraft/server/level/ServerPlayer.placeEnderPearlTicket (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/ChunkPos;)J
+    POP2
+    GOTO L3
+   L2
+    GETSTATIC net/minecraft/server/level/ServerPlayer.LOGGER : Lorg/slf4j/Logger;
+    LDC "Failed to spawn player ender pearl in level ({}), skipping"
+    ALOAD 2
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    INVOKEINTERFACE org/slf4j/Logger.warn (Ljava/lang/String;Ljava/lang/Object;)V (itf)
+   L3
+    GOTO L4
+   L1
+    GETSTATIC net/minecraft/server/level/ServerPlayer.LOGGER : Lorg/slf4j/Logger;
+    LDC "Trying to load ender pearl without level ({}) being loaded, skipping"
+    ALOAD 2
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    INVOKEINTERFACE org/slf4j/Logger.warn (Ljava/lang/String;Ljava/lang/Object;)V (itf)
+   L4
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 5

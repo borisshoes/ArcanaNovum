@@ -1,0 +1,64 @@
+// net/minecraft/world/entity/ExperienceOrb.repairPlayerItems(Lnet/minecraft/server/level/ServerPlayer;I)I
+    GETSTATIC net/minecraft/world/item/enchantment/EnchantmentEffectComponents.REPAIR_WITH_XP : Lnet/minecraft/core/component/DataComponentType;
+    ALOAD 1
+    INVOKEDYNAMIC test()Ljava/util/function/Predicate; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)Z,
+      // handle kind 0x5 : INVOKEVIRTUAL
+      net/minecraft/world/item/ItemStack.isDamaged()Z,
+      (Lnet/minecraft/world/item/ItemStack;)Z
+    ]
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.getRandomItemWith (Lnet/minecraft/core/component/DataComponentType;Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Ljava/util/Optional;
+    ASTORE 3
+    ALOAD 3
+    INVOKEVIRTUAL java/util/Optional.isPresent ()Z
+    IFEQ L0
+    ALOAD 3
+    INVOKEVIRTUAL java/util/Optional.get ()Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/item/enchantment/EnchantedItemInUse
+    INVOKEVIRTUAL net/minecraft/world/item/enchantment/EnchantedItemInUse.itemStack ()Lnet/minecraft/world/item/ItemStack;
+    ASTORE 4
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.level ()Lnet/minecraft/server/level/ServerLevel;
+    ALOAD 4
+    ILOAD 2
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.modifyDurabilityToRepairFromXp (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;I)I
+    ISTORE 5
+    ILOAD 5
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getDamageValue ()I
+    INVOKESTATIC java/lang/Math.min (II)I
+    ISTORE 6
+    ALOAD 4
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.getDamageValue ()I
+    ILOAD 6
+    ISUB
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.setDamageValue (I)V
+    ILOAD 6
+    IFLE L1
+    ILOAD 2
+    ILOAD 6
+    ILOAD 2
+    IMUL
+    ILOAD 5
+    IDIV
+    ISUB
+    ISTORE 7
+    ILOAD 7
+    IFLE L1
+    ALOAD 0
+    ALOAD 1
+    ILOAD 7
+    INVOKEVIRTUAL net/minecraft/world/entity/ExperienceOrb.repairPlayerItems (Lnet/minecraft/server/level/ServerPlayer;I)I
+    IRETURN
+   L1
+    ICONST_0
+    IRETURN
+   L0
+    ILOAD 2
+    IRETURN
+    MAXSTACK = 3
+    MAXLOCALS = 8

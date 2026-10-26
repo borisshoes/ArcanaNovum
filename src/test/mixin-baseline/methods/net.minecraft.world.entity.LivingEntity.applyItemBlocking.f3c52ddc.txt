@@ -1,0 +1,148 @@
+// net/minecraft/world/entity/LivingEntity.applyItemBlocking(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)F
+    FLOAD 3
+    FCONST_0
+    FCMPG
+    IFGT L0
+    FCONST_0
+    FRETURN
+   L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getItemBlockingWith ()Lnet/minecraft/world/item/ItemStack;
+    ASTORE 4
+    ALOAD 4
+    IFNONNULL L1
+    FCONST_0
+    FRETURN
+   L1
+    ALOAD 4
+    GETSTATIC net/minecraft/core/component/DataComponents.BLOCKS_ATTACKS : Lnet/minecraft/core/component/DataComponentType;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.get (Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;
+    CHECKCAST net/minecraft/world/item/component/BlocksAttacks
+    ASTORE 5
+    ALOAD 5
+    IFNULL L2
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/item/component/BlocksAttacks.bypassedBy ()Ljava/util/Optional;
+    ALOAD 2
+    INVOKEDYNAMIC apply(Lnet/minecraft/world/damagesource/DamageSource;)Ljava/util/function/Function; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)Ljava/lang/Object;,
+      // handle kind 0x6 : INVOKESTATIC
+      net/minecraft/world/entity/LivingEntity.lambda$applyItemBlocking$0(Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/core/HolderSet;)Ljava/lang/Boolean;,
+      (Lnet/minecraft/core/HolderSet;)Ljava/lang/Boolean;
+    ]
+    INVOKEVIRTUAL java/util/Optional.map (Ljava/util/function/Function;)Ljava/util/Optional;
+    ICONST_0
+    INVOKESTATIC java/lang/Boolean.valueOf (Z)Ljava/lang/Boolean;
+    INVOKEVIRTUAL java/util/Optional.orElse (Ljava/lang/Object;)Ljava/lang/Object;
+    CHECKCAST java/lang/Boolean
+    INVOKEVIRTUAL java/lang/Boolean.booleanValue ()Z
+    IFEQ L3
+   L2
+    FCONST_0
+    FRETURN
+   L3
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.getDirectEntity ()Lnet/minecraft/world/entity/Entity;
+    ASTORE 7
+    ALOAD 7
+    INSTANCEOF net/minecraft/world/entity/projectile/arrow/AbstractArrow
+    IFEQ L4
+    ALOAD 7
+    CHECKCAST net/minecraft/world/entity/projectile/arrow/AbstractArrow
+    ASTORE 6
+    ALOAD 6
+    INVOKEVIRTUAL net/minecraft/world/entity/projectile/arrow/AbstractArrow.getPierceLevel ()B
+    IFLE L4
+    FCONST_0
+    FRETURN
+   L4
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.getSourcePosition ()Lnet/minecraft/world/phys/Vec3;
+    ASTORE 8
+    ALOAD 8
+    IFNULL L5
+    FCONST_0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getYHeadRot ()F
+    INVOKESTATIC net/minecraft/world/entity/LivingEntity.calculateViewVector (FF)Lnet/minecraft/world/phys/Vec3;
+    ASTORE 9
+    ALOAD 8
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.position ()Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.subtract (Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+    ASTORE 10
+    NEW net/minecraft/world/phys/Vec3
+    DUP
+    ALOAD 10
+    GETFIELD net/minecraft/world/phys/Vec3.x : D
+    DCONST_0
+    ALOAD 10
+    GETFIELD net/minecraft/world/phys/Vec3.z : D
+    INVOKESPECIAL net/minecraft/world/phys/Vec3.<init> (DDD)V
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.normalize ()Lnet/minecraft/world/phys/Vec3;
+    ASTORE 10
+    ALOAD 10
+    ALOAD 9
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.dot (Lnet/minecraft/world/phys/Vec3;)D
+    INVOKESTATIC java/lang/Math.acos (D)D
+    DSTORE 6
+    GOTO L6
+   L5
+    LDC 3.1415927410125732D
+    DSTORE 6
+   L6
+    ALOAD 5
+    ALOAD 2
+    FLOAD 3
+    DLOAD 6
+    INVOKEVIRTUAL net/minecraft/world/item/component/BlocksAttacks.resolveBlockedDamage (Lnet/minecraft/world/damagesource/DamageSource;FD)F
+    FSTORE 9
+    ALOAD 5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 4
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getUsedItemHand ()Lnet/minecraft/world/InteractionHand;
+    FLOAD 9
+    INVOKEVIRTUAL net/minecraft/world/item/component/BlocksAttacks.hurtBlockingItem (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/InteractionHand;F)V
+    FLOAD 9
+    FCONST_0
+    FCMPL
+    IFLE L7
+    ALOAD 2
+    GETSTATIC net/minecraft/tags/DamageTypeTags.IS_PROJECTILE : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.is (Lnet/minecraft/tags/TagKey;)Z
+    IFNE L7
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSource.getDirectEntity ()Lnet/minecraft/world/entity/Entity;
+    ASTORE 10
+    ALOAD 10
+    INSTANCEOF net/minecraft/world/entity/LivingEntity
+    IFEQ L7
+    ALOAD 10
+    CHECKCAST net/minecraft/world/entity/LivingEntity
+    ASTORE 11
+    ALOAD 0
+    ALOAD 1
+    ALOAD 11
+    ALOAD 2
+    FLOAD 3
+    FLOAD 9
+    FLOAD 3
+    FCMPL
+    IFLT L8
+    ICONST_1
+    GOTO L9
+   L8
+    ICONST_0
+   L9
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.blockUsingItem (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/damagesource/DamageSource;FZ)V
+   L7
+    FLOAD 9
+    FRETURN
+    MAXSTACK = 8
+    MAXLOCALS = 12

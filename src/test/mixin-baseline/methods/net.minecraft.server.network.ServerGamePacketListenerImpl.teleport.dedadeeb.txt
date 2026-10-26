@@ -1,0 +1,38 @@
+// net/minecraft/server/network/ServerGamePacketListenerImpl.teleport(Lnet/minecraft/world/entity/PositionMoveRotation;Ljava/util/Set;)V
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.tickCount : I
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.awaitingTeleportTime : I
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.awaitingTeleport : I
+    ICONST_1
+    IADD
+    DUP_X1
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.awaitingTeleport : I
+    LDC 2147483647
+    IF_ICMPNE L0
+    ALOAD 0
+    ICONST_0
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.awaitingTeleport : I
+   L0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    ALOAD 1
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.teleportSetPosition (Lnet/minecraft/world/entity/PositionMoveRotation;Ljava/util/Set;)V
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.player : Lnet/minecraft/server/level/ServerPlayer;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerPlayer.position ()Lnet/minecraft/world/phys/Vec3;
+    PUTFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.awaitingPositionFromClient : Lnet/minecraft/world/phys/Vec3;
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/server/network/ServerGamePacketListenerImpl.awaitingTeleport : I
+    ALOAD 1
+    ALOAD 2
+    INVOKESTATIC net/minecraft/network/protocol/game/ClientboundPlayerPositionPacket.of (ILnet/minecraft/world/entity/PositionMoveRotation;Ljava/util/Set;)Lnet/minecraft/network/protocol/game/ClientboundPlayerPositionPacket;
+    INVOKEVIRTUAL net/minecraft/server/network/ServerGamePacketListenerImpl.send (Lnet/minecraft/network/protocol/Packet;)V
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 3

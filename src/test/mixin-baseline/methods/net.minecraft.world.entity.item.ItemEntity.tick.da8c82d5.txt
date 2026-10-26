@@ -1,0 +1,293 @@
+// net/minecraft/world/entity/item/ItemEntity.tick()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getItem ()Lnet/minecraft/world/item/ItemStack;
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.isEmpty ()Z
+    IFEQ L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.discard ()V
+    RETURN
+   L0
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/Entity.tick ()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.pickupDelay : I
+    IFLE L1
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.pickupDelay : I
+    SIPUSH 32767
+    IF_ICMPEQ L1
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.pickupDelay : I
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.pickupDelay : I
+   L1
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getX ()D
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.xo : D
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getY ()D
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.yo : D
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getZ ()D
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.zo : D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ASTORE 1
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.isInWater ()Z
+    IFEQ L2
+    ALOAD 0
+    GETSTATIC net/minecraft/tags/FluidTags.WATER : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getFluidHeight (Lnet/minecraft/tags/TagKey;)D
+    LDC 0.10000000149011612D
+    DCMPL
+    IFLE L2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.setUnderwaterMovement ()V
+    GOTO L3
+   L2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.isInLava ()Z
+    IFEQ L4
+    ALOAD 0
+    GETSTATIC net/minecraft/tags/FluidTags.LAVA : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getFluidHeight (Lnet/minecraft/tags/TagKey;)D
+    LDC 0.10000000149011612D
+    DCMPL
+    IFLE L4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.setUnderLavaMovement ()V
+    GOTO L3
+   L4
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.applyGravity ()V
+   L3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.isClientSide ()Z
+    IFEQ L5
+    ALOAD 0
+    ICONST_0
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.noPhysics : Z
+    GOTO L6
+   L5
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getBoundingBox ()Lnet/minecraft/world/phys/AABB;
+    LDC 1.0E-7D
+    INVOKEVIRTUAL net/minecraft/world/phys/AABB.deflate (D)Lnet/minecraft/world/phys/AABB;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.noCollision (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Z
+    IFNE L7
+    ICONST_1
+    GOTO L8
+   L7
+    ICONST_0
+   L8
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.noPhysics : Z
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.noPhysics : Z
+    IFEQ L6
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getX ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getBoundingBox ()Lnet/minecraft/world/phys/AABB;
+    GETFIELD net/minecraft/world/phys/AABB.minY : D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getBoundingBox ()Lnet/minecraft/world/phys/AABB;
+    GETFIELD net/minecraft/world/phys/AABB.maxY : D
+    DADD
+    LDC 2.0D
+    DDIV
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getZ ()D
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.moveTowardsClosestSpace (DDD)V
+   L6
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.onGround ()Z
+    IFEQ L9
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.horizontalDistanceSqr ()D
+    LDC 9.999999747378752E-6D
+    DCMPL
+    IFGT L9
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.tickCount : I
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getId ()I
+    IADD
+    ICONST_4
+    IREM
+    IFNE L10
+   L9
+    ALOAD 0
+    GETSTATIC net/minecraft/world/entity/MoverType.SELF : Lnet/minecraft/world/entity/MoverType;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.move (Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.applyEffectsFromBlocks ()V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getAirDrag ()F
+    FSTORE 2
+    FLOAD 2
+    FSTORE 3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.onGround ()Z
+    IFEQ L11
+    FLOAD 3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getBlockPosBelowThatAffectsMyMovement ()Lnet/minecraft/core/BlockPos;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.getBlockState (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
+    INVOKEVIRTUAL net/minecraft/world/level/block/state/BlockState.getBlock ()Lnet/minecraft/world/level/block/Block;
+    INVOKEVIRTUAL net/minecraft/world/level/block/Block.getFriction ()F
+    FMUL
+    FSTORE 3
+   L11
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    FLOAD 3
+    F2D
+    FLOAD 2
+    F2D
+    FLOAD 3
+    F2D
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.multiply (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.onGround ()Z
+    IFEQ L12
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ASTORE 4
+    ALOAD 4
+    GETFIELD net/minecraft/world/phys/Vec3.y : D
+    DCONST_0
+    DCMPG
+    IFGE L12
+    ALOAD 0
+    ALOAD 4
+    DCONST_1
+    LDC -0.5D
+    DCONST_1
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.multiply (DDD)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.setDeltaMovement (Lnet/minecraft/world/phys/Vec3;)V
+   L12
+    GOTO L13
+   L10
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.applyEffectsFromBlocksForLastMovements ()V
+   L13
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.xo : D
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getX ()D
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    IF_ICMPNE L14
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.yo : D
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getY ()D
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    IF_ICMPNE L14
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.zo : D
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getZ ()D
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    IF_ICMPEQ L15
+   L14
+    ICONST_1
+    GOTO L16
+   L15
+    ICONST_0
+   L16
+    ISTORE 2
+    ILOAD 2
+    IFEQ L17
+    ICONST_2
+    GOTO L18
+   L17
+    BIPUSH 40
+   L18
+    ISTORE 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.tickCount : I
+    ILOAD 3
+    IREM
+    IFNE L19
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.isClientSide ()Z
+    IFNE L19
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.isMergable ()Z
+    IFEQ L19
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.mergeWithNeighbours ()V
+   L19
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.age : I
+    SIPUSH -32768
+    IF_ICMPEQ L20
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.age : I
+    ICONST_1
+    IADD
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.age : I
+   L20
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.needsSync : Z
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.updateFluidInteraction ()Z
+    IOR
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.needsSync : Z
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.isClientSide ()Z
+    IFNE L21
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getDeltaMovement ()Lnet/minecraft/world/phys/Vec3;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.subtract (Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+    INVOKEVIRTUAL net/minecraft/world/phys/Vec3.lengthSqr ()D
+    DSTORE 4
+    DLOAD 4
+    LDC 0.01D
+    DCMPL
+    IFLE L21
+    ALOAD 0
+    ICONST_1
+    PUTFIELD net/minecraft/world/entity/item/ItemEntity.needsSync : Z
+   L21
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.level ()Lnet/minecraft/world/level/Level;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.isClientSide ()Z
+    IFNE L22
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/item/ItemEntity.age : I
+    SIPUSH 6000
+    IF_ICMPLT L22
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.discard ()V
+   L22
+    RETURN
+    MAXSTACK = 8
+    MAXLOCALS = 6

@@ -1,0 +1,9 @@
+// net/minecraft/world/entity/item/ItemEntity.setItem(Lnet/minecraft/world/item/ItemStack;)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/item/ItemEntity.getEntityData ()Lnet/minecraft/network/syncher/SynchedEntityData;
+    GETSTATIC net/minecraft/world/entity/item/ItemEntity.DATA_ITEM : Lnet/minecraft/network/syncher/EntityDataAccessor;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/network/syncher/SynchedEntityData.set (Lnet/minecraft/network/syncher/EntityDataAccessor;Ljava/lang/Object;)V
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 2

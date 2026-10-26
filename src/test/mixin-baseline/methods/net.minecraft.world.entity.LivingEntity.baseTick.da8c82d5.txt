@@ -1,0 +1,335 @@
+// net/minecraft/world/entity/LivingEntity.baseTick()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.swingState : Lnet/minecraft/world/entity/LivingEntity$SwingState;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity$SwingState.tick ()V
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.firstTick : Z
+    IFEQ L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getSleepingPos ()Ljava/util/Optional;
+    ALOAD 0
+    INVOKEDYNAMIC accept(Lnet/minecraft/world/entity/LivingEntity;)Ljava/util/function/Consumer; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      (Ljava/lang/Object;)V,
+      // handle kind 0x5 : INVOKEVIRTUAL
+      net/minecraft/world/entity/LivingEntity.lambda$baseTick$0(Lnet/minecraft/core/BlockPos;)V,
+      (Lnet/minecraft/core/BlockPos;)V
+    ]
+    INVOKEVIRTUAL java/util/Optional.ifPresent (Ljava/util/function/Consumer;)V
+   L0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ASTORE 2
+    ALOAD 2
+    INSTANCEOF net/minecraft/server/level/ServerLevel
+    IFEQ L1
+    ALOAD 2
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 1
+    ALOAD 1
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.tickEffects (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+   L1
+    ALOAD 0
+    INVOKESPECIAL net/minecraft/world/entity/Entity.baseTick ()V
+    INVOKESTATIC net/minecraft/util/profiling/Profiler.get ()Lnet/minecraft/util/profiling/ProfilerFiller;
+    ASTORE 1
+    ALOAD 1
+    LDC "livingEntityBaseTick"
+    INVOKEINTERFACE net/minecraft/util/profiling/ProfilerFiller.push (Ljava/lang/String;)V (itf)
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isAlive ()Z
+    IFEQ L2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ASTORE 3
+    ALOAD 3
+    INSTANCEOF net/minecraft/server/level/ServerLevel
+    IFEQ L2
+    ALOAD 3
+    CHECKCAST net/minecraft/server/level/ServerLevel
+    ASTORE 2
+    ALOAD 0
+    INSTANCEOF net/minecraft/world/entity/player/Player
+    ISTORE 3
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isInWall ()Z
+    IFEQ L3
+    ALOAD 0
+    ALOAD 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.damageSources ()Lnet/minecraft/world/damagesource/DamageSources;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSources.inWall ()Lnet/minecraft/world/damagesource/DamageSource;
+    FCONST_1
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hurtServer (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z
+    POP
+    GOTO L4
+   L3
+    ILOAD 3
+    IFEQ L4
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getWorldBorder ()Lnet/minecraft/world/level/border/WorldBorder;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getBoundingBox ()Lnet/minecraft/world/phys/AABB;
+    INVOKEVIRTUAL net/minecraft/world/level/border/WorldBorder.isWithinBounds (Lnet/minecraft/world/phys/AABB;)Z
+    IFNE L4
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getWorldBorder ()Lnet/minecraft/world/level/border/WorldBorder;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/level/border/WorldBorder.getDistanceToBorder (Lnet/minecraft/world/entity/Entity;)D
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getWorldBorder ()Lnet/minecraft/world/level/border/WorldBorder;
+    INVOKEVIRTUAL net/minecraft/world/level/border/WorldBorder.getSafeZone ()D
+    DADD
+    DSTORE 4
+    DLOAD 4
+    DCONST_0
+    DCMPG
+    IFGE L4
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getWorldBorder ()Lnet/minecraft/world/level/border/WorldBorder;
+    INVOKEVIRTUAL net/minecraft/world/level/border/WorldBorder.getDamagePerBlock ()D
+    DSTORE 6
+    DLOAD 6
+    DCONST_0
+    DCMPL
+    IFLE L4
+    ALOAD 0
+    ALOAD 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.damageSources ()Lnet/minecraft/world/damagesource/DamageSources;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSources.outOfBorder ()Lnet/minecraft/world/damagesource/DamageSource;
+    ICONST_1
+    DLOAD 4
+    DNEG
+    DLOAD 6
+    DMUL
+    INVOKESTATIC net/minecraft/util/Mth.floor (D)I
+    INVOKESTATIC java/lang/Math.max (II)I
+    I2F
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hurtServer (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z
+    POP
+   L4
+    ALOAD 0
+    GETSTATIC net/minecraft/tags/FluidTags.WATER : Lnet/minecraft/tags/TagKey;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isEyeInFluid (Lnet/minecraft/tags/TagKey;)Z
+    IFEQ L5
+    ALOAD 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getX ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getEyeY ()D
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getZ ()D
+    INVOKESTATIC net/minecraft/core/BlockPos.containing (DDD)Lnet/minecraft/core/BlockPos;
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getBlockState (Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
+    GETSTATIC net/minecraft/world/level/block/Blocks.BUBBLE_COLUMN : Lnet/minecraft/world/level/block/Block;
+    INVOKEVIRTUAL net/minecraft/world/level/block/state/BlockState.is (Ljava/lang/Object;)Z
+    IFNE L5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.canBreatheUnderwater ()Z
+    IFNE L6
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/effect/MobEffectUtil.hasWaterBreathing (Lnet/minecraft/world/entity/LivingEntity;)Z
+    IFNE L6
+    ILOAD 3
+    IFEQ L7
+    ALOAD 0
+    CHECKCAST net/minecraft/world/entity/player/Player
+    INVOKEVIRTUAL net/minecraft/world/entity/player/Player.getAbilities ()Lnet/minecraft/world/entity/player/Abilities;
+    GETFIELD net/minecraft/world/entity/player/Abilities.invulnerable : Z
+    IFNE L6
+   L7
+    ICONST_1
+    GOTO L8
+   L6
+    ICONST_0
+   L8
+    ISTORE 4
+    ILOAD 4
+    IFEQ L9
+    ALOAD 0
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getAirSupply ()I
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.decreaseAirSupply (I)I
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setAirSupply (I)V
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.shouldTakeDrowningDamage ()Z
+    IFEQ L10
+    ALOAD 0
+    ICONST_0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setAirSupply (I)V
+    ALOAD 2
+    ALOAD 0
+    BIPUSH 67
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.broadcastEntityEvent (Lnet/minecraft/world/entity/Entity;B)V
+    ALOAD 0
+    ALOAD 2
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.damageSources ()Lnet/minecraft/world/damagesource/DamageSources;
+    INVOKEVIRTUAL net/minecraft/world/damagesource/DamageSources.drown ()Lnet/minecraft/world/damagesource/DamageSource;
+    FCONST_2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.hurtServer (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z
+    POP
+    GOTO L10
+   L9
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getAirSupply ()I
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getMaxAirSupply ()I
+    IF_ICMPGE L10
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/effect/MobEffectUtil.shouldEffectsRefillAirsupply (Lnet/minecraft/world/entity/LivingEntity;)Z
+    IFEQ L10
+    ALOAD 0
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getAirSupply ()I
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.increaseAirSupply (I)I
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setAirSupply (I)V
+   L10
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isPassenger ()Z
+    IFEQ L11
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getVehicle ()Lnet/minecraft/world/entity/Entity;
+    IFNULL L11
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getVehicle ()Lnet/minecraft/world/entity/Entity;
+    INVOKEVIRTUAL net/minecraft/world/entity/Entity.dismountsUnderwater ()Z
+    IFEQ L11
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.stopRiding ()V
+   L11
+    GOTO L12
+   L5
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getAirSupply ()I
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getMaxAirSupply ()I
+    IF_ICMPGE L12
+    ALOAD 0
+    ALOAD 0
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getAirSupply ()I
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.increaseAirSupply (I)I
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setAirSupply (I)V
+   L12
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.blockPosition ()Lnet/minecraft/core/BlockPos;
+    ASTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.lastPos : Lnet/minecraft/core/BlockPos;
+    ALOAD 4
+    INVOKESTATIC com/google/common/base/Objects.equal (Ljava/lang/Object;Ljava/lang/Object;)Z
+    IFNE L2
+    ALOAD 0
+    ALOAD 4
+    PUTFIELD net/minecraft/world/entity/LivingEntity.lastPos : Lnet/minecraft/core/BlockPos;
+    ALOAD 0
+    ALOAD 2
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.onChangedBlock (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)V
+   L2
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.hurtTime : I
+    IFLE L13
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/LivingEntity.hurtTime : I
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/entity/LivingEntity.hurtTime : I
+   L13
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.damageCooldownTime : I
+    IFLE L14
+    ALOAD 0
+    INSTANCEOF net/minecraft/server/level/ServerPlayer
+    IFNE L14
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/LivingEntity.damageCooldownTime : I
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/entity/LivingEntity.damageCooldownTime : I
+   L14
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isDeadOrDying ()Z
+    IFEQ L15
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.level ()Lnet/minecraft/world/level/Level;
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/level/Level.shouldTickDeath (Lnet/minecraft/world/entity/Entity;)Z
+    IFEQ L15
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.tickDeath ()V
+   L15
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.lastHurtByPlayerMemoryTime : I
+    IFLE L16
+    ALOAD 0
+    DUP
+    GETFIELD net/minecraft/world/entity/LivingEntity.lastHurtByPlayerMemoryTime : I
+    ICONST_1
+    ISUB
+    PUTFIELD net/minecraft/world/entity/LivingEntity.lastHurtByPlayerMemoryTime : I
+    GOTO L17
+   L16
+    ALOAD 0
+    ACONST_NULL
+    PUTFIELD net/minecraft/world/entity/LivingEntity.lastHurtByPlayer : Lnet/minecraft/world/entity/EntityReference;
+   L17
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.lastHurtMob : Lnet/minecraft/world/entity/LivingEntity;
+    IFNULL L18
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.lastHurtMob : Lnet/minecraft/world/entity/LivingEntity;
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isAlive ()Z
+    IFNE L18
+    ALOAD 0
+    ACONST_NULL
+    PUTFIELD net/minecraft/world/entity/LivingEntity.lastHurtMob : Lnet/minecraft/world/entity/LivingEntity;
+   L18
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getLastHurtByMob ()Lnet/minecraft/world/entity/LivingEntity;
+    ASTORE 2
+    ALOAD 2
+    IFNULL L19
+    ALOAD 2
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.isAlive ()Z
+    IFNE L20
+    ALOAD 0
+    ACONST_NULL
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setLastHurtByMob (Lnet/minecraft/world/entity/LivingEntity;)V
+    GOTO L19
+   L20
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.tickCount : I
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.lastHurtByMobTimestamp : I
+    ISUB
+    BIPUSH 100
+    IF_ICMPLE L19
+    ALOAD 0
+    ACONST_NULL
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.setLastHurtByMob (Lnet/minecraft/world/entity/LivingEntity;)V
+   L19
+    ALOAD 0
+    INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.tickEffects ()V
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.yHeadRot : F
+    PUTFIELD net/minecraft/world/entity/LivingEntity.yHeadRotO : F
+    ALOAD 0
+    ALOAD 0
+    GETFIELD net/minecraft/world/entity/LivingEntity.yBodyRot : F
+    PUTFIELD net/minecraft/world/entity/LivingEntity.yBodyRotO : F
+    ALOAD 1
+    INVOKEINTERFACE net/minecraft/util/profiling/ProfilerFiller.pop ()V (itf)
+    RETURN
+    MAXSTACK = 8
+    MAXLOCALS = 8

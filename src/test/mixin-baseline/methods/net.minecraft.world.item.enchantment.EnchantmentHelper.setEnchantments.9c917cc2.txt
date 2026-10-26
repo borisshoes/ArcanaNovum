@@ -1,0 +1,10 @@
+// net/minecraft/world/item/enchantment/EnchantmentHelper.setEnchantments(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/enchantment/ItemEnchantments;)V
+    ALOAD 0
+    ALOAD 0
+    INVOKESTATIC net/minecraft/world/item/enchantment/EnchantmentHelper.getComponentType (Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/core/component/DataComponentType;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/ItemStack.set (Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object;
+    POP
+    RETURN
+    MAXSTACK = 3
+    MAXLOCALS = 2

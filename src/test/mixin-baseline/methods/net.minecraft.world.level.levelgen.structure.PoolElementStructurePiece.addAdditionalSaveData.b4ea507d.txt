@@ -1,0 +1,88 @@
+// net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.addAdditionalSaveData(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/nbt/CompoundTag;)V
+    ALOAD 2
+    LDC "PosX"
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.position : Lnet/minecraft/core/BlockPos;
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getX ()I
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.putInt (Ljava/lang/String;I)V
+    ALOAD 2
+    LDC "PosY"
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.position : Lnet/minecraft/core/BlockPos;
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getY ()I
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.putInt (Ljava/lang/String;I)V
+    ALOAD 2
+    LDC "PosZ"
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.position : Lnet/minecraft/core/BlockPos;
+    INVOKEVIRTUAL net/minecraft/core/BlockPos.getZ ()I
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.putInt (Ljava/lang/String;I)V
+    ALOAD 2
+    LDC "ground_level_delta"
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.groundLevelDelta : I
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.putInt (Ljava/lang/String;I)V
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext.registryAccess ()Lnet/minecraft/core/RegistryAccess;
+    GETSTATIC net/minecraft/nbt/NbtOps.INSTANCE : Lnet/minecraft/nbt/NbtOps;
+    INVOKEINTERFACE net/minecraft/core/RegistryAccess.createSerializationContext (Lcom/mojang/serialization/DynamicOps;)Lnet/minecraft/resources/RegistryOps; (itf)
+    ASTORE 3
+    ALOAD 2
+    LDC "pool_element"
+    GETSTATIC net/minecraft/world/level/levelgen/structure/pools/StructurePoolElement.CODEC : Lcom/mojang/serialization/Codec;
+    ALOAD 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.element : Lnet/minecraft/world/level/levelgen/structure/pools/StructurePoolElement;
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.store (Ljava/lang/String;Lcom/mojang/serialization/Codec;Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)V
+    ALOAD 2
+    LDC "rotation"
+    GETSTATIC net/minecraft/world/level/block/Rotation.LEGACY_CODEC : Lcom/mojang/serialization/Codec;
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.rotation : Lnet/minecraft/world/level/block/Rotation;
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.store (Ljava/lang/String;Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V
+    NEW net/minecraft/nbt/ListTag
+    DUP
+    INVOKESPECIAL net/minecraft/nbt/ListTag.<init> ()V
+    ASTORE 4
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.junctions : Ljava/util/List;
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 5
+   L0
+    ALOAD 5
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 5
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST net/minecraft/world/level/levelgen/structure/pools/JigsawJunction
+    ASTORE 6
+    ALOAD 4
+    ALOAD 6
+    ALOAD 3
+    INVOKEVIRTUAL net/minecraft/world/level/levelgen/structure/pools/JigsawJunction.serialize (Lcom/mojang/serialization/DynamicOps;)Lcom/mojang/serialization/Dynamic;
+    INVOKEVIRTUAL com/mojang/serialization/Dynamic.getValue ()Ljava/lang/Object;
+    CHECKCAST net/minecraft/nbt/Tag
+    INVOKEVIRTUAL net/minecraft/nbt/ListTag.add (Ljava/lang/Object;)Z
+    POP
+    GOTO L0
+   L1
+    ALOAD 2
+    LDC "junctions"
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.put (Ljava/lang/String;Lnet/minecraft/nbt/Tag;)Lnet/minecraft/nbt/Tag;
+    POP
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.liquidSettings : Lnet/minecraft/world/level/levelgen/structure/templatesystem/LiquidSettings;
+    GETSTATIC net/minecraft/world/level/levelgen/structure/structures/JigsawStructure.DEFAULT_LIQUID_SETTINGS : Lnet/minecraft/world/level/levelgen/structure/templatesystem/LiquidSettings;
+    IF_ACMPEQ L2
+    ALOAD 2
+    LDC "liquid_settings"
+    GETSTATIC net/minecraft/world/level/levelgen/structure/templatesystem/LiquidSettings.CODEC : Lcom/mojang/serialization/Codec;
+    ALOAD 3
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.liquidSettings : Lnet/minecraft/world/level/levelgen/structure/templatesystem/LiquidSettings;
+    INVOKEVIRTUAL net/minecraft/nbt/CompoundTag.store (Ljava/lang/String;Lcom/mojang/serialization/Codec;Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)V
+   L2
+    RETURN
+    MAXSTACK = 5
+    MAXLOCALS = 7

@@ -1,0 +1,9 @@
+// net/minecraft/world/item/crafting/SmithingTransformRecipe.assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;)Lnet/minecraft/world/item/ItemStack;
+    ALOAD 0
+    GETFIELD net/minecraft/world/item/crafting/SmithingTransformRecipe.result : Lnet/minecraft/world/item/ItemStackTemplate;
+    ALOAD 1
+    INVOKEVIRTUAL net/minecraft/world/item/crafting/SmithingRecipeInput.base ()Lnet/minecraft/world/item/ItemStack;
+    INVOKESTATIC net/minecraft/world/item/crafting/TransmuteRecipe.createWithOriginalComponents (Lnet/minecraft/world/item/ItemStackTemplate;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;
+    ARETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2

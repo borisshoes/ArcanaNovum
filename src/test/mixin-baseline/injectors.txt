@@ -1,0 +1,893 @@
+[AbstractArrowAccessor]
+target net/minecraft/world/entity/projectile/arrow/AbstractArrow extends net/minecraft/world/entity/projectile/Projectile
+
+[AbstractArrowAccessor#getBaseDamage]
+@Accessor baseDamage in net/minecraft/world/entity/projectile/arrow/AbstractArrow: present
+
+[AbstractArrowMixin]
+target net/minecraft/world/entity/projectile/arrow/AbstractArrow extends net/minecraft/world/entity/projectile/Projectile
+
+[AbstractArrowMixin#arcananovum$removeQuiverData]
+@ModifyExpressionValue -> net/minecraft/world/entity/projectile/arrow/AbstractArrow.<init>(Lnet/minecraft/world/entity/EntityType;DDDLnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V listing a613a6542882
+  at INVOKE Lnet/minecraft/world/item/ItemStack;copy()Lnet/minecraft/world/item/ItemStack; ordinal=0: 2 matches [always, conditional], ordinal 0 is always
+
+[AbstractContainerMenuMixin]
+target net/minecraft/world/inventory/AbstractContainerMenu extends java/lang/Object
+
+[AbstractContainerMenuMixin#arcananovum$multitoolOverride]
+@ModifyReturnValue -> net/minecraft/world/inventory/AbstractContainerMenu.stillValid(Lnet/minecraft/world/inventory/ContainerLevelAccess;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/block/Block;)Z listing 9996bc2015a1
+  at RETURN: 1 match [always]
+
+[ArcanaClickEventMixin]
+target net/minecraft/network/chat/ClickEvent extends java/lang/Object
+
+[ArcanaClickEventMixin#arcananovum$patchClickEventCodec]
+@WrapOperation -> net/minecraft/network/chat/ClickEvent.<clinit>()V listing a6121b597041
+  at INVOKE Lcom/mojang/serialization/Codec;dispatch(Ljava/lang/String;Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;: 1 match [always]
+
+[ArcanaServerCommonPacketListenerMixin]
+target net/minecraft/server/network/ServerCommonPacketListenerImpl extends java/lang/Object implements net/minecraft/network/protocol/common/ServerCommonPacketListener, net/fabricmc/fabric/api/networking/v1/context/PacketContextProvider
+
+[ArcanaServerCommonPacketListenerMixin#arcananovum$handleArcanaClickAction]
+@Inject -> net/minecraft/server/network/ServerCommonPacketListenerImpl.handleCustomClickAction(Lnet/minecraft/network/protocol/common/ServerboundCustomClickActionPacket;)V listing a99eb984e02a
+  at INVOKE Lnet/minecraft/server/MinecraftServer;handleCustomClickAction(Lnet/minecraft/resources/Identifier;Ljava/util/Optional;)V: 1 match [always]
+
+[ArcanaServerCommonPacketListenerMixin#server]
+@Shadow field server Lnet/minecraft/server/MinecraftServer; in net/minecraft/server/network/ServerCommonPacketListenerImpl: present
+
+[AvoidEntityGoalMixin]
+target net/minecraft/world/entity/ai/goal/AvoidEntityGoal extends net/minecraft/world/entity/ai/goal/Goal
+
+[AvoidEntityGoalMixin#arcananovum$fleeEntityStart]
+@Inject -> net/minecraft/world/entity/ai/goal/AvoidEntityGoal.start()V listing 56b0dc6b1b88
+  at RETURN: 1 match [always]
+
+[AvoidEntityGoalMixin#mob]
+@Shadow field mob Lnet/minecraft/world/entity/PathfinderMob; in net/minecraft/world/entity/ai/goal/AvoidEntityGoal: present
+
+[AvoidEntityGoalMixin#toAvoid]
+@Shadow field toAvoid Lnet/minecraft/world/entity/LivingEntity; in net/minecraft/world/entity/ai/goal/AvoidEntityGoal: present
+
+[BaseSpawnerMixin]
+target net/minecraft/world/level/BaseSpawner extends java/lang/Object
+
+[BaseSpawnerMixin#arcananovum$forPlayersInRange]
+@Inject -> net/minecraft/world/level/BaseSpawner.isNearPlayer(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z listing 9ac882aae2b8
+  at RETURN: 1 match [always]
+
+[BaseSpawnerMixin#arcananovum$infuserMobCapSet]
+@Inject -> net/minecraft/world/level/BaseSpawner.serverTick(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)V listing c99fdcd3a12d
+  at INVOKE Lnet/minecraft/server/level/ServerLevel;levelEvent(ILnet/minecraft/core/BlockPos;I)V: 1 match [conditional]
+
+[BaseSpawnerMixin#arcananovum$isPlayerInRange]
+@ModifyReturnValue -> net/minecraft/world/level/BaseSpawner.isNearPlayer(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z listing 9ac882aae2b8
+  at RETURN: 1 match [always]
+
+[BellBlockEntityMixin]
+target net/minecraft/world/level/block/entity/BellBlockEntity extends net/minecraft/world/level/block/entity/BlockEntity
+
+[BellBlockEntityMixin#arcananovum$resonateBell]
+@Inject -> net/minecraft/world/level/block/entity/BellBlockEntity.tick(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/BellBlockEntity;Lnet/minecraft/world/level/block/entity/BellBlockEntity$ResonationEndAction;)V listing d3baa88c1820
+  at INVOKE Lnet/minecraft/world/level/Level;playSound(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V: 1 match [conditional]
+
+[BlockItemMixin]
+target net/minecraft/world/item/BlockItem extends net/minecraft/world/item/Item
+
+[BlockItemMixin#arcananovum$greavesHandRefill]
+@Inject -> net/minecraft/world/item/BlockItem.place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult; listing d1b2db22b0fc
+  at INVOKE Lnet/minecraft/world/item/ItemStack;consume(ILnet/minecraft/world/entity/LivingEntity;)V shift=AFTER: 1 match [conditional]
+
+[CauldronInteractionDispatcherAccessor]
+target net/minecraft/core/cauldron/CauldronInteraction$Dispatcher extends java/lang/Object
+
+[CauldronInteractionDispatcherAccessor#callPut]
+@Invoker put in net/minecraft/core/cauldron/CauldronInteraction$Dispatcher: present
+
+[CauldronInteractionDispatcherAccessor#callPut(Lnet/minecraft/tags/TagKey;Lnet/minecraft/core/cauldron/CauldronInteraction;)V]
+@Invoker put in net/minecraft/core/cauldron/CauldronInteraction$Dispatcher: present
+
+[CauldronInteractionsMixin]
+target net/minecraft/core/cauldron/CauldronInteractions extends java/lang/Object
+
+[CauldronInteractionsMixin#arcananovum$cauldronInteractions]
+@Inject -> net/minecraft/core/cauldron/CauldronInteractions.bootStrap()V listing 5ecea7f5076e
+  at TAIL: 1 match [always]
+
+[ChunkMapMixin]
+target net/minecraft/server/level/ChunkMap extends net/minecraft/world/level/chunk/storage/SimpleRegionStorage implements net/minecraft/server/level/ChunkHolder$PlayerProvider, net/minecraft/server/level/GeneratingChunkMap
+
+[ChunkMapMixin#ServerChunkLoadingManager]
+@Inject -> net/minecraft/server/level/ChunkMap.<init>(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Ljava/util/concurrent/Executor;Lnet/minecraft/util/thread/BlockableEventLoop;Lnet/minecraft/world/level/chunk/LightChunkGetter;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/level/entity/ChunkStatusUpdateListener;Lnet/minecraft/world/level/TicketStorage;IZ)V listing 52119a939978
+  at TAIL: 1 match [always]
+
+[ChunkMapMixin#arcananovum$isAnyPlayerTicking]
+@ModifyReturnValue -> net/minecraft/server/level/ChunkMap.anyPlayerCloseEnoughForSpawningInternal(Lnet/minecraft/world/level/ChunkPos;)Z listing c3869252051c
+  at RETURN: 2 matches [conditional, conditional]
+
+[ChunkMapMixin#arcananovum$shouldTick]
+@ModifyReturnValue -> net/minecraft/server/level/ChunkMap.anyPlayerCloseEnoughForSpawning(Lnet/minecraft/world/level/ChunkPos;)Z listing bf4bdc55c177
+  at RETURN: 2 matches [conditional, conditional]
+
+[ClearAllStatusEffectsConsumeEffectMixin]
+target net/minecraft/world/item/consume_effects/ClearAllStatusEffectsConsumeEffect extends java/lang/Record implements net/minecraft/world/item/consume_effects/ConsumeEffect
+
+[ClearAllStatusEffectsConsumeEffectMixin#arcananovum$drinkMilk]
+@Inject -> net/minecraft/world/item/consume_effects/ClearAllStatusEffectsConsumeEffect.apply(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)Z listing 99d5adc3e310
+  at RETURN: 1 match [always]
+
+[ConditionsMixin]
+target net/borisshoes/borislib/conditions/Conditions extends java/lang/Object
+
+[ConditionsMixin#arcananovum$onConditionAdd]
+@Inject -> net/borisshoes/borislib/conditions/Conditions.addCondition(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/world/entity/LivingEntity;Lnet/borisshoes/borislib/conditions/ConditionInstance;Z)Lnet/borisshoes/borislib/conditions/Conditions$AddResult; listing 95e974777b4a
+  at RETURN: 6 matches [conditional, conditional, conditional, conditional, conditional, conditional]
+
+[CreeperMixin]
+target net/minecraft/world/entity/monster/Creeper extends net/minecraft/world/entity/monster/Monster
+
+[CreeperMixin#initGoals]
+@Inject -> net/minecraft/world/entity/monster/Creeper.registerGoals()V listing 3479bc6cad70
+  at HEAD: 1 match [always]
+
+[DamageSourceMixin]
+target net/minecraft/world/damagesource/DamageSource extends java/lang/Object
+
+[DamageSourceMixin#arcananovum$deathMessage]
+@Inject -> net/minecraft/world/damagesource/DamageSource.getLocalizedDeathMessage(Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/network/chat/Component; listing 1dcd9973edf2
+  at RETURN: 4 matches [conditional, conditional, conditional, conditional]
+
+[DamageSourceMixin#directEntity]
+@Shadow field directEntity Lnet/minecraft/world/entity/Entity; in net/minecraft/world/damagesource/DamageSource: present
+
+[DispenseItemBehaviorMixin]
+target net/minecraft/core/dispenser/DispenseItemBehavior extends java/lang/Object
+
+[DispenseItemBehaviorMixin#arcananovum$dispenserInteractions]
+@Inject -> net/minecraft/core/dispenser/DispenseItemBehavior.bootStrap()V listing 71a83e8191f9
+  at TAIL: 1 match [always]
+
+[EnchantmentHelperMixin]
+target net/minecraft/world/item/enchantment/EnchantmentHelper extends java/lang/Object
+
+[EnchantmentHelperMixin#arcananovum$enchantHelperSetHideTooltip]
+@Inject -> net/minecraft/world/item/enchantment/EnchantmentHelper.setEnchantments(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/enchantment/ItemEnchantments;)V listing 690a470b4c12
+  at HEAD: 1 match [always]
+
+[EnchantmentHelperMixin#arcananovum$enchantHelperSetHideTooltipApplyReturn]
+@Inject -> net/minecraft/world/item/enchantment/EnchantmentHelper.updateEnchantments(Lnet/minecraft/world/item/ItemStack;Ljava/util/function/Consumer;)Lnet/minecraft/world/item/enchantment/ItemEnchantments; listing 998d128d7736
+  at RETURN: 2 matches [conditional, conditional]
+
+[EnchantmentHelperMixin#arcananovum$enchantHelperSetHideTooltipApplySet]
+@Inject -> net/minecraft/world/item/enchantment/EnchantmentHelper.updateEnchantments(Lnet/minecraft/world/item/ItemStack;Ljava/util/function/Consumer;)Lnet/minecraft/world/item/enchantment/ItemEnchantments; listing 998d128d7736
+  at INVOKE Lnet/minecraft/world/item/ItemStack;set(Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object; shift=BEFORE: 1 match [conditional]
+
+[EnchantmentHelperMixin#arcananovum$enchantHelperSetItemLore]
+@Inject -> net/minecraft/world/item/enchantment/EnchantmentHelper.setEnchantments(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/enchantment/ItemEnchantments;)V listing 690a470b4c12
+  at RETURN: 1 match [always]
+
+[EnchantmentHelperMixin#arcananovum$modifyProjectileCount]
+@Inject -> net/minecraft/world/item/enchantment/EnchantmentHelper.processProjectileCount(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;I)I listing 3a1158134e4b
+  at RETURN: 1 match [always]
+
+[EnchantmentHelperMixin#arcananovum$useMendingFallback]
+@Inject -> net/minecraft/world/item/enchantment/EnchantmentHelper.getRandomItemWith(Lnet/minecraft/core/component/DataComponentType;Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Ljava/util/Optional; listing fc029e13f66a
+  at RETURN: 1 match [always]
+
+[EnchantmentMixin]
+target net/minecraft/world/item/enchantment/Enchantment extends java/lang/Record
+
+[EnchantmentMixin#arcananovum$applyLocationEffects]
+@Inject -> net/minecraft/world/item/enchantment/Enchantment.runLocationChangedEffects(Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/enchantment/EnchantedItemInUse;Lnet/minecraft/world/entity/LivingEntity;)V listing dad124dd5513
+  at INVOKE Lnet/minecraft/world/item/enchantment/effects/EnchantmentLocationBasedEffect;onChangedBlock(Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/enchantment/EnchantedItemInUse;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Z)V: 1 match [conditional]
+
+[EnchantmentMixin#arcananovum$makeUnenchantable1]
+@Inject -> net/minecraft/world/item/enchantment/Enchantment.canEnchant(Lnet/minecraft/world/item/ItemStack;)Z listing a4ed33433069
+  at HEAD: 1 match [always]
+
+[EnchantmentMixin#arcananovum$makeUnenchantable2]
+@Inject -> net/minecraft/world/item/enchantment/Enchantment.isSupportedItem(Lnet/minecraft/world/item/ItemStack;)Z listing 70cdd3a5bc4c
+  at HEAD: 1 match [always]
+
+[EnchantmentMixin#arcananovum$modifyDamageProtection]
+@Inject -> net/minecraft/world/item/enchantment/Enchantment.modifyDamageProtection(Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lorg/apache/commons/lang3/mutable/MutableFloat;)V listing f33d10f6bc1d
+  at HEAD: 1 match [always]
+
+[EntityAccessor]
+target net/minecraft/world/entity/Entity extends java/lang/Object implements net/minecraft/world/Nameable, net/minecraft/world/level/entity/EntityAccess, net/minecraft/world/scores/ScoreHolder, net/minecraft/network/syncher/SyncedDataHolder, net/minecraft/core/component/DataComponentGetter, net/minecraft/world/entity/ItemOwner, net/minecraft/world/entity/SlotProvider, net/minecraft/util/debug/DebugValueSource, net/minecraft/core/TypedInstance, net/fabricmc/fabric/api/attachment/v1/AttachmentTarget, net/fabricmc/fabric/api/event/lifecycle/v1/EntityLoadData, net/fabricmc/fabric/api/permission/v1/PermissionContextOwner
+
+[EntityAccessor#callSetLevel]
+@Invoker setLevel in net/minecraft/world/entity/Entity: present
+
+[EntityAccessor#getDATA_NO_GRAVITY]
+@Accessor DATA_NO_GRAVITY in net/minecraft/world/entity/Entity: present
+
+[EntityMixin]
+target net/minecraft/world/entity/Entity extends java/lang/Object implements net/minecraft/world/Nameable, net/minecraft/world/level/entity/EntityAccess, net/minecraft/world/scores/ScoreHolder, net/minecraft/network/syncher/SyncedDataHolder, net/minecraft/core/component/DataComponentGetter, net/minecraft/world/entity/ItemOwner, net/minecraft/world/entity/SlotProvider, net/minecraft/util/debug/DebugValueSource, net/minecraft/core/TypedInstance, net/fabricmc/fabric/api/attachment/v1/AttachmentTarget, net/fabricmc/fabric/api/event/lifecycle/v1/EntityLoadData, net/fabricmc/fabric/api/permission/v1/PermissionContextOwner
+
+[EntityMixin#arcananovum$greavesWindGrace]
+@Inject -> net/minecraft/world/entity/Entity.isSteppingCarefully()Z listing 52ffc18976b9
+  at RETURN: 1 match [always]
+
+[ExperienceOrbMixin]
+target net/minecraft/world/entity/ExperienceOrb extends net/minecraft/world/entity/Entity
+
+[ExperienceOrbMixin#arcananovum$mendingActivated]
+@Inject -> net/minecraft/world/entity/ExperienceOrb.repairPlayerItems(Lnet/minecraft/server/level/ServerPlayer;I)I listing 3a2484f416b0
+  at INVOKE Lnet/minecraft/world/item/ItemStack;setDamageValue(I)V: 1 match [conditional]
+
+[ExplosionMixin]
+target net/minecraft/world/level/ServerExplosion extends java/lang/Object implements net/minecraft/world/level/Explosion
+
+[ExplosionMixin#arcananovum$detArrowAchievement]
+@Inject -> net/minecraft/world/level/ServerExplosion.hurtEntities()V listing 409d1fb1df80
+  at INVOKE Lnet/minecraft/world/entity/Entity;pushFromExplosion(Lnet/minecraft/world/phys/Vec3;)V: 1 match [conditional]
+
+[ExplosionMixin#arcananovum$detArrowDamage]
+@ModifyExpressionValue -> net/minecraft/world/level/ServerExplosion.hurtEntities()V listing 409d1fb1df80
+  at INVOKE Lnet/minecraft/world/level/ExplosionDamageCalculator;getEntityDamageAmount(Lnet/minecraft/world/level/Explosion;Lnet/minecraft/world/entity/Entity;F)F: 1 match [conditional]
+
+[ExplosionMixin#arcananovum$detArrowDestroyBlocks]
+@ModifyReturnValue -> net/minecraft/world/level/ServerExplosion.interactsWithBlocks()Z listing c13a4b93e560
+  at RETURN: 1 match [always]
+
+[ExplosionMixin#damageSource]
+@Shadow field damageSource Lnet/minecraft/world/damagesource/DamageSource; in net/minecraft/world/level/ServerExplosion: present
+
+[FarmBlockMixin]
+target net/minecraft/world/level/block/FarmlandBlock extends net/minecraft/world/level/block/Block
+
+[FarmBlockMixin#arcananovum$wildGrowthStopTrample]
+@Inject -> net/minecraft/world/level/block/FarmlandBlock.fallOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;D)V listing 7677f9c32f81
+  at HEAD: 1 match [always]
+
+[FishingHookMixin]
+target net/minecraft/world/entity/projectile/FishingHook extends net/minecraft/world/entity/projectile/Projectile
+
+[FishingHookMixin#arcananovum$pullHookedEntity]
+@Inject -> net/minecraft/world/entity/projectile/FishingHook.pullEntity(Lnet/minecraft/world/entity/Entity;)V listing 50156934e351
+  at INVOKE Lnet/minecraft/world/entity/Entity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V: 1 match [conditional]
+
+[HopperBlockEntityMixin]
+target net/minecraft/world/level/block/entity/HopperBlockEntity extends net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity implements net/minecraft/world/level/block/entity/Hopper
+
+[HopperBlockEntityMixin#arcananovum$enderCrateTake]
+@Inject -> net/minecraft/world/level/block/entity/HopperBlockEntity.tryTakeInItemFromSlot(Lnet/minecraft/world/level/block/entity/Hopper;Lnet/minecraft/world/Container;ILnet/minecraft/core/Direction;)Z listing 7c2256c4e1e6
+  at INVOKE Lnet/minecraft/world/Container;setChanged()V: 1 match [conditional]
+
+[InventoryMixin]
+target net/minecraft/world/entity/player/Inventory extends java/lang/Object implements net/minecraft/world/Container, net/minecraft/world/Nameable
+
+[InventoryMixin#addResource]
+@Shadow method addResource(Lnet/minecraft/world/item/ItemStack;)I in net/minecraft/world/entity/player/Inventory: present
+
+[InventoryMixin#addResource(ILnet/minecraft/world/item/ItemStack;)I]
+@Shadow method addResource(ILnet/minecraft/world/item/ItemStack;)I in net/minecraft/world/entity/player/Inventory: present
+
+[InventoryMixin#arcananovum$fateAnchorRestore]
+@Inject -> net/minecraft/world/entity/player/Inventory.dropAll()V listing f1855b3ffdea
+  at RETURN: 1 match [always]
+
+[InventoryMixin#arcananovum$fateAnchorSave]
+@Inject -> net/minecraft/world/entity/player/Inventory.dropAll()V listing f1855b3ffdea
+  at HEAD: 1 match [always]
+
+[InventoryMixin#arcananovum$onPickup]
+@Inject -> net/minecraft/world/entity/player/Inventory.add(ILnet/minecraft/world/item/ItemStack;)Z listing c24edd6972fd
+  at HEAD: 1 match [always]
+
+[InventoryMixin#player]
+@Shadow field player Lnet/minecraft/world/entity/player/Player; in net/minecraft/world/entity/player/Inventory: present
+
+[ItemCombinerMenuMixin]
+target net/minecraft/world/inventory/ItemCombinerMenu extends net/minecraft/world/inventory/AbstractContainerMenu
+
+[ItemCombinerMenuMixin#arcananovum$multitoolOverride]
+@ModifyReturnValue -> net/minecraft/world/inventory/ItemCombinerMenu.stillValid(Lnet/minecraft/world/entity/player/Player;)Z listing bc1ded65a36e
+  at RETURN: 1 match [always]
+
+[ItemEntityMixin]
+target net/minecraft/world/entity/item/ItemEntity extends net/minecraft/world/entity/Entity implements net/minecraft/world/entity/TraceableEntity
+
+[ItemEntityMixin#arcananovum$destroyFake]
+@Inject -> net/minecraft/world/entity/item/ItemEntity.setItem(Lnet/minecraft/world/item/ItemStack;)V listing 83048ccfb66b
+  at HEAD: 1 match [always]
+
+[ItemEntityMixin#arcananovum$removeCraftData]
+@Inject -> net/minecraft/world/entity/item/ItemEntity.playerTouch(Lnet/minecraft/world/entity/player/Player;)V listing acd97172c2c8
+  at INVOKE Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z shift=BEFORE: 1 match [conditional]
+
+[ItemEntityMixin#arcananovum$worldDetection]
+@Inject -> net/minecraft/world/entity/item/ItemEntity.tick()V listing 1d24ff6ca31d
+  at TAIL: 1 match [conditional]
+
+[ItemStackMixin]
+target net/minecraft/world/item/ItemStack extends java/lang/Object implements net/minecraft/core/component/DataComponentHolder, net/minecraft/world/item/ItemInstance, net/fabricmc/fabric/api/item/v1/FabricItemStack
+
+[ItemStackMixin#arcananovum$enchantItemLore]
+@Inject -> net/minecraft/world/item/ItemStack.enchant(Lnet/minecraft/core/Holder;I)V listing c02cc234c847
+  at RETURN: 1 match [always]
+
+[LivingEntityAccessor]
+target net/minecraft/world/entity/LivingEntity extends net/minecraft/world/entity/Entity implements net/minecraft/world/entity/Attackable, net/minecraft/world/waypoints/WaypointTransmitter
+
+[LivingEntityAccessor#getDATA_HEALTH_ID]
+@Accessor DATA_HEALTH_ID in net/minecraft/world/entity/LivingEntity: present
+
+[LivingEntityMixin]
+target net/minecraft/world/entity/LivingEntity extends net/minecraft/world/entity/Entity implements net/minecraft/world/entity/Attackable, net/minecraft/world/waypoints/WaypointTransmitter
+
+[LivingEntityMixin#arcananovum$canTarget]
+@ModifyReturnValue -> net/minecraft/world/entity/LivingEntity.canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z listing 7647c9bdaa29
+  at RETURN: 2 matches [conditional, conditional]
+
+[LivingEntityMixin#arcananovum$cancelDamage]
+@Inject -> net/minecraft/world/entity/LivingEntity.hurtServer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z listing 99175b86dc70
+  at HEAD: 1 match [always]
+
+[LivingEntityMixin#arcananovum$deathProtectorCooldown]
+@ModifyExpressionValue -> net/minecraft/world/entity/LivingEntity.checkTotemDeathProtection(Lnet/minecraft/world/damagesource/DamageSource;)Z listing 3753a3858563
+  at INVOKE Lnet/minecraft/world/entity/LivingEntity;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;: 1 match [conditional]
+
+[LivingEntityMixin#arcananovum$effectRemoved]
+@Inject -> net/minecraft/world/entity/LivingEntity.onEffectsRemoved(Ljava/util/Collection;)V listing a30249682fc9
+  at INVOKE Lnet/minecraft/world/effect/MobEffect;removeAttributeModifiers(Lnet/minecraft/world/entity/ai/attributes/AttributeMap;)V: 1 match [conditional]
+
+[LivingEntityMixin#arcananovum$findTotem]
+@Inject -> net/minecraft/world/entity/LivingEntity.checkTotemDeathProtection(Lnet/minecraft/world/damagesource/DamageSource;)Z listing 3753a3858563
+  at RETURN: 2 matches [conditional, conditional]
+
+[LivingEntityMixin#arcananovum$greaterInvisibilityAttackRangeScale]
+@ModifyReturnValue -> net/minecraft/world/entity/LivingEntity.getVisibilityPercent(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;)D listing 9315794ac23d
+  at RETURN: 1 match [always]
+
+[LivingEntityMixin#arcananovum$greaterInvisibilityUpdate]
+@Inject -> net/minecraft/world/entity/LivingEntity.updateInvisibilityStatus()V listing 1b7529089fa9
+  at INVOKE Lnet/minecraft/world/entity/LivingEntity;setInvisible(Z)V ordinal=1 shift=AFTER: 2 matches [conditional, conditional], ordinal 1 is conditional
+
+[LivingEntityMixin#arcananovum$modifyDamage]
+@ModifyReturnValue -> net/minecraft/world/entity/LivingEntity.getDamageAfterMagicAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F listing 9193df0d04a5
+  at RETURN: 4 matches [conditional, conditional, conditional, conditional]
+
+[LivingEntityMixin#arcananovum$onDeath]
+@Inject -> net/minecraft/world/entity/LivingEntity.die(Lnet/minecraft/world/damagesource/DamageSource;)V listing 9cc1810777e5
+  at RETURN: 2 matches [conditional, conditional]
+
+[LivingEntityMixin#arcananovum$onEntityKilledOther]
+@Inject -> net/minecraft/world/entity/LivingEntity.die(Lnet/minecraft/world/damagesource/DamageSource;)V listing 9cc1810777e5
+  at INVOKE Lnet/minecraft/world/entity/LivingEntity;gameEvent(Lnet/minecraft/core/Holder;)V: 1 match [conditional]
+
+[LivingEntityMixin#arcananovum$onStatusEffectAdd]
+@Inject -> net/minecraft/world/entity/LivingEntity.addEffect(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)Z listing f757f56f196f
+  at RETURN: 2 matches [conditional, conditional]
+
+[LivingEntityMixin#arcananovum$onTick]
+@Inject -> net/minecraft/world/entity/LivingEntity.baseTick()V listing 89201bc45ec4
+  at HEAD: 1 match [always]
+
+[LivingEntityMixin#arcananovum$playerDamaged]
+@Inject -> net/minecraft/world/entity/LivingEntity.hurtServer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z listing 99175b86dc70
+  at INVOKE Lnet/minecraft/world/level/Level;getGameTime()J: 1 match [conditional]
+
+[LivingEntityMixin#arcananovum$shieldAbsorb]
+@Inject -> net/minecraft/world/entity/LivingEntity.applyItemBlocking(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)F listing 880add663732
+  at INVOKE Lnet/minecraft/world/item/component/BlocksAttacks;hurtBlockingItem(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/InteractionHand;F)V: 1 match [conditional]
+
+[LivingEntityMixin#arcananovum$sojournerEquipBug]
+@Inject -> net/minecraft/world/entity/LivingEntity.onEquipItem(Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V listing ae69e27a0da8
+  at HEAD: 1 match [always]
+
+[LivingEntityMixin#arcananovum$totemDamageCheck]
+@ModifyExpressionValue -> net/minecraft/world/entity/LivingEntity.checkTotemDeathProtection(Lnet/minecraft/world/damagesource/DamageSource;)Z listing 3753a3858563
+  at INVOKE Lnet/minecraft/world/damagesource/DamageSource;is(Lnet/minecraft/tags/TagKey;)Z: 1 match [always]
+
+[LivingEntityMixin#arcananovum$vengeanceTrigger]
+@Inject -> net/minecraft/world/entity/LivingEntity.checkTotemDeathProtection(Lnet/minecraft/world/damagesource/DamageSource;)Z listing 3753a3858563
+  at INVOKE Lnet/minecraft/world/entity/LivingEntity;setHealth(F)V: 1 match [conditional]
+
+[LivingEntityMixin#arcananovum$whiteDwarfBlock]
+@ModifyExpressionValue -> net/minecraft/world/entity/LivingEntity.applyItemBlocking(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)F listing 880add663732
+  at INVOKE Lnet/minecraft/world/item/component/BlocksAttacks;resolveBlockedDamage(Lnet/minecraft/world/damagesource/DamageSource;FD)F: 1 match [conditional]
+
+[LivingEntityMixin#arcananovum$witherOneHit]
+@Inject -> net/minecraft/world/entity/LivingEntity.die(Lnet/minecraft/world/damagesource/DamageSource;)V listing 9cc1810777e5
+  at HEAD: 1 match [always]
+
+[LivingEntityMixin#onEnterCombat]
+@Shadow method onEnterCombat()V in net/minecraft/world/entity/LivingEntity: present
+
+[LivingEntityMixin#playBlockFallSound]
+@Shadow method playBlockFallSound()V in net/minecraft/world/entity/LivingEntity: present
+
+[LivingEntityMixin#playHurtSound]
+@Shadow method playHurtSound(Lnet/minecraft/world/damagesource/DamageSource;)V in net/minecraft/world/entity/LivingEntity: present
+
+[LivingEntityVulnerabilityTrackMixin]
+target net/minecraft/world/entity/LivingEntity extends net/minecraft/world/entity/Entity implements net/minecraft/world/entity/Attackable, net/minecraft/world/waypoints/WaypointTransmitter
+
+[LivingEntityVulnerabilityTrackMixin#arcananovum$trackVulnerableDamage]
+@Inject -> net/minecraft/world/entity/LivingEntity.hurtServer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z listing 99175b86dc70
+  at HEAD: 1 match [always]
+
+[LocalMobCapCalculatorMixin]
+target net/minecraft/world/level/LocalMobCapCalculator extends java/lang/Object
+
+[LocalMobCapCalculatorMixin#SpawnDensityCapper]
+@Inject -> net/minecraft/world/level/LocalMobCapCalculator.<init>(Lnet/minecraft/server/level/ChunkMap;)V listing 96b5ca753426
+  at TAIL: 1 match [always]
+
+[LocalMobCapCalculatorMixin#canSpawn]
+@ModifyReturnValue -> net/minecraft/world/level/LocalMobCapCalculator.canSpawn(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/world/level/ChunkPos;)Z listing 8f2790d6dc88
+  at RETURN: 2 matches [conditional, conditional]
+
+[LocalMobCapCalculatorMixin#chunkMap]
+@Shadow field chunkMap Lnet/minecraft/server/level/ChunkMap; in net/minecraft/world/level/LocalMobCapCalculator: present
+
+[LocalMobCapCalculatorMixin#increaseDensity]
+@Inject -> net/minecraft/world/level/LocalMobCapCalculator.addMob(Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/world/entity/MobCategory;)V listing 2f7bf6b75396
+  at HEAD: 1 match [always]
+
+[MerchantResultSlotMixin]
+target net/minecraft/world/inventory/MerchantResultSlot extends net/minecraft/world/inventory/Slot
+
+[MerchantResultSlotMixin#arcananovum$extortionCharm]
+@Inject -> net/minecraft/world/inventory/MerchantResultSlot.onTake(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;)V listing 137e810df369
+  at INVOKE Lnet/minecraft/world/item/trading/Merchant;notifyTrade(Lnet/minecraft/world/item/trading/MerchantOffer;)V shift=AFTER: 1 match [conditional]
+
+[MinecraftServerMixin]
+target net/minecraft/server/MinecraftServer extends net/minecraft/util/thread/ReentrantBlockableEventLoop implements net/minecraft/commands/CommandSource, net/minecraft/server/ServerInfo, net/minecraft/world/level/chunk/storage/ChunkIOErrorReporter, net/fabricmc/fabric/api/attachment/v1/GlobalAttachmentsProvider, net/fabricmc/fabric/api/resource/v1/DataResourceStore
+
+[MinecraftServerMixin#prepareStartRegion]
+@Inject -> net/minecraft/server/MinecraftServer.prepareLevels()V listing 225b77e06d20
+  at TAIL: 1 match [always]
+
+[MobMixin]
+target net/minecraft/world/entity/Mob extends net/minecraft/world/entity/LivingEntity implements net/minecraft/world/entity/Targeting, net/minecraft/world/entity/EquipmentUser, net/minecraft/world/entity/Leashable
+
+[MobMixin#arcananovum$checkDespawn]
+@ModifyExpressionValue -> net/minecraft/world/entity/Mob.checkDespawn()V listing 7dc87529419b
+  at INVOKE Lnet/minecraft/world/entity/Entity;distanceToSqr(Lnet/minecraft/world/entity/Entity;)D: 1 match [conditional]
+
+[MobMixin#arcananovum$teleportConstructGuardians]
+@Inject -> net/minecraft/world/entity/Mob.checkDespawn()V listing 7dc87529419b
+  at INVOKE Lnet/minecraft/world/entity/Mob;discard()V: 3 matches [conditional, conditional, conditional]
+
+[MoveControlMixin]
+target net/minecraft/world/entity/ai/control/MoveControl extends java/lang/Object implements net/minecraft/world/entity/ai/control/Control
+target net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/ai/control/FlyingMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/monster/Ghast$GhastMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/monster/Guardian$GuardianMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/monster/Phantom$PhantomMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+target net/minecraft/world/entity/monster/Vex$VexMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+
+[MoveControlMixin#arcananovum$ensnarementMob]
+@Inject -> net/minecraft/world/entity/ai/control/MoveControl.tick()V listing 58c7e4e96662
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/ai/control/SmoothSwimmingMoveControl.tick()V listing e6afd2b2a735
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/ai/control/FlyingMoveControl.tick()V listing e6426ab9dc53
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/monster/zombie/Drowned$DrownedMoveControl.tick()V listing 5fa8cdb7afd8
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/monster/cubemob/AbstractCubeMob$CubeMobMoveControl.tick()V listing adbf024749d7
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/animal/fish/AbstractFish$FishMoveControl.tick()V listing 20041269ab01
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/animal/turtle/Turtle$TurtleMoveControl.tick()V listing 62dc835be44c
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/animal/rabbit/Rabbit$RabbitMoveControl.tick()V listing c69e4ced50c6
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/monster/Ghast$GhastMoveControl.tick()V listing be13ad1a200b
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/monster/Guardian$GuardianMoveControl.tick()V listing a6ab07f1def6
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.tick()V listing 7a09eff7d519
+  at HEAD: 1 match [always]
+@Inject -> net/minecraft/world/entity/monster/Vex$VexMoveControl.tick()V listing 3983f3272a15
+  at HEAD: 1 match [always]
+
+[NaturalSpawnerMixin]
+target net/minecraft/world/level/NaturalSpawner extends java/lang/Object
+
+[NaturalSpawnerMixin#arcananovum$infuserMobCapGet]
+@ModifyExpressionValue -> net/minecraft/world/level/NaturalSpawner.createState(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/NaturalSpawner$ChunkGetter;Lnet/minecraft/world/level/LocalMobCapCalculator;)Lnet/minecraft/world/level/NaturalSpawner$SpawnState; listing 759ed06f8de6
+  at INVOKE Lnet/minecraft/world/entity/Mob;requiresCustomPersistence()Z: 1 match [conditional]
+
+[NaturalSpawnerMixin#arcananovum$interdictorCancel]
+@ModifyExpressionValue -> net/minecraft/world/level/NaturalSpawner.spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V listing c01ad7476caf
+  at INVOKE Ljava/util/Optional;isEmpty()Z: 1 match [conditional]
+
+[NaturalSpawnerMixin#arcananovum$interdictorRedirect]
+@Inject -> net/minecraft/world/level/NaturalSpawner.spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V listing c01ad7476caf
+  at INVOKE Lnet/minecraft/world/entity/Mob;finalizeSpawn(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/world/entity/SpawnGroupData;)Lnet/minecraft/world/entity/SpawnGroupData;: 1 match [conditional]
+
+[PhantomMoveControlMixin]
+target net/minecraft/world/entity/monster/Phantom$PhantomMoveControl extends net/minecraft/world/entity/ai/control/MoveControl
+
+[PhantomMoveControlMixin#arcananovum$ensnarementMobPhantom]
+@Inject -> net/minecraft/world/entity/monster/Phantom$PhantomMoveControl.tick()V listing 7a09eff7d519
+  at HEAD: 1 match [always]
+
+[PhantomMoveControlMixin#speed]
+@Shadow field speed F in net/minecraft/world/entity/monster/Phantom$PhantomMoveControl: present
+
+[PhantomSpawnerMixin]
+target net/minecraft/world/level/levelgen/PhantomSpawner extends java/lang/Object implements net/minecraft/world/level/CustomSpawner
+
+[PhantomSpawnerMixin#arcananovum$fuckPhantoms]
+@ModifyExpressionValue -> net/minecraft/world/level/levelgen/PhantomSpawner.tick(Lnet/minecraft/server/level/ServerLevel;Z)V listing d8228fd0656d
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;isSpectator()Z: 1 match [conditional]
+
+[PhantomSwoopGoalMixin]
+target net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal extends net/minecraft/world/entity/monster/Phantom$PhantomMoveTargetGoal
+
+[PhantomSwoopGoalMixin#arcananovum$phantomScare]
+@Inject -> net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.canContinueToUse()Z listing 3b961657435e
+  at INVOKE Lnet/minecraft/world/entity/animal/feline/Cat;hiss()V: 1 match [conditional]
+
+[PhantomSwoopGoalMixin#arcananovum$shouldContinue]
+@ModifyReturnValue -> net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal.canContinueToUse()Z listing 3b961657435e
+  at RETURN: 5 matches [conditional, conditional, conditional, conditional, conditional]
+
+[PhantomSwoopGoalMixin#this$0]
+@Shadow field this$0 Lnet/minecraft/world/entity/monster/Phantom; in net/minecraft/world/entity/monster/Phantom$PhantomSweepAttackGoal: present
+
+[PiglinAiMixin]
+target net/minecraft/world/entity/monster/piglin/PiglinAi extends java/lang/Object
+
+[PiglinAiMixin#arcananovum$negotiatePiglins]
+@ModifyReturnValue -> net/minecraft/world/entity/monster/piglin/PiglinAi.getBarterResponseItems(Lnet/minecraft/world/entity/monster/piglin/Piglin;)Ljava/util/List; listing 0356d2ae5f1f
+  at RETURN: 1 match [always]
+
+[PlayerMixin]
+target net/minecraft/world/entity/player/Player extends net/minecraft/world/entity/Avatar implements net/minecraft/world/entity/ContainerUser
+
+[PlayerMixin#arcananovum$addExperience]
+@Inject -> net/minecraft/world/entity/player/Player.giveExperiencePoints(I)V listing fdfccbbc8115
+  at RETURN: 1 match [always]
+
+[PlayerMixin#arcananovum$disableFortitudeShield]
+@Inject -> net/minecraft/world/entity/player/Player.blockUsingItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/damagesource/DamageSource;FZ)V listing 5c72fa7e2f97
+  at INVOKE Lnet/minecraft/world/item/component/BlocksAttacks;disable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;FLnet/minecraft/world/item/ItemStack;)V: 1 match [conditional]
+
+[PlayerMixin#arcananovum$everlastingRocketCheck]
+@Inject -> net/minecraft/world/entity/player/Player.getProjectile(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack; listing 6858b0e92e50
+  at INVOKE Lnet/minecraft/world/item/ProjectileWeaponItem;getHeldProjectile(Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/world/item/ItemStack; shift=BEFORE: 1 match [conditional]
+
+[PlayerMixin#arcananovum$greavesClimbing]
+@ModifyReturnValue -> net/minecraft/world/entity/player/Player.onClimbable()Z listing 1fc9194b3d76
+  at RETURN: 2 matches [conditional, conditional]
+
+[PlayerMixin#arcananovum$offGroundBlockBreakingSpeed]
+@ModifyExpressionValue -> net/minecraft/world/entity/player/Player.getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F listing 3cc74d86fabd
+  at CONSTANT: not analyzed
+
+[PlayerMixin#arcananovum$postDamageEntity]
+@Inject -> net/minecraft/world/entity/player/Player.attack(Lnet/minecraft/world/entity/Entity;)V listing 297157887f85
+  at INVOKE Lnet/minecraft/world/entity/player/Player;getKnockback(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)F: 1 match [conditional]
+
+[PlayerMixin#arcananovum$quiverCheck]
+@Inject -> net/minecraft/world/entity/player/Player.getProjectile(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack; listing 6858b0e92e50
+  at INVOKE Lnet/minecraft/world/item/ProjectileWeaponItem;getAllSupportedProjectiles()Ljava/util/function/Predicate; shift=BEFORE: 1 match [conditional]
+
+[PlayerMixin#arcananovum$stopRunicUsage]
+@Inject -> net/minecraft/world/entity/player/Player.getProjectile(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack; listing 6858b0e92e50
+  at RETURN: 4 matches [conditional, conditional, conditional, conditional]
+
+[PlayerMixin#arcananovum$underwaterBlockBreakingSpeed]
+@ModifyExpressionValue -> net/minecraft/world/entity/player/Player.getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F listing 3cc74d86fabd
+  at INVOKE Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;getValue()D: 1 match [conditional]
+
+[PlayerMixin#arcananovum$useRiptide]
+@Inject -> net/minecraft/world/entity/player/Player.startAutoSpinAttack(IFLnet/minecraft/world/item/ItemStack;)V listing 866852d53fa1
+  at HEAD: 1 match [always]
+
+[PolymerBlockUtilsMixin]
+target eu/pb4/polymer/core/api/block/PolymerBlockUtils extends java/lang/Object
+
+[PolymerBlockUtilsMixin#arcananovum$overrideServerMining]
+@ModifyReturnValue -> eu/pb4/polymer/core/api/block/PolymerBlockUtils.shouldMineServerSide(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z listing 0555ca3cce17
+  at RETURN: 1 match [always]
+
+[PolymerItemUtilsMixin]
+target eu/pb4/polymer/core/api/item/PolymerItemUtils extends java/lang/Object
+empty mixin: does nothing, can be deleted
+
+[PoolElementStructurePieceMixin]
+target net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece extends net/minecraft/world/level/levelgen/structure/StructurePiece
+
+[PoolElementStructurePieceMixin#element]
+@Shadow field element Lnet/minecraft/world/level/levelgen/structure/pools/StructurePoolElement; in net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece: present
+
+[PoolElementStructurePieceMixin#fixPoolElement]
+@Inject -> net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece.addAdditionalSaveData(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/nbt/CompoundTag;)V listing 68cf1917c8cc
+  at TAIL: 1 match [always]
+
+[ProjectileWeaponItemMixin]
+target net/minecraft/world/item/ProjectileWeaponItem extends net/minecraft/world/item/Item
+
+[ProjectileWeaponItemMixin#arcananovum$createAlchemicalArrow]
+@ModifyExpressionValue -> net/minecraft/world/item/ProjectileWeaponItem.createProjectile(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/entity/projectile/Projectile; listing 5da439d7011a
+  at INVOKE Lnet/minecraft/world/item/ArrowItem;createArrow(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;: 1 match [always]
+
+[ProjectileWeaponItemMixin#arcananovum$decreaseQuiver]
+@Inject -> net/minecraft/world/item/ProjectileWeaponItem.useAmmo(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Z)Lnet/minecraft/world/item/ItemStack; listing af93a241558b
+  at INVOKE Lnet/minecraft/world/item/ItemStack;isEmpty()Z shift=BEFORE: 1 match [conditional]
+
+[ProjectileWeaponItemMixin#arcananovum$modifyProjectiles]
+@Inject -> net/minecraft/world/item/ProjectileWeaponItem.useAmmo(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Z)Lnet/minecraft/world/item/ItemStack; listing af93a241558b
+  at INVOKE Lnet/minecraft/world/item/ItemStack;getCount()I shift=BEFORE: 1 match [always]
+
+[RegistryDataLoaderMixin]
+target net/minecraft/resources/RegistryLoadTask extends java/lang/Object
+
+[RegistryDataLoaderMixin#arcananovum_beforeFreeze]
+@Inject -> net/minecraft/resources/RegistryLoadTask.freezeRegistry(Ljava/util/Map;)Z listing 2d38d1c07202
+  at HEAD: 1 match [conditional]
+
+[RegistryDataLoaderMixin#concurrentRegistrationGetter]
+@Shadow field concurrentRegistrationGetter Lnet/minecraft/core/registries/ConcurrentHolderGetter; in net/minecraft/resources/RegistryLoadTask: present
+
+[RegistryDataLoaderMixin#data]
+@Shadow field data Lnet/minecraft/resources/RegistryDataLoader$RegistryData; in net/minecraft/resources/RegistryLoadTask: present
+
+[RegistryDataLoaderMixin#registry]
+@Shadow field registry Lnet/minecraft/core/WritableRegistry; in net/minecraft/resources/RegistryLoadTask: present
+
+[RemoveStatusEffectsConsumeEffectMixin]
+target net/minecraft/world/item/consume_effects/RemoveStatusEffectsConsumeEffect extends java/lang/Record implements net/minecraft/world/item/consume_effects/ConsumeEffect
+
+[RemoveStatusEffectsConsumeEffectMixin#arcananovum$honeyCleanse]
+@Inject -> net/minecraft/world/item/consume_effects/RemoveStatusEffectsConsumeEffect.apply(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)Z listing 30927c60f757
+  at RETURN: 1 match [always]
+
+[RepairItemRecipeMixin]
+target net/minecraft/world/item/crafting/RepairItemRecipe extends net/minecraft/world/item/crafting/CustomRecipe
+
+[RepairItemRecipeMixin#arcananovum$binaryBladesCombine]
+@ModifyReturnValue -> net/minecraft/world/item/crafting/RepairItemRecipe.canCombine(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z listing 60cf87c866e7
+  at RETURN: 1 match [always]
+
+[ServerEntityMixin]
+target net/minecraft/server/level/ServerEntity extends java/lang/Object
+
+[ServerEntityMixin#arcananovum$stopInvisTracking]
+@Inject -> net/minecraft/server/level/ServerEntity.addPairing(Lnet/minecraft/server/level/ServerPlayer;)V listing 5a3518a78d5e
+  at INVOKE Lnet/minecraft/server/network/ServerGamePacketListenerImpl;send(Lnet/minecraft/network/protocol/Packet;)V shift=BEFORE: 1 match [always]
+
+[ServerEntityMixin#entity]
+@Shadow field entity Lnet/minecraft/world/entity/Entity; in net/minecraft/server/level/ServerEntity: present
+
+[ServerGamePacketListenerImplMixin]
+target net/minecraft/server/network/ServerGamePacketListenerImpl extends net/minecraft/server/network/ServerCommonPacketListenerImpl implements net/minecraft/network/protocol/game/ServerGamePacketListener, net/minecraft/server/network/ServerPlayerConnection, net/minecraft/network/TickablePacketListener, net/minecraft/network/protocol/game/GameProtocols$Context
+
+[ServerGamePacketListenerImplMixin#arcananovum$ensnarementAndGreavesPlayerOnMove]
+@Inject -> net/minecraft/server/network/ServerGamePacketListenerImpl.handlePlayerPositionChange(DDDFFZZ)V listing f5b8560ce14d
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V: 1 match [conditional]
+
+[ServerGamePacketListenerImplMixin#arcananovum$ensnarementPlayerTeleport]
+@Inject -> net/minecraft/server/network/ServerGamePacketListenerImpl.teleport(Lnet/minecraft/world/entity/PositionMoveRotation;Ljava/util/Set;)V listing ed52dd91c1d5
+  at HEAD: 1 match [always]
+
+[ServerGamePacketListenerImplMixin#arcananovum$ensnarementPlayerX]
+@ModifyVariable -> net/minecraft/server/network/ServerGamePacketListenerImpl.handlePlayerPositionChange(DDDFFZZ)V listing f5b8560ce14d
+  at STORE: not analyzed
+
+[ServerGamePacketListenerImplMixin#arcananovum$ensnarementPlayerY]
+@ModifyVariable -> net/minecraft/server/network/ServerGamePacketListenerImpl.handlePlayerPositionChange(DDDFFZZ)V listing f5b8560ce14d
+  at STORE: not analyzed
+
+[ServerGamePacketListenerImplMixin#arcananovum$ensnarementPlayerZ]
+@ModifyVariable -> net/minecraft/server/network/ServerGamePacketListenerImpl.handlePlayerPositionChange(DDDFFZZ)V listing f5b8560ce14d
+  at STORE: not analyzed
+
+[ServerGamePacketListenerImplMixin#arcananovum$greavesPickblock]
+@ModifyExpressionValue -> net/minecraft/server/network/ServerGamePacketListenerImpl.tryPickItem(Lnet/minecraft/world/item/ItemStack;)V listing 6a6433cf54f0
+  at INVOKE Lnet/minecraft/world/entity/player/Inventory;findSlotMatchingItem(Lnet/minecraft/world/item/ItemStack;)I: 1 match [conditional]
+
+[ServerGamePacketListenerImplMixin#arcananovum$handSwing]
+@Inject -> net/minecraft/server/network/ServerGamePacketListenerImpl.handlePunch(Lnet/minecraft/network/protocol/game/ServerboundPunchPacket;)V listing 38d9a4d2f1e9
+  at INVOKE Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V shift=AFTER: 1 match [always]
+
+[ServerGamePacketListenerImplMixin#arcananovum$onHandSwap]
+@Inject -> net/minecraft/server/network/ServerGamePacketListenerImpl.handlePlayerAction(Lnet/minecraft/network/protocol/game/ServerboundPlayerActionPacket;)V listing 1bd7fa0963ee
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack; ordinal=1: 3 matches [conditional, conditional, conditional], ordinal 1 is conditional
+
+[ServerGamePacketListenerImplMixin#arcananovum$onPlayerLoad]
+@Inject -> net/minecraft/server/network/ServerGamePacketListenerImpl.handleAcceptPlayerLoad(Lnet/minecraft/network/protocol/game/ServerboundPlayerLoadedPacket;)V listing acce99524955
+  at TAIL: 1 match [always]
+
+[ServerGamePacketListenerImplMixin#awaitingPositionFromClient]
+@Shadow field awaitingPositionFromClient Lnet/minecraft/world/phys/Vec3; in net/minecraft/server/network/ServerGamePacketListenerImpl: present
+
+[ServerGamePacketListenerImplMixin#awaitingTeleport]
+@Shadow field awaitingTeleport I in net/minecraft/server/network/ServerGamePacketListenerImpl: present
+
+[ServerGamePacketListenerImplMixin#player]
+@Shadow field player Lnet/minecraft/server/level/ServerPlayer; in net/minecraft/server/network/ServerGamePacketListenerImpl: present
+
+[ServerLevelMixin]
+target net/minecraft/server/level/ServerLevel extends net/minecraft/world/level/Level implements net/minecraft/world/level/WorldGenLevel, net/minecraft/server/level/ServerEntityGetter
+empty mixin: does nothing, can be deleted
+
+[ServerPlayerEntityScreenHandlerListenerMixin]
+target net/minecraft/server/level/ServerPlayer$2 extends java/lang/Object implements net/minecraft/world/inventory/ContainerListener
+
+[ServerPlayerEntityScreenHandlerListenerMixin#arcananovum$inventoryChanged]
+@Inject -> net/minecraft/server/level/ServerPlayer$2.slotChanged(Lnet/minecraft/world/inventory/AbstractContainerMenu;ILnet/minecraft/world/item/ItemStack;)V listing d74700c7ee31
+  at INVOKE Lnet/minecraft/advancements/triggers/InventoryChangeTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/item/ItemStack;)V: 1 match [conditional]
+
+[ServerPlayerEntityScreenHandlerListenerMixin#this$0]
+@Shadow field this$0 Lnet/minecraft/server/level/ServerPlayer; in net/minecraft/server/level/ServerPlayer$2: present
+
+[ServerPlayerGameModeMixin]
+target net/minecraft/server/level/ServerPlayerGameMode extends java/lang/Object
+
+[ServerPlayerGameModeMixin#arcananovum$continueMining]
+@Inject -> net/minecraft/server/level/ServerPlayerGameMode.incrementDestroyProgress(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;I)F listing 5532360c00ca
+  at HEAD: 1 match [always]
+
+[ServerPlayerGameModeMixin#arcananovum$interactItem]
+@Inject -> net/minecraft/server/level/ServerPlayerGameMode.useItem(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult; listing 67d9fc461674
+  at HEAD: 1 match [always]
+
+[ServerPlayerGameModeMixin#isDestroyingBlock]
+@Shadow field isDestroyingBlock Z in net/minecraft/server/level/ServerPlayerGameMode: present
+
+[ServerPlayerGameModeMixin#player]
+@Shadow field player Lnet/minecraft/server/level/ServerPlayer; in net/minecraft/server/level/ServerPlayerGameMode: present
+
+[ServerPlayerMixin]
+target net/minecraft/server/level/ServerPlayer extends net/minecraft/world/entity/player/Player implements net/fabricmc/fabric/api/networking/v1/context/PacketContextProvider
+
+[ServerPlayerMixin#arcananovum$effectApplied]
+@Inject -> net/minecraft/server/level/ServerPlayer.onEffectAdded(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)V listing 2edefbcd6c19
+  at INVOKE Lnet/minecraft/advancements/triggers/EffectsChangedTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/Entity;)V: 1 match [always]
+
+[ServerPlayerMixin#arcananovum$ensnarementMovement]
+@Inject -> net/minecraft/server/level/ServerPlayer.tick()V listing af60b84ef737
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;trackStartFallingPosition()V shift=BEFORE: 1 match [always]
+
+[ServerPlayerMixin#arcananovum$itineranteurFeedJump]
+@ModifyArg -> net/minecraft/server/level/ServerPlayer.jumpFromGround()V listing 35c97001f0f9
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;causeFoodExhaustion(F)V: 2 matches [conditional, conditional]
+
+[ServerPlayerMixin#arcananovum$itineranteurFeedRun]
+@ModifyArg -> net/minecraft/server/level/ServerPlayer.checkMovementStatistics(DDD)V listing e6387d61f3f0
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;causeFoodExhaustion(F)V: 6 matches [conditional, conditional, conditional, conditional, conditional, conditional]
+
+[ServerPlayerMixin#arcananovum$onEntityKilledOther]
+@Inject -> net/minecraft/server/level/ServerPlayer.die(Lnet/minecraft/world/damagesource/DamageSource;)V listing 1f3f42f53ca0
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;createWitherRose(Lnet/minecraft/world/entity/LivingEntity;)V: 1 match [conditional]
+
+[ServerPlayerMixin#arcananovum$onGroundMove]
+@Inject -> net/minecraft/server/level/ServerPlayer.checkMovementStatistics(DDD)V listing e6387d61f3f0
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;isSprinting()Z shift=BEFORE: 1 match [conditional]
+
+[ServerPlayerMixin#arcananovum$readStasisPearl]
+@Inject -> net/minecraft/server/level/ServerPlayer.loadAndSpawnEnderPearl(Lnet/minecraft/world/level/storage/ValueInput;)V listing 6e3f7f1c3fb2
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;placeEnderPearlTicket(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/ChunkPos;)J: 1 match [conditional]
+
+[ServerPlayerMixin#arcananovum$restoreOffhandOnDeath]
+@Inject -> net/minecraft/server/level/ServerPlayer.die(Lnet/minecraft/world/damagesource/DamageSource;)V listing 1f3f42f53ca0
+  at HEAD: 1 match [always]
+
+[ServerPlayerMixin#arcananovum$swimStats]
+@Inject -> net/minecraft/server/level/ServerPlayer.checkMovementStatistics(DDD)V listing e6387d61f3f0
+  at INVOKE Lnet/minecraft/server/level/ServerPlayer;awardStat(Lnet/minecraft/resources/Identifier;I)V ordinal=0: 9 matches [conditional, conditional, conditional, conditional, conditional, conditional, conditional, conditional, conditional], ordinal 0 is conditional
+
+[ServerPlayerMixin#arcananovum$teleportDimensionChange]
+@Inject -> net/minecraft/server/level/ServerPlayer.teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer; listing 7e6e126c7794
+  at INVOKE Lnet/minecraft/server/level/ServerLevel;getLevelData()Lnet/minecraft/world/level/storage/LevelData;: 1 match [conditional]
+@Inject -> net/minecraft/server/level/ServerPlayer.teleportTo(DDD)V listing fd3b99788a6c
+  at INVOKE Lnet/minecraft/server/level/ServerLevel;getLevelData()Lnet/minecraft/world/level/storage/LevelData;: NO MATCHES
+@Inject -> net/minecraft/server/level/ServerPlayer.teleportRelative(DDD)V listing 28fd36449a38
+  at INVOKE Lnet/minecraft/server/level/ServerLevel;getLevelData()Lnet/minecraft/world/level/storage/LevelData;: NO MATCHES
+@Inject -> net/minecraft/server/level/ServerPlayer.teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z listing 2ffa5ada62c4
+  at INVOKE Lnet/minecraft/server/level/ServerLevel;getLevelData()Lnet/minecraft/world/level/storage/LevelData;: NO MATCHES
+@Inject -> net/minecraft/server/level/ServerPlayer.teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/world/entity/Entity; listing 4ae421cbbab5
+  at INVOKE Lnet/minecraft/server/level/ServerLevel;getLevelData()Lnet/minecraft/world/level/storage/LevelData;: NO MATCHES
+
+[SmithingTransformRecipeMixin]
+target net/minecraft/world/item/crafting/SmithingTransformRecipe extends net/minecraft/world/item/crafting/SimpleSmithingRecipe
+
+[SmithingTransformRecipeMixin#arcananovum$modifyBaseItem]
+@ModifyExpressionValue -> net/minecraft/world/item/crafting/SmithingTransformRecipe.assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;)Lnet/minecraft/world/item/ItemStack; listing ac7078855571
+  at INVOKE Lnet/minecraft/world/item/crafting/SmithingRecipeInput;base()Lnet/minecraft/world/item/ItemStack;: 1 match [always]
+
+[SmithingTransformRecipeMixin#arcananovum$modifyReturnItem]
+@ModifyReturnValue -> net/minecraft/world/item/crafting/SmithingTransformRecipe.assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;)Lnet/minecraft/world/item/ItemStack; listing ac7078855571
+  at RETURN: 1 match [always]
+
+[SpawnerBlockEntityMixin]
+target net/minecraft/world/level/block/entity/SpawnerBlockEntity extends net/minecraft/world/level/block/entity/BlockEntity implements net/minecraft/world/level/Spawner
+
+[SpawnerBlockEntityMixin#arcananovum$infuseSpawner]
+@Inject -> net/minecraft/world/level/block/entity/SpawnerBlockEntity.serverTick(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/SpawnerBlockEntity;)V listing a4a0d11026a9
+  at HEAD: 1 match [always]
+
+[SplashManagerMixin]
+target net/minecraft/client/resources/SplashManager extends net/minecraft/server/packs/resources/SimplePreparableReloadListener
+
+[SplashManagerMixin#DEFAULT_STYLE]
+@Shadow field DEFAULT_STYLE Lnet/minecraft/network/chat/Style; in net/minecraft/client/resources/SplashManager: present
+
+[SplashManagerMixin#addSplashes]
+@Inject -> net/minecraft/client/resources/SplashManager.apply(Ljava/util/List;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V listing c5f098356705
+  at RETURN: 1 match [always]
+
+[SplashManagerMixin#splashes]
+@Shadow field splashes Ljava/util/List; in net/minecraft/client/resources/SplashManager: present
+
+[StructureTemplatePoolAccessor]
+target net/minecraft/world/level/levelgen/structure/pools/StructureTemplatePool extends java/lang/Object
+
+[StructureTemplatePoolAccessor#getRawTemplates]
+@Accessor rawTemplates in net/minecraft/world/level/levelgen/structure/pools/StructureTemplatePool: present
+
+[StructureTemplatePoolAccessor#getTemplates]
+@Accessor templates in net/minecraft/world/level/levelgen/structure/pools/StructureTemplatePool: present
+
+[StructureTemplatePoolAccessor#setRawTemplates]
+@Accessor rawTemplates in net/minecraft/world/level/levelgen/structure/pools/StructureTemplatePool: present
+
+[TameAnimalTriggerMixin]
+target net/minecraft/advancements/triggers/TameAnimalTrigger extends net/minecraft/advancements/triggers/SimpleCriterionTrigger
+
+[TameAnimalTriggerMixin#arcananovum$tameAnimal]
+@Inject -> net/minecraft/advancements/triggers/TameAnimalTrigger.trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/animal/Animal;)V listing 1b723f6e8101
+  at HEAD: 1 match [always]
+
+[ThrowableItemProjectileAccessor]
+target net/minecraft/world/entity/projectile/throwableitemprojectile/ThrowableItemProjectile extends net/minecraft/world/entity/projectile/ThrowableProjectile implements net/minecraft/world/entity/projectile/ItemSupplier
+
+[ThrowableItemProjectileAccessor#getDATA_ITEM_STACK]
+@Accessor DATA_ITEM_STACK in net/minecraft/world/entity/projectile/throwableitemprojectile/ThrowableItemProjectile: present
+
+[ThrownTridentAccessor]
+target net/minecraft/world/entity/projectile/arrow/ThrownTrident extends net/minecraft/world/entity/projectile/arrow/AbstractArrow
+
+[ThrownTridentAccessor#getID_FOIL]
+@Accessor ID_FOIL in net/minecraft/world/entity/projectile/arrow/ThrownTrident: present
+
+[VoiceChatServerMixin]
+target de/maxhenkel/voicechat/voice/server/Server extends java/lang/Thread
+
+[VoiceChatServerMixin#arcananovum$modifyBroadcast]
+@ModifyArgs -> de/maxhenkel/voicechat/voice/server/Server.processProximityPacket(Lde/maxhenkel/voicechat/voice/common/PlayerState;Lnet/minecraft/server/level/ServerPlayer;Lde/maxhenkel/voicechat/voice/common/MicPacket;)V listing 83205b939740
+  at INVOKE Lde/maxhenkel/voicechat/voice/server/Server;broadcast(Ljava/util/Collection;Lde/maxhenkel/voicechat/voice/common/SoundPacket;Lnet/minecraft/server/level/ServerPlayer;Lde/maxhenkel/voicechat/voice/common/PlayerState;Ljava/util/UUID;Ljava/lang/String;)V: 1 match [conditional]
+
+[WanderingTraderMixin]
+target net/minecraft/world/entity/npc/wanderingtrader/WanderingTrader extends net/minecraft/world/entity/npc/villager/AbstractVillager implements net/minecraft/world/item/component/Consumable$OverrideConsumeSound
+
+[WanderingTraderMixin#arcananovum$addArcaneNotesTrade]
+@Inject -> net/minecraft/world/entity/npc/wanderingtrader/WanderingTrader.updateTrades(Lnet/minecraft/server/level/ServerLevel;)V listing 0a1fbcdba99e
+  at TAIL: 1 match [always]
+
+[WitherBossAccessor]
+target net/minecraft/world/entity/boss/wither/WitherBoss extends net/minecraft/world/entity/monster/Monster implements net/minecraft/world/entity/monster/RangedAttackMob
+
+[WitherBossAccessor#getDATA_ID_INV]
+@Accessor DATA_ID_INV in net/minecraft/world/entity/boss/wither/WitherBoss: present
+
+[WitherBossAccessor#getDATA_TARGET_A]
+@Accessor DATA_TARGET_A in net/minecraft/world/entity/boss/wither/WitherBoss: present
+
+[WitherBossAccessor#getDATA_TARGET_B]
+@Accessor DATA_TARGET_B in net/minecraft/world/entity/boss/wither/WitherBoss: present
+
+[WitherBossAccessor#getDATA_TARGET_C]
+@Accessor DATA_TARGET_C in net/minecraft/world/entity/boss/wither/WitherBoss: present
+
+[WitherBossMixin]
+target net/minecraft/world/entity/boss/wither/WitherBoss extends net/minecraft/world/entity/monster/Monster implements net/minecraft/world/entity/monster/RangedAttackMob
+
+[WitherBossMixin#arcananovum$redirectSpawnSound]
+@Redirect -> net/minecraft/world/entity/boss/wither/WitherBoss.customServerAiStep(Lnet/minecraft/server/level/ServerLevel;)V listing df56daa17051
+  at INVOKE Lnet/minecraft/server/level/ServerLevel;globalLevelEvent(ILnet/minecraft/core/BlockPos;I)V: 1 match [conditional]
+
