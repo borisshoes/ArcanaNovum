@@ -32,15 +32,17 @@ import static net.borisshoes.arcananovum.ArcanaNovum.log;
 public class CommutativeTransmutationRecipe extends TransmutationRecipe {
    
    private final List<Either<Item, TagKey<Item>>> communalInputs = new ArrayList<>();
+   private final List<Either<Item, TagKey<Item>>> excludedInputs = new ArrayList<>();
    private ItemStack viewStack = new ItemStack(Items.BARRIER);
-   
+
    public CommutativeTransmutationRecipe(String id, ItemStack reagent1, ItemStack reagent2){
       super(id, reagent1, reagent2);
    }
-   
-   private CommutativeTransmutationRecipe(String id, List<Either<Item, TagKey<Item>>> communalInputs, ItemStack viewStack, List<Either<Item, TagKey<Item>>> reagent1, int reagent1Count, List<Either<Item, TagKey<Item>>> reagent2, int reagent2Count){
+
+   private CommutativeTransmutationRecipe(String id, List<Either<Item, TagKey<Item>>> communalInputs, List<Either<Item, TagKey<Item>>> excludedInputs, ItemStack viewStack, List<Either<Item, TagKey<Item>>> reagent1, int reagent1Count, List<Either<Item, TagKey<Item>>> reagent2, int reagent2Count){
       super(id, reagent1, reagent1Count, reagent2, reagent2Count);
       this.communalInputs.addAll(communalInputs);
+      this.excludedInputs.addAll(excludedInputs);
       this.viewStack = viewStack;
    }
    
@@ -70,6 +72,19 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe {
       return this;
    }
    
+   // Removes items a broader tag pulls in, like the chest boats inside #minecraft:boats
+   public CommutativeTransmutationRecipe without(Item... items){
+      for(Item item : items){
+         this.excludedInputs.add(Either.left(item));
+      }
+      return this;
+   }
+
+   public CommutativeTransmutationRecipe without(TagKey<Item> tag){
+      this.excludedInputs.add(Either.right(tag));
+      return this;
+   }
+
    public CommutativeTransmutationRecipe withViewStack(ItemStack viewStack){
       this.viewStack = viewStack;
       return this;
@@ -142,7 +157,11 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe {
    }
    
    public boolean validCommunalInput(ItemStack provided){
-      return this.communalInputs.stream().anyMatch(e -> (e.left().isPresent() && provided.is(e.left().get())) || (e.right().isPresent() && provided.is(e.right().get())));
+      return matchesAny(this.communalInputs, provided) && !matchesAny(this.excludedInputs, provided);
+   }
+
+   private static boolean matchesAny(List<Either<Item, TagKey<Item>>> entries, ItemStack provided){
+      return entries.stream().anyMatch(e -> (e.left().isPresent() && provided.is(e.left().get())) || (e.right().isPresent() && provided.is(e.right().get())));
    }
    
    public List<ItemStack> getDisplayStacks(){
@@ -159,6 +178,10 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe {
    
    public List<Either<Item, TagKey<Item>>> getCommunalInputs(){
       return new ArrayList<>(this.communalInputs);
+   }
+
+   public List<Either<Item, TagKey<Item>>> getExcludedInputs(){
+      return new ArrayList<>(this.excludedInputs);
    }
    
    @Override
@@ -185,7 +208,20 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe {
          }
       }
       json.add("inputs", inputsArray);
-      
+
+      // Serialize excluded inputs
+      if(!excludedInputs.isEmpty()){
+         JsonArray excludeArray = new JsonArray();
+         for(Either<Item, TagKey<Item>> entry : excludedInputs){
+            if(entry.left().isPresent()){
+               excludeArray.add(BuiltInRegistries.ITEM.getKey(entry.left().get()).toString());
+            }else if(entry.right().isPresent()){
+               excludeArray.add("#" + entry.right().get().location());
+            }
+         }
+         json.add("exclude", excludeArray);
+      }
+
       // Serialize reagent 1
       if(!reagent1.isEmpty()){
          JsonArray reagent1Array = new JsonArray();
@@ -234,7 +270,16 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe {
          Either<Item, TagKey<Item>> parsed = MinecraftUtils.parseItemOrTag(element.getAsString());
          if(parsed != null) inputs.add(parsed);
       }
-      
+
+      // Parse excluded inputs
+      List<Either<Item, TagKey<Item>>> excluded = new ArrayList<>();
+      if(json.has("exclude")){
+         for(JsonElement element : json.getAsJsonArray("exclude")){
+            Either<Item, TagKey<Item>> parsed = MinecraftUtils.parseItemOrTag(element.getAsString());
+            if(parsed != null) excluded.add(parsed);
+         }
+      }
+
       // Parse reagent 1
       List<Either<Item, TagKey<Item>>> reagent1List = new ArrayList<>();
       int reagent1Count = 0;
@@ -259,6 +304,6 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe {
          reagent2Count = json.has("reagent_2_count") ? json.get("reagent_2_count").getAsInt() : 1;
       }
       
-      return new CommutativeTransmutationRecipe(id, inputs, viewStack, reagent1List, reagent1Count, reagent2List, reagent2Count);
+      return new CommutativeTransmutationRecipe(id, inputs, excluded, viewStack, reagent1List, reagent1Count, reagent2List, reagent2Count);
    }
 }

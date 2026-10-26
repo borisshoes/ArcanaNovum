@@ -74,7 +74,36 @@ public class RegressionGameTests {
       helper.assertTrue(found, "No commutative transmutation accepts oak boats");
       helper.succeed();
    }
-
+   
+   // A wood block crafts into more planks than a log, so logs and wood need separate transmutations.
+   // #minecraft:logs holds both, so a new wood type that misses the c:natural_woods / c:stripped_woods tags would leak into logs.
+   @GameTest
+   public void logsAndWoodTransmuteSeparately(GameTestHelper helper){
+      CommutativeTransmutationRecipe logs = commutative("logs");
+      CommutativeTransmutationRecipe wood = commutative("wood");
+      helper.assertTrue(logs != null && wood != null, "The logs and wood transmutations both need to exist");
+      List<String> problems = new ArrayList<>();
+      for(Item item : BuiltInRegistries.ITEM){
+         ItemStack stack = item.getDefaultInstance();
+         if(!stack.is(ItemTags.LOGS)) continue;
+         String id = BuiltInRegistries.ITEM.getKey(item).getPath();
+         boolean isWood = id.endsWith("_wood") || id.endsWith("_hyphae");
+         CommutativeTransmutationRecipe expected = isWood ? wood : logs;
+         CommutativeTransmutationRecipe other = isWood ? logs : wood;
+         if(!expected.validCommunalInput(stack)) problems.add(id + " is missing from " + expected.getId());
+         if(other.validCommunalInput(stack)) problems.add(id + " is also accepted by " + other.getId());
+      }
+      helper.assertTrue(problems.isEmpty(), String.join("\n", problems));
+      helper.succeed();
+   }
+   
+   private static CommutativeTransmutationRecipe commutative(String id){
+      for(TransmutationRecipe recipe : RecipeManager.TRANSMUTATION_RECIPES){
+         if(recipe instanceof CommutativeTransmutationRecipe commutative && commutative.getId().equals(id)) return commutative;
+      }
+      return null;
+   }
+   
    // The Charm of Wild Growth skipped bamboo unless it had Charm of Blooming
    @GameTest(skyAccess = true)
    public void wildGrowthGrowsBamboo(GameTestHelper helper){

@@ -1105,6 +1105,13 @@ public class WikiExporter {
                }
             }
             body.add("pool", pool);
+            if(!commutative.getExcludedInputs().isEmpty()){
+               JsonArray exclude = new JsonArray();
+               for(Either<Item, TagKey<Item>> entry : commutative.getExcludedInputs()){
+                  exclude.add(entry.left().isPresent() ? itemRef(entry.left().get(), null, List.of()) : tagRef(entry.right().orElseThrow()));
+               }
+               body.add("exclude", exclude);
+            }
             body.add("view_item", itemRef(commutative.getViewStack().getItem(), null, List.of()));
          }
          case InfusionTransmutationRecipe infusion -> {

@@ -1717,7 +1717,7 @@ public class DefaultRecipeGenerator {
             .withViewStack(new ItemStack(Items.MOSS_BLOCK)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("sandstones", new ItemStack(Items.REDSTONE, 6), new ItemStack(Items.QUARTZ, 4))
-            .with(Items.SANDSTONE, Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_SANDSTONE, Items.RED_SAND, Items.CHISELED_RED_SANDSTONE,
+            .with(Items.SANDSTONE, Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_SANDSTONE, Items.RED_SANDSTONE, Items.CHISELED_RED_SANDSTONE,
                   Items.CUT_RED_SANDSTONE, Items.SMOOTH_RED_SANDSTONE)
             .with(Either.left(ConventionalItemTags.SANDSTONE_BLOCKS))
             .withViewStack(new ItemStack(Items.SANDSTONE)));
@@ -1746,10 +1746,25 @@ public class DefaultRecipeGenerator {
                   Items.STRIPPED_BIRCH_LOG, Items.STRIPPED_CHERRY_LOG, Items.STRIPPED_CRIMSON_STEM,
                   Items.STRIPPED_DARK_OAK_LOG, Items.STRIPPED_JUNGLE_LOG, Items.STRIPPED_MANGROVE_LOG,
                   Items.STRIPPED_OAK_LOG, Items.STRIPPED_SPRUCE_LOG, Items.STRIPPED_WARPED_STEM,
-                  Items.STRIPPED_PALE_OAK_LOG)
+                  Items.STRIPPED_PALE_OAK_LOG, Items.POPLAR_LOG, Items.STRIPPED_POPLAR_LOG)
             .with(Either.left(ItemTags.LOGS))
             .with(Either.left(ConventionalItemTags.STRIPPED_LOGS))
+            // #minecraft:logs also holds every wood block, which crafts into more planks than a log
+            .without(ConventionalItemTags.NATURAL_WOODS)
+            .without(ConventionalItemTags.STRIPPED_WOODS)
             .withViewStack(new ItemStack(Items.OAK_LOG)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("wood", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
+            .with(Items.ACACIA_WOOD, Items.BIRCH_WOOD, Items.CHERRY_WOOD, Items.CRIMSON_HYPHAE,
+                  Items.DARK_OAK_WOOD, Items.JUNGLE_WOOD, Items.MANGROVE_WOOD, Items.OAK_WOOD, Items.SPRUCE_WOOD,
+                  Items.WARPED_HYPHAE, Items.PALE_OAK_WOOD, Items.POPLAR_WOOD, Items.STRIPPED_ACACIA_WOOD,
+                  Items.STRIPPED_BIRCH_WOOD, Items.STRIPPED_CHERRY_WOOD, Items.STRIPPED_CRIMSON_HYPHAE,
+                  Items.STRIPPED_DARK_OAK_WOOD, Items.STRIPPED_JUNGLE_WOOD, Items.STRIPPED_MANGROVE_WOOD,
+                  Items.STRIPPED_OAK_WOOD, Items.STRIPPED_SPRUCE_WOOD, Items.STRIPPED_WARPED_HYPHAE,
+                  Items.STRIPPED_PALE_OAK_WOOD, Items.STRIPPED_POPLAR_WOOD)
+            .with(Either.left(ConventionalItemTags.NATURAL_WOODS))
+            .with(Either.left(ConventionalItemTags.STRIPPED_WOODS))
+            .withViewStack(new ItemStack(Items.OAK_WOOD)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("planks", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
             .with(Either.left(ItemTags.PLANKS))
@@ -1799,6 +1814,7 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("boats", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
             .with(Either.left(ItemTags.BOATS))
+            .without(ItemTags.CHEST_BOATS)
             .withViewStack(new ItemStack(Items.OAK_BOAT)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("chest_boats", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
@@ -3636,7 +3652,7 @@ public class DefaultRecipeGenerator {
             .withViewStack(new ItemStack(Items.MOSS_BLOCK)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("sandstones", new ItemStack(Items.REDSTONE, 16), new ItemStack(Items.QUARTZ, 12))
-            .with(Items.SANDSTONE, Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_SANDSTONE, Items.RED_SAND, Items.CHISELED_RED_SANDSTONE,
+            .with(Items.SANDSTONE, Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_SANDSTONE, Items.RED_SANDSTONE, Items.CHISELED_RED_SANDSTONE,
                   Items.CUT_RED_SANDSTONE, Items.SMOOTH_RED_SANDSTONE)
             .with(Either.left(ConventionalItemTags.SANDSTONE_BLOCKS))
             .withViewStack(new ItemStack(Items.SANDSTONE)));
@@ -3665,10 +3681,25 @@ public class DefaultRecipeGenerator {
                   Items.STRIPPED_BIRCH_LOG, Items.STRIPPED_CHERRY_LOG, Items.STRIPPED_CRIMSON_STEM,
                   Items.STRIPPED_DARK_OAK_LOG, Items.STRIPPED_JUNGLE_LOG, Items.STRIPPED_MANGROVE_LOG,
                   Items.STRIPPED_OAK_LOG, Items.STRIPPED_SPRUCE_LOG, Items.STRIPPED_WARPED_STEM,
-                  Items.STRIPPED_PALE_OAK_LOG)
+                  Items.STRIPPED_PALE_OAK_LOG, Items.POPLAR_LOG, Items.STRIPPED_POPLAR_LOG)
             .with(Either.left(ItemTags.LOGS))
             .with(Either.left(ConventionalItemTags.STRIPPED_LOGS))
+            // #minecraft:logs also holds every wood block, which crafts into more planks than a log
+            .without(ConventionalItemTags.NATURAL_WOODS)
+            .without(ConventionalItemTags.STRIPPED_WOODS)
             .withViewStack(new ItemStack(Items.OAK_LOG)));
+      
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("wood", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))
+            .with(Items.ACACIA_WOOD, Items.BIRCH_WOOD, Items.CHERRY_WOOD, Items.CRIMSON_HYPHAE,
+                  Items.DARK_OAK_WOOD, Items.JUNGLE_WOOD, Items.MANGROVE_WOOD, Items.OAK_WOOD, Items.SPRUCE_WOOD,
+                  Items.WARPED_HYPHAE, Items.PALE_OAK_WOOD, Items.POPLAR_WOOD, Items.STRIPPED_ACACIA_WOOD,
+                  Items.STRIPPED_BIRCH_WOOD, Items.STRIPPED_CHERRY_WOOD, Items.STRIPPED_CRIMSON_HYPHAE,
+                  Items.STRIPPED_DARK_OAK_WOOD, Items.STRIPPED_JUNGLE_WOOD, Items.STRIPPED_MANGROVE_WOOD,
+                  Items.STRIPPED_OAK_WOOD, Items.STRIPPED_SPRUCE_WOOD, Items.STRIPPED_WARPED_HYPHAE,
+                  Items.STRIPPED_PALE_OAK_WOOD, Items.STRIPPED_POPLAR_WOOD)
+            .with(Either.left(ConventionalItemTags.NATURAL_WOODS))
+            .with(Either.left(ConventionalItemTags.STRIPPED_WOODS))
+            .withViewStack(new ItemStack(Items.OAK_WOOD)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("planks", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))
             .with(Either.left(ItemTags.PLANKS))
@@ -3718,6 +3749,7 @@ public class DefaultRecipeGenerator {
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("boats", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))
             .with(Either.left(ItemTags.BOATS))
+            .without(ItemTags.CHEST_BOATS)
             .withViewStack(new ItemStack(Items.OAK_BOAT)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("chest_boats", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))

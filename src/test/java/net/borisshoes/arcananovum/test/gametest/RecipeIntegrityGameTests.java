@@ -32,6 +32,11 @@ import java.util.*;
 public class RecipeIntegrityGameTests {
    
    private static final int[] COST_MODES = {-1, 0, 1, 2, 3, 4, 5};
+   // Items that are meant to be in more than one commutative transmutation
+   private static final Set<String> INTENTIONAL_OVERLAPS = Set.of(
+         "minecraft:cherry_leaves", // flowers_and_plants + leaves
+         "minecraft:flowering_azalea_leaves" // flowers_and_plants + leaves
+   );
    
    @GameTest
    public void commutativeRecipesDoNotOverlap(GameTestHelper helper){
@@ -44,7 +49,7 @@ public class RecipeIntegrityGameTests {
       
       Map<String, List<String>> overlaps = new TreeMap<>(); // recipe pair to the items both of them accept
       for(Map.Entry<Item, List<String>> entry : owners.entrySet()){
-         if(entry.getValue().size() > 1){
+         if(entry.getValue().size() > 1 && !INTENTIONAL_OVERLAPS.contains(BuiltInRegistries.ITEM.getKey(entry.getKey()).toString())){
             overlaps.computeIfAbsent(String.join(" + ", entry.getValue()), k -> new ArrayList<>()).add(BuiltInRegistries.ITEM.getKey(entry.getKey()).toString());
          }
       }
