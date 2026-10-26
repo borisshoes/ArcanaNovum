@@ -27,7 +27,7 @@ public abstract class ArcanaServerCommonPacketListenerMixin {
       if(!((Object) this instanceof ServerGamePacketListenerImpl game)) return;
       ServerPlayer player = game.player;
       packet.payload().flatMap(Tag::asCompound).ifPresent(root ->
-            root.getString(ArcanaNovum.ARCANA_CLICK_KEY).ifPresent(command ->
+            root.getString(ArcanaNovum.ARCANA_CLICK_KEY).filter(ArcanaNovum::isArcanaClickCommand).ifPresent(command ->
                   server.getCommands().performPrefixedCommand(player.createCommandSourceStack(), command)
             ));
       ci.cancel();

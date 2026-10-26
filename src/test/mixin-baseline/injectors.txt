@@ -190,6 +190,10 @@ target net/minecraft/world/item/enchantment/Enchantment extends java/lang/Record
 
 [EnchantmentMixin#arcananovum$modifyDamageProtection]
 @Inject -> net/minecraft/world/item/enchantment/Enchantment.modifyDamageProtection(Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lorg/apache/commons/lang3/mutable/MutableFloat;)V listing f33d10f6bc1d
+  at TAIL: 1 match [always]
+
+[EnchantmentMixin#arcananovum$protectionBefore]
+@Inject -> net/minecraft/world/item/enchantment/Enchantment.modifyDamageProtection(Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lorg/apache/commons/lang3/mutable/MutableFloat;)V listing f33d10f6bc1d
   at HEAD: 1 match [always]
 
 [EntityAccessor]
@@ -237,7 +241,7 @@ target net/minecraft/world/level/ServerExplosion extends java/lang/Object implem
 target net/minecraft/world/level/block/FarmlandBlock extends net/minecraft/world/level/block/Block
 
 [FarmBlockMixin#arcananovum$wildGrowthStopTrample]
-@Inject -> net/minecraft/world/level/block/FarmlandBlock.fallOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;D)V listing 7677f9c32f81
+@Inject -> net/minecraft/world/level/block/FarmlandBlock.turnToBaseBlock(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V listing 5cdaa55802f8
   at HEAD: 1 match [always]
 
 [FishingHookMixin]
@@ -257,22 +261,12 @@ target net/minecraft/world/level/block/entity/HopperBlockEntity extends net/mine
 [InventoryMixin]
 target net/minecraft/world/entity/player/Inventory extends java/lang/Object implements net/minecraft/world/Container, net/minecraft/world/Nameable
 
-[InventoryMixin#addResource]
-@Shadow method addResource(Lnet/minecraft/world/item/ItemStack;)I in net/minecraft/world/entity/player/Inventory: present
-
-[InventoryMixin#addResource(ILnet/minecraft/world/item/ItemStack;)I]
-@Shadow method addResource(ILnet/minecraft/world/item/ItemStack;)I in net/minecraft/world/entity/player/Inventory: present
-
 [InventoryMixin#arcananovum$fateAnchorRestore]
 @Inject -> net/minecraft/world/entity/player/Inventory.dropAll()V listing f1855b3ffdea
   at RETURN: 1 match [always]
 
 [InventoryMixin#arcananovum$fateAnchorSave]
 @Inject -> net/minecraft/world/entity/player/Inventory.dropAll()V listing f1855b3ffdea
-  at HEAD: 1 match [always]
-
-[InventoryMixin#arcananovum$onPickup]
-@Inject -> net/minecraft/world/entity/player/Inventory.add(ILnet/minecraft/world/item/ItemStack;)Z listing c24edd6972fd
   at HEAD: 1 match [always]
 
 [InventoryMixin#player]
@@ -287,6 +281,10 @@ target net/minecraft/world/inventory/ItemCombinerMenu extends net/minecraft/worl
 
 [ItemEntityMixin]
 target net/minecraft/world/entity/item/ItemEntity extends net/minecraft/world/entity/Entity implements net/minecraft/world/entity/TraceableEntity
+
+[ItemEntityMixin#arcananovum$cindersAutoSmelt]
+@WrapOperation -> net/minecraft/world/entity/item/ItemEntity.playerTouch(Lnet/minecraft/world/entity/player/Player;)V listing acd97172c2c8
+  at INVOKE Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z: 1 match [conditional]
 
 [ItemEntityMixin#arcananovum$destroyFake]
 @Inject -> net/minecraft/world/entity/item/ItemEntity.setItem(Lnet/minecraft/world/item/ItemStack;)V listing 83048ccfb66b
@@ -760,6 +758,10 @@ target net/minecraft/server/level/ServerPlayer extends net/minecraft/world/entit
 [ServerPlayerMixin#arcananovum$itineranteurFeedRun]
 @ModifyArg -> net/minecraft/server/level/ServerPlayer.checkMovementStatistics(DDD)V listing e6387d61f3f0
   at INVOKE Lnet/minecraft/server/level/ServerPlayer;causeFoodExhaustion(F)V: 6 matches [conditional, conditional, conditional, conditional, conditional, conditional]
+
+[ServerPlayerMixin#arcananovum$onDeath]
+@Inject -> net/minecraft/server/level/ServerPlayer.die(Lnet/minecraft/world/damagesource/DamageSource;)V listing 1f3f42f53ca0
+  at RETURN: 1 match [always]
 
 [ServerPlayerMixin#arcananovum$onEntityKilledOther]
 @Inject -> net/minecraft/server/level/ServerPlayer.die(Lnet/minecraft/world/damagesource/DamageSource;)V listing 1f3f42f53ca0

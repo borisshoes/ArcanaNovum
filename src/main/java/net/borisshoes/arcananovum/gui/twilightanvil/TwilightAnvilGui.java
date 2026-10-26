@@ -26,7 +26,6 @@ import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
@@ -208,7 +207,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
       itemPage.setCallback(clickType -> {
          if(arcanaItem != null){
             if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
-               MinecraftUtils.returnItems(inventory, player);
+               ArcanaItemUtils.returnItems(inventory, player);
                openTomeItemPage(arcanaItem);
             }else{
                player.sendSystemMessage(Component.literal("You must research this item first!").withStyle(ChatFormatting.RED), false);
@@ -226,7 +225,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
             .append(Component.literal(" to augment this Twilight Anvil").withStyle(ChatFormatting.DARK_PURPLE)))));
       tinkerAnvil.setCallback(clickType -> {
          if(tinkerSlotType == 2) return;
-         MinecraftUtils.returnItems(inventory, player);
+         ArcanaItemUtils.returnItems(inventory, player);
          clearSlot(4);
          tinkerSlotType = 2;
          buildGui();
@@ -240,7 +239,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
             .append(Component.literal(" to augment this Starlight Forge").withStyle(ChatFormatting.DARK_PURPLE)))));
       tinkerForge.setCallback(clickType -> {
          if(tinkerSlotType == 1) return;
-         MinecraftUtils.returnItems(inventory, player);
+         ArcanaItemUtils.returnItems(inventory, player);
          clearSlot(4);
          tinkerSlotType = 1;
          buildGui();
@@ -517,7 +516,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
             .append(Component.literal("XP Cost will be shown here").withStyle(ChatFormatting.DARK_GREEN)))));
       setSlot(16, xpItem);
       
-      MinecraftUtils.giveStacks(player,outputSet.output());
+      ArcanaItemUtils.giveStacks(player,outputSet.output());
       SoundUtils.playSound(player.level(), blockEntity.getBlockPos(), SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1f, 0.75f * 0.5f * player.getRandom().nextFloat());
       finishUpdate();
    }
@@ -545,7 +544,7 @@ public class TwilightAnvilGui extends SimpleGui implements VirtualInventoryGui<W
    public void afterRemoval(){
       if(this.inventory != null){
          if(!player.isDeadOrDying() && !player.isSpectator()){
-            MinecraftUtils.returnItems(inventory, player);
+            ArcanaItemUtils.returnItems(inventory, player);
          }else if(blockEntity.getLevel() != null){
             Containers.dropContents(blockEntity.getLevel(), blockEntity.getBlockPos().above(1), inventory);
          }

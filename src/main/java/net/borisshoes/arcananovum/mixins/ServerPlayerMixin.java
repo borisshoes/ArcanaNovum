@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.blocks.ItineranteurBlockEntity;
 import net.borisshoes.arcananovum.callbacks.EntityKilledCallback;
+import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.entities.StasisPearlEntity;
@@ -89,6 +90,11 @@ public class ServerPlayerMixin {
    private void arcananovum$onEntityKilledOther(DamageSource damageSource, CallbackInfo ci){
       ServerPlayer player = (ServerPlayer) (Object) this;
       EntityKilledCallback.killedEntity(player.level(), damageSource, damageSource.getEntity(), player);
+   }
+   
+   @Inject(method = "die", at = @At("RETURN"))
+   private void arcananovum$onDeath(DamageSource damageSource, CallbackInfo ci){
+      VengeanceTotemTimerCallback.onEntityDeath((ServerPlayer) (Object) this);
    }
    
    @Inject(method = "die", at = @At("HEAD"))

@@ -33,7 +33,6 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -301,7 +300,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
          BookElementBuilder bookBuilder = getGuideBook();
          LoreGui loreGui = new LoreGui(player, bookBuilder, this);
          loreGui.open();
-         MinecraftUtils.returnItems(inventory, player);
+         ArcanaItemUtils.returnItems(inventory, player);
          this.inventory.clearContent();
       });
       setSlot(17, bookItem);
@@ -369,7 +368,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
             .append(Component.literal("to view the Item Compendium to load a recipe").withStyle(ChatFormatting.LIGHT_PURPLE))));
       book.setCallback((clickType) -> {
          if(isOnClickCooldown()) return;
-         MinecraftUtils.returnItems(inventory, player);
+         ArcanaItemUtils.returnItems(inventory, player);
          this.inventory.clearContent();
          openRecipeSelectionGui();
       });
@@ -753,7 +752,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
       }
       
       if(!player.isDeadOrDying() && !player.isSpectator()){
-         MinecraftUtils.returnItems(inventory, player);
+         ArcanaItemUtils.returnItems(inventory, player);
       }else if(blockEntity.getLevel() != null){
          Containers.dropContents(blockEntity.getLevel(), blockEntity.getBlockPos().above(1), inventory);
       }

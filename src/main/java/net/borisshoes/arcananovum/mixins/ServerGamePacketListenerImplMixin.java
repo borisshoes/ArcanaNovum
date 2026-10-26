@@ -67,6 +67,7 @@ public class ServerGamePacketListenerImplMixin {
          if(emptySlot != -1){
             int maxRefillAmt = (int) (stack.getMaxStackSize() * 0.67);
             ItemStack refillStack = greaves.removeStackOf(pants, stack, maxRefillAmt);
+            if(refillStack.isEmpty()) return original; // Otherwise vanilla selects the empty slot
             inv.add(emptySlot, refillStack);
             player.inventoryMenu.broadcastChanges();
             greaves.buildItemLore(pants, BorisLib.SERVER);

@@ -58,12 +58,10 @@ public class ConditionalsAchievement extends ArcanaAchievement {
    @Override
    public ConditionalsAchievement fromNbt(String id, CompoundTag nbt){
       ConditionalsAchievement ach = (ConditionalsAchievement) ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(id).makeNew();
-      ach.conditions.clear();
       ach.setAcquired(nbt.getBooleanOr("acquired", false));
       CompoundTag condsTag = nbt.getCompoundOrEmpty("conditions");
-      for(String key : condsTag.keySet()){
-         ach.conditions.put(key, condsTag.getBooleanOr(key, false));
-      }
+      // Keep the current condition list: conditions added since the save start unmet, removed ones are dropped
+      ach.conditions.replaceAll((key, met) -> condsTag.getBooleanOr(key, false));
       return ach;
    }
    
@@ -85,7 +83,7 @@ public class ConditionalsAchievement extends ArcanaAchievement {
          }
       }else{
          for(String cond : conditions.keySet()){
-            if(achievement.getConditions().get(cond)) continue;
+            if(Boolean.TRUE.equals(achievement.getConditions().get(cond))) continue;
             missing.add(Component.literal(cond).withStyle(ChatFormatting.AQUA));
          }
       }

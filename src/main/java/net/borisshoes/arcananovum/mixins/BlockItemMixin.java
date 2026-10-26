@@ -38,7 +38,7 @@ public class BlockItemMixin {
       ItemStack refillStack = greaves.removeStackOf(pants, stack, maxRefillAmt);
       if(!refillStack.isEmpty()){
          int amtToRefill = refillStack.getCount();
-         player.getInventory().add(refillStack);
+         ArcanaItemUtils.giveStacks(player, refillStack);
          greaves.buildItemLore(pants, BorisLib.SERVER);
          
          if(stack.is(Items.DIAMOND_BLOCK)){

@@ -22,7 +22,7 @@ public interface ArcanaClickEventMixin {
       return original.call(instance, typeKey, type, codec).xmap(Function.identity(), clickEvent -> {
          PacketContext packetContext = PacketContext.get();
          if(packetContext != null && packetContext.get(PacketContext.CONNECTION) != null){
-            if(clickEvent instanceof ClickEvent.RunCommand(String command) && command.startsWith("/arcana")){
+            if(clickEvent instanceof ClickEvent.RunCommand(String command) && ArcanaNovum.isArcanaClickCommand(command)){
                CompoundTag tag = new CompoundTag();
                tag.putString(ArcanaNovum.ARCANA_CLICK_KEY, command);
                return new ClickEvent.Custom(ArcanaNovum.ARCANA_CLICK_ACTION_ID, Optional.of(tag));

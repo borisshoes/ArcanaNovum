@@ -22,6 +22,7 @@ import net.borisshoes.arcananovum.gui.astralgateway.AstralGatewayGui;
 import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -39,11 +40,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -288,12 +287,7 @@ public class AstralGateway extends ArcanaBlock {
                   gateway.getInventory().setItem(0, ItemStack.EMPTY);
                   gateway.setChanged();
                   SoundUtils.playSound(world, gateway.getBlockPos(), SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 0.5f, 2.0f);
-                  if(!player.addItem(stone)){
-                     ItemEntity itemEntity = player.drop(stone, false, Prediction.SERVER_ONLY);
-                     if(itemEntity == null) return InteractionResult.SUCCESS_SERVER;
-                     itemEntity.setNoPickUpDelay();
-                     itemEntity.setTarget(player.getUUID());
-                  }
+                  ArcanaItemUtils.giveStacks(player, stone);
                   return InteractionResult.SUCCESS_SERVER;
                }else if(!player.isShiftKeyDown()){
                   AstralGatewayGui gui = new AstralGatewayGui(player, gateway);

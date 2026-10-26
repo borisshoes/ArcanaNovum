@@ -1,0 +1,26 @@
+// net/minecraft/world/level/block/FarmlandBlock.turnToBaseBlock(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V
+  @Lorg/jspecify/annotations/Nullable;(
+) : METHOD_FORMAL_PARAMETER 0, null
+    ALOAD 2
+    ALOAD 0
+    GETFIELD net/minecraft/world/level/block/FarmlandBlock.baseBlock : Lnet/minecraft/world/level/block/Block;
+    INVOKEVIRTUAL net/minecraft/world/level/block/Block.defaultBlockState ()Lnet/minecraft/world/level/block/state/BlockState;
+    ALOAD 3
+    ALOAD 4
+    INVOKESTATIC net/minecraft/world/level/block/FarmlandBlock.pushEntitiesUp (Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
+    ASTORE 5
+    ALOAD 3
+    ALOAD 4
+    ALOAD 5
+    INVOKEVIRTUAL net/minecraft/world/level/Level.setBlockAndUpdate (Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z
+    POP
+    ALOAD 3
+    GETSTATIC net/minecraft/world/level/gameevent/GameEvent.BLOCK_CHANGE : Lnet/minecraft/core/Holder$Reference;
+    ALOAD 4
+    ALOAD 1
+    ALOAD 5
+    INVOKESTATIC net/minecraft/world/level/gameevent/GameEvent$Context.of (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/gameevent/GameEvent$Context;
+    INVOKEVIRTUAL net/minecraft/world/level/Level.gameEvent (Lnet/minecraft/core/Holder;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/gameevent/GameEvent$Context;)V
+    RETURN
+    MAXSTACK = 5
+    MAXLOCALS = 6

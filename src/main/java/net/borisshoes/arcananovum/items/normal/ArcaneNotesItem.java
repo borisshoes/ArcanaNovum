@@ -7,7 +7,6 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -131,7 +130,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
                paper.setCount(player.getRandom().nextIntBetweenInclusive(5, 24));
                ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
             }
-            MinecraftUtils.returnItems(new SimpleContainer(paper), player);
+            ArcanaItemUtils.returnItems(new SimpleContainer(paper), player);
          }else{
             SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 2, 0.8f);
             ArcanaNovum.data(player).addResearchedItem(arcanaItem.getId());

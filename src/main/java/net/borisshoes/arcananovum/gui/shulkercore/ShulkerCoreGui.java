@@ -13,7 +13,6 @@ import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -102,7 +101,7 @@ public class ShulkerCoreGui extends SimpleGui implements ContainerWatcher {
       if(!valid){
          // Return invalid item
          if(!player.isDeadOrDying() && !player.isSpectator()){
-            MinecraftUtils.returnItems(inv, player);
+            ArcanaItemUtils.returnItems(inv, player);
          }else{
             Containers.dropContents(player.level(), player.getOnPos().above(1), inv);
          }

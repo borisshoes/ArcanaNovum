@@ -11,7 +11,9 @@ import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.datastorage.EnderCrateChannels;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.datastorage.DataAccess;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -25,6 +27,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -325,6 +328,35 @@ public class ArcanaItemUtils {
    
    public static boolean hasItemInInventory(ServerPlayer player, Item itemType){
       return ArcanaInventory.getPlayerItems(player).anyMatch(stack -> stack.is(itemType));
+   }
+   
+   /**
+    * Gives the stacks to the player. Whatever fits goes in right away, the rest goes through BorisLib's
+    * {@link ItemReturnTimerCallback}, which waits for room and survives logouts and deaths, so nothing is dropped or lost.
+    */
+   public static void giveStacks(Player player, ItemStack... stacks){
+      if(!(player instanceof ServerPlayer serverPlayer)){
+         MinecraftUtils.giveStacks(player, stacks);
+         return;
+      }
+      for(ItemStack stack : stacks){
+         if(stack == null || stack.isEmpty()) continue;
+         ItemStack toGive = stack.copy();
+         if(serverPlayer.isAlive() && !serverPlayer.hasDisconnected()) serverPlayer.getInventory().add(toGive);
+         if(!toGive.isEmpty()) BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(toGive, serverPlayer, 0));
+      }
+      serverPlayer.containerMenu.broadcastChanges();
+   }
+   
+   /** Empties the container into the player's inventory, see {@link #giveStacks} */
+   public static void returnItems(Container inv, Player player){
+      if(inv == null) return;
+      for(int i = 0; i < inv.getContainerSize(); i++){
+         ItemStack stack = inv.getItem(i).copy();
+         if(stack.isEmpty()) continue;
+         inv.setItem(i, ItemStack.EMPTY);
+         giveStacks(player, stack);
+      }
    }
    
    public static int countRarityInList(List<String> ids, ArcanaRarity rarity, boolean exclude){

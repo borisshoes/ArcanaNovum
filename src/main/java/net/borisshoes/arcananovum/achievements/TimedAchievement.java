@@ -20,9 +20,10 @@ public class TimedAchievement extends ArcanaAchievement {
    private int timeFrame; // In ticks
    private boolean active;
    private CompoundTag data;
+   private int window; // Bumped on every reset, so the timer of an earlier window can't end a later one
    
    public TimedAchievement(String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, int goal, int timeFrame){
-      super(id, 1, displayItem, arcanaItem, xpReward, pointsReward);
+      super(id, 3, displayItem, arcanaItem, xpReward, pointsReward);
       this.progress = 0;
       this.goal = goal;
       this.timeFrame = timeFrame;
@@ -68,7 +69,10 @@ public class TimedAchievement extends ArcanaAchievement {
       if(!had && this.progress == 0 && !active){
          // Start the timer
          active = true;
-         BorisLib.addTickTimerCallback(new GenericTimer(timeFrame, this::reset));
+         int startedWindow = window;
+         BorisLib.addTickTimerCallback(new GenericTimer(timeFrame, () -> {
+            if(window == startedWindow) reset();
+         }));
       }
       
       if(active){
@@ -83,6 +87,7 @@ public class TimedAchievement extends ArcanaAchievement {
          this.progress = 0;
          this.active = false;
          this.data = new CompoundTag();
+         this.window++;
       }
    }
    
@@ -107,10 +112,11 @@ public class TimedAchievement extends ArcanaAchievement {
    @Override
    public TimedAchievement fromNbt(String id, CompoundTag nbt){
       TimedAchievement ach = (TimedAchievement) ArcanaAchievements.ARCANA_ACHIEVEMENTS.get(id).makeNew();
-      ach.setProgress(nbt.getIntOr("progress", 0));
-      ach.setActive(nbt.getBooleanOr("active", false));
-      ach.setAcquired(nbt.getBooleanOr("acquired", false));
-      ach.setData(nbt.getCompoundOrEmpty("data"));
+      if(nbt.getBooleanOr("acquired", false)){
+         ach.setProgress(nbt.getIntOr("progress", 0));
+         ach.setAcquired(true);
+      }
+      // An unfinished window is not restored: its reset timer only lived in memory, so it would never close
       return ach;
    }
    

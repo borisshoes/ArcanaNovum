@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
@@ -377,7 +378,7 @@ public class EnhancedForgingGui extends SimpleGui {
             cost -= amnt;
          }
       }
-      MinecraftUtils.returnItems(returnInv, player);
+      ArcanaItemUtils.returnItems(returnInv, player);
    }
 }
 

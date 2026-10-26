@@ -9,7 +9,6 @@ import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -122,7 +121,7 @@ public class RenameGui extends AnvilInputGui implements ContainerWatcher {
    
    @Override
    public void afterRemoval(){
-      MinecraftUtils.returnItems(inv, player);
+      ArcanaItemUtils.returnItems(inv, player);
    }
    
    @Override

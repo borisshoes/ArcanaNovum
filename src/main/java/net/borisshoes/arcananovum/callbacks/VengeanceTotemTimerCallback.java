@@ -77,4 +77,17 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback {
    public void setAvenged(){
       this.avenged = true;
    }
+   
+   public boolean isAvenged(){
+      return avenged;
+   }
+   
+   // Called for every death, players included (ServerPlayer.die never reaches LivingEntity.die)
+   public static void onEntityDeath(Entity dead){
+      for(TickTimerCallback t : BorisLib.SERVER_TIMER_CALLBACKS){
+         if(t instanceof VengeanceTotemTimerCallback vt && vt.getAttacker() != null && vt.getAttacker().getStringUUID().equals(dead.getStringUUID())){
+            vt.setAvenged();
+         }
+      }
+   }
 }

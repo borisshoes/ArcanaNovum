@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.borisshoes.arcananovum.ArcanaConfig;
@@ -10,13 +12,18 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.BinaryBlades;
 import net.borisshoes.arcananovum.items.Soulstone;
+import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaInventory;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -27,6 +34,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -291,6 +299,31 @@ public class ItemEntityMixin {
          }
          
       }
+   }
+   
+   // Charm of Cinders Auto Smelt, only on pickups so items given by commands, GUIs and other mods are left alone
+   @WrapOperation(method = "playerTouch", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z"))
+   private boolean arcananovum$cindersAutoSmelt(Inventory inventory, ItemStack stack, Operation<Boolean> original){
+      if(!(inventory.player instanceof ServerPlayer player) || player.isShiftKeyDown()) return original.call(inventory, stack);
+      
+      ArcanaInventory arcanaInventory = ArcanaInventory.getPlayerItems(player);
+      List<ArcanaInventory.Entry> entries = arcanaInventory.getMatchingItems(invStack ->
+            ArcanaItemUtils.identifyItem(invStack) instanceof CindersCharm && EnergyItem.getEnergy(invStack) > 0);
+      for(ArcanaInventory.Entry entry : entries){
+         ItemStack charmStack = entry.getStack();
+         CindersCharm charm = (CindersCharm) ArcanaItemUtils.identifyItem(charmStack);
+         ItemStack output = charm.smelt(charmStack, player, stack);
+         if(output == null) continue;
+         entry.setModified();
+         arcanaInventory.close();
+         stack.setCount(0); // The whole stack was smelted, so the item entity is used up
+         original.call(inventory, output);
+         if(!output.isEmpty()){ // Whatever did not fit goes back once there is room
+            BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(output, player, 0));
+         }
+         return true;
+      }
+      return original.call(inventory, stack);
    }
    
    @Inject(method = "playerTouch", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z", shift = At.Shift.BEFORE))

@@ -87,6 +87,11 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       LOGGER.info("Arcana Surges Through Your Client!");
    }
    
+   // Only /arcana commands are turned into Arcana click actions, so a click action carrying anything else did not come from us
+   public static boolean isArcanaClickCommand(String command){
+      return command.equals("/arcana") || command.startsWith("/arcana ");
+   }
+
    public static boolean addActiveAnchor(ServerLevel world, BlockPos pos){
       return DataAccess.getWorld(world.dimension(), AnchorData.KEY).addAnchor(pos);
    }

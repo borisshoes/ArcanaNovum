@@ -135,12 +135,7 @@ public abstract class LivingEntityMixin {
    
    @Inject(method = "die", at = @At("RETURN"))
    private void arcananovum$onDeath(DamageSource damageSource, CallbackInfo ci){
-      LivingEntity livingEntity = (LivingEntity) (Object) this;
-      for(TickTimerCallback t : SERVER_TIMER_CALLBACKS){
-         if(t instanceof VengeanceTotemTimerCallback vt && vt.getAttacker() != null && vt.getAttacker().getStringUUID().equals(livingEntity.getStringUUID())){
-            vt.setAvenged();
-         }
-      }
+      VengeanceTotemTimerCallback.onEntityDeath((LivingEntity) (Object) this);
    }
    
    @ModifyExpressionValue(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/component/BlocksAttacks;resolveBlockedDamage(Lnet/minecraft/world/damagesource/DamageSource;FD)F"))
@@ -166,7 +161,8 @@ public abstract class LivingEntityMixin {
    
    // Mixin for Shield of Fortitude giving absorption hearts
    @Inject(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/component/BlocksAttacks;hurtBlockingItem(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/InteractionHand;F)V"))
-   private void arcananovum$shieldAbsorb(ServerLevel world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Local ItemStack shieldStack, @Local(ordinal = 0, argsOnly = true) float blocked){
+   private void arcananovum$shieldAbsorb(ServerLevel world, DamageSource source, float amount, CallbackInfoReturnable<Float> cir, @Local ItemStack shieldStack, @Local(name = "damageBlocked") float blocked){
+      if(blocked <= 0) return; // hurtBlockingItem also runs for hits from outside the blocking angle
       LivingEntity entity = (LivingEntity) (Object) this;
       ArcanaItem arcaneItem;
       ItemStack item = null;

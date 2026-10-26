@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.research.ResearchTasks;
@@ -57,8 +59,14 @@ public class EnchantmentMixin {
    }
    
    @Inject(method = "modifyDamageProtection", at = @At("HEAD"))
-   private void arcananovum$modifyDamageProtection(ServerLevel world, int level, ItemStack stack, Entity user, DamageSource damageSource, MutableFloat damageProtection, CallbackInfo ci){
-      if(user instanceof ServerPlayer player){
+   private void arcananovum$protectionBefore(ServerLevel world, int level, ItemStack stack, Entity user, DamageSource damageSource, MutableFloat damageProtection, CallbackInfo ci, @Share("protectionBefore") LocalFloatRef protectionBefore){
+      protectionBefore.set(damageProtection.floatValue());
+   }
+   
+   // modifyDamageProtection runs for every armor enchantment on every hit, so only count hits the enchantment actually reduced
+   @Inject(method = "modifyDamageProtection", at = @At("TAIL"))
+   private void arcananovum$modifyDamageProtection(ServerLevel world, int level, ItemStack stack, Entity user, DamageSource damageSource, MutableFloat damageProtection, CallbackInfo ci, @Share("protectionBefore") LocalFloatRef protectionBefore){
+      if(user instanceof ServerPlayer player && damageProtection.floatValue() > protectionBefore.get()){
          Enchantment enchant = (Enchantment) (Object) this;
          if(enchant.toString().equals(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING).value().toString())){
             ArcanaNovum.data(player).setResearchTask(ResearchTasks.FEATHER_FALL, true);

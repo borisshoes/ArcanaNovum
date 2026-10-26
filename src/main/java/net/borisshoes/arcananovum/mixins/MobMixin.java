@@ -31,8 +31,10 @@ public class MobMixin {
          ChunkAccess chunk = world.getChunk(mob.blockPosition());
          if(ContinuumAnchor.isChunkLoaded(world, chunk.getPos())){
             //log("Entity: "+entity.getEntityName()+" ("+entity.getPos().toString()+") distSq: "+distToPlayerSq+" imDespSq: "+imDespSq);
+            // Treat a far away player as one just outside the no-despawn range, so anchored mobs still despawn slowly instead of instantly.
+            // A player that is actually closer keeps vanilla behaviour.
             int noDespawnDistance = mob.getType().getCategory().getNoDespawnDistance();
-            return noDespawnDistance * noDespawnDistance + 1;
+            return Math.min(original, noDespawnDistance * noDespawnDistance + 1);
          }
       }
       return original;

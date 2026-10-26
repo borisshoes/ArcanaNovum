@@ -1094,7 +1094,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                ArcanaItem.putProperty(newNotes, ArcaneNotesItem.COST_TAG, paperCost);
                ArcanaItem.putProperty(newNotes, ArcaneNotesItem.AUTHOR_TAG, player.getGameProfile().name());
                ArcaneNotesItem.buildLore(newNotes);
-               MinecraftUtils.returnItems(new SimpleContainer(newNotes), player);
+               ArcanaItemUtils.returnItems(new SimpleContainer(newNotes), player);
                
                SoundUtils.playSongToPlayer(player, SoundEvents.BOOK_PAGE_TURN, 2, 0.75f);
                SoundUtils.playSongToPlayer(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 2, 0.9f);
@@ -1153,7 +1153,7 @@ public class ArcaneTomeGui extends PagedMultiGui {
                ArcanaItem.putProperty(newNotes, ArcaneNotesItem.COST_TAG, cost);
                ArcanaItem.putProperty(newNotes, ArcaneNotesItem.AUTHOR_TAG, player.getGameProfile().name());
                ArcaneNotesItem.buildLore(newNotes);
-               MinecraftUtils.returnItems(new SimpleContainer(newNotes), player);
+               ArcanaItemUtils.returnItems(new SimpleContainer(newNotes), player);
                
                SoundUtils.playSongToPlayer(player, SoundEvents.BOOK_PAGE_TURN, 2, 0.75f);
                SoundUtils.playSongToPlayer(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 2, 0.9f);

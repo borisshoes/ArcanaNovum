@@ -173,7 +173,7 @@ public class StarlightForgeInventoryListener implements ContainerWatcher {
                      }
                   }
                   
-                  MinecraftUtils.returnItems(inv, gui.getPlayer());
+                  ArcanaItemUtils.returnItems(inv, gui.getPlayer());
                   inv.clearContent();
                   EnhancedForgingGui efg = new EnhancedForgingGui(gui.getPlayer(), this.blockEntity, stack, ingredients, remainders);
                   efg.buildGui();

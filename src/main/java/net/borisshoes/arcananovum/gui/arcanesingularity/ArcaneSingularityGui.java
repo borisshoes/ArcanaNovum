@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularity;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.gui.*;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -95,7 +96,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                         ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.mergeBooks(book, otherBook);
                         
                         if(result == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
-                           MinecraftUtils.returnItems(new SimpleContainer(new ItemStack(Items.BOOK)), player);
+                           ArcanaItemUtils.returnItems(new SimpleContainer(new ItemStack(Items.BOOK)), player);
                            selected = ItemStack.EMPTY;
                         }else if(result == ArcaneSingularityBlockEntity.SingularityResult.FAIL){
                            player.sendSystemMessage(Component.literal("Those books are incompatible").withStyle(ChatFormatting.RED), false);
@@ -124,7 +125,7 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
                if(ItemStack.isSameItemSameComponents(book, selected)) selected = ItemStack.EMPTY;
                if(blockEntity.removeBook(book) == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
                   ArcanaItem.removeProperty(book, ArcaneSingularity.SINGULARITY_TAG);
-                  MinecraftUtils.returnItems(new SimpleContainer(book), player);
+                  ArcanaItemUtils.returnItems(new SimpleContainer(book), player);
                }
             }
             break;

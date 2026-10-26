@@ -5,8 +5,8 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.ItemContainerContentsMutable;
-import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
@@ -189,7 +189,7 @@ public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
             ItemStack leftover = contents.tryAddStackToContainerComp(toTransfer);
             int leftoverCount = leftover.getCount();
             ItemStack leftover2 = slot.safeInsert(leftover);
-            if(!leftover2.isEmpty()) MinecraftUtils.giveStacks(player, leftover2);
+            if(!leftover2.isEmpty()) ArcanaItemUtils.giveStacks(player, leftover2);
             if(transferCount > leftoverCount){
                SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
             }else{
@@ -205,7 +205,7 @@ public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
                ItemStack remainder = slot.safeInsert(itemStack);
                if(remainder.getCount() > 0){
                   ItemStack leftover = contents.tryAddStackToContainerComp(remainder);
-                  if(!leftover.isEmpty()) MinecraftUtils.giveStacks(player, leftover);
+                  if(!leftover.isEmpty()) ArcanaItemUtils.giveStacks(player, leftover);
                }else{
                   SoundUtils.playSongToPlayer(player, SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
                }

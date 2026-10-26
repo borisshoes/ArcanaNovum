@@ -163,7 +163,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                }
             }
             SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, blockEntity.getLevel().getRandom().nextFloat() * 0.4f + 0.8f);
-            MinecraftUtils.returnItems(sinv, player);
+            ArcanaItemUtils.returnItems(sinv, player);
             
             int maxCount = 0;
             
@@ -205,7 +205,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                   }
                   SimpleContainer sinv = new SimpleContainer(book);
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, blockEntity.getLevel().getRandom().nextFloat() * 0.4f + 0.8f);
-                  MinecraftUtils.returnItems(sinv, player);
+                  ArcanaItemUtils.returnItems(sinv, player);
                }else{
                   player.sendSystemMessage(Component.literal("You need a book to put the enchants on").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.FIRE_EXTINGUISH, 1, 1);
@@ -469,7 +469,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                player.onEnchantmentPerformed(getStack(), 0);
                removeXP(lapisLevel);
                applyEnchants();
-               MinecraftUtils.returnItems(inventory, player);
+               ArcanaItemUtils.returnItems(inventory, player);
                SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, player.getRandom().nextFloat() * 0.4f + 0.8f);
                setUpdating();
                setItem(ItemStack.EMPTY);
@@ -488,7 +488,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                   newStack.setCount(getStack().getCount());
                   setItem(newStack);
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, blockEntity.getLevel().getRandom().nextFloat() * 0.4f + 0.8f);
-                  MinecraftUtils.returnItems(inventory, player);
+                  ArcanaItemUtils.returnItems(inventory, player);
                   setItem(ItemStack.EMPTY);
                   finishUpdate();
                }else{
@@ -507,7 +507,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
                   removeXP(xpCost);
                   applyEnchants();
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENCHANTMENT_TABLE_USE, 1f, blockEntity.getLevel().getRandom().nextFloat() * 0.4f + 0.8f);
-                  MinecraftUtils.returnItems(inventory, player);
+                  ArcanaItemUtils.returnItems(inventory, player);
                   setUpdating();
                   setItem(ItemStack.EMPTY);
                   finishUpdate();
@@ -784,7 +784,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
    @Override
    public void afterRemoval(){
       if(!player.isDeadOrDying() && !player.isSpectator()){
-         MinecraftUtils.returnItems(inventory, player);
+         ArcanaItemUtils.returnItems(inventory, player);
       }else if(blockEntity.getLevel() != null){
          Containers.dropContents(blockEntity.getLevel(), blockEntity.getBlockPos().above(1), inventory);
       }
