@@ -141,7 +141,7 @@ public class ArbalestArrowEntity extends Arrow implements PolymerEntity {
          effects.add(Either.left(new MobEffectInstance(MobEffects.GLOWING, duration, 0, false, true, true)));
       }
       
-      ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), BlockPos.containing(pos), serverWorld, range, lvl, effects));
+      ArcanaRegistry.AREA_EFFECTS.getValue(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), this, BlockPos.containing(pos), serverWorld, range, lvl, effects));
    }
    
    

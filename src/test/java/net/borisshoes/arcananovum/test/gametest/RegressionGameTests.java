@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.test.gametest;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.util.Either;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -8,6 +9,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.ConditionalsAchievement;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
+import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
@@ -27,6 +29,8 @@ import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.conditions.ConditionInstance;
+import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
@@ -54,15 +58,19 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.clock.WorldClock;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.fish.Cod;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -70,8 +78,11 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -545,6 +556,183 @@ public class RegressionGameTests {
       finish(helper, player);
    }
    
+   // Alchemical field Harming was unattributed magic damage, so its kills gave the shooter no kill credit (no XP, player loot or Arcana kill effects)
+   @GameTest
+   public void alchemicalFieldHarmingGivesTheShooterKillCredit(GameTestHelper helper){
+      ServerLevel level = helper.getLevel();
+      ServerPlayer shooter = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      Pig pig = EntityTypes.PIG.create(level, EntitySpawnReason.TRIGGERED);
+      Vec3 pos = helper.absoluteVec(new Vec3(3.5, 2, 3.5));
+      pig.snapTo(pos.x, pos.y, pos.z, 0, 0);
+      level.addFreshEntity(pig);
+      
+      harmingField(level, shooter, pos).applyEffect(level, pig, harming(3));
+      helper.assertTrue(pig.isDeadOrDying(), "Harming IV from the field did not kill the pig");
+      helper.assertTrue(pig.getKillCredit() == shooter, "The field kill was credited to " + pig.getKillCredit() + " instead of the shooter");
+      pig.discard();
+      finish(helper, shooter);
+   }
+   
+   // Like a vanilla Harming potion, the field must not hurt players (the shooter included) while PvP is off
+   @GameTest
+   public void alchemicalFieldHarmingFollowsThePvpRule(GameTestHelper helper){
+      ServerLevel level = helper.getLevel();
+      ServerPlayer shooter = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      ServerPlayer pvpOffTarget = survivalPlayer(helper, new BlockPos(3, 2, 1));
+      ServerPlayer pvpOnTarget = survivalPlayer(helper, new BlockPos(5, 2, 1));
+      AlchemicalArrowAreaEffectTracker.AlchemicalArrowSource field = harmingField(level, shooter, pvpOffTarget.position());
+      boolean pvp = level.getGameRules().get(GameRules.PVP);
+      try{ // The gamerule is server wide, so it is set back within this tick before any other test runs
+         level.getGameRules().set(GameRules.PVP, false, level.getServer());
+         field.applyEffect(level, pvpOffTarget, harming(0));
+         field.applyEffect(level, shooter, harming(0));
+         helper.assertTrue(pvpOffTarget.getHealth() == pvpOffTarget.getMaxHealth(), "With PvP off the field hurt another player");
+         helper.assertTrue(shooter.getHealth() == shooter.getMaxHealth(), "With PvP off the field hurt the shooter");
+         
+         level.getGameRules().set(GameRules.PVP, true, level.getServer());
+         field.applyEffect(level, pvpOnTarget, harming(0));
+         field.applyEffect(level, shooter, harming(0));
+         helper.assertTrue(pvpOnTarget.getHealth() < pvpOnTarget.getMaxHealth(), "With PvP on the field did not hurt another player");
+         helper.assertTrue(shooter.getHealth() < shooter.getMaxHealth(), "With PvP on and no team the field did not hurt the shooter");
+      }finally{
+         level.getGameRules().set(GameRules.PVP, pvp, level.getServer());
+      }
+      finish(helper, shooter, pvpOffTarget, pvpOnTarget);
+   }
+   
+   // Like a vanilla Harming potion, the field must spare the shooter's team (the shooter included) when friendly fire is off
+   @GameTest
+   public void alchemicalFieldHarmingFollowsFriendlyFire(GameTestHelper helper){
+      ServerLevel level = helper.getLevel();
+      helper.assertTrue(level.getGameRules().get(GameRules.PVP), "PvP is off on the test server, so this test proves nothing");
+      ServerPlayer shooter = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      ServerPlayer teammate = survivalPlayer(helper, new BlockPos(3, 2, 1));
+      ServerPlayer friendlyFireTeammate = survivalPlayer(helper, new BlockPos(5, 2, 1));
+      ServerPlayer outsider = survivalPlayer(helper, new BlockPos(7, 2, 1));
+      AlchemicalArrowAreaEffectTracker.AlchemicalArrowSource field = harmingField(level, shooter, teammate.position());
+      Scoreboard scoreboard = level.getScoreboard();
+      PlayerTeam team = scoreboard.addPlayerTeam("arcana-test-" + UUID.randomUUID().toString().substring(0, 8));
+      try{
+         for(ServerPlayer player : List.of(shooter, teammate, friendlyFireTeammate)) scoreboard.addPlayerToTeam(player.getScoreboardName(), team);
+         team.setAllowFriendlyFire(false);
+         field.applyEffect(level, teammate, harming(0));
+         field.applyEffect(level, shooter, harming(0));
+         field.applyEffect(level, outsider, harming(0));
+         helper.assertTrue(teammate.getHealth() == teammate.getMaxHealth(), "With friendly fire off the field hurt a teammate");
+         helper.assertTrue(shooter.getHealth() == shooter.getMaxHealth(), "With friendly fire off the field hurt the shooter");
+         helper.assertTrue(outsider.getHealth() < outsider.getMaxHealth(), "The field did not hurt a player outside the team");
+         
+         team.setAllowFriendlyFire(true);
+         field.applyEffect(level, friendlyFireTeammate, harming(0));
+         helper.assertTrue(friendlyFireTeammate.getHealth() < friendlyFireTeammate.getMaxHealth(), "With friendly fire on the field did not hurt a teammate");
+      }finally{
+         scoreboard.removePlayerTeam(team);
+      }
+      finish(helper, shooter, teammate, friendlyFireTeammate, outsider);
+   }
+   
+   // Lingering field effects and conditions (Poison, Vulnerability) reached every player whatever the PvP rule, unlike the field's Harming
+   @GameTest
+   public void alchemicalFieldLingeringEffectsFollowThePvpRule(GameTestHelper helper){
+      ServerLevel level = helper.getLevel();
+      ServerPlayer shooter = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      ServerPlayer target = survivalPlayer(helper, new BlockPos(3, 2, 1));
+      AlchemicalArrowAreaEffectTracker.AlchemicalArrowSource field = harmingField(level, shooter, target.position());
+      boolean pvp = level.getGameRules().get(GameRules.PVP);
+      try{ // The gamerule is server wide, so it is set back within this tick before any other test runs
+         level.getGameRules().set(GameRules.PVP, false, level.getServer());
+         applyHarmfulFieldEffects(level, field, target);
+         applyHarmfulFieldEffects(level, field, shooter);
+         assertNotHarmed(helper, target, "With PvP off, another player");
+         assertNotHarmed(helper, shooter, "With PvP off, the shooter");
+         field.applyEffect(level, target, new MobEffectInstance(MobEffects.REGENERATION, 200, 0));
+         helper.assertTrue(target.hasEffect(MobEffects.REGENERATION), "With PvP off a beneficial field effect no longer reached another player");
+         
+         level.getGameRules().set(GameRules.PVP, true, level.getServer());
+         applyHarmfulFieldEffects(level, field, target);
+         applyHarmfulFieldEffects(level, field, shooter);
+         assertHarmed(helper, target, "With PvP on, another player");
+         assertHarmed(helper, shooter, "With PvP on and no team, the shooter");
+      }finally{
+         level.getGameRules().set(GameRules.PVP, pvp, level.getServer());
+      }
+      finish(helper, shooter, target);
+   }
+   
+   // Lingering field effects and conditions ignored friendly fire, unlike the field's Harming
+   @GameTest
+   public void alchemicalFieldLingeringEffectsFollowFriendlyFire(GameTestHelper helper){
+      ServerLevel level = helper.getLevel();
+      helper.assertTrue(level.getGameRules().get(GameRules.PVP), "PvP is off on the test server, so this test proves nothing");
+      ServerPlayer shooter = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      ServerPlayer teammate = survivalPlayer(helper, new BlockPos(3, 2, 1));
+      ServerPlayer friendlyFireTeammate = survivalPlayer(helper, new BlockPos(5, 2, 1));
+      ServerPlayer outsider = survivalPlayer(helper, new BlockPos(7, 2, 1));
+      AlchemicalArrowAreaEffectTracker.AlchemicalArrowSource field = harmingField(level, shooter, teammate.position());
+      Scoreboard scoreboard = level.getScoreboard();
+      PlayerTeam team = scoreboard.addPlayerTeam("arcana-test-" + UUID.randomUUID().toString().substring(0, 8));
+      try{
+         for(ServerPlayer player : List.of(shooter, teammate, friendlyFireTeammate)) scoreboard.addPlayerToTeam(player.getScoreboardName(), team);
+         team.setAllowFriendlyFire(false);
+         for(ServerPlayer player : List.of(teammate, shooter, outsider)) applyHarmfulFieldEffects(level, field, player);
+         assertNotHarmed(helper, teammate, "With friendly fire off, a teammate");
+         assertNotHarmed(helper, shooter, "With friendly fire off, the shooter");
+         assertHarmed(helper, outsider, "A player outside the team");
+         field.applyEffect(level, teammate, new MobEffectInstance(MobEffects.REGENERATION, 200, 0));
+         helper.assertTrue(teammate.hasEffect(MobEffects.REGENERATION), "With friendly fire off a beneficial field effect no longer reached a teammate");
+         
+         team.setAllowFriendlyFire(true);
+         applyHarmfulFieldEffects(level, field, friendlyFireTeammate);
+         assertHarmed(helper, friendlyFireTeammate, "With friendly fire on, a teammate");
+      }finally{
+         scoreboard.removePlayerTeam(team);
+      }
+      finish(helper, shooter, teammate, friendlyFireTeammate, outsider);
+   }
+   
+   // Wither damage has no attacker, so a mob the field withered to death gave the shooter no kill credit
+   @GameTest
+   public void alchemicalFieldWitherKillGivesTheShooterKillCredit(GameTestHelper helper){
+      ServerLevel level = helper.getLevel();
+      ServerPlayer shooter = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      Pig pig = EntityTypes.PIG.create(level, EntitySpawnReason.TRIGGERED);
+      Vec3 pos = helper.absoluteVec(new Vec3(3.5, 2, 3.5));
+      pig.snapTo(pos.x, pos.y, pos.z, 0, 0);
+      level.addFreshEntity(pig);
+      
+      harmingField(level, shooter, pos).applyEffect(level, pig, new MobEffectInstance(MobEffects.WITHER, 200, 1));
+      pig.hurtServer(level, pig.damageSources().wither(), 1000f); // What the Wither effect deals each tick
+      helper.assertTrue(pig.isDeadOrDying(), "The pig survived");
+      helper.assertTrue(pig.getKillCredit() == shooter, "The withered pig's kill was credited to " + pig.getKillCredit() + " instead of the shooter");
+      pig.discard();
+      finish(helper, shooter);
+   }
+   
+   private static void applyHarmfulFieldEffects(ServerLevel level, AlchemicalArrowAreaEffectTracker.AlchemicalArrowSource field, ServerPlayer player){
+      field.applyEffect(level, player, new MobEffectInstance(MobEffects.POISON, 200, 0));
+      field.applyCondition(level, player, new ConditionInstance(Conditions.VULNERABILITY, ArcanaRegistry.arcanaId(ArcanaRegistry.ALCHEMICAL_ARBALEST.getId()), 200, 0.5f, true, true, true, AttributeModifier.Operation.ADD_VALUE, null));
+   }
+   
+   private static void assertHarmed(GameTestHelper helper, ServerPlayer player, String who){
+      helper.assertTrue(player.hasEffect(MobEffects.POISON), who + " was not poisoned by the field");
+      helper.assertTrue(Conditions.getConditionValue(player, Conditions.VULNERABILITY) > 0, who + " did not get Vulnerability from the field");
+   }
+   
+   private static void assertNotHarmed(GameTestHelper helper, ServerPlayer player, String who){
+      helper.assertFalse(player.hasEffect(MobEffects.POISON), who + " was poisoned by the field");
+      helper.assertFalse(Conditions.getConditionValue(player, Conditions.VULNERABILITY) > 0, who + " got Vulnerability from the field");
+   }
+   
+   private static MobEffectInstance harming(int amplifier){
+      return new MobEffectInstance(MobEffects.INSTANT_DAMAGE, 1, amplifier);
+   }
+   
+   private static AlchemicalArrowAreaEffectTracker.AlchemicalArrowSource harmingField(ServerLevel level, ServerPlayer shooter, Vec3 pos){
+      Arrow arrow = EntityTypes.ARROW.create(level, EntitySpawnReason.TRIGGERED); // Stands in for the arbalest arrow the field came from
+      arrow.snapTo(pos.x, pos.y, pos.z, 0, 0);
+      return AlchemicalArrowAreaEffectTracker.source(shooter, arrow, BlockPos.containing(pos), level, 3, 0, List.of(Either.left(harming(0))));
+   }
+   
    // The Arcana click action ran any command it carried, not only the /arcana ones it is meant for
    @GameTest
    public void arcanaClickActionOnlyRunsArcanaCommands(GameTestHelper helper){
@@ -583,7 +771,9 @@ public class RegressionGameTests {
    /** A connected player in survival, unlike makeMockServerPlayerInLevel which is always creative */
    private static ServerPlayer survivalPlayer(GameTestHelper helper, BlockPos relative){
       ServerLevel level = helper.getLevel();
-      CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-mock-player"), false);
+      UUID uuid = UUID.randomUUID();
+      // Unique names, since scoreboard teams match players by name
+      CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(uuid, "mock-" + uuid.toString().substring(0, 8)), false);
       ServerPlayer player = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
       Connection connection = new Connection(PacketFlow.SERVERBOUND);
       new EmbeddedChannel(connection);

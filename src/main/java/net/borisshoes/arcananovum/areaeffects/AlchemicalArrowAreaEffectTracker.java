@@ -13,9 +13,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -120,8 +122,12 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
       if(source instanceof AlchemicalArrowSource arrowSource) sources.add(arrowSource);
    }
    
-   public static AlchemicalArrowSource source(@Nullable Entity contributor, BlockPos sourceBlock, ServerLevel blockWorld, double range, int level, List<Either<MobEffectInstance, ConditionInstance>> effects){
-      return new AlchemicalArrowSource(sourceBlock, blockWorld, range, level, effects, contributor);
+   /**
+    * @param directSource the entity the field came from (the arrow), which instant effects use as their direct
+    *                     source like a vanilla potion or cloud, so knockback pushes away from the field
+    */
+   public static AlchemicalArrowSource source(@Nullable Entity contributor, @Nullable Entity directSource, BlockPos sourceBlock, ServerLevel blockWorld, double range, int level, List<Either<MobEffectInstance, ConditionInstance>> effects){
+      return new AlchemicalArrowSource(sourceBlock, blockWorld, range, level, effects, contributor, directSource);
    }
    
    public static @Nullable UUID getConditionContributor(LivingEntity entity){
@@ -137,8 +143,9 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
       private int age;
       private final int duration;
       private final Entity contributor;
+      private final Entity directSource;
       
-      private AlchemicalArrowSource(BlockPos sourceBlock, ServerLevel blockWorld, double range, int level, List<Either<MobEffectInstance, ConditionInstance>> effects, @Nullable Entity contributor){
+      private AlchemicalArrowSource(BlockPos sourceBlock, ServerLevel blockWorld, double range, int level, List<Either<MobEffectInstance, ConditionInstance>> effects, @Nullable Entity contributor, @Nullable Entity directSource){
          this.sourceBlock = sourceBlock;
          this.blockWorld = blockWorld;
          this.range = range;
@@ -146,6 +153,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
          this.effects = new ArrayList<>();
          this.effects.addAll(effects);
          this.contributor = contributor;
+         this.directSource = directSource;
          this.age = 0;
          this.duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.ALCHEMICAL_ARBALEST_FIELD_DURATION);
          ;
@@ -178,22 +186,41 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker {
       
       public void applyEffect(ServerLevel world, LivingEntity entity, MobEffectInstance effect){
          if(!world.dimension().identifier().toString().equals(blockWorld.dimension().identifier().toString())) return;
-         MobEffectInstance existing = entity.getEffect(effect.getEffect());
-         if(existing != null && existing.getAmplifier() >= effect.getAmplifier()){
+         if(effect.getEffect().value().isInstantaneous()){
+            // Same call as vanilla splash and lingering potions: the damage is indirect magic from the shooter, so kill credit,
+            // PvP and friendly fire work like a thrown potion. A scale of 1 keeps the damage the field always dealt.
+            effect.getEffect().value().applyInstantaneousEffect(world, directSource, contributor, entity, effect.getAmplifier(), 1.0);
             return;
          }
-         entity.addEffect(new MobEffectInstance(effect), contributor);
+         boolean harmful = effect.getEffect().value().getCategory() == MobEffectCategory.HARMFUL;
+         if(harmful && !canHarm(entity)) return;
+         MobEffectInstance existing = entity.getEffect(effect.getEffect());
+         if(existing == null || existing.getAmplifier() < effect.getAmplifier()){
+            entity.addEffect(new MobEffectInstance(effect), contributor);
+         }
+         // Damage from effects like Wither has no attacker, so keep the shooter as the player who last hurt the entity, like a hit does
+         if(harmful && contributor instanceof Player shooter && entity.hasEffect(effect.getEffect())){
+            entity.setLastHurtByPlayer(shooter, LivingEntity.PLAYER_HURT_EXPERIENCE_TIME);
+         }
       }
       
       public void applyCondition(ServerLevel world, LivingEntity entity, ConditionInstance condition){
          if(!world.dimension().identifier().toString().equals(blockWorld.dimension().identifier().toString())) return;
+         if(condition.getCondition().value().isHarmful() && !canHarm(entity)) return;
          if(Conditions.addConditionIfStronger(world.getServer(), entity, condition) == Conditions.AddResult.REJECTED) return;
-         // The condition itself is unattributed so it hits everyone, so the contributor is remembered here
+         // The condition itself is unattributed (canHarm already filtered who it reaches), so the contributor is remembered here
          if(contributor != null){
             CONDITION_CONTRIBUTORS.put(entity, contributor.getUUID());
          }else{
             CONDITION_CONTRIBUTORS.remove(entity);
          }
+      }
+      
+      // The check vanilla runs before Harming hurts a player (PvP and friendly fire), used for every harmful effect and condition.
+      // BorisLib's inflictedBy check is not used, since it always spares the inflicter and their allies, even with friendly fire on.
+      private boolean canHarm(LivingEntity entity){
+         if(!(contributor instanceof Player shooter) || !(entity instanceof Player target)) return true;
+         return target.canHarmPlayer(shooter);
       }
       
       @Override
