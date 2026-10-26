@@ -110,7 +110,7 @@ public abstract class LivingEntityMixin {
       EntityKilledCallback.killedEntity(serverWorld, damageSource, attacker, thisEntity);
    }
    
-   @Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getCombatTracker()Lnet/minecraft/world/damagesource/CombatTracker;"))
+   @Inject(method = "die", at = @At("HEAD"))
    private void arcananovum$witherOneHit(DamageSource source, CallbackInfo ci){
       if((LivingEntity) (Object) this instanceof WitherBoss wither && wither.isDeadOrDying()){
          List<CombatEntry> record = wither.getCombatTracker().entries;

@@ -25,6 +25,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
@@ -161,7 +162,7 @@ public class EnhancedForgingGui extends SimpleGui {
             .append(Component.literal("" + EnhancedForgingGame.EFChange.TURN_CHANGE_COST).withStyle(ChatFormatting.GOLD))
             .append(Component.literal(" stardust.").withStyle(ChatFormatting.YELLOW))));
       orderItem.setMaxCount(99);
-      orderItem.setCount(game.getTurn() + 1);
+      orderItem.setCount(Math.min(99, game.getTurn() + 1));
       orderItem.setCallback((clickType) -> {
          if(animated || endingAnim != -1) return;
          this.turnMode = !turnMode;
@@ -231,7 +232,7 @@ public class EnhancedForgingGui extends SimpleGui {
       stardustItem.addLoreLine(Component.literal(""));
       stardustItem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Right Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to reset the layout.").withStyle(ChatFormatting.LIGHT_PURPLE))));
       stardustItem.setMaxCount(99);
-      stardustItem.setCount(totalCost);
+      stardustItem.setCount(Math.min(99, totalCost));
       stardustItem.setCallback((clickType) -> {
          if(animated || endingAnim != -1) return;
          if(clickType.isRight){
@@ -257,7 +258,7 @@ public class EnhancedForgingGui extends SimpleGui {
       placementItem.addLoreLine(Component.literal(""));
       placementItem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Click or Right Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" to cycle tile types.").withStyle(ChatFormatting.LIGHT_PURPLE))));
       placementItem.addLoreLine(TextUtils.removeItalics(Component.literal("").append(Component.literal("Shift Click").withStyle(ChatFormatting.AQUA)).append(Component.literal(" a tile to convert it.").withStyle(ChatFormatting.LIGHT_PURPLE))));
-      placementItem.setCount(Math.max(1, this.selectedItem.placementCost));
+      placementItem.setCount(Mth.clamp(this.selectedItem.placementCost, 1, 99));
       placementItem.setCallback((clickType) -> {
          if(animated || endingAnim != -1) return;
          if(clickType.isRight){
@@ -294,7 +295,7 @@ public class EnhancedForgingGui extends SimpleGui {
             
             if(turnMode){
                elem.setMaxCount(99);
-               elem.setCount(tile.getSecond() + 1);
+               elem.setCount(Math.min(99,tile.getSecond() + 1));
             }
             
             if(cinematicMode){

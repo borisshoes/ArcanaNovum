@@ -173,6 +173,8 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
             }else if(block instanceof SugarCaneBlock ||
                   block instanceof NetherWartBlock ||
                   block instanceof CactusBlock ||
+                  block instanceof BambooStalkBlock ||
+                  block instanceof BambooSaplingBlock ||
                   block instanceof ChorusFlowerBlock ||
                   block instanceof StemBlock){
                state.randomTick(world, blockPos, world.getRandom());
@@ -197,7 +199,6 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
             }else if((block instanceof GrowingPlantHeadBlock ||
                   block instanceof CropBlock ||
                   block instanceof CocoaBlock ||
-                  block instanceof StemBlock ||
                   block instanceof SweetBerryBushBlock) && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL, 64), world, blockPos)){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
                world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 5, 0.5, 0.5, 0.5, 1);

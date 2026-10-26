@@ -50,7 +50,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
          int curLvl = profile.getAugmentLevel(i1aug);
          if(curLvl > 0){
             canSell.add(Pair.of(i1aug, curLvl));
-            for(int i = 1; i <= i1aug.getTiers().length; i++){
+            for(int i = 1; i <= curLvl; i++){
                sellingPower += i1aug.getTiers()[i - 1].rarity + 1;
             }
          }
@@ -73,7 +73,8 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
       ArcanaItem arcanaItem1 = ArcanaItemUtils.identifyItem(input1Stack);
       ArcanaItem arcanaItem2 = ArcanaItemUtils.identifyItem(input2Stack);
       ArcanaItem aequalis = ArcanaItemUtils.identifyItem(aequalisStack);
-      
+      boolean transferred = false;
+
       try{
          ServerPlayer asPlayer = altar.getLevel().getServer().getPlayerList().getPlayer(AlgoUtils.getUUID(aequalis.getCrafter(aequalisStack)));
          if(asPlayer == null) return new ArrayList<>();
@@ -127,21 +128,23 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
                
                boolean cantSell = false;
                while(cost > liquidated){
-                  Pair<ArcanaAugment, Integer> toSell = canSell.getFirst();
-                  ArcanaAugment sellAug = toSell.getFirst();
-                  int sellLvl = toSell.getSecond();
-                  profile.setAugmentLevel(sellAug, sellLvl - 1);
-                  liquidated += sellAug.getTiers()[sellLvl - 1].rarity + 1;
-                  
-                  canSellRet = getCanSell(item1Augments, arcanaItem2, profile);
-                  canSell = canSellRet.getFirst();
                   if(canSell.isEmpty()){
                      cantSell = true;
                      break;
                   }
+                  Pair<ArcanaAugment, Integer> toSell = canSell.getFirst();
+                  ArcanaAugment sellAug = toSell.getFirst();
+                  int sellLvl = toSell.getSecond();
+                  profile.setAugmentLevel(sellAug, sellLvl - 1);
+                  transferred = true;
+                  liquidated += sellAug.getTiers()[sellLvl - 1].rarity + 1;
+
+                  canSellRet = getCanSell(item1Augments, arcanaItem2, profile);
+                  canSell = canSellRet.getFirst();
+                  sellingPower = canSellRet.getSecond();
                }
                if(cantSell) continue;
-               
+
                profile.setAugmentLevel(buyAug, buyLvl);
                liquidated -= buyAug.getTiers()[buyLvl - 1].rarity + 1;
                break;
@@ -152,7 +155,8 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe {
             ArcanaAchievements.grant(asPlayer, ArcanaAchievements.QUESTIONABLE_EXCHANGE);
          }
       }catch(Exception e){
-         return new ArrayList<>();
+         ArcanaNovum.log(2, "Error during Aequalis skill transmutation: " + e);
+         if(!transferred) return new ArrayList<>(); // Still consume the reagents if any skill points moved
       }
       
       if(aequalisEntity != null){

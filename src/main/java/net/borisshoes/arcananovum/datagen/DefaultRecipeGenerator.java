@@ -1751,16 +1751,6 @@ public class DefaultRecipeGenerator {
             .with(Either.left(ConventionalItemTags.STRIPPED_LOGS))
             .withViewStack(new ItemStack(Items.OAK_LOG)));
       
-      transmutationRecipes.add(new CommutativeTransmutationRecipe("wood", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
-            .with(Items.ACACIA_WOOD, Items.BAMBOO_BLOCK, Items.BIRCH_WOOD, Items.CHERRY_WOOD, Items.CRIMSON_HYPHAE,
-                  Items.DARK_OAK_WOOD, Items.JUNGLE_WOOD, Items.MANGROVE_WOOD, Items.OAK_WOOD, Items.SPRUCE_WOOD,
-                  Items.WARPED_HYPHAE, Items.PALE_OAK_WOOD, Items.STRIPPED_ACACIA_WOOD, Items.STRIPPED_BAMBOO_BLOCK,
-                  Items.STRIPPED_BIRCH_WOOD, Items.STRIPPED_CHERRY_WOOD, Items.STRIPPED_CRIMSON_HYPHAE,
-                  Items.STRIPPED_DARK_OAK_WOOD, Items.STRIPPED_JUNGLE_WOOD, Items.STRIPPED_MANGROVE_WOOD,
-                  Items.STRIPPED_OAK_WOOD, Items.STRIPPED_SPRUCE_WOOD, Items.STRIPPED_WARPED_HYPHAE,
-                  Items.STRIPPED_PALE_OAK_WOOD)
-            .withViewStack(new ItemStack(Items.OAK_WOOD)));
-      
       transmutationRecipes.add(new CommutativeTransmutationRecipe("planks", new ItemStack(Items.COPPER_INGOT, 3), new ItemStack(Items.EMERALD, 2))
             .with(Either.left(ItemTags.PLANKS))
             .withViewStack(new ItemStack(Items.OAK_PLANKS)));
@@ -3679,16 +3669,6 @@ public class DefaultRecipeGenerator {
             .with(Either.left(ItemTags.LOGS))
             .with(Either.left(ConventionalItemTags.STRIPPED_LOGS))
             .withViewStack(new ItemStack(Items.OAK_LOG)));
-      
-      transmutationRecipes.add(new CommutativeTransmutationRecipe("wood", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))
-            .with(Items.ACACIA_WOOD, Items.BAMBOO_BLOCK, Items.BIRCH_WOOD, Items.CHERRY_WOOD, Items.CRIMSON_HYPHAE,
-                  Items.DARK_OAK_WOOD, Items.JUNGLE_WOOD, Items.MANGROVE_WOOD, Items.OAK_WOOD, Items.SPRUCE_WOOD,
-                  Items.WARPED_HYPHAE, Items.PALE_OAK_WOOD, Items.STRIPPED_ACACIA_WOOD, Items.STRIPPED_BAMBOO_BLOCK,
-                  Items.STRIPPED_BIRCH_WOOD, Items.STRIPPED_CHERRY_WOOD, Items.STRIPPED_CRIMSON_HYPHAE,
-                  Items.STRIPPED_DARK_OAK_WOOD, Items.STRIPPED_JUNGLE_WOOD, Items.STRIPPED_MANGROVE_WOOD,
-                  Items.STRIPPED_OAK_WOOD, Items.STRIPPED_SPRUCE_WOOD, Items.STRIPPED_WARPED_HYPHAE,
-                  Items.STRIPPED_PALE_OAK_WOOD)
-            .withViewStack(new ItemStack(Items.OAK_WOOD)));
       
       transmutationRecipes.add(new CommutativeTransmutationRecipe("planks", new ItemStack(Items.COPPER_INGOT, 12), new ItemStack(Items.EMERALD, 6))
             .with(Either.left(ItemTags.PLANKS))

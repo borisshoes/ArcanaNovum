@@ -131,6 +131,7 @@ remappedSrc/
 
 # Coding Agent files
 AGENTS.md
+/code_audit_log.md
 
 lore-summaries
 
