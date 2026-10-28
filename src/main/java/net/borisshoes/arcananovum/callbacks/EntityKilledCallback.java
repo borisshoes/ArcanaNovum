@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
 import net.borisshoes.arcananovum.utils.ArcanaInventory;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -36,6 +37,10 @@ public class EntityKilledCallback {
          
          if(player != null){
             String entityTypeId = EntityType.getKey(killed.getType()).toString();
+            ItemStack weapon = spear != null ? spear.getWeaponItem() : player.getWeaponItem();
+            if(spear == null && player.isUsingItem() && player.getUseItem().has(DataComponents.KINETIC_WEAPON)){
+               weapon = player.getUseItem(); // A kinetic charge hits with the used item, which can be in the offhand
+            }
             
             // Check for soulstone then activate
             ArcanaInventory arcanaInventory = ArcanaInventory.getPlayerItems(player);
@@ -45,7 +50,7 @@ public class EntityKilledCallback {
                ArcanaInventory.Entry stoneEntry = entries.getFirst();
                ItemStack stoneStack = stoneEntry.getStack();
                Soulstone stone = (Soulstone) ArcanaItemUtils.identifyItem(stoneStack);
-               stone.killedEntity(serverWorld, player, killed, stoneStack, spear != null ? spear.getWeaponItem() : player.getWeaponItem());
+               stone.killedEntity(serverWorld, player, killed, stoneStack, weapon);
                stoneEntry.setModified();
                arcanaInventory.close();
             }
@@ -71,7 +76,7 @@ public class EntityKilledCallback {
                ArcanaAchievements.grant(player, ArcanaAchievements.ANGEL_OF_DEATH);
             }
             
-            if(player.getWeaponItem().is(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()) || spear != null){
+            if(weapon.is(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()) || spear != null){
                if(((ConditionalsAchievement) ArcanaAchievements.KILL_THEM_ALL).getConditions().containsKey(killed.getType().getDescription().getString())){
                   ArcanaAchievements.setCondition(player, ArcanaAchievements.KILL_THEM_ALL, killed.getType().getDescription().getString(), true);
                }

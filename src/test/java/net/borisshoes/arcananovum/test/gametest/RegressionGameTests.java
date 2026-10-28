@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.test.gametest;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import io.netty.channel.embedded.EmbeddedChannel;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
@@ -20,6 +21,7 @@ import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.WildGrowthCharm;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
@@ -708,6 +710,33 @@ public class RegressionGameTests {
       finish(helper, shooter);
    }
    
+   // The kill callback took the weapon from the main hand, so a kill from the Spear's offhand charge missed Eternal Cruelty's double souls
+   @GameTest
+   public void spearOffhandChargeKillGetsEternalCrueltySouls(GameTestHelper helper){
+      ServerLevel level = helper.getLevel();
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      ItemStack spear = ArcanaRegistry.SPEAR_OF_TENBROUS.getNewItem();
+      ArcanaAugments.applyAugment(spear, ArcanaAugments.ETERNAL_CRUELTY, 1, false);
+      player.setItemSlot(EquipmentSlot.OFFHAND, spear);
+      spear.getItem().inventoryTick(spear, level, player, EquipmentSlot.OFFHAND); // Gives the offhand Spear its charge attack
+      player.getInventory().setItem(1, Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityTypes.PIG));
+      player.startUsingItem(InteractionHand.OFF_HAND);
+      helper.assertTrue(player.isUsingItem() && player.getMainHandItem().isEmpty(), "The player is not charging the offhand Spear");
+
+      Pig pig = EntityTypes.PIG.create(level, EntitySpawnReason.TRIGGERED);
+      Vec3 pos = helper.absoluteVec(new Vec3(3.5, 2, 1.5));
+      pig.snapTo(pos.x, pos.y, pos.z, 0, 0);
+      level.addFreshEntity(pig);
+      player.stabAttack(EquipmentSlot.OFFHAND, pig, 1000f, true, false, false); // What the charge does to each entity it hits
+      helper.assertTrue(pig.isDeadOrDying(), "The charge did not kill the pig");
+
+      int expected = 2 * ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SOULSTONE_SOULS_PER_LVL).get(0);
+      int souls = Soulstone.getSouls(player.getInventory().getItem(1));
+      helper.assertTrue(souls == expected, "The offhand charge kill gave " + souls + " souls instead of " + expected);
+      pig.discard();
+      finish(helper, player);
+   }
+
    private static void applyHarmfulFieldEffects(ServerLevel level, AlchemicalArrowAreaEffectTracker.AlchemicalArrowSource field, ServerPlayer player){
       field.applyEffect(level, player, new MobEffectInstance(MobEffects.POISON, 200, 0));
       field.applyCondition(level, player, new ConditionInstance(Conditions.VULNERABILITY, ArcanaRegistry.arcanaId(ArcanaRegistry.ALCHEMICAL_ARBALEST.getId()), 200, 0.5f, true, true, true, AttributeModifier.Operation.ADD_VALUE, null));
