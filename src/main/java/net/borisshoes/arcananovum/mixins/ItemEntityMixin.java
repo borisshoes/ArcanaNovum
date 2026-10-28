@@ -135,7 +135,7 @@ public class ItemEntityMixin {
                serverWorld.setBlock(smithPos, ((ArcanaBlock) ArcanaRegistry.STARLIGHT_FORGE).getBlock().defaultBlockState(), 3);
                BlockEntity blockEntity = serverWorld.getBlockEntity(smithPos);
                if(blockEntity instanceof StarlightForgeBlockEntity forge){
-                  ItemStack newForgeStack = forgeItem.addCrafter(forgeItem.getNewItem(), playerId, 0, serverWorld.getServer());
+                  ItemStack newForgeStack = forgeItem.addCrafterWithPreferredSkin(forgeItem.getNewItem(), playerId, 0, serverWorld.getServer());
                   ArcanaPolymerBlockEntity.initializeArcanaBlock(newForgeStack, forge);
                   
                   if(player != null){
@@ -205,7 +205,7 @@ public class ItemEntityMixin {
                }
                if(tomeCrafter != null){
                   ArcanaPlayerData profile = ArcanaNovum.data(tomeCrafter);
-                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack, tomeCrafter.getStringUUID(), 0, itemEntity.level().getServer());
+                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafterWithPreferredSkin(tomeStack, tomeCrafter.getStringUUID(), 0, itemEntity.level().getServer());
                   if(!profile.addCrafted(tomeStack)){
                      profile.addXP(ArcanaRarity.getFirstCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));
                   }

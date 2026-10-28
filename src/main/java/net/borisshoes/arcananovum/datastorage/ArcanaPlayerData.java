@@ -103,6 +103,7 @@ public class ArcanaPlayerData implements StorableData {
    private final HashMap<String, Tag> miscData = new HashMap<>();
    private final HashMap<ArcanaAugment, Integer> augments = new HashMap<>();
    private final HashMap<String, List<ArcanaAchievement>> achievements = new HashMap<>();
+   private final HashMap<String, String> skinPreferences = new HashMap<>(); // Arcana item id -> skin id
    private int level;
    private int xp;
    private ItemStack storedOffhand = ItemStack.EMPTY;
@@ -157,7 +158,15 @@ public class ArcanaPlayerData implements StorableData {
             }
          }
       });
-      
+
+      this.skinPreferences.clear();
+      view.read("skinPreferences", CompoundTag.CODEC).ifPresent(tag -> {
+         for(String itemKey : tag.keySet()){
+            String skinId = tag.getStringOr(itemKey, "");
+            if(!skinId.isEmpty()) this.skinPreferences.put(itemKey, skinId);
+         }
+      });
+
       this.level = view.getIntOr("level", 0);
       this.xp = view.getIntOr("xp", 0);
       this.storedOffhand = view.read("storedOffhand", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
@@ -206,7 +215,11 @@ public class ArcanaPlayerData implements StorableData {
          augmentsTag.putInt(entry.getKey().id, entry.getValue());
       }
       tag.put("augments", augmentsTag);
-      
+
+      CompoundTag skinPreferencesTag = new CompoundTag();
+      skinPreferences.forEach(skinPreferencesTag::putString);
+      tag.put("skinPreferences", skinPreferencesTag);
+
       tag.putInt("level", level);
       tag.putInt("xp", xp);
       
@@ -1489,7 +1502,7 @@ public class ArcanaPlayerData implements StorableData {
                   .append(Component.literal("After that strange encounter, you look down at your feet and see a ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
                   .append(Component.literal("pair of pants").withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC))
                   .append(Component.literal(" unlike any that you have seen before.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), false);
-            ItemStack pants = ArcanaRegistry.GREAVES_OF_GAIALTUS.addCrafter(ArcanaRegistry.GREAVES_OF_GAIALTUS.getNewItem(), player.getStringUUID(), 3, player.level().getServer());
+            ItemStack pants = ArcanaRegistry.GREAVES_OF_GAIALTUS.addCrafterWithPreferredSkin(ArcanaRegistry.GREAVES_OF_GAIALTUS.getNewItem(), player.getStringUUID(), 3, player.level().getServer());
             pants.enchant(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), 1);
             BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(pants, player, 0));
             BorisLib.addTickTimerCallback(new GenericTimer(40, () -> {
@@ -1504,7 +1517,7 @@ public class ArcanaPlayerData implements StorableData {
       if(zEventFound != null && msg.equalsIgnoreCase("z_yes")){
          Event.RECENT_EVENTS.removeIf(e -> e instanceof ZeraiyaStartEvent z && z.getPlayer().equals(player));
          zEventFound.sendYesDialog();
-         ItemStack spear = ArcanaRegistry.SPEAR_OF_TENBROUS.addCrafter(ArcanaRegistry.SPEAR_OF_TENBROUS.getNewItem(), player.getStringUUID(), 3, player.level().getServer());
+         ItemStack spear = ArcanaRegistry.SPEAR_OF_TENBROUS.addCrafterWithPreferredSkin(ArcanaRegistry.SPEAR_OF_TENBROUS.getNewItem(), player.getStringUUID(), 3, player.level().getServer());
          spear.enchant(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), 1);
          BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(spear, player, 265));
          BorisLib.addTickTimerCallback(new GenericTimer(265, () -> {
@@ -1655,5 +1668,34 @@ public class ArcanaPlayerData implements StorableData {
    
    public boolean hasSkin(ArcanaSkin cataSkin){
       return ArcanaSkins.canUse(playerId, cataSkin);
+   }
+
+   // The skin that copies of this item get when the player obtains them without forging; null when there is none or the player can't use it right now
+   public ArcanaSkin getPreferredSkin(ArcanaItem item){
+      ArcanaSkin skin = ArcanaSkin.getSkinFromString(skinPreferences.get(item.getId()));
+      return skin != null && getSkinsForItem(item).contains(skin) ? skin : null;
+   }
+
+   public Map<String, String> getSkinPreferences(){
+      return Collections.unmodifiableMap(skinPreferences);
+   }
+
+   public void setSkinPreference(ArcanaItem item, ArcanaSkin skin){
+      if(skin == null){
+         skinPreferences.remove(item.getId());
+      }else{
+         skinPreferences.put(item.getId(), skin.getId().getPath());
+      }
+   }
+
+   // Resets the preferences for skins the player lost and returns the items they were for. A skin missing from the installed catalog stays, that can be temporary
+   public List<String> removeLostSkinPreferences(){
+      List<String> removed = new ArrayList<>();
+      skinPreferences.entrySet().removeIf(entry -> {
+         if(ArcanaSkins.isUnlocked(playerId, entry.getValue())) return false;
+         removed.add(entry.getKey());
+         return true;
+      });
+      return removed;
    }
 }

@@ -254,7 +254,7 @@ public class CeptyusOpenEvent extends Event {
       )), new int[]{0, 60, 60, 100, 80, 60, 140, 80}, 1, 1, 0), true);
       BorisLib.addTickTimerCallback(new GenericTimer(120, this::blast));
       
-      ItemStack pick = ArcanaRegistry.PICKAXE_OF_CEPTYUS.addCrafter(ArcanaRegistry.PICKAXE_OF_CEPTYUS.getNewItem(), player.getStringUUID(), 3, player.level().getServer());
+      ItemStack pick = ArcanaRegistry.PICKAXE_OF_CEPTYUS.addCrafterWithPreferredSkin(ArcanaRegistry.PICKAXE_OF_CEPTYUS.getNewItem(), player.getStringUUID(), 3, player.level().getServer());
       pick.enchant(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), 1);
       BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(pick, player, 380));
       BorisLib.addTickTimerCallback(new GenericTimer(380, () -> {

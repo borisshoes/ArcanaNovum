@@ -24,6 +24,7 @@ import net.minecraft.server.permissions.PermissionLevel;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
@@ -145,6 +146,10 @@ public class CommandRegisterCallback {
             .then(literal("changeSkin").requires(arcanaPermission(MOD_ID + ".changeskin", PermissionLevel.GAMEMASTERS))
                   .then(argument("skin", id()).suggests(CommandRegisterCallback::getSkinSuggestions)
                         .executes(context -> ArcanaCommands.changeSkin(context, String.valueOf(IdentifierArgument.getId(context, "skin"))))))
+            .then(literal("setSkinPreference").requires(arcanaPermission(MOD_ID + ".setskinpreference", PermissionLevel.ALL))
+                  .then(argument("item", string()).suggests(CommandRegisterCallback::getSkinnedItemSuggestions)
+                        .then(argument("skin", id()).suggests(CommandRegisterCallback::getPreferenceSkinSuggestions)
+                              .executes(context -> ArcanaCommands.setSkinPreference(context, getString(context, "item"), String.valueOf(IdentifierArgument.getId(context, "skin")))))))
             .then(literal("fetchSkins").requires(arcanaPermission(MOD_ID + ".fetchskins", PermissionLevel.GAMEMASTERS)).executes(ArcanaCommands::fetchSkins))
             .then(literal("boss").requires(arcanaPermission(MOD_ID + ".boss", PermissionLevel.ALL))
                   .then(literal("start").requires(arcanaPermission(MOD_ID + ".boss.start", PermissionLevel.GAMEMASTERS))
@@ -245,6 +250,46 @@ public class CommandRegisterCallback {
       return builder.buildFuture();
    }
    
+   private static CompletableFuture<Suggestions> getSkinnedItemSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
+      ServerPlayer player = context.getSource().getPlayer();
+      if(player == null) return builder.buildFuture();
+
+      Set<String> suggestions = new TreeSet<>();
+      for(ArcanaSkin skin : ArcanaNovum.data(player).getAllSkins()){
+         suggestions.add(skin.getArcanaItem().getId());
+      }
+
+      String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+      for(String suggestion : suggestions){
+         if(suggestion.contains(remaining)){
+            builder.suggest(suggestion);
+         }
+      }
+      return builder.buildFuture();
+   }
+
+   private static CompletableFuture<Suggestions> getPreferenceSkinSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder){
+      ServerPlayer player = context.getSource().getPlayer();
+      if(player == null) return builder.buildFuture();
+
+      ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(getString(context, "item"));
+      Set<String> suggestions = new TreeSet<>();
+      suggestions.add("none");
+      if(arcanaItem != null){
+         for(ArcanaSkin skin : ArcanaNovum.data(player).getSkinsForItem(arcanaItem)){
+            suggestions.add(skin.getSerializedName());
+         }
+      }
+
+      String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+      for(String suggestion : suggestions){
+         if(suggestion.toLowerCase(Locale.ROOT).contains(remaining)){
+            builder.suggest(suggestion);
+         }
+      }
+      return builder.buildFuture();
+   }
+
    private static boolean isSourceGodAccount(CommandSourceStack src){
       return src.getEntity() instanceof ServerPlayer player && ArcanaUtils.isGodAccount(player.getUUID());
    }

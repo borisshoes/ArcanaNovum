@@ -78,7 +78,7 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe {
          ItemStack outputStack = output.copyWithCount(outputCount);
          if(ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(), player.getStringUUID(), 0, player.level().getServer());
+            outputStack = arcanaOutputItem.addCrafterWithPreferredSkin(arcanaOutputItem.getNewItem(), player.getStringUUID(), 0, player.level().getServer());
          }
          returnItems.add(outputStack);
       }
@@ -116,7 +116,7 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe {
          ItemStack outputStack = output.copyWithCount(outputCount);
          if(ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(), player == null ? null : player.getStringUUID(), 0, BorisLib.SERVER);
+            outputStack = arcanaOutputItem.addCrafterWithPreferredSkin(arcanaOutputItem.getNewItem(), player == null ? null : player.getStringUUID(), 0, BorisLib.SERVER);
          }
          
          outputs.add(Pair.of(outputStack, outputPos));

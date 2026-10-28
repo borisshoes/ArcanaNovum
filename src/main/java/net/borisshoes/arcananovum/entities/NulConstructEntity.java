@@ -538,13 +538,13 @@ public class NulConstructEntity extends Monster implements PolymerEntity, Ranged
       boolean dropped = isExalted || this.random.nextFloat() < 0.01;
       
       if(dropped){
-         ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(), summoner.getStringUUID(), 0, server);
+         ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafterWithPreferredSkin(ArcanaRegistry.NUL_MEMENTO.getNewItem(), summoner.getStringUUID(), 0, server);
          ArcanaNovum.data(summoner).addCraftedSilent(stack);
          dropItem(level(), stack.copyWithCount(1), position());
       }
       
       if(!isExalted){
-         ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafter(ArcanaRegistry.DIVINE_CATALYST.getNewItem(), summoner.getStringUUID(), 0, server);
+         ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafterWithPreferredSkin(ArcanaRegistry.DIVINE_CATALYST.getNewItem(), summoner.getStringUUID(), 0, server);
          ArcanaNovum.data(summoner).addCraftedSilent(stack);
          dropItem(level(), stack.copyWithCount(1), position());
       }

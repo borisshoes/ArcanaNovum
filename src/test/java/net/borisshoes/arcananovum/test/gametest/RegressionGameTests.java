@@ -798,7 +798,7 @@ public class RegressionGameTests {
    }
    
    /** A connected player in survival, unlike makeMockServerPlayerInLevel which is always creative */
-   private static ServerPlayer survivalPlayer(GameTestHelper helper, BlockPos relative){
+   static ServerPlayer survivalPlayer(GameTestHelper helper, BlockPos relative){
       ServerLevel level = helper.getLevel();
       UUID uuid = UUID.randomUUID();
       // Unique names, since scoreboard teams match players by name
@@ -815,7 +815,7 @@ public class RegressionGameTests {
    }
    
    /** Removes the test's players so they can't be the nearest player in later tests, then passes the test */
-   private static void finish(GameTestHelper helper, ServerPlayer... players){
+   static void finish(GameTestHelper helper, ServerPlayer... players){
       for(ServerPlayer player : players) helper.getLevel().getServer().getPlayerList().remove(player);
       helper.succeed();
    }

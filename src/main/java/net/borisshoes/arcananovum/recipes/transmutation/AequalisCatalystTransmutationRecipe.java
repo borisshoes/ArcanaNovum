@@ -96,7 +96,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe {
                
                if(aug.equals(augment.id) && level == lvl){
                   ArcanaItem arcanaCata = ArcanaRarity.getAugmentCatalyst(rarity);
-                  ItemStack catalyst = arcanaCata.addCrafter(arcanaCata.getNewItem(), arcanaItem.getCrafter(arcanaItemStack), 0, altar.getLevel().getServer());
+                  ItemStack catalyst = arcanaCata.addCrafterWithPreferredSkin(arcanaCata.getNewItem(), arcanaItem.getCrafter(arcanaItemStack), 0, altar.getLevel().getServer());
                   outputs.add(Pair.of(catalyst, outputPos));
                   consumedCatas++;
                   cataFound = true;

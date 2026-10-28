@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.gui.arcanetome.ArcaneTomeGui;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.skins.ArcanaSkin;
@@ -274,7 +275,17 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       putProperty(stack, ORIGIN_TAG, origin);
       return buildItemLore(stack, server);
    }
-   
+
+   // For items a player gets without forging them: also gives the stack the skin the player prefers for this item, if they can still use it
+   public ItemStack addCrafterWithPreferredSkin(ItemStack stack, String player, int origin, MinecraftServer server){
+      if(player != null && !player.isEmpty() && getStringProperty(stack, SKIN_TAG).isEmpty()){
+         ArcanaPlayerData profile = ArcanaNovum.data(AlgoUtils.getUUID(player));
+         ArcanaSkin skin = profile == null ? null : profile.getPreferredSkin(this);
+         if(skin != null) putProperty(stack, SKIN_TAG, skin.getSerializedName());
+      }
+      return addCrafter(stack, player, origin, server);
+   }
+
    public String getCrafter(ItemStack item){
       if(!ArcanaItemUtils.isArcane(item))
          return null;

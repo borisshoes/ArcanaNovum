@@ -11,7 +11,8 @@
       "net.borisshoes.arcananovum.test.gametest.MixinGameTests",
       "net.borisshoes.arcananovum.test.gametest.RecipeIntegrityGameTests",
       "net.borisshoes.arcananovum.test.gametest.GuiStackGameTests",
-      "net.borisshoes.arcananovum.test.gametest.RegressionGameTests"
+      "net.borisshoes.arcananovum.test.gametest.RegressionGameTests",
+      "net.borisshoes.arcananovum.test.gametest.SkinPreferenceGameTests"
     ]
   },
   "mixins": [

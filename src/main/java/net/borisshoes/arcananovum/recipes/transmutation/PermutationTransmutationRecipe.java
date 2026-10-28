@@ -43,7 +43,7 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe {
             ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(positiveInput);
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
             if(!arcanaInputItem.getId().equals(arcanaOutputItem.getId())){
-               outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(), player.getStringUUID(), 0, player.level().getServer());
+               outputStack = arcanaOutputItem.addCrafterWithPreferredSkin(arcanaOutputItem.getNewItem(), player.getStringUUID(), 0, player.level().getServer());
             }
          }
          returnItems.add(outputStack);
@@ -85,7 +85,7 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe {
             ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
             if(!arcanaInputItem.getId().equals(arcanaOutputItem.getId())){
-               outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(), arcanaInputItem.getCrafter(inputStack), 0, BorisLib.SERVER);
+               outputStack = arcanaOutputItem.addCrafterWithPreferredSkin(arcanaOutputItem.getNewItem(), arcanaInputItem.getCrafter(inputStack), 0, BorisLib.SERVER);
             }
             
          }

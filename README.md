@@ -114,6 +114,7 @@ Arcana recipes are loaded from the JSON files in `config/arcananovum/recipes/<re
 * ```/arcana show``` Shows off the Arcana Item in your main hand to all players on the server.
 * ```/arcana blocks``` Lists all of your placed Arcana Blocks, including their location and dimension.
 * ```/arcana boss teleport``` Teleports you to the boss fight arena.
+* ```/arcana setSkinPreference <item> <skin>``` Sets the skin that new copies of an Arcana Item get when you obtain them without forging them (Arcane Tome, Starlight Forge, transmutation results, event and boss rewards), and the skin the Starlight Forge selects first for that item. Use "none" to go back to the default skin. Only items you have skins for and skins you have unlocked are suggested. If you lose a skin, its preference is reset the next time your unlocks are checked.
 
 ### Admin Commands
 * ```/arcana create <id> [<targets>]``` Creates an Arcana Item by its ID and gives it to yourself, or to the specified target players.
@@ -756,6 +757,7 @@ Arcana Novum uses the [Fabric Permissions API](https://github.com/lucko/fabric-p
 | `arcananovum.show` | `ALL` | Access `/arcana show` to display your held Arcana item in chat |
 | `arcananovum.blocks` | `ALL` | Access `/arcana blocks` to view your own placed Arcana blocks |
 | `arcananovum.boss.teleport` | `ALL` | Access `/arcana boss teleport` to teleport yourself to the boss arena |
+| `arcananovum.setskinpreference` | `ALL` | Access `/arcana setSkinPreference` to choose the skin new copies of an item get |
 | `arcananovum.specialevent.action` | `ALL` | Access `/arcana specialEvent action` to respond to a special event |
 
 ### Item Creation

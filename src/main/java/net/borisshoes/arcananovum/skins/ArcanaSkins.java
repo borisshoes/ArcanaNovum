@@ -11,6 +11,7 @@ import eu.pb4.polymer.resourcepack.impl.PolymerResourcePackMod;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
@@ -21,6 +22,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.WorldVersion;
 import net.minecraft.commands.CommandSourceStack;
@@ -139,9 +141,7 @@ public final class ArcanaSkins {
       if(entry == null) return List.of();
       SkinCatalog catalog = SkinCatalog.getInstalled();
       List<ArcanaSkin> skins = new ArrayList<>();
-      if(ArcanaUtils.isGodAccount(player) || player.equals(UUID.fromString("fee11d1a-2536-4891-8757-25f3063a1dc1")) ||
-            player.equals(UUID.fromString("883d74be-9200-4d06-b629-22a12ef398f5")) ||
-            player.equals(UUID.fromString("5de15dee-0e50-4440-a19e-1a44da3f79dd"))){
+      if(hasAllSkins(player)){
          skins.addAll(catalog.getAll());
       }else{
          long now = System.currentTimeMillis();
@@ -153,7 +153,26 @@ public final class ArcanaSkins {
       skins.sort(Comparator.comparing(skin -> skin.getId().getPath()));
       return skins;
    }
-   
+
+   private static boolean hasAllSkins(UUID player){
+      return ArcanaUtils.isGodAccount(player) || player.equals(UUID.fromString("fee11d1a-2536-4891-8757-25f3063a1dc1")) ||
+            player.equals(UUID.fromString("883d74be-9200-4d06-b629-22a12ef398f5")) ||
+            player.equals(UUID.fromString("5de15dee-0e50-4440-a19e-1a44da3f79dd"));
+   }
+
+   // Unlike canUse, this ignores the installed catalog: a skin that is missing from it for now is still unlocked
+   public static boolean isUnlocked(UUID player, String skinId){
+      if(player == null) return false;
+      if(hasAllSkins(player)) return true;
+      PlayerSkinEntry entry = CACHE.get(player);
+      if(entry == null) return false;
+      long now = System.currentTimeMillis();
+      for(SkinGrant grant : entry.grants()){
+         if(grant.id().equals(skinId) && grant.active(now)) return true;
+      }
+      return false;
+   }
+
    private static void onJoin(ServerPlayer player, MinecraftServer server){
       if(SkinSync.api == null) return;
       if(!server.usesAuthentication()){
@@ -190,6 +209,7 @@ public final class ArcanaSkins {
          if(previous == null || !previous.grants().equals(grants)){
             server.execute(() -> onGrantsChanged(server, uuid));
          }
+         server.execute(() -> checkSkinPreferences(server, uuid));
       }catch(ArcanaSkinApi.ApiException e){
          if(e.status == 429 && e.retryAfterSeconds > 0){
             NEXT_SLOT.updateAndGet(prev -> Math.max(prev, System.currentTimeMillis() + e.retryAfterSeconds * 1000));
@@ -208,7 +228,21 @@ public final class ArcanaSkins {
          profile.setResearchTask(ResearchTasks.HAVE_A_SKIN, true);
       }
    }
-   
+
+   // Runs after every successful lookup, so the one after a login catches skins the player lost while they were away
+   static void checkSkinPreferences(MinecraftServer server, UUID uuid){
+      ServerPlayer player = server.getPlayerList().getPlayer(uuid);
+      if(player == null) return;
+      ArcanaPlayerData profile = ArcanaNovum.data(player);
+      if(profile == null) return;
+      for(String itemId : profile.removeLostSkinPreferences()){
+         ArcanaItem item = ArcanaRegistry.getArcanaItem(itemId);
+         Component itemName = item == null ? Component.literal(itemId) : item.getTranslatedName();
+         player.sendSystemMessage(Component.translatable("text.arcananovum.skin_preference_lost", itemName).withStyle(ChatFormatting.RED));
+         ArcanaSkins.dev("Reset the {} skin preference of {}: the skin is no longer unlocked", itemId, player.getScoreboardName());
+      }
+   }
+
    private static void tick(MinecraftServer server){
       if(server.getTickCount() % (20 * 60) != 0) return;
       long now = System.currentTimeMillis();

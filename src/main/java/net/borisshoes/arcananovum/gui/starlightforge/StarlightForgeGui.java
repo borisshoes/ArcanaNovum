@@ -236,7 +236,7 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    protected void forgeItem(ArcanaItem arcanaItem, ArcanaRecipe recipe, @Nullable Pair<ArcanaAugment, Integer> skillPair, boolean fastAnim){
       if(!(blockEntity.getLevel() instanceof ServerLevel world)) return;
       ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, recipe.getCenterpieces(), blockEntity), player.getStringUUID(), 0, world.getServer());
-      if(selectedSkin != null){
+      if(selectedSkin != null && ArcanaNovum.data(player).getSkinsForItem(arcanaItem).contains(selectedSkin)){
          ArcanaItem.putProperty(newArcanaItem, ArcanaItem.SKIN_TAG, selectedSkin.getSerializedName());
          ArcanaAchievements.grant(player, ArcanaAchievements.ANOTHER_TOUCH_OF_PERSONALITY);
       }
@@ -793,6 +793,11 @@ public class StarlightForgeGui extends SimpleGui implements ClickCooldown, Virtu
    }
    
    public void setLoadedRecipe(ArcanaRecipe recipe){
+      ArcanaItem previousItem = this.loadedRecipe == null ? null : ArcanaItemUtils.identifyItem(this.loadedRecipe.getDisplayStack());
+      ArcanaItem arcanaItem = recipe == null ? null : ArcanaItemUtils.identifyItem(recipe.getDisplayStack());
+      if(arcanaItem != previousItem){ // The selection starts at the player's preferred skin for each new item
+         this.selectedSkin = arcanaItem == null ? null : ArcanaNovum.data(player).getPreferredSkin(arcanaItem);
+      }
       this.loadedRecipe = recipe;
       loadSkinSelector();
    }

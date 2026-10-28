@@ -1107,6 +1107,46 @@ public class ArcanaCommands {
       }
    }
    
+   public static int setSkinPreference(CommandContext<CommandSourceStack> ctx, String itemId, String skin){
+      try{
+         CommandSourceStack src = ctx.getSource();
+         if(!src.isPlayer()){
+            src.sendFailure(Component.literal("Must run command as a player"));
+            return -1;
+         }
+
+         ServerPlayer player = src.getPlayer();
+         ArcanaPlayerData data = ArcanaNovum.data(player);
+         ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(itemId);
+         if(arcanaItem == null){
+            src.sendFailure(Component.translatable("command.arcananovum.skin_preference_invalid_item", itemId));
+            return -1;
+         }
+
+         Component name;
+         if(skin.equals("minecraft:none")){
+            data.setSkinPreference(arcanaItem, null);
+            name = Component.translatable("text.arcananovum.default");
+         }else{
+            ArcanaSkin parsedSkin = ArcanaSkin.getSkinFromString(skin);
+            if(parsedSkin == null || !data.getSkinsForItem(arcanaItem).contains(parsedSkin)){
+               src.sendFailure(Component.translatable("command.arcananovum.skin_preference_invalid_skin", arcanaItem.getTranslatedName()));
+               return -1;
+            }
+            data.setSkinPreference(arcanaItem, parsedSkin);
+            name = parsedSkin.getName();
+         }
+
+         Component finalName = name;
+         src.sendSuccess(() -> Component.translatable("command.arcananovum.skin_preference_success", arcanaItem.getTranslatedName(), finalName), false);
+         logCommandSuccess(ctx);
+         return 1;
+      }catch(Exception e){
+         log(2, e.toString());
+         return -1;
+      }
+   }
+
    public static int applyAugment(CommandContext<CommandSourceStack> ctx, String id, int level, ServerPlayer player){
       try{
          CommandSourceStack src = ctx.getSource();
