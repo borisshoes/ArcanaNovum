@@ -271,6 +271,10 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config stormArrowAftershockDmgPerLvl` The Aftershock damage per augment level dealt by Runic Storm Arrows. (default: [2.0, 2.5, 3.0, 3.5, 4.0])
 * `/arcana config stormArrowAftershockDurationPerLvl` The Aftershock duration in ticks per augment level for Runic Storm Arrows. (default: [30, 50, 70, 90, 110])
 
+### Runic Tether Arrows
+* `/arcana config tetherArrowMaxRange` Runic Tether Arrows fail outright when what they would move is farther than this from its target. (default: 256.0)
+* `/arcana config tetherArrowMaxSpeed` Runic Tether Arrow launches faster than this (in blocks per tick) are slowed to it and fall short. (default: 15.0)
+
 ### Runic Tracking Arrows
 * `/arcana config trackingArrowBroadheadDmgAmpPerLvl` The damage amplification percentage from the Broadheads augment for Runic Tracking Arrows. (default: [0.0, 0.5, 0.5, 0.5])
 * `/arcana config trackingArrowBroadheadDmgAmpDurationPerLvl` The Broadheads damage amplification duration in ticks per augment level for Runic Tracking Arrows. (default: [0, 100, 200, 300])

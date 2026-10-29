@@ -700,6 +700,10 @@ target net/minecraft/server/network/ServerGamePacketListenerImpl extends net/min
 @Inject -> net/minecraft/server/network/ServerGamePacketListenerImpl.handleAcceptPlayerLoad(Lnet/minecraft/network/protocol/game/ServerboundPlayerLoadedPacket;)V listing acce99524955
   at TAIL: 1 match [always]
 
+[ServerGamePacketListenerImplMixin#arcananovum$tetherFlightMoveCheck]
+@ModifyExpressionValue -> net/minecraft/server/network/ServerGamePacketListenerImpl.handlePlayerPositionChange(DDDFFZZ)V listing f5b8560ce14d
+  at INVOKE Lnet/minecraft/server/network/ServerGamePacketListenerImpl;shouldCheckPlayerMovement(Z)Z: 1 match [conditional]
+
 [ServerGamePacketListenerImplMixin#awaitingPositionFromClient]
 @Shadow field awaitingPositionFromClient Lnet/minecraft/world/phys/Vec3; in net/minecraft/server/network/ServerGamePacketListenerImpl: present
 

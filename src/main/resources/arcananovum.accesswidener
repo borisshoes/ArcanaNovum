@@ -22,6 +22,7 @@ accessible field net/minecraft/world/entity/npc/villager/AbstractVillager offers
 
 accessible method net/minecraft/world/item/component/BundleContents <init> (Ljava/util/List;I)V
 accessible method net/minecraft/world/entity/LivingEntity detectEquipmentUpdates ()V
+accessible method net/minecraft/world/entity/Entity omnidirectionalAirMover ()Z
 accessible method net/minecraft/world/entity/animal/frog/Tadpole ageUp (I)V
 accessible method net/minecraft/world/entity/animal/frog/Tadpole getTicksLeftUntilAdult ()I
 accessible method net/minecraft/world/entity/projectile/arrow/AbstractArrow setPierceLevel (B)V

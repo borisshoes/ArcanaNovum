@@ -238,6 +238,12 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> STORM_ARROW_AFTERSHOCK_DURATION_PER_LVL = registerConfigSetting(ConfigUnits.TICKS, new ConfigSetting<>(
          new ListConfigValue<>("stormArrowAftershockDurationPerLvl", List.of(30, 50, 70, 90, 110), new IntConfigValue("stormArrowAftershockDurationPerLvl", 30, new IntConfigValue.IntLimits(0)))));
    
+   // Runic Tether Arrows
+   public static final IConfigSetting<?> TETHER_ARROW_MAX_RANGE = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
+         new DoubleConfigValue("tetherArrowMaxRange", 256.0, new DoubleConfigValue.DoubleLimits(0.0))));
+   public static final IConfigSetting<?> TETHER_ARROW_MAX_SPEED = registerConfigSetting(ConfigUnits.BLOCKS_PER_TICK, new ConfigSetting<>(
+         new DoubleConfigValue("tetherArrowMaxSpeed", 15.0, new DoubleConfigValue.DoubleLimits(0.0))));
+
    // Runic Tracking Arrows
    public static final IConfigSetting<?> TRACKING_ARROW_BROADHEAD_DMG_AMP_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(
          new ListConfigValue<>("trackingArrowBroadheadDmgAmpPerLvl", List.of(0.0, 0.5, 0.5, 0.5), new DoubleConfigValue("trackingArrowBroadheadDmgAmpPerLvl", 0.0, new DoubleConfigValue.DoubleLimits(0.0)))));

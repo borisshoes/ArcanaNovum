@@ -1,12 +1,14 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.events.TetherFlightEvent;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
@@ -181,6 +183,12 @@ public class ServerGamePacketListenerImplMixin {
             }
          }
       }
+   }
+   
+   // Tether Arrows fling players faster than the "moved too quickly" check allows, so moves that follow the launch skip it
+   @ModifyExpressionValue(method = "handlePlayerPositionChange", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;shouldCheckPlayerMovement(Z)Z"))
+   private boolean arcananovum$tetherFlightMoveCheck(boolean original, @Local(name = "xDist") double xDist, @Local(name = "yDist") double yDist, @Local(name = "zDist") double zDist, @Local(name = "deltaPackets") int deltaPackets){
+      return original && !TetherFlightEvent.excuses(player, new Vec3(xDist, yDist, zDist), deltaPackets);
    }
    
    @ModifyVariable(method = "handlePlayerPositionChange", at = @At("STORE"), ordinal = 3)

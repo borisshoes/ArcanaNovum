@@ -21,8 +21,10 @@ import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
+import net.borisshoes.arcananovum.events.TetherFlightEvent;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
+import net.borisshoes.arcananovum.items.arrows.TetherArrows;
 import net.borisshoes.arcananovum.items.charms.WildGrowthCharm;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
 import net.borisshoes.arcananovum.recipes.transmutation.AequalisSkillTransmutationRecipe;
@@ -33,6 +35,8 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
+import net.borisshoes.borislib.config.ConfigValue;
+import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
@@ -40,6 +44,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -48,6 +53,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -67,9 +73,11 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.fish.Cod;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
@@ -82,6 +90,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
@@ -795,6 +804,147 @@ public class RegressionGameTests {
       CompoundTag payload = new CompoundTag();
       payload.putString(ArcanaNovum.ARCANA_CLICK_KEY, command);
       player.connection.handleCustomClickAction(new ServerboundCustomClickActionPacket(ArcanaNovum.ARCANA_CLICK_ACTION_ID, Optional.of(payload)));
+   }
+   
+   // Tether Arrows missed by several blocks: the launch was solved with the wrong drag and separate flight times for height and distance.
+   // These pigs fly through vanilla's own movement code: pulled across the ground, grappled onto a pillar, and pulled with Slow Falling and low gravity
+   @GameTest(maxTicks = 120)
+   public void tetherArrowsLandOnTheirTarget(GameTestHelper helper){
+      for(int x = 0; x < 8; x++){
+         for(int z = 0; z < 8; z++) helper.setBlock(new BlockPos(x, 1, z), Blocks.STONE);
+      }
+      for(int y = 2; y <= 4; y++) helper.setBlock(new BlockPos(6, y, 6), Blocks.STONE);
+      
+      // One lane each, so they can't bump into each other
+      Pig pulled = tetherPig(helper, new Vec3(6.5, 2, 0.5));
+      Pig floaty = tetherPig(helper, new Vec3(7.5, 2, 3));
+      floaty.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 200));
+      floaty.getAttribute(Attributes.GRAVITY).setBaseValue(0.04);
+      Pig grappler = tetherPig(helper, new Vec3(1.5, 2, 6.5));
+      Map<Pig, ArmorStand> shooters = Map.of(
+            pulled, helper.spawn(EntityTypes.ARMOR_STAND, new Vec3(0.5, 2, 0.5)),
+            floaty, helper.spawn(EntityTypes.ARMOR_STAND, new Vec3(0.5, 2, 3)));
+      
+      Map<Pig, Vec3> targets = new HashMap<>();
+      Map<Pig, Vec3> landings = new HashMap<>();
+      Set<Pig> flying = new HashSet<>();
+      helper.runAfterDelay(10, () -> { // Settled on the ground, so the first tick has ground friction
+         for(Pig pig : List.of(pulled, floaty, grappler)) helper.assertTrue(pig.onGround(), "A pig is not on the ground before its launch");
+         
+         shooters.forEach((pig, shooter) -> {
+            double gap = (pig.getBbWidth() + shooter.getBbWidth()) / 2 + TetherArrows.PULL_GAP;
+            targets.put(pig, helper.relativeVec(shooter.position()).add(gap, 0, 0));
+            TetherArrows.launch(pig, inRange(helper, TetherArrows.pull(pig, shooter)));
+         });
+         
+         BlockHitResult hit = new BlockHitResult(helper.absoluteVec(new Vec3(6, 3.5, 6.5)), Direction.WEST, helper.absolutePos(new BlockPos(6, 3, 6)), false);
+         Vec3 spot = TetherArrows.landingSpot(grappler, hit);
+         helper.assertTrue(spot != null && helper.relativeVec(spot).distanceTo(new Vec3(6.5, 5, 6.5)) < 1.0E-6, "The landing spot is not the top of the pillar: " + spot);
+         targets.put(grappler, new Vec3(6.5, 5, 6.5));
+         TetherArrows.launch(grappler, inRange(helper, TetherArrows.grapple(grappler, hit)));
+      });
+      helper.onEachTick(() -> {
+         for(Pig pig : targets.keySet()){
+            if(!pig.onGround()){
+               flying.add(pig);
+            }else if(flying.contains(pig)){
+               landings.putIfAbsent(pig, helper.relativeVec(pig.position()));
+            }
+         }
+      });
+      helper.succeedWhen(() -> {
+         helper.assertTrue(targets.size() == 3, "Not launched yet");
+         targets.forEach((pig, target) -> {
+            Vec3 landing = landings.get(pig);
+            helper.assertTrue(landing != null, "A pig has not landed yet");
+            double miss = landing.subtract(target).horizontalDistance();
+            helper.assertTrue(miss < 0.3 && Math.abs(landing.y - target.y) < 0.1, "A pig aimed at " + target + " landed at " + landing + ", " + miss + " blocks away");
+         });
+      });
+   }
+   
+   private static TetherArrows.Tether inRange(GameTestHelper helper, TetherArrows.Tether tether){
+      helper.assertTrue(tether != null, "A short tether shot failed as out of range");
+      return tether;
+   }
+   
+   // An arrow held still (in a cobweb, say) while its shooter walked far away flung the shooter or the hit mob across the map
+   @GameTest
+   public void tetherArrowsFailOutOfRangeAndCapTheirSpeed(GameTestHelper helper){
+      helper.setBlock(new BlockPos(1, 1, 1), Blocks.STONE);
+      Pig pig = tetherPig(helper, new Vec3(1.5, 2, 1.5));
+      ArmorStand shooter = EntityTypes.ARMOR_STAND.create(helper.getLevel(), EntitySpawnReason.TRIGGERED); // Never added, so its far away chunk stays unloaded
+      helper.runAfterDelay(10, () -> helper.assertTrue(pig.onGround(), "The pig is not on the ground")); // Where long shots need the most speed
+      // Pinned, since the test server's config file keeps whatever values it was first written with
+      helper.runAfterDelay(11, () -> withConfig(ArcanaConfig.TETHER_ARROW_MAX_RANGE, 256.0, () -> withConfig(ArcanaConfig.TETHER_ARROW_MAX_SPEED, 15.0, () -> checkTetherReach(helper, pig, shooter, 256.0, 15.0))));
+   }
+   
+   // Runs with a config value set, then puts the old one back
+   @SuppressWarnings("unchecked")
+   private static void withConfig(IConfigSetting<?> setting, Object value, Runnable action){
+      ConfigValue<Object> config = (ConfigValue<Object>) ArcanaNovum.CONFIG.values.stream().filter(v -> v.getName().equals(setting.getName())).findFirst().orElseThrow();
+      Object old = ArcanaNovum.CONFIG.getValue(setting);
+      config.setValue(value);
+      try{
+         action.run();
+      }finally{
+         config.setValue(old);
+      }
+   }
+   
+   private static void checkTetherReach(GameTestHelper helper, Pig pig, ArmorStand shooter, double range, double maxSpeed){
+      Vec3 start = pig.position();
+      
+      shooter.snapTo(start.x + range + 10, start.y, start.z, 0, 0);
+      helper.assertTrue(TetherArrows.pull(pig, shooter) == null, "A pull from past tetherArrowMaxRange went ahead");
+      shooter.snapTo(start.x + range * 0.8, start.y, start.z, 0, 0); // In range, but needs far more than the speed cap from the ground
+      TetherArrows.Tether far = TetherArrows.pull(pig, shooter);
+      helper.assertTrue(far != null && Math.abs(far.velocity().length() - maxSpeed) < 1.0E-6, "A long pull was not slowed to tetherArrowMaxSpeed: " + far);
+      shooter.snapTo(start.x + 8, start.y, start.z, 0, 0);
+      TetherArrows.Tether near = TetherArrows.pull(pig, shooter);
+      helper.assertTrue(near != null && near.velocity().length() < maxSpeed, "A short pull failed or was capped: " + near);
+      helper.succeed();
+   }
+   
+   // Long tether shots rubber banded players: vanilla's "moved too quickly" check rejected the flight the server had launched
+   @GameTest
+   public void tetherFlightPassesTheMoveCheck(GameTestHelper helper){
+      ServerPlayer flung = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      ServerPlayer walker = survivalPlayer(helper, new BlockPos(3, 2, 1));
+      ServerPlayer strafer = survivalPlayer(helper, new BlockPos(5, 2, 1));
+      Vec3 launch = new Vec3(0, 12, 0); // Straight up, so the accepted moves stay clear of the neighbouring tests
+      TetherFlightEvent.start(flung, launch, 20);
+      TetherFlightEvent.start(strafer, launch, 20);
+      
+      Vec3 up = new Vec3(0, 12.5, 0); // Over 10 blocks in one tick, which vanilla rejects
+      helper.assertTrue(movePlayer(flung, up), "A move along the tether launch was rejected");
+      helper.assertFalse(movePlayer(walker, up), "A fast move with no tether flight got past the check, so this test proves nothing");
+      helper.assertFalse(movePlayer(strafer, new Vec3(9, 8, 0)), "A fast move across the tether launch got past the check");
+      finish(helper, flung, walker, strafer);
+   }
+   
+   // Sends one move packet as a client would. True when the server took the new position, false when it sent the player back
+   private static boolean movePlayer(ServerPlayer player, Vec3 move){
+      try{
+         Field awaiting = ServerGamePacketListenerImpl.class.getDeclaredField("awaitingPositionFromClient");
+         awaiting.setAccessible(true);
+         awaiting.set(player.connection, null); // As if the client confirmed its spawn teleport
+      }catch(ReflectiveOperationException e){
+         throw new RuntimeException("ServerGamePacketListenerImpl.awaitingPositionFromClient changed, update this test", e);
+      }
+      player.setDeltaMovement(Vec3.ZERO); // The server's copy of the velocity has decayed by the time a fast packet arrives
+      Vec3 start = player.position();
+      Vec3 target = start.add(move);
+      player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(target, false, false));
+      if(player.position().distanceTo(target) < 1.0E-6) return true;
+      if(player.position().distanceTo(start) < 1.0E-6) return false;
+      throw new AssertionError("The move ended somewhere else: " + player.position());
+   }
+   
+   private static Pig tetherPig(GameTestHelper helper, Vec3 pos){
+      Pig pig = helper.spawn(EntityTypes.PIG, pos);
+      pig.removeFreeWill(); // Nothing steers it in the air
+      return pig;
    }
    
    /** A connected player in survival, unlike makeMockServerPlayerInLevel which is always creative */
