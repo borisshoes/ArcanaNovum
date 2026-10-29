@@ -18,10 +18,10 @@ import net.borisshoes.arcananovum.gui.ContainerWatcher;
 import net.borisshoes.arcananovum.gui.WatchedContainer;
 import net.borisshoes.arcananovum.gui.arcanesingularity.ArcaneSingularityGui;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.utils.CodecUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.core.*;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
@@ -32,7 +32,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -253,45 +252,9 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
          inventory.addItem(newBook.copy());
          ArcanaItem.putProperty(newBook, ArcaneSingularity.SINGULARITY_TAG, StringTag.valueOf(UUID.randomUUID().toString()));
          inventory.addItem(newBook.copy());
-      }else{ // Remove top enchant
-         HolderSet<Enchantment> registryEntryList = null;
-         Optional<HolderSet.Named<Enchantment>> optional = getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.TOOLTIP_ORDER);
-         if(optional.isPresent()){
-            registryEntryList = optional.get();
-         }
-         
-         Holder<Enchantment> registryEntry = null;
-         int value = 0;
-         int index = Integer.MAX_VALUE;
-         
-         ObjectIterator<Object2IntMap.Entry<Holder<Enchantment>>> iter = enchants.object2IntEntrySet().fastIterator();
-         while(iter.hasNext()){
-            Object2IntMap.Entry<Holder<Enchantment>> entry = iter.next();
-            if(registryEntryList == null){
-               registryEntry = entry.getKey();
-               value = entry.getIntValue();
-               iter.remove();
-               break;
-            }
-            
-            for(int i = 0; i < registryEntryList.size(); i++){
-               if(registryEntryList.get(i).value() == entry.getKey().value() && i < index){
-                  index = i;
-                  registryEntry = entry.getKey();
-                  value = entry.getIntValue();
-               }
-            }
-         }
-         
-         if(registryEntry == null){ // None of the enchantments are in the tooltip order, so take the first one
-            Object2IntMap.Entry<Holder<Enchantment>> first = enchants.object2IntEntrySet().iterator().next();
-            registryEntry = first.getKey();
-            value = first.getIntValue();
-         }
-         
-         Holder<Enchantment> finalRegistryEntry = registryEntry;
-         int finalValue = value;
-         enchants.object2IntEntrySet().removeIf(e -> e.getKey().value() == finalRegistryEntry.value() && finalValue == e.getIntValue());
+      }else{ // Remove top enchant, the first one on the tooltip
+         EnchantmentInstance top = ArcanaItemUtils.getEnchantmentsInTooltipOrder(comp, getLevel().registryAccess()).getFirst();
+         enchants.removeInt(top.enchantment());
          
          for(int i = 0; i < inventory.getItems().size(); i++){
             if(inventory.getItem(i).equals(book)){
@@ -299,7 +262,7 @@ public class ArcaneSingularityBlockEntity extends RandomizableContainerBlockEnti
                break;
             }
          }
-         ItemStack newBook1 = EnchantmentHelper.createBook(new EnchantmentInstance(registryEntry, value));
+         ItemStack newBook1 = EnchantmentHelper.createBook(top);
          ArcanaItem.putProperty(newBook1, ArcaneSingularity.SINGULARITY_TAG, StringTag.valueOf(UUID.randomUUID().toString()));
          inventory.addItem(newBook1.copy());
          

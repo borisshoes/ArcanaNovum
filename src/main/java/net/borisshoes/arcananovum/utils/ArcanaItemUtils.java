@@ -14,16 +14,22 @@ import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.borislib.datastorage.DataAccess;
 import net.borisshoes.borislib.utils.MinecraftUtils;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -34,7 +40,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -357,6 +367,28 @@ public class ArcanaItemUtils {
          inv.setItem(i, ItemStack.EMPTY);
          giveStacks(player, stack);
       }
+   }
+   
+   /**
+    * The enchantments in the order vanilla's tooltip shows them: those in {@code #minecraft:tooltip_order} first, then every other one.
+    * Datapack and modded enchantments are usually missing from the tag, so the second pass is what makes them show up.
+    */
+   public static List<EnchantmentInstance> getEnchantmentsInTooltipOrder(ItemEnchantments enchantments, @Nullable HolderLookup.Provider registries){
+      HolderSet<Enchantment> order = HolderSet.empty();
+      if(registries != null){
+         Optional<HolderSet.Named<Enchantment>> optional = registries.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.TOOLTIP_ORDER);
+         if(optional.isPresent()) order = optional.get();
+      }
+      
+      List<EnchantmentInstance> ordered = new ArrayList<>();
+      for(Holder<Enchantment> enchantment : order){
+         int level = enchantments.getLevel(enchantment);
+         if(level > 0) ordered.add(new EnchantmentInstance(enchantment, level));
+      }
+      for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()){
+         if(!order.contains(entry.getKey())) ordered.add(new EnchantmentInstance(entry.getKey(), entry.getIntValue()));
+      }
+      return ordered;
    }
    
    public static int countRarityInList(List<String> ids, ArcanaRarity rarity, boolean exclude){

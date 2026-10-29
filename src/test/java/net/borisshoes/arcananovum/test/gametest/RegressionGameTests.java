@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.test.gametest;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -17,11 +18,14 @@ import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
+import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
+import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
 import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.events.TetherFlightEvent;
+import net.borisshoes.arcananovum.gui.midnightenchanter.MidnightEnchanterGui;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.arrows.TetherArrows;
@@ -39,6 +43,9 @@ import net.borisshoes.borislib.config.ConfigValue;
 import net.borisshoes.borislib.config.IConfigSetting;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -50,7 +57,9 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -83,7 +92,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -945,6 +958,111 @@ public class RegressionGameTests {
       Pig pig = helper.spawn(EntityTypes.PIG, pos);
       pig.removeFreeWill(); // Nothing steers it in the air
       return pig;
+   }
+   
+   // Arcana item lore only listed enchantments in #minecraft:tooltip_order, so datapack ones (NeoEnchant+) were missing.
+   // The names were also flattened to the server's English text instead of staying translatable.
+   @GameTest
+   public void arcanaLoreListsEnchantmentsOutsideTooltipOrder(GameTestHelper helper){
+      Holder<Enchantment> sharpness = enchantment(helper, Enchantments.SHARPNESS);
+      Holder<Enchantment> untagged = testEnchantment(helper, "untagged_one");
+      ItemStack stack = ArcanaRegistry.GRAVITON_MAUL.getNewItem();
+      stack.enchant(untagged, 2);
+      stack.enchant(sharpness, 3);
+      ArcanaRegistry.GRAVITON_MAUL.buildItemLore(stack, helper.getLevel().getServer());
+      
+      ItemLore lore = stack.get(DataComponents.LORE);
+      helper.assertTrue(lore != null, "The item has no lore");
+      int untaggedLine = loreLineWithKey(lore.lines(), "enchantment.arcananovum-test.untagged_one");
+      int sharpnessLine = loreLineWithKey(lore.lines(), "enchantment.minecraft.sharpness");
+      helper.assertTrue(untaggedLine >= 0, "No translatable lore line for the enchantment outside tooltip_order");
+      helper.assertTrue(sharpnessLine >= 0, "No translatable lore line for Sharpness");
+      helper.assertTrue(sharpnessLine < untaggedLine, "Enchantments in tooltip_order should be listed before the rest");
+      helper.succeed();
+   }
+   
+   // With two or more enchantments and none in #minecraft:tooltip_order, precision disenchanting
+   // left the item as it was and handed back a book with no enchantments
+   @GameTest
+   @SuppressWarnings("removal")
+   public void midnightEnchanterRemovesTopEnchantOutsideTooltipOrder(GameTestHelper helper){
+      ServerPlayer player = helper.makeMockServerPlayerInLevel();
+      BlockPos pos = new BlockPos(1, 1, 1);
+      helper.setBlock(pos, ((ArcanaBlock) ArcanaRegistry.MIDNIGHT_ENCHANTER).getBlock());
+      MidnightEnchanterBlockEntity enchanter = (MidnightEnchanterBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(pos));
+      MidnightEnchanterGui gui = new MidnightEnchanterGui(player, enchanter);
+      
+      ItemStack sword = new ItemStack(Items.DIAMOND_SWORD);
+      sword.enchant(testEnchantment(helper, "untagged_one"), 1);
+      sword.enchant(testEnchantment(helper, "untagged_two"), 2);
+      gui.setItem(sword);
+      
+      try{
+         Method removeTopEnchant = MidnightEnchanterGui.class.getDeclaredMethod("removeTopEnchant");
+         removeTopEnchant.setAccessible(true);
+         Method getStack = MidnightEnchanterGui.class.getDeclaredMethod("getStack");
+         getStack.setAccessible(true);
+         
+         @SuppressWarnings("unchecked")
+         Pair<Holder<Enchantment>, Integer> removed = (Pair<Holder<Enchantment>, Integer>) removeTopEnchant.invoke(gui);
+         ItemStack after = (ItemStack) getStack.invoke(gui);
+         helper.assertTrue(removed.getFirst() != null, "No enchantment was picked to move to the book");
+         helper.assertValueEqual(removed.getSecond(), sword.getEnchantments().getLevel(removed.getFirst()), "Level moved to the book");
+         helper.assertValueEqual(after.getEnchantments().size(), 1, "Enchantments left on the item");
+         helper.assertValueEqual(after.getEnchantments().getLevel(removed.getFirst()), 0, "Level of the moved enchantment left on the item");
+      }catch(ReflectiveOperationException e){
+         throw new RuntimeException(e);
+      }
+      helper.succeed();
+   }
+   
+   // Splitting a book in the Singularity takes off the top enchantment in tooltip order: tagged ones first, then the rest
+   @GameTest
+   public void arcaneSingularitySplitsOffTheTopEnchantInTooltipOrder(GameTestHelper helper){
+      BlockPos pos = new BlockPos(1, 1, 1);
+      helper.setBlock(pos, ((ArcanaBlock) ArcanaRegistry.ARCANE_SINGULARITY).getBlock());
+      ArcaneSingularityBlockEntity singularity = (ArcaneSingularityBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(pos));
+      Holder<Enchantment> sharpness = enchantment(helper, Enchantments.SHARPNESS);
+      Holder<Enchantment> untagged = testEnchantment(helper, "untagged_one");
+      
+      ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+      EnchantmentHelper.updateEnchantments(book, enchants -> {
+         enchants.set(untagged, 2);
+         enchants.set(sharpness, 3);
+      });
+      singularity.addBook(book);
+      helper.assertValueEqual(singularity.splitBook(singularity.getBooks().getFirst()), ArcaneSingularityBlockEntity.SingularityResult.SUCCESS, "Split result");
+      
+      List<ItemEnchantments> books = singularity.getBooks().stream().map(EnchantmentHelper::getEnchantmentsForCrafting).toList();
+      helper.assertValueEqual(books.size(), 2, "Books after the split");
+      helper.assertTrue(books.stream().anyMatch(enchants -> enchants.size() == 1 && enchants.getLevel(sharpness) == 3), "Sharpness was not split off on its own");
+      helper.assertTrue(books.stream().anyMatch(enchants -> enchants.size() == 1 && enchants.getLevel(untagged) == 2), "The enchantment outside tooltip_order was not left on the other book");
+      helper.succeed();
+   }
+   
+   private static Holder<Enchantment> enchantment(GameTestHelper helper, ResourceKey<Enchantment> key){
+      return helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
+   }
+   
+   /** An enchantment from the test data pack, which (like most datapack enchantments) is not in #minecraft:tooltip_order */
+   private static Holder<Enchantment> testEnchantment(GameTestHelper helper, String path){
+      return enchantment(helper, ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath("arcananovum-test", path)));
+   }
+   
+   /** The index of the first lore line holding a translatable with this key, or -1 */
+   private static int loreLineWithKey(List<Component> lines, String key){
+      for(int i = 0; i < lines.size(); i++){
+         if(hasTranslationKey(lines.get(i), key)) return i;
+      }
+      return -1;
+   }
+   
+   private static boolean hasTranslationKey(Component component, String key){
+      if(component.getContents() instanceof TranslatableContents translatable && translatable.getKey().equals(key)) return true;
+      for(Component sibling : component.getSiblings()){
+         if(hasTranslationKey(sibling, key)) return true;
+      }
+      return false;
    }
    
    /** A connected player in survival, unlike makeMockServerPlayerInLevel which is always creative */

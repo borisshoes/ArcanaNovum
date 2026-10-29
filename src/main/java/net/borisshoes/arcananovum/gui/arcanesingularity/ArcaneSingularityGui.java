@@ -28,6 +28,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 
@@ -58,8 +59,8 @@ public class ArcaneSingularityGui extends PagedGui<ItemStack> {
          
          GuiElementBuilder enchantBook = new GuiElementBuilder(Items.ENCHANTED_BOOK).glow();
          enchantBook.setName((Component.literal("Enchanted Book").withStyle(ChatFormatting.YELLOW)));
-         for(Object2IntMap.Entry<Holder<Enchantment>> entry : comp.entrySet()){
-            enchantBook.addLoreLine(TextUtils.removeItalics(Enchantment.getFullname(entry.getKey(), entry.getIntValue())));
+         for(EnchantmentInstance enchant : ArcanaItemUtils.getEnchantmentsInTooltipOrder(comp, player.registryAccess())){
+            enchantBook.addLoreLine(TextUtils.removeItalics(Enchantment.getFullname(enchant.enchantment(), enchant.level())));
          }
          enchantBook.addLoreLine(TextUtils.removeItalics(Component.empty()));
          enchantBook.addLoreLine(TextUtils.removeItalics((Component.literal("")

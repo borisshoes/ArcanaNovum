@@ -1,8 +1,6 @@
 package net.borisshoes.arcananovum.core;
 
 import com.mojang.datafixers.util.Pair;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -22,10 +20,7 @@ import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
@@ -34,7 +29,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.NameAndId;
-import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -46,6 +40,7 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
@@ -578,35 +573,13 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem> {
       }
       
       ItemEnchantments enchantComp = EnchantmentHelper.getEnchantmentsForCrafting(item);
-      Object2IntOpenHashMap<Holder<Enchantment>> enchants = new Object2IntOpenHashMap<>();
-      enchantComp.entrySet().forEach(entry -> enchants.addTo(entry.getKey(), entry.getIntValue()));
-      
-      if(!enchants.isEmpty()){
+      if(!enchantComp.isEmpty()){
          loreList.add(Component.literal(""));
          loreList.add(TextUtils.removeItalics(Component.literal("Enchantments:").withStyle(ChatFormatting.AQUA)));
          
-         HolderSet<Enchantment> registryEntryList = null;
-         if(server != null){
-            Optional<HolderSet.Named<Enchantment>> optional = server.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.TOOLTIP_ORDER);
-            if(optional.isPresent()){
-               registryEntryList = optional.get();
-            }
-         }
-         
-         if(registryEntryList == null){
-            for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchants.object2IntEntrySet()){
-               Holder<Enchantment> registryEntry = entry.getKey();
-               int level = entry.getIntValue();
-               loreList.add(TextUtils.removeItalics(Component.literal(Enchantment.getFullname(registryEntry, level).getString()).withStyle(ChatFormatting.BLUE)));
-            }
-         }else{
-            for(int i = 0; i < registryEntryList.size(); i++){
-               Holder<Enchantment> enchantment = registryEntryList.get(i);
-               if(enchants.containsKey(enchantment)){
-                  int level = enchants.getInt(enchantment);
-                  loreList.add(TextUtils.removeItalics(Component.literal(Enchantment.getFullname(enchantment, level).getString()).withStyle(ChatFormatting.BLUE)));
-               }
-            }
+         // Kept translatable so each client shows the name in its own language
+         for(EnchantmentInstance enchant : ArcanaItemUtils.getEnchantmentsInTooltipOrder(enchantComp, server == null ? null : server.registryAccess())){
+            loreList.add(TextUtils.removeItalics(Enchantment.getFullname(enchant.enchantment(), enchant.level()).copy().withStyle(ChatFormatting.BLUE)));
          }
       }
       

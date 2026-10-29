@@ -5,7 +5,6 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -627,40 +626,9 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       }
       setUpdating();
       
-      HolderSet<Enchantment> registryEntryList = null;
-      Optional<HolderSet.Named<Enchantment>> optional = player.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.TOOLTIP_ORDER);
-      if(optional.isPresent()){
-         registryEntryList = optional.get();
-      }
-      
-      Holder<Enchantment> registryEntry = null;
-      int value = 0;
-      int index = Integer.MAX_VALUE;
-      
-      ObjectIterator<Object2IntMap.Entry<Holder<Enchantment>>> iter = enchants.object2IntEntrySet().fastIterator();
-      while(iter.hasNext()){
-         Object2IntMap.Entry<Holder<Enchantment>> entry = iter.next();
-         if(registryEntryList == null){
-            registryEntry = entry.getKey();
-            value = entry.getIntValue();
-            iter.remove();
-            break;
-         }
-         
-         for(int i = 0; i < registryEntryList.size(); i++){
-            if(registryEntryList.get(i).value() == entry.getKey().value() && i < index){
-               index = i;
-               registryEntry = entry.getKey();
-               value = entry.getIntValue();
-            }
-         }
-      }
-      
-      if(index != Integer.MAX_VALUE && registryEntry != null){
-         Holder<Enchantment> finalRegistryEntry = registryEntry;
-         int finalValue = value;
-         enchants.object2IntEntrySet().removeIf(e -> e.getKey().value() == finalRegistryEntry.value() && finalValue == e.getIntValue());
-      }
+      // The top enchant is the first one on the tooltip, which may be one outside #minecraft:tooltip_order
+      EnchantmentInstance top = ArcanaItemUtils.getEnchantmentsInTooltipOrder(comp, player.registryAccess()).getFirst();
+      enchants.removeInt(top.enchantment());
       
       ItemEnchantments.Mutable enchantBuilder = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
       enchants.forEach(enchantBuilder::upgrade);
@@ -668,7 +636,7 @@ public class MidnightEnchanterGui extends PagedGui<MidnightEnchanterGui.EnchantE
       
       setItem(getStack());
       finishUpdate();
-      return Pair.of(registryEntry, value);
+      return Pair.of(top.enchantment(), top.level());
    }
    
    public void setItem(ItemStack stack){

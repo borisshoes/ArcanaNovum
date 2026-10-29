@@ -242,7 +242,7 @@ public class ArcanaConfig {
    public static final IConfigSetting<?> TETHER_ARROW_MAX_RANGE = registerConfigSetting(ConfigUnits.BLOCKS, new ConfigSetting<>(
          new DoubleConfigValue("tetherArrowMaxRange", 256.0, new DoubleConfigValue.DoubleLimits(0.0))));
    public static final IConfigSetting<?> TETHER_ARROW_MAX_SPEED = registerConfigSetting(ConfigUnits.BLOCKS_PER_TICK, new ConfigSetting<>(
-         new DoubleConfigValue("tetherArrowMaxSpeed", 15.0, new DoubleConfigValue.DoubleLimits(0.0))));
+         new DoubleConfigValue("tetherArrowMaxSpeed", 25.0, new DoubleConfigValue.DoubleLimits(0.0))));
 
    // Runic Tracking Arrows
    public static final IConfigSetting<?> TRACKING_ARROW_BROADHEAD_DMG_AMP_PER_LVL = registerConfigSetting(ConfigUnits.MULTIPLIER, new ConfigSetting<>(

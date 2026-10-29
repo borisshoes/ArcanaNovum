@@ -273,7 +273,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 
 ### Runic Tether Arrows
 * `/arcana config tetherArrowMaxRange` Runic Tether Arrows fail outright when what they would move is farther than this from its target. (default: 256.0)
-* `/arcana config tetherArrowMaxSpeed` Runic Tether Arrow launches faster than this (in blocks per tick) are slowed to it and fall short. (default: 15.0)
+* `/arcana config tetherArrowMaxSpeed` Runic Tether Arrow launches faster than this (in blocks per tick) are slowed to it and fall short. (default: 25.0)
 
 ### Runic Tracking Arrows
 * `/arcana config trackingArrowBroadheadDmgAmpPerLvl` The damage amplification percentage from the Broadheads augment for Runic Tracking Arrows. (default: [0.0, 0.5, 0.5, 0.5])
