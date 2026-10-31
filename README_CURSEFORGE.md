@@ -6,7 +6,7 @@
 
 [![Minecraft Version](https://cf.way2muchnoise.eu/versions/Minecraft_1331014_latest.svg?badge_style=for_the_badge)](https://www.curseforge.com/minecraft/mc-mods/arcana-novum/files) [![Server-side](https://img.shields.io/badge/Environment-Server--side-C65135?style=for-the-badge)](https://www.curseforge.com/minecraft/mc-mods/arcana-novum/files) [![Requires Fabric API](https://img.shields.io/badge/Requires-Fabric_API-DBD0B4?style=for-the-badge)](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
 
-[![Wiki](https://img.shields.io/badge/Wiki-Read_the_docs-8A2BE2?style=for-the-badge&logo=bookstack&logoColor=white)](https://arcanawiki.borisshoes.net) [![Discord](https://img.shields.io/discord/1403978074550439966?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/dTKPeNEg6r) [![Source](https://img.shields.io/badge/Source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/borisshoes/ArcanaNovum)
+[![Wiki](https://img.shields.io/badge/Wiki-Read_the_docs-8A2BE2?style=for-the-badge&logo=bookstack&logoColor=white)](https://arcanawiki.borisshoes.net) [![Discord](https://img.shields.io/discord/1403978074550439966?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/dTKPeNEg6r) [![Source](https://img.shields.io/badge/Source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/borisshoes/ArcanaNovum) [![Donate](https://img.shields.io/badge/Support-Donate-EA4AAA?style=for-the-badge)](https://borisshoes.net/donate)
 
 ## Features
 
@@ -55,7 +55,7 @@ The **[Arcana Novum Wiki](https://arcanawiki.borisshoes.net)** documents every [
 - `/arcana blocks` Lists all of your placed Arcana Blocks, including their location and dimension.
 - `/arcana version` Shows the current Arcana Novum mod version.
 
-Admins have commands for creating items, managing XP, skill points, research, achievements and augments, and running boss fights. Every config value can be viewed and changed in game with `/arcana config <setting> [value]`, and every command has a [Fabric Permissions API](https://github.com/lucko/fabric-permissions-api) node with a vanilla permission level fallback.
+Admins have commands for creating items, managing XP, skill points, research, achievements and augments, and running boss fights. Every config value can be viewed and changed in game with `/arcana config <setting> [value]` and reset with `/arcana config reset <setting>`, and every command has a [Fabric Permissions API](https://github.com/lucko/fabric-permissions-api) node with a vanilla permission level fallback.
 
 The full reference is on GitHub: [commands](https://github.com/borisshoes/ArcanaNovum#commands), [configuration](https://github.com/borisshoes/ArcanaNovum#configuration) and [permission nodes](https://github.com/borisshoes/ArcanaNovum#permission-nodes).
 
@@ -75,6 +75,25 @@ All server-side Fabric mods — no client installation required.
 ## Support
 
 Questions go to the [Discord](https://discord.gg/dTKPeNEg6r), and bug reports and suggestions go to [GitHub Issues](https://github.com/borisshoes/ArcanaNovum/issues).
+
+## Support My Work
+
+Arcana Novum, BorisLib and every other mod I build are free and will stay that way. I make them in my spare time, so if they have been useful to you or your server and you would like to help keep development going, you can chip in at [borisshoes.net/donate](https://borisshoes.net/donate). Every bit is always appreciated.
+
+As my thanks, supporters get Arcana Novum skins, along with a special role and channel on the [Discord](https://discord.gg/dTKPeNEg6r):
+
+- **Every supporter** gets the Gilded Tome.
+- **Monthly supporters** also pick one skin to have for that month for every $5 they donate. The whole catalog is previewed on the [donation page](https://borisshoes.net/donate).
+
+| Gilded Tome | Zephos's Lance | Aequalis Rights (Pride) |
+|:---:|:---:|:---:|
+| ![The Gilded Tome skin](https://raw.githubusercontent.com/borisshoes/ArcanaNovum/main/non-mod-resources/item_skin_previews/gilded_tome_128.png) | ![The Zephos's Lance skin](https://raw.githubusercontent.com/borisshoes/ArcanaNovum/main/non-mod-resources/item_skin_previews/zephos_lance_128.gif) | ![The Aequalis Rights (Pride) skin](https://raw.githubusercontent.com/borisshoes/ArcanaNovum/main/non-mod-resources/item_skin_previews/aequalis_rights_pride_128.png) |
+| Tome of Arcana Novum | Spear of Tenbrous | Aequalis Scientia |
+
+| Candy Crate | Vestige of Zeraiya |
+|:---:|:---:|
+| ![The Candy Crate skin](https://raw.githubusercontent.com/borisshoes/ArcanaNovum/main/non-mod-resources/item_skin_previews/candy_crate.png) | ![The Vestige of Zeraiya skin](https://raw.githubusercontent.com/borisshoes/ArcanaNovum/main/non-mod-resources/item_skin_previews/vestige_of_zeraiya.gif) |
+| Ender Crate | Armored Wings of Enderia |
 
 ### License Notice
 

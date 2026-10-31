@@ -13,6 +13,7 @@
 
 [![Wiki](https://img.shields.io/badge/Wiki-Read_the_docs-8A2BE2?style=for-the-badge&logo=bookstack&logoColor=white)](https://arcanawiki.borisshoes.net)
 [![Discord](https://img.shields.io/discord/1403978074550439966?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/dTKPeNEg6r)
+[![Donate](https://img.shields.io/badge/Support-Donate-EA4AAA?style=for-the-badge)](https://borisshoes.net/donate)
 [![Requires Fabric API](https://img.shields.io/badge/Requires-Fabric_API-DBD0B4?style=for-the-badge)](https://modrinth.com/mod/fabric-api)
 [![Server-side](https://img.shields.io/badge/Environment-Server--side-C65135?style=for-the-badge)](#installation)
 
@@ -31,6 +32,7 @@ Arcana Novum is a Fabric magic mod that only needs to be installed on the server
 - [Permission Nodes](#permission-nodes)
 - [Building from Source](#building-from-source)
 - [Support and Contributing](#support-and-contributing)
+- [Support My Work](#support-my-work)
 - [Try My Other Mods!](#try-my-other-mods)
 - [License](#license)
 
@@ -120,6 +122,8 @@ Arcana recipes are loaded from the JSON files in `config/arcananovum/recipes/<re
 * ```/arcana create <id> [<targets>]``` Creates an Arcana Item by its ID and gives it to yourself, or to the specified target players.
 * ```/arcana cache``` Opens the Compendium GUI for browsing and retrieving Arcana Items and ingredients.
 * ```/arcana reload``` Reloads the Arcana Novum configuration and refreshes recipes.
+* ```/arcana config reset <setting>``` Resets a config setting to its default value.
+* ```/arcana config resetAll``` Resets every config setting to its default value. This runs immediately, with no confirmation.
 * ```/arcana blocks <player>``` Lists all of a specified player's placed Arcana Blocks.
 * ```/arcana uuids <player>``` Lists all Arcana Items in a player's inventory with their unique IDs, and flags any duplicates.
 * ```/arcana infuse <percentage> [<target>]``` Infuses the held item to the specified enhancement percentage (0-100). Use 0 to strip enhancements.
@@ -157,7 +161,7 @@ Arcana recipes are loaded from the JSON files in `config/arcananovum/recipes/<re
 * ```/arcana specialEvent trigger <players> zeraiya``` Triggers the Zeraiya special event for the selected players.
 
 ## Configuration
-All configuration values can be viewed and changed with `/arcana config <setting> [value]`. Omitting the value will display the current setting. Changes take effect immediately and are persisted across restarts. The values are stored in `config/arcananovum/ArcanaNovum.properties`, and the same list is on the wiki under [Configuration Options](https://arcanawiki.borisshoes.net/wiki/Configuration_Options).
+All configuration values can be viewed and changed with `/arcana config <setting> [value]`. Omitting the value will display the current setting. `/arcana config reset <setting>` puts one setting back to its default, and `/arcana config resetAll` does the same for every setting. Changes take effect immediately and are persisted across restarts. The values are stored in `config/arcananovum/ArcanaNovum.properties`, and the same list is on the wiki under [Configuration Options](https://arcanawiki.borisshoes.net/wiki/Configuration_Options).
 
 ### General Settings
 * `/arcana config recipeFolder` The subfolder that is used to currently load recipes for Arcana. (default: "default")
@@ -854,13 +858,14 @@ Arcana Novum uses the [Fabric Permissions API](https://github.com/lucko/fabric-p
 | `arcananovum.specialevent.trigger.zeraiya` | `GAMEMASTERS` | Force-trigger the Zeraiya event via `/arcana specialEvent trigger <players> zeraiya` |
 
 ### Config Commands
-Config commands are generated dynamically by BorisLib's `ConfigManager`. See the [BorisLib documentation](https://github.com/borisshoes/BorisLib) for details.
+Config commands are generated dynamically by BorisLib's `ConfigManager`. See the [BorisLib documentation](https://github.com/borisshoes/BorisLib) for details. `<name>` is the setting's name in lower case.
 
 | Node | Default | Description |
 |------|---------|-------------|
 | `arcananovum.config` | `GAMEMASTERS` | List all config values via `/arcana config` |
 | `arcananovum.config.<name>.get` | `GAMEMASTERS` | Read a specific config value |
-| `arcananovum.config.<name>.set` | `GAMEMASTERS` | Change a specific config value |
+| `arcananovum.config.<name>.set` | `GAMEMASTERS` | Change a specific config value, or reset it with `/arcana config reset <name>` |
+| `arcananovum.config.reset_all` | `GAMEMASTERS` | Reset every config value to its default via `/arcana config resetAll` |
 
 ## Building from Source
 Building requires JDK 25.
@@ -875,6 +880,20 @@ The mod jar is written to `build/libs/`.
 - Questions and discussion: [Discord](https://discord.gg/dTKPeNEg6r)
 - Bug reports and suggestions: [GitHub Issues](https://github.com/borisshoes/ArcanaNovum/issues)
 - The [wiki](https://arcanawiki.borisshoes.net) is open for anyone to edit.
+
+## Support My Work
+Arcana Novum, BorisLib and every other mod I build are free and will stay that way. I make them in my spare time, so if they have been useful to you or your server and you would like to help keep development going, you can chip in at [borisshoes.net/donate](https://borisshoes.net/donate). Every bit is always appreciated.
+
+As my thanks, supporters get Arcana Novum skins, along with a special role and channel on the [Discord](https://discord.gg/dTKPeNEg6r):
+- **Every supporter** gets the Gilded Tome.
+- **Monthly supporters** also pick one skin to have for that month for every $5 they donate. The whole catalog is previewed on the [donation page](https://borisshoes.net/donate).
+
+| Gilded Tome | Zephos's Lance | Aequalis Rights (Pride) | Candy Crate | Vestige of Zeraiya |
+|:---:|:---:|:---:|:---:|:---:|
+| <img src="non-mod-resources/item_skin_previews/gilded_tome_128.png" alt="The Gilded Tome skin" width="128"> | <img src="non-mod-resources/item_skin_previews/zephos_lance_128.gif" alt="The Zephos's Lance skin" width="128"> | <img src="non-mod-resources/item_skin_previews/aequalis_rights_pride_128.png" alt="The Aequalis Rights (Pride) skin" width="128"> | <img src="non-mod-resources/item_skin_previews/candy_crate.png" alt="The Candy Crate skin" width="128"> | <img src="non-mod-resources/item_skin_previews/vestige_of_zeraiya.gif" alt="The Vestige of Zeraiya skin" width="128"> |
+| Tome of Arcana Novum | Spear of Tenbrous | Aequalis Scientia | Ender Crate | Armored Wings of Enderia |
+
+Skins only change how an item looks, not what it does. Unlocks are tied to your Minecraft account, so they work on any online-mode server running Arcana Novum with skins enabled. You can pick a skin you have when forging an item at the Starlight Forge, or apply one to an existing item with a Transmogrification Catalyst at the Transmutation Altar.
 
 ## Try My Other Mods!
 All server-side Fabric mods — no client installation required.
