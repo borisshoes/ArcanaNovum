@@ -28,6 +28,7 @@ import net.borisshoes.arcananovum.events.TetherFlightEvent;
 import net.borisshoes.arcananovum.gui.midnightenchanter.MidnightEnchanterGui;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
+import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.arrows.TetherArrows;
 import net.borisshoes.arcananovum.items.charms.WildGrowthCharm;
 import net.borisshoes.arcananovum.recipes.RecipeManager;
@@ -88,6 +89,7 @@ import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.ItemStack;
@@ -580,6 +582,67 @@ public class RegressionGameTests {
       finish(helper, player);
    }
    
+   // Flak multipliers carried over between targets, so a player caught in a blast after 5 airborne phantoms took 9375 damage and lost a full set of netherite
+   @GameTest
+   public void arcaneFlakDamageDoesNotCompoundBetweenTargets(GameTestHelper helper){
+      List<Phantom> phantoms = flakPhantoms(helper);
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(4, 4, 5));
+      player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.NETHERITE_CHESTPLATE));
+
+      ArcaneFlakArrows.detonate(flakArrow(helper, player), 4.0);
+
+      ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
+      helper.assertFalse(chestplate.isEmpty(), "The blast destroyed a netherite chestplate");
+      helper.assertTrue(chestplate.getDamageValue() > 0 && chestplate.getDamageValue() <= 5, "The blast took " + chestplate.getDamageValue() + " durability, expected at most 5 on any difficulty");
+      for(Phantom phantom : phantoms){
+         helper.assertFalse(phantom.isDeadOrDying(), "One arrow killed a full health phantom, 15 damage should leave it alive");
+         phantom.discard();
+      }
+      finish(helper, player);
+   }
+
+   // Aerial Bane is meant to take two arrows: the first leaves the phantoms low and the second kills them all
+   @GameTest
+   public void aerialBaneTakesTwoArcaneFlakArrows(GameTestHelper helper){
+      ServerPlayer shooter = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      List<Phantom> phantoms = flakPhantoms(helper);
+
+      ArcaneFlakArrows.detonate(flakArrow(helper, shooter), 4.0);
+      ArcanaAchievement achievement = ArcanaNovum.data(shooter).getAchievement(ArcanaAchievements.AA_ARTILLERY);
+      helper.assertFalse(achievement != null && achievement.isAcquired(), "Aerial Bane was granted after one arrow");
+      for(Phantom phantom : phantoms){
+         helper.assertFalse(phantom.isDeadOrDying(), "The first arrow killed a phantom");
+         phantom.damageCooldownTime = 0; // The second arrow arrives after the hurt cooldown
+      }
+
+      ArcaneFlakArrows.detonate(flakArrow(helper, shooter), 4.0);
+      for(Phantom phantom : phantoms){
+         helper.assertTrue(phantom.isDeadOrDying(), "The second arrow did not kill a phantom");
+         phantom.discard();
+      }
+      achievement = ArcanaNovum.data(shooter).getAchievement(ArcanaAchievements.AA_ARTILLERY);
+      helper.assertTrue(achievement != null && achievement.isAcquired(), "Aerial Bane was not granted");
+      finish(helper, shooter);
+   }
+
+   /** Five airborne phantoms around the point flakArrow detonates at */
+   private static List<Phantom> flakPhantoms(GameTestHelper helper){
+      List<Phantom> phantoms = new ArrayList<>();
+      for(BlockPos pos : List.of(new BlockPos(4, 4, 4), new BlockPos(3, 4, 4), new BlockPos(5, 4, 4), new BlockPos(4, 4, 3), new BlockPos(4, 5, 4))){
+         phantoms.add(helper.spawn(EntityTypes.PHANTOM, pos));
+      }
+      return phantoms;
+   }
+
+   private static Arrow flakArrow(GameTestHelper helper, ServerPlayer owner){
+      Arrow arrow = EntityTypes.ARROW.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+      Vec3 pos = helper.absoluteVec(new Vec3(4.5, 4, 4.5));
+      arrow.snapTo(pos.x, pos.y, pos.z, 0, 0);
+      arrow.setOwner(owner);
+      arrow.setDeltaMovement(0, 0, 3); // A fully drawn bow, which makes the arrow's damage percentage 1
+      return arrow;
+   }
+
    // Alchemical field Harming was unattributed magic damage, so its kills gave the shooter no kill credit (no XP, player loot or Arcana kill effects)
    @GameTest
    public void alchemicalFieldHarmingGivesTheShooterKillCredit(GameTestHelper helper){

@@ -105,10 +105,10 @@ public class ArcaneFlakArrows extends RunicArrow {
             e -> !e.isSpectator() && e.distanceTo(arrow) <= damageRange && e instanceof LivingEntity);
       for(Entity entity : triggerTargets){
          if(entity instanceof LivingEntity e){
-            damage *= e.onGround() ? 1f : multiplier;
-            damage *= e.distanceTo(arrow) > damageRange * .66 ? 0.5f : 1;
+            float targetDamage = damage * (e.onGround() ? 1f : multiplier);
+            targetDamage *= e.distanceTo(arrow) > damageRange * .66 ? 0.5f : 1;
             DamageSource source = arrow.damageSources().explosion(arrow, arrow.getOwner());
-            e.hurtServer(serverWorld, source, damage);
+            e.hurtServer(serverWorld, source, targetDamage);
             if(e instanceof Phantom && e.isDeadOrDying()) deadPhantomCount++;
          }
       }
