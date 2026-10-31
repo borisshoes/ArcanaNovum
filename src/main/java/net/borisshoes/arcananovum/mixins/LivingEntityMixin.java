@@ -329,7 +329,7 @@ public abstract class LivingEntityMixin {
                
                toRemove.forEach(ShieldTimerCallback::onTimer);
                SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains); // Remove all absorption callbacks
-               int duration = 200 + 100 * ArcanaAugments.getAugmentOnItem(shieldStack, ArcanaAugments.SHIELD_OF_RESILIENCE);
+               int duration = ArcanaNovum.CONFIG.getInt(ArcanaConfig.SHIELD_OF_FORTITUDE_DURATION) + ArcanaNovum.CONFIG.getIntList(ArcanaConfig.SHIELD_OF_FORTITUDE_DURATION_PER_LVL).get(ArcanaAugments.getAugmentOnItem(shieldStack, ArcanaAugments.SHIELD_OF_RESILIENCE));
                BorisLib.addTickTimerCallback(new ShieldTimerCallback(duration, shieldStack, player, 20)); // Put 10 hearts back
                MinecraftUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID, 20f);
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
@@ -491,7 +491,7 @@ public abstract class LivingEntityMixin {
             ServerLevel world = player.level();
             Vec3 pos = player.position().add(0, player.getBbHeight() / 2, 0);
             AABB rangeBox = new AABB(pos.x + buffetRange * 1.5, pos.y + buffetRange * 1.5, pos.z + buffetRange * 1.5, pos.x - buffetRange * 1.5, pos.y - buffetRange * 1.5, pos.z - buffetRange * 1.5);
-            List<Entity> entities = world.getEntities(entity, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 1.25 * buffetRange * buffetRange && (e instanceof Mob));
+            List<Entity> entities = world.getEntities(entity, rangeBox, e -> !e.isSpectator() && e.distanceToSqr(pos) < 1.25 * buffetRange * buffetRange && (e instanceof Mob || e instanceof ServerPlayer));
             boolean triggered = false;
             for(Entity entity1 : entities){
                if(EnergyItem.getEnergy(chestItem) < 50) break;

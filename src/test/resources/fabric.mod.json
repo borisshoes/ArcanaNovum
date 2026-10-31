@@ -12,7 +12,13 @@
       "net.borisshoes.arcananovum.test.gametest.RecipeIntegrityGameTests",
       "net.borisshoes.arcananovum.test.gametest.GuiStackGameTests",
       "net.borisshoes.arcananovum.test.gametest.RegressionGameTests",
-      "net.borisshoes.arcananovum.test.gametest.SkinPreferenceGameTests"
+      "net.borisshoes.arcananovum.test.gametest.SkinPreferenceGameTests",
+      "net.borisshoes.arcananovum.test.gametest.ArrowGameTests",
+      "net.borisshoes.arcananovum.test.gametest.CharmGameTests",
+      "net.borisshoes.arcananovum.test.gametest.ItemGameTests",
+      "net.borisshoes.arcananovum.test.gametest.GearGameTests",
+      "net.borisshoes.arcananovum.test.gametest.BlockGameTests",
+      "net.borisshoes.arcananovum.test.gametest.CoverageGameTests"
     ]
   },
   "mixins": [

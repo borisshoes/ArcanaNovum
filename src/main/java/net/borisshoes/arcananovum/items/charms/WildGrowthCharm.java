@@ -212,7 +212,7 @@ public class WildGrowthCharm extends ArcanaItem implements GeomanticStele.Intera
             }else if(bloom && BoneMealItem.growCrop(new ItemStack(Items.BONE_MEAL, 64), world, blockPos)){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
                world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 2, 0.5, 0.5, 0.5, 1);
-            }else if(bloom && BoneMealItem.growWaterPlant(new ItemStack(Items.BONE_MEAL, 64), world, blockPos, Direction.getRandom(player.getRandom()))){
+            }else if(bloom && BoneMealItem.growWaterPlant(new ItemStack(Items.BONE_MEAL, 64), world, blockPos, Direction.getRandom(world.getRandom()))){
                world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, blockPos, 15);
                world.sendParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x, blockCenter.y, blockCenter.z, 2, 0.5, 0.5, 0.5, 1);
             }else{

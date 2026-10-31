@@ -119,6 +119,12 @@
     INVOKEVIRTUAL net/minecraft/world/entity/LivingEntity.getUUID ()Ljava/util/UUID;
     INVOKEVIRTUAL net/borisshoes/borislib/datastorage/ConditionData.getOrCreate (Ljava/util/UUID;)Lnet/borisshoes/borislib/conditions/EntityConditions;
     ASTORE 8
+    ALOAD 8
+    ALOAD 4
+    INVOKEVIRTUAL net/minecraft/server/level/ServerLevel.getGameTime ()J
+    ALOAD 1
+    INSTANCEOF net/minecraft/world/entity/player/Player
+    INVOKEVIRTUAL net/borisshoes/borislib/conditions/EntityConditions.markSeen (JZ)V
     ALOAD 1
     CHECKCAST net/borisshoes/borislib/conditions/ConditionHolder
     ALOAD 8

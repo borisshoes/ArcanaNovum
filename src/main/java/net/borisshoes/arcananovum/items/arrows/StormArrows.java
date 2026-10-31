@@ -94,7 +94,7 @@ public class StormArrows extends RunicArrow {
       int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK);
       strike(arrow, entityHitResult.getLocation(), stableLvl, shockLvl);
       if(chainLvl > 0) chainLightning(arrow, entityHitResult.getEntity(), chainLvl);
-      entityHitResult.getEntity().setInvulnerableTime(1);
+      if(entityHitResult.getEntity() instanceof LivingEntity living) living.damageCooldownTime = 1;
    }
    
    @Override
@@ -144,7 +144,7 @@ public class StormArrows extends RunicArrow {
       List<LivingEntity> hits = new ArrayList<>();
       if(hitEntity instanceof LivingEntity le) hits.add(le);
       for(Entity entity : entities){
-         if(entity instanceof LivingEntity e){
+         if(entity instanceof LivingEntity e && e != hitEntity){
             if(hits.size() < lvl + 1){
                if(!hits.isEmpty()){
                   LivingEntity lastHit = hits.getLast();
@@ -155,7 +155,7 @@ public class StormArrows extends RunicArrow {
                }
                
                DamageSource source = ArcanaDamageTypes.of(world, ArcanaDamageTypes.ARCANE_LIGHTNING, arrow, arrow.getOwner());
-               e.setInvulnerableTime(1);
+               e.damageCooldownTime = 1;
                e.hurtServer(world, source, damage);
                hits.add(e);
             }

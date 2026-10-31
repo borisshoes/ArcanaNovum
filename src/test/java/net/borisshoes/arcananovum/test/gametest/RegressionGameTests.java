@@ -119,6 +119,7 @@ public class RegressionGameTests {
    
    // Bone Smasher was never granted because its hook sat on a call that 26.3 only makes for named mobs
    @GameTest
+   @Covers("bone_smasher")
    @SuppressWarnings("removal")
    public void boneSmasherGrantedForOneHitWitherKill(GameTestHelper helper){
       ServerPlayer player = helper.makeMockServerPlayerInLevel();

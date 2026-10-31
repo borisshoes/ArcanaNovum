@@ -231,7 +231,7 @@ public class EssenceEgg extends ArcanaItem {
                            player.sendSystemMessage(Component.literal("The Spawner Assumes the Essence of " + entityType.getDescription().getString()).withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.ITALIC), true);
                            SoundUtils.playSongToPlayer(player, SoundEvents.ZOMBIE_VILLAGER_CURE, 1, .7f);
                            int xp = ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_ESSENCE_EGG_CONVERT);
-                           ArcanaNovum.data(playerEntity).addXP(Math.min(0, xp * cost / Math.max(1, baseConvertCost))); // Add xp
+                           ArcanaNovum.data(playerEntity).addXP(Math.max(0, xp * cost / Math.max(1, baseConvertCost))); // Add xp
                            ArcanaAchievements.grant(player, ArcanaAchievements.SOUL_CONVERSION);
                         }
                         addUses(stack, -cost);

@@ -160,7 +160,7 @@ public class EverlastingRocket extends EnergyItem {
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          if(arcanaItem instanceof EverlastingRocket rocket && getUUID(item).equals(rocketId)){
             rocket.addEnergy(item, -1);
-            rocket.buildItemLore(stack, player.level().getServer());
+            rocket.buildItemLore(item, player.level().getServer());
             ArcanaAchievements.progress(player, ArcanaAchievements.MISSILE_LAUNCHER, 1);
             ArcanaNovum.data(player).addXP(ArcanaNovum.CONFIG.getInt(ArcanaConfig.XP_EVERLASTING_ROCKET_USE)); // Add xp
             return;

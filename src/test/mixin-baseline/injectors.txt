@@ -119,7 +119,7 @@ target net/minecraft/world/item/consume_effects/ClearAllStatusEffectsConsumeEffe
 target net/borisshoes/borislib/conditions/Conditions extends java/lang/Object
 
 [ConditionsMixin#arcananovum$onConditionAdd]
-@Inject -> net/borisshoes/borislib/conditions/Conditions.addCondition(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/world/entity/LivingEntity;Lnet/borisshoes/borislib/conditions/ConditionInstance;Z)Lnet/borisshoes/borislib/conditions/Conditions$AddResult; listing 95e974777b4a
+@Inject -> net/borisshoes/borislib/conditions/Conditions.addCondition(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/world/entity/LivingEntity;Lnet/borisshoes/borislib/conditions/ConditionInstance;Z)Lnet/borisshoes/borislib/conditions/Conditions$AddResult; listing 63730528cb0d
   at RETURN: 6 matches [conditional, conditional, conditional, conditional, conditional, conditional]
 
 [CreeperMixin]
