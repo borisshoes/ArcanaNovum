@@ -71,6 +71,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer, ContainerWatcher, PolymerObject, ArcanaBlockEntity, Portal {
    
@@ -105,6 +106,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    private boolean forceConvex;
    private boolean tryFind = false;
    private boolean closeAsap = false;
+   private boolean transitioning = false;
    private int openingStardust;
    private int stardustPerMinute;
    private double stardustAccumulator;
@@ -114,6 +116,8 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    private ElementHolder hologram;
    private HolderAttachment attachment;
    private static final int LOCK_DURATION = 100;
+   private static final int FRAME_SEARCH_INTERVAL = 5;
+   private long lastFrameSearch = -FRAME_SEARCH_INTERVAL;
    
    public AstralGatewayBlockEntity(BlockPos blockPos, BlockState blockState){
       super(ArcanaRegistry.ASTRAL_GATEWAY_BLOCK_ENTITY, blockPos, blockState);
@@ -181,7 +185,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       
       if(state == GatewayState.CLOSED){
          if(this.frame == null){
-            if(findCooldown == 0 && tryFind){
+            if(findCooldown == 0 && tryFind && canSearchForFrame(serverWorld)){
                validateOrFindGateway(serverWorld);
                tryFind = false;
                findCooldown = 100;
@@ -223,6 +227,8 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
                   int cooldownDelay = ticksPerLayer * (maxDepth - entry.getValue() + 1) + serverWorld.getRandom().nextInt(ticksPerLayer);
                   int initialKeepAlive = LOCK_DURATION + (warmupDuration - warmupDelay) + 1 + cooldownDelay;
                   BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(warmupDelay, () -> {
+                     GatewayState currentState = getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
+                     if(isRemoved() || (currentState != GatewayState.WARMUP && currentState != GatewayState.LOCKED_OPEN)) return; // Closed during warmup
                      serverWorld.setBlock(entry.getKey(), ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
                      BlockEntity be = serverWorld.getBlockEntity(entry.getKey());
                      if(be instanceof AstralGatewayPortalBlockEntity portalEntity){
@@ -280,7 +286,8 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          }
          setChanged();
       }
-      stateTime++;
+      // A state change this tick (like redialling as the cooldown ends) has to reach its next tick with stateTime 0, the warmup builds the portal then
+      if(getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) == state) stateTime++;
    }
    
    private GatewayFrame findFrame(ServerLevel serverWorld){
@@ -324,6 +331,31 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       return level.noCollision(entityBox);
    }
    
+   /**
+    * The mapped cell if the entity fits there, otherwise the nearest enclosed cell it fits in.
+    * An entity that fits nowhere stays on the mapped cell.
+    */
+   private BlockPos findArrivalCell(BlockPos mapped, Set<BlockPos> enclosed, Entity entity, Level level){
+      Predicate<BlockPos> fits = pos -> hasEnoughClearance(Vec3.atBottomCenterOf(pos), entity.getBbWidth(), entity.getBbHeight(), level);
+      if(fits.test(mapped)) return mapped;
+      BlockPos cell = enclosed.stream()
+            .sorted(Comparator.<BlockPos>comparingDouble(pos -> pos.distSqr(mapped)).thenComparingInt(BlockPos::getY))
+            .filter(fits)
+            .findFirst()
+            .orElse(mapped);
+      while(enclosed.contains(cell.below()) && fits.test(cell.below())){
+         cell = cell.below();
+      }
+      return cell;
+   }
+   
+   /**
+    * Whether a portal's U coordinate grows toward the right of an entity heading this way through it.
+    */
+   private static boolean uRunsRight(Direction heading){
+      return heading == Direction.NORTH || heading == Direction.EAST;
+   }
+   
    @Override
    public @Nullable TeleportTransition getPortalDestination(ServerLevel serverLevel, Entity entity, BlockPos blockPos){
       if(!(entity.level() instanceof ServerLevel sourceLevel)){
@@ -331,7 +363,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       }
       
       AstralGatewayBlockEntity synced = getSyncedGateway();
-      if(synced == null || synced == this || synced.frame == null){
+      if(synced == null || synced == this || synced.frame == null || this.frame == null){
          return null;
       }
       
@@ -387,6 +419,11 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          sourceV = (double) offset.getY() / sourceBounds.getSecond();
       }
       
+      // U follows a world axis, which can swap the entity's left and right depending on how the rotation above turns it
+      if(!thisY && !thatY && sourceDir.getAxis() == sourceAxis && destDir.getAxis() == destAxis && uRunsRight(sourceDir) != uRunsRight(Direction.fromYRot(sourceDir.toYRot() + finalYaw))){
+         sourceU = (double) (sourceBounds.getFirst() - 1 - (sourceAxis == Direction.Axis.X ? offset.getZ() : offset.getX())) / sourceBounds.getFirst();
+      }
+      
       int minDestX = Integer.MAX_VALUE, minDestY = Integer.MAX_VALUE, minDestZ = Integer.MAX_VALUE;
       for(BlockPos pos : destEnclosed){
          minDestX = Math.min(minDestX, pos.getX());
@@ -423,6 +460,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       while(destEnclosed.contains(snappedPos.below())){
          snappedPos = snappedPos.below();
       }
+      snappedPos = findArrivalCell(snappedPos, destEnclosed, entity, destLevel);
       
       if(entity instanceof HappyGhast happyGhast){
          for(Entity passenger : happyGhast.getPassengers()){
@@ -438,7 +476,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
             }
          }
          if(portalCount >= 3){
-            Player nearest = destLevel.getNearestPlayer(getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), 25, (e) -> true);
+            Player nearest = destLevel.getNearestPlayer(snappedPos.getX(), snappedPos.getY(), snappedPos.getZ(), 25, (e) -> true);
             if(nearest instanceof ServerPlayer serverPlayer){
                ArcanaAchievements.grant(serverPlayer, ArcanaAchievements.ON_YOUR_LEFT);
             }
@@ -520,11 +558,18 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          validated = validateCurrentGateway(level);
       }
       if(!validated){
+         this.frame = null;
+         if(!canSearchForFrame(level)) return null; // Dialling lands here on every update of a powered gateway, and one search can take up to 100000 iterations
+         this.lastFrameSearch = level.getGameTime();
          this.frame = findFrame(level);
          setChanged();
          if(this.frame == null) return null;
       }
       return this.frame;
+   }
+   
+   private boolean canSearchForFrame(ServerLevel level){
+      return level.getGameTime() - this.lastFrameSearch >= FRAME_SEARCH_INTERVAL;
    }
    
    public void tryFind(){
@@ -536,6 +581,12 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
     * This prevents cascading chunk loads during server boot.
     */
    public AstralGatewayBlockEntity getSyncedGateway(){
+      if(this.syncedGateway != null && this.syncedGateway.isRemoved()){
+         // Its chunk unloaded and came back as a new block entity, the old one no longer follows the block
+         this.pendingSyncedDimension = this.syncedGateway.level.dimension();
+         this.pendingSyncedPos = this.syncedGateway.getBlockPos();
+         this.syncedGateway = null;
+      }
       if(this.syncedGateway == null && this.pendingSyncedDimension != null && this.pendingSyncedPos != null){
          MinecraftServer server = BorisLib.SERVER;
          if(server != null){
@@ -544,6 +595,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
                BlockEntity be = otherLevel.getBlockEntity(this.pendingSyncedPos);
                if(be instanceof AstralGatewayBlockEntity gateway){
                   this.syncedGateway = gateway;
+                  otherLevel.getChunkSource().addTicketWithRadius(TicketType.PORTAL, ChunkPos.containing(this.pendingSyncedPos), 2);
                }
             }
          }
@@ -588,7 +640,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       ServerLevel otherLevel = (ServerLevel) otherGateway.getLevel();
       GatewayFrame otherFrame = otherGateway.validateOrFindGateway(otherLevel);
       if(otherFrame == null) return false;
-      if(otherFrame.getEnclosed().stream().anyMatch(block -> this.frame.getEnclosed().contains(block))) return false;
+      if(otherLevel == level && otherFrame.getEnclosed().stream().anyMatch(block -> this.frame.getEnclosed().contains(block))) return false;
       this.dialler = true;
       otherGateway.dialler = false;
       setSyncedGateway(otherGateway);
@@ -626,6 +678,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    }
    
    public void evaluateForOpenOrClose(){
+      if(this.transitioning) return;
       GatewayState state = getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
       boolean closed = state == GatewayState.CLOSED;
       boolean open = state == GatewayState.OPEN;
@@ -639,7 +692,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       AstralGatewayBlockEntity synced = getSyncedGateway();
       GatewayState syncedState = synced == null ? GatewayState.CLOSED : synced.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
       boolean lostConnection = (synced == null || (syncedState == GatewayState.CLOSED || syncedState == GatewayState.COOLDOWN));
-      boolean cannotMaintainDial = dialler && (lostConnection || !validWaystone || !hasRedstone || !hasAnyStardust);
+      boolean cannotMaintainDial = dialler && (lostConnection || !validWaystone || !hasRedstone || !hasAnyStardust || !targets(this.inventory.getItem(0), synced));
       
       if(!closed && !cooldown && (cannotMaintainDial || lostConnection || !hasAnyStardust)){
          if(open){
@@ -654,6 +707,8 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    }
    
    public void setState(GatewayState state){
+      boolean wasTransitioning = this.transitioning;
+      this.transitioning = true; // Nothing may evaluate the gateway until the new state is fully applied, a redial would have its link wiped below
       if(this.level.getBlockState(getBlockPos()).is(((ArcanaBlock) ArcanaRegistry.ASTRAL_GATEWAY).getBlock())){
          if(this.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) == GatewayState.CLOSED && state == GatewayState.WARMUP){
             level.gameEvent(GameEvent.BLOCK_ACTIVATE, worldPosition, GameEvent.Context.of(getBlockState()));
@@ -666,7 +721,9 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       if(state == GatewayState.CLOSED){
          setSyncedGateway(null);
          this.dialler = false;
+         this.closeAsap = false;
       }
+      this.transitioning = wasTransitioning;
       this.setChanged();
    }
    
@@ -768,6 +825,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
    }
    
    public void frameBreak(){
+      this.transitioning = true; // Closing runs evaluateForOpenOrClose, which would redial on a redstone signal before this has cleared the frame
       AstralGatewayBlockEntity synced = getSyncedGateway();
       if(synced != null){
          if(synced.frame != null){
@@ -779,8 +837,6 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
             }
          }
          synced.setState(GatewayState.CLOSED);
-         synced.dialler = false;
-         synced.setSyncedGateway(null);
       }
       setSyncedGateway(null);
       SoundUtils.playSound(this.level, getBlockPos(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.BLOCKS, 2, 2f);
@@ -798,7 +854,14 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       this.setState(GatewayState.CLOSED);
       this.dialler = false;
       this.frame = null;
+      this.tryFind = true; // If the frame is still there the tick finds it again, and a gateway with a signal redials from a clean state
       setChanged();
+      this.transitioning = false;
+   }
+   
+   private boolean targets(ItemStack stone, AstralGatewayBlockEntity gateway){
+      Waystone.WaystoneTarget target = Waystone.getTarget(stone);
+      return target != null && target.world().identifier().equals(gateway.level.dimension().identifier()) && BlockPos.containing(target.position()).equals(gateway.getBlockPos());
    }
    
    boolean validWaystone(ItemStack stack){
@@ -811,7 +874,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
          return false;
       }
       boolean isForGateway = Waystone.isForGateway(stack);
-      return isForGateway && !BlockPos.containing(target.position()).equals(getBlockPos());
+      return isForGateway && !targets(stack, this);
    }
    
    public GatewayFrame getFrame(){
@@ -964,7 +1027,8 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       this.customName = view.getStringOr(ArcanaBlockEntity.CUSTOM_NAME, "");
       this.skin = view.getStringOr(ArcanaBlockEntity.SKIN_TAG, "");
       this.origin = view.getIntOr(ArcanaBlockEntity.ORIGIN_TAG, 0);
-      this.stateTime = view.getIntOr(STATE_TIME_TAG, 0);
+      // The warmup's portal timers and effect don't survive an unload, so it starts over
+      this.stateTime = getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) == GatewayState.WARMUP ? 0 : view.getIntOr(STATE_TIME_TAG, 0);
       this.stardust = view.getLongOr(STARDUST_TAG, 0L);
       this.warmupDuration = view.getIntOr(WARMUP_DURATION_TAG, 0);
       this.cooldownDuration = view.getIntOr(COOLDOWN_DURATION_TAG, 0);
@@ -1043,7 +1107,7 @@ public class AstralGatewayBlockEntity extends RandomizableContainerBlockEntity i
       }
    }
    
-   public void readStardustAndStones(int stardust, ListTag stoneList, HolderLookup.Provider registryLookup){
+   public void readStardustAndStones(long stardust, ListTag stoneList, HolderLookup.Provider registryLookup){
       inventory = new WatchedContainer(getContainerSize());
       inventory.addWatcher(this);
       this.stardust = stardust;

@@ -48,7 +48,7 @@ public class AstralGatewayGui extends SimpleGui {
          }else{
             int adjustedI = i - 2;
             int guiIndex = 19 + (adjustedI % 7) + 9 * (adjustedI / 7);
-            WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(), i, i, 0).withForGateway(gateway.getBlockPos()).withAttunement(true);
+            WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(), i, i, 0).withForGateway(gateway.getBlockPos(), gateway.getLevel().dimension()).withAttunement(true);
             if(!this.gateway.isAstralStargate()){
                slot = slot.withMatchedWorld(this.gateway.getLevel().dimension());
             }
@@ -172,7 +172,7 @@ public class AstralGatewayGui extends SimpleGui {
       boolean hasFrame = gateway.getFrame() != null && gateway.getFrame().finishedAndValid();
       if(hasFrame && !(getCustomSlot(4) instanceof WaystoneSlot)){
          clearSlot(4);
-         WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(), 0, 0, 0).withForGateway(gateway.getBlockPos()).withAttunement(true);
+         WaystoneSlot slot = new WaystoneSlot(gateway.getInventory(), 0, 0, 0).withForGateway(gateway.getBlockPos(), gateway.getLevel().dimension()).withAttunement(true);
          if(!this.gateway.isAstralStargate()){
             slot = slot.withMatchedWorld(this.gateway.getLevel().dimension());
          }
@@ -211,18 +211,17 @@ public class AstralGatewayGui extends SimpleGui {
       if(!hasFrame){
          return Pair.of(Component.literal("No Valid Frame").withStyle(ChatFormatting.RED), ArcanaColors.ERROR_COLOR);
       }
+      GatewayMode mode = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.MODE);
+      if(mode == GatewayMode.RECEIVE_ONLY){
+         return Pair.of(Component.literal("Ready to Receive").withStyle(ChatFormatting.LIGHT_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
+      }
       if(!hasWaystone){
          return Pair.of(Component.literal("Use a Waystone to Sync to Another Gateway").withStyle(ChatFormatting.DARK_AQUA), ArcanaColors.ARCANE_PAGE_COLOR);
       }
       if(!hasRedstone){
          return Pair.of(Component.literal("Use a Redstone Signal to Activate the Gateway").withStyle(ChatFormatting.DARK_AQUA), ArcanaColors.ARCANE_PAGE_COLOR);
       }
-      
-      GatewayMode mode = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.MODE);
-      if(mode == GatewayMode.RECEIVE_ONLY){
-         return Pair.of(Component.literal("Ready to Receive").withStyle(ChatFormatting.LIGHT_PURPLE), ArcanaColors.STARLIGHT_FORGE_COLOR);
-      }
-      
+
       return Pair.of(Component.literal("Cannot Find Other Gateway").withStyle(ChatFormatting.RED), ArcanaColors.ERROR_COLOR);
    }
    

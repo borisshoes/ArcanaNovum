@@ -289,7 +289,7 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config cindersCharmFirewebRangePerLvl` The range of the Web of Fire ability of the Charm of Cinders. (default: [0.0, 4.0, 6.0, 8.0, 10.0])
 * `/arcana config cindersCharmFirewebDmgPerLvl` The damage per energy point per level of Fireweb on the Charm of Cinders. (default: [0.0, 0.07, 0.085, 0.095, 0.105])
 * `/arcana config cindersCharmFirewebCreaturesPerLvl` The number of creatures targeted per augment level by the Web of Fire ability of the Charm of Cinders. (default: [0, 5, 10, 15, 20])
-* `/arcana config cindersCharmFlameConeDmg` The damage per tick of the Cone of Flame ability of the Charm of Cinders. (default: 2.5)
+* `/arcana config cindersCharmFlameConeDmg` The damage per use of the Cone of Flame ability of the Charm of Cinders. (default: 2.5)
 * `/arcana config cindersCharmFlameConeAngle` The cone angle in degrees for the Cone of Flame ability of the Charm of Cinders. (default: 30.0)
 * `/arcana config cindersCharmFlameConeRange` The range of the Cone of Flame ability of the Charm of Cinders. (default: 7.0)
 * `/arcana config cindersCharmPyroblastTargetRange` The targeting range of the Pyroblast ability of the Charm of Cinders. (default: 35.0)
@@ -302,8 +302,8 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config cindersCharmSupersmelterMultiplier` The smelting efficiency multiplier for the Supersmelter augment of the Charm of Cinders. (default: 4.0)
 
 ### Charm of Cleansing
-* `/arcana config cleansingCharmCooldown` The cooldown in seconds for the Charm of Cleansing. (default: 30)
-* `/arcana config cleansingCharmCharcoalCooldownPerLvl` The cooldown reduction in seconds per augment level for the Charm of Cleansing. (default: [0, 100, 200, 300, 400])
+* `/arcana config cleansingCharmCooldown` The cooldown in ticks for the Charm of Cleansing. (default: 600)
+* `/arcana config cleansingCharmCharcoalCooldownPerLvl` The cooldown reduction in ticks per augment level for the Charm of Cleansing. (default: [0, 100, 200, 300, 400])
 * `/arcana config cleansingCharmRejuvenationDuration` The rejuvenation effect duration in ticks for the Charm of Cleansing. (default: 200)
 * `/arcana config cleansingCharmRejuvenationHealthPerTick` The rejuvenation health restored per tick for the Charm of Cleansing. (default: 0.03)
 
@@ -551,8 +551,8 @@ All configuration values can be viewed and changed with `/arcana config <setting
 * `/arcana config wingsOfEnderiaBuffetPower` The wing buffet knockback power for the Armored Wings of Enderia. (default: 1.0)
 
 ### Celestial Altar
-* `/arcana config celestialAltarCooldown` The cooldown in seconds for the Celestial Altar. (default: 36000)
-* `/arcana config celestialAltarCooldownPerLvl` The cooldown reduction in seconds per augment level for the Celestial Altar. (default: [0, 6000, 12000, 18000, 24000, 30000])
+* `/arcana config celestialAltarCooldown` The cooldown in ticks for the Celestial Altar. (default: 36000)
+* `/arcana config celestialAltarCooldownPerLvl` The cooldown reduction in ticks per augment level for the Celestial Altar. (default: [0, 6000, 12000, 18000, 24000, 30000])
 * `/arcana config celestialAltarItem` The item required to activate the Celestial Altar. (default: "minecraft:nether_star")
 
 ### Starpath Altar

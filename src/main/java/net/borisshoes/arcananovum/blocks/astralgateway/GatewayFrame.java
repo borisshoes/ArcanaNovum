@@ -310,6 +310,7 @@ public class GatewayFrame {
    }
    
    private void calculateEnclosedBlocks(ServerLevel level){
+      this.enclosed.clear(); // Could still hold the fill of a shape the search rejected and backed out of
       if(blocks.size() < 4) return;
       
       int maxBlocks = (maxSize * maxSize) / 4 + 1;

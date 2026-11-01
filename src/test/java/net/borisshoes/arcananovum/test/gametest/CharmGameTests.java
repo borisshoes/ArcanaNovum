@@ -560,19 +560,22 @@ public class CharmGameTests {
       finish(helper, player);
    }
 
-   @GameTest
+   @GameTest(padding = 32)
    @Covers("electromagnet")
    public void electromagnetExtendsTheActiveBeam(GameTestHelper helper){
       ServerPlayer player = player(helper);
-      double base = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MAGNETISM_CHARM_ACTIVE_RANGE);
+      // A small base range keeps the item inside the test's area. At the default 32 blocks it can land in a chunk with no loaded entities, where the beam can't find it
+      double base = 1;
+      double width = 0.5;
       double extra = ArcanaNovum.CONFIG.getDoubleList(ArcanaConfig.MAGNETISM_CHARM_ACTIVE_RANGE_PER_LVL).get(3);
       Vec3 eye = player.getEyePosition().subtract(helper.absoluteVec(Vec3.ZERO));
-      double width = ArcanaNovum.CONFIG.getDouble(ArcanaConfig.MAGNETISM_CHARM_ACTIVE_WIDTH);
-      ItemEntity item = drop(helper, eye.x, eye.y, eye.z + base + width + extra / 2, new ItemStack(Items.STICK));
-      magnet().activeUse(player, helper.getLevel(), ArcanaRegistry.MAGNETISM_CHARM.getNewItem());
-      helper.assertTrue(item.getDeltaMovement().length() == 0, "The plain beam pulled an item past its range");
-      magnet().activeUse(player, helper.getLevel(), item(ArcanaRegistry.MAGNETISM_CHARM, ArcanaAugments.ELECTROMAGNET, 3));
-      helper.assertTrue(item.getDeltaMovement().length() > 0, "Electromagnet 3 did not reach the item");
+      ItemEntity item = drop(helper, eye.x, eye.y, eye.z + base + width + Math.min(extra / 2, 1), new ItemStack(Items.STICK));
+      withConfig(ArcanaConfig.MAGNETISM_CHARM_ACTIVE_RANGE, base, () -> withConfig(ArcanaConfig.MAGNETISM_CHARM_ACTIVE_WIDTH, width, () -> {
+         magnet().activeUse(player, helper.getLevel(), ArcanaRegistry.MAGNETISM_CHARM.getNewItem());
+         helper.assertTrue(item.getDeltaMovement().length() == 0, "The plain beam pulled an item past its range");
+         magnet().activeUse(player, helper.getLevel(), item(ArcanaRegistry.MAGNETISM_CHARM, ArcanaAugments.ELECTROMAGNET, 3));
+         helper.assertTrue(item.getDeltaMovement().length() > 0, "Electromagnet 3 did not reach the item");
+      }));
       finish(helper, player);
    }
 

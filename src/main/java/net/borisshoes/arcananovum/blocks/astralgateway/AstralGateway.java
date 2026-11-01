@@ -157,7 +157,7 @@ public class AstralGateway extends ArcanaBlock {
       
       if(itemStack != null){
          int size = getListProperty(itemStack, WAYSTONES_TAG).size();
-         int dust = getIntProperty(itemStack, STARDUST_TAG);
+         long dust = getLongProperty(itemStack, STARDUST_TAG);
          if(size > 0 || dust > 0){
             lore.add(Component.literal(""));
          }
@@ -305,7 +305,7 @@ public class AstralGateway extends ArcanaBlock {
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof AstralGatewayBlockEntity gateway){
             initializeArcanaBlock(stack, gateway);
-            gateway.readStardustAndStones(getIntProperty(stack, STARDUST_TAG), getListProperty(stack, WAYSTONES_TAG), world.registryAccess());
+            gateway.readStardustAndStones(getLongProperty(stack, STARDUST_TAG), getListProperty(stack, WAYSTONES_TAG), world.registryAccess());
          }
       }
       

@@ -1279,6 +1279,8 @@ public class ArcanaPlayerData implements StorableData {
             new Dialog.DialogSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 1),
             new Dialog.DialogSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 1)
       )), new int[]{0, 80, 60}, 1, 1, 0), true);
+      // An old event waiting on [Look Around] never expires, and it would take the clicks meant for this one
+      Event.RECENT_EVENTS.removeIf(e -> e instanceof GaialtusEvent g && g.getPlayer().getUUID().equals(player.getUUID()));
       Event.addEvent(new GaialtusEvent(player));
    }
    
@@ -1305,7 +1307,7 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public boolean canSpecialEventRespond(ServerPlayer player){
-      GaialtusEvent gEventFound = Event.getEventsOfType(GaialtusEvent.class).stream().filter(g -> g.getPlayer().equals(player)).findFirst().orElse(null);
+      GaialtusEvent gEventFound = Event.getEventsOfType(GaialtusEvent.class).stream().filter(g -> g.getPlayer().getUUID().equals(player.getUUID())).findFirst().orElse(null);
       ZeraiyaStartEvent zEventFound = Event.getEventsOfType(ZeraiyaStartEvent.class).stream().filter(z -> z.getPlayer().equals(player)).findFirst().orElse(null);
       CeptyusStartEvent cEventFound = Event.getEventsOfType(CeptyusStartEvent.class).stream().filter(c -> c.getPlayer().equals(player) && c.sentInvestigate()).findFirst().orElse(null);
       CeptyusOpenEvent c2EventFound = Event.getEventsOfType(CeptyusOpenEvent.class).stream().filter(c -> c.getPlayer().equals(player)).findFirst().orElse(null);
@@ -1313,8 +1315,10 @@ public class ArcanaPlayerData implements StorableData {
    }
    
    public void specialEventResponse(ServerPlayer player, String msg){
-      GaialtusEvent gEventFound = Event.getEventsOfType(GaialtusEvent.class).stream().filter(g -> g.getPlayer().equals(player)).findFirst().orElse(null);
-      if(gEventFound != null && gEventFound.getStage() == 0){
+      GaialtusEvent gEventFound = Event.getEventsOfType(GaialtusEvent.class).stream().filter(g -> g.getPlayer().getUUID().equals(player.getUUID())).findFirst().orElse(null);
+      // Only Gaialtus choices are for this event, the other events' clicks must not end it
+      int gStage = gEventFound == null || !msg.toLowerCase(Locale.ROOT).startsWith("g_") ? -1 : gEventFound.checkStage(player);
+      if(gStage == 0){
          if(msg.equalsIgnoreCase("g_hungry")){
             player.sendSystemMessage(Component.literal("\n")
                   .append(Component.literal("Ah! So hungry is the one who ").withStyle(ChatFormatting.DARK_GREEN))
@@ -1362,7 +1366,7 @@ public class ArcanaPlayerData implements StorableData {
                         s.withBold(true).withColor(ChatFormatting.AQUA).withClickEvent(new ClickEvent.RunCommand("/arcana specialEvent action g_balance")))), false);
             SoundUtils.playSongToPlayer(player, SoundEvents.SOUL_ESCAPE.value(), 1f, 1);
          }));
-      }else if(gEventFound != null && gEventFound.getStage() == 1){
+      }else if(gStage == 1){
          if(msg.equalsIgnoreCase("g_creation") || msg.equalsIgnoreCase("g_destruction")){
             DialogHelper.sendDialog(List.of(player), new Dialog(new ArrayList<>(Arrays.asList(
                   Component.literal("\n")
@@ -1430,7 +1434,7 @@ public class ArcanaPlayerData implements StorableData {
                overworld.clockManager().setTotalTicks(overworld.dimensionType().defaultClock().get(),timeOfDay + phaseDiff * 24000L + timeDiff);
             }));
          }
-      }else if(gEventFound != null && gEventFound.getStage() == 2){
+      }else if(gStage == 2){
          if(msg.equalsIgnoreCase("g_universe")){
             player.sendSystemMessage(Component.literal("\n")
                   .append(Component.literal("And I see you, ").withStyle(ChatFormatting.DARK_GREEN))
@@ -1496,7 +1500,7 @@ public class ArcanaPlayerData implements StorableData {
             }
             gEventFound.markForRemoval();
          }
-      }else if(gEventFound != null && gEventFound.getStage() == 3){
+      }else if(gStage == 3){
          if(msg.equalsIgnoreCase("g_wake")){
             player.sendSystemMessage(Component.literal("\n")
                   .append(Component.literal("After that strange encounter, you look down at your feet and see a ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))

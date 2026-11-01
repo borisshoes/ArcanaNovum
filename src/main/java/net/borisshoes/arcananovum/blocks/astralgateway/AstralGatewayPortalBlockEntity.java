@@ -2,9 +2,12 @@ package net.borisshoes.arcananovum.blocks.astralgateway;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -38,8 +41,14 @@ public class AstralGatewayPortalBlockEntity extends BlockEntity implements Polym
       }
       
       if(--keepAlive < 0){
-         serverWorld.setBlock(getBlockPos(), Blocks.AIR.defaultBlockState(), 11);
-         return;
+         if(gatewayStaysOpen(serverWorld)){
+            // This chunk started ticking before the gateway's did (restart or chunk load), so nothing has refreshed the timer yet
+            keepAlive = 0;
+            serverWorld.getChunkSource().addTicketWithRadius(TicketType.PORTAL, ChunkPos.containing(gatewayPos), 2);
+         }else{
+            serverWorld.setBlock(getBlockPos(), Blocks.AIR.defaultBlockState(), 11);
+            return;
+         }
       }
       
       if(serverWorld.getRandom().nextFloat() < 0.015f){
@@ -47,12 +56,15 @@ public class AstralGatewayPortalBlockEntity extends BlockEntity implements Polym
       }
       
       // Validate gateway reference
-      if(gateway == null && gatewayPos != null){
-         BlockEntity be = serverWorld.getBlockEntity(gatewayPos);
-         if(be instanceof AstralGatewayBlockEntity gatewayEntity){
-            this.gateway = gatewayEntity;
-         }
-      }
+      getGateway();
+   }
+   
+   private boolean gatewayStaysOpen(ServerLevel level){
+      if(gatewayPos == null) return false;
+      BlockState state = level.getBlockState(gatewayPos);
+      if(!state.is(((ArcanaBlock) ArcanaRegistry.ASTRAL_GATEWAY).getBlock())) return false;
+      GatewayState gatewayState = state.getValue(AstralGateway.AstralGatewayBlock.STATE);
+      return gatewayState != GatewayState.CLOSED && gatewayState != GatewayState.COOLDOWN;
    }
    
    public void initialize(BlockPos gatewayPos, int keepAlive){
@@ -69,11 +81,9 @@ public class AstralGatewayPortalBlockEntity extends BlockEntity implements Polym
    
    @Nullable
    public AstralGatewayBlockEntity getGateway(){
-      if(gateway == null && gatewayPos != null && level != null){
+      if((gateway == null || gateway.isRemoved()) && gatewayPos != null && level != null){
          BlockEntity be = level.getBlockEntity(gatewayPos);
-         if(be instanceof AstralGatewayBlockEntity gatewayEntity){
-            this.gateway = gatewayEntity;
-         }
+         this.gateway = be instanceof AstralGatewayBlockEntity gatewayEntity ? gatewayEntity : null;
       }
       return gateway;
    }

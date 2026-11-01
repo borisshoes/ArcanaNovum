@@ -57,7 +57,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void astralGatewayWarmup(AstralGatewayBlockEntity gateway, ServerLevel world, List<Vec3> points, int totalStarTicks, int animDuration, int tick){
-      if(gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.WARMUP) return;
+      if(gateway.isRemoved() || gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE) != GatewayState.WARMUP) return;
       if(tick < animDuration){
          int finalTotalStarTicks = totalStarTicks;
          int finalTick = tick;

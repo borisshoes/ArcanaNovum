@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 public class WaystoneSlot extends Slot {
    private boolean needsAttunement = false;
    private BlockPos gatewayPos = null;
+   private ResourceKey<Level> gatewayWorld = null;
    private ResourceKey<Level> matchWorld = null;
    
    public WaystoneSlot(Container inventory, int index, int x, int y){
@@ -23,8 +24,9 @@ public class WaystoneSlot extends Slot {
       return this;
    }
    
-   public WaystoneSlot withForGateway(BlockPos gatewayPos){
+   public WaystoneSlot withForGateway(BlockPos gatewayPos, ResourceKey<Level> gatewayWorld){
       this.gatewayPos = gatewayPos;
+      this.gatewayWorld = gatewayWorld;
       return this;
    }
    
@@ -43,7 +45,7 @@ public class WaystoneSlot extends Slot {
       }
       if(gatewayPos != null){
          if(!Waystone.isForGateway(stack)) return false;
-         if(target != null && BlockPos.containing(target.position()).equals(gatewayPos)) return false;
+         if(target != null && target.world().identifier().equals(gatewayWorld.identifier()) && BlockPos.containing(target.position()).equals(gatewayPos)) return false;
       }
       return true;
    }

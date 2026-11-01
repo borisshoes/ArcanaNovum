@@ -18,6 +18,12 @@ import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.blocks.GeomanticSteleBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGateway;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayBlockEntity;
+import net.borisshoes.arcananovum.blocks.astralgateway.AstralGatewayPortalBlockEntity;
+import net.borisshoes.arcananovum.blocks.astralgateway.GatewayFrame;
+import net.borisshoes.arcananovum.blocks.astralgateway.GatewayMode;
+import net.borisshoes.arcananovum.blocks.astralgateway.GatewayState;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
 import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
@@ -25,8 +31,13 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.datastorage.ArcanaPlayerData;
 import net.borisshoes.arcananovum.events.TetherFlightEvent;
+import net.borisshoes.arcananovum.events.special.GaialtusEvent;
+import net.borisshoes.arcananovum.events.special.ZeraiyaStartEvent;
+import net.borisshoes.arcananovum.gui.WaystoneSlot;
+import net.borisshoes.arcananovum.gui.astralgateway.AstralGatewayGui;
 import net.borisshoes.arcananovum.gui.midnightenchanter.MidnightEnchanterGui;
 import net.borisshoes.arcananovum.items.Soulstone;
+import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.arrows.TetherArrows;
@@ -36,12 +47,14 @@ import net.borisshoes.arcananovum.recipes.transmutation.AequalisSkillTransmutati
 import net.borisshoes.arcananovum.recipes.transmutation.CommutativeTransmutationRecipe;
 import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.conditions.ConditionInstance;
 import net.borisshoes.borislib.conditions.Conditions;
 import net.borisshoes.borislib.config.ConfigValue;
 import net.borisshoes.borislib.config.IConfigSetting;
+import net.borisshoes.borislib.events.Event;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -63,6 +76,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.server.MinecraftServer;
@@ -78,7 +92,9 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -101,7 +117,11 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
@@ -1131,8 +1151,11 @@ public class RegressionGameTests {
    
    /** A connected player in survival, unlike makeMockServerPlayerInLevel which is always creative */
    static ServerPlayer survivalPlayer(GameTestHelper helper, BlockPos relative){
+      return survivalPlayer(helper, relative, UUID.randomUUID());
+   }
+   
+   static ServerPlayer survivalPlayer(GameTestHelper helper, BlockPos relative, UUID uuid){
       ServerLevel level = helper.getLevel();
-      UUID uuid = UUID.randomUUID();
       // Unique names, since scoreboard teams match players by name
       CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(uuid, "mock-" + uuid.toString().substring(0, 8)), false);
       ServerPlayer player = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
@@ -1150,6 +1173,573 @@ public class RegressionGameTests {
    static void finish(GameTestHelper helper, ServerPlayer... players){
       for(ServerPlayer player : players) helper.getLevel().getServer().getPlayerList().remove(player);
       helper.succeed();
+   }
+   
+   // The Gaialtus event kept its 10 minute lifespan during the credits, so a player who watched them clicked [Look Around] and nothing happened
+   @GameTest(maxTicks = 200)
+   public void gaialtusLookAroundOutlastsTheEventLifespan(GameTestHelper helper){
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      GaialtusEvent event = gaialtusEvent(player, 2);
+      ArcanaPlayerData data = ArcanaNovum.data(player);
+      data.specialEventResponse(player, "g_universe");
+      helper.assertTrue(event.getStage() == 3, "The Universe did not start the credits");
+      for(int i = 0; i <= event.lifespan; i++) event.tick();
+      helper.assertFalse(event.isExpired(), "The event expired while the player watched the credits");
+      helper.runAfterDelay(65, () -> data.specialEventResponse(player, "g_wake")); // After the link was sent
+      helper.runAfterDelay(110, () -> {
+         helper.assertTrue(data.completedGaialtus(), "[Look Around] did not finish the event");
+         helper.assertTrue(event.isExpired(), "[Look Around] did not end the event");
+         helper.assertTrue(player.getInventory().hasAnyMatching(stack -> ArcanaItemUtils.identifyItem(stack) == ArcanaRegistry.GREAVES_OF_GAIALTUS), "[Look Around] did not give the pants");
+         finish(helper, player);
+      });
+   }
+   
+   // Once the credits have started only [Look Around] is left, so it no longer cares where the player is
+   @GameTest(maxTicks = 100)
+   public void gaialtusLookAroundWorksInAnotherDimension(GameTestHelper helper){
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      gaialtusEvent(player, 3);
+      player.teleportTo(helper.getLevel().getServer().getLevel(Level.NETHER), 0.5, 100, 0.5, Set.of(), 0, 0, true);
+      ArcanaPlayerData data = ArcanaNovum.data(player);
+      data.specialEventResponse(player, "g_wake");
+      helper.runAfterDelay(45, () -> {
+         helper.assertTrue(data.completedGaialtus(), "[Look Around] did nothing outside the overworld");
+         finish(helper, player);
+      });
+   }
+   
+   // The stage check ran once for each branch of the response chain, so one click sent the message four times
+   @GameTest
+   public void gaialtusLeavingTheOverworldFadesOncePerClick(GameTestHelper helper){
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      GaialtusEvent event = gaialtusEvent(player, 2);
+      player.teleportTo(helper.getLevel().getServer().getLevel(Level.NETHER), 0.5, 100, 0.5, Set.of(), 0, 0, true);
+      sentMessages(player); // Everything from joining the server
+      ArcanaNovum.data(player).specialEventResponse(player, "g_universe");
+      long fades = sentMessages(player).stream().filter(message -> message.contains("The breeze fades")).count();
+      helper.assertTrue(fades == 1, "One click outside the overworld sent the message " + fades + " times");
+      helper.assertTrue(event.isExpired(), "Leaving the overworld did not end the conversation");
+      helper.assertTrue(event.getStage() == 2, "The credits started outside the overworld");
+      finish(helper, player);
+   }
+   
+   // Every special event click ran the Gaialtus dimension check, so clicking another event's link outside the overworld ended the conversation
+   @GameTest
+   public void gaialtusIgnoresOtherEventClicksOutsideTheOverworld(GameTestHelper helper){
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      GaialtusEvent event = gaialtusEvent(player, 1);
+      player.teleportTo(helper.getLevel().getServer().getLevel(Level.NETHER), 0.5, 100, 0.5, Set.of(), 0, 0, true);
+      sentMessages(player); // Everything from joining the server
+      ArcanaNovum.data(player).specialEventResponse(player, "z_no");
+      helper.assertFalse(event.isExpired(), "Another event's click ended the Gaialtus conversation");
+      helper.assertFalse(sentMessages(player).stream().anyMatch(message -> message.contains("The breeze fades")), "Another event's click sent the Gaialtus message");
+      finish(helper, player);
+   }
+   
+   // A Gaialtus conversation waiting on its first answer returned early on any other choice, so other events' links did nothing
+   @GameTest
+   public void gaialtusLetsOtherEventClicksThrough(GameTestHelper helper){
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      gaialtusEvent(player, 0);
+      Event.addEvent(new ZeraiyaStartEvent(player));
+      ArcanaNovum.data(player).specialEventResponse(player, "z_no");
+      helper.assertFalse(Event.getEventsOfType(ZeraiyaStartEvent.class).stream().anyMatch(event -> event.getPlayer().equals(player)), "The Zeraiya answer never got past the Gaialtus conversation");
+      finish(helper, player);
+   }
+   
+   // A login gets a new entity id, which orphaned the event: the action command did nothing for the same player after a relog
+   @GameTest(maxTicks = 100)
+   public void gaialtusActionCommandWorksAfterARelog(GameTestHelper helper){
+      UUID uuid = UUID.randomUUID();
+      ServerPlayer first = survivalPlayer(helper, new BlockPos(1, 2, 1), uuid);
+      gaialtusEvent(first, 3);
+      helper.getLevel().getServer().getPlayerList().remove(first);
+      ServerPlayer second = survivalPlayer(helper, new BlockPos(1, 2, 1), uuid);
+      helper.assertTrue(first.getId() != second.getId(), "The new login kept its entity id, so this test proves nothing");
+      ArcanaPlayerData data = ArcanaNovum.data(second);
+      data.specialEventResponse(second, "g_wake");
+      helper.runAfterDelay(45, () -> {
+         helper.assertTrue(data.completedGaialtus(), "The action command did nothing after a relog");
+         finish(helper, second);
+      });
+   }
+   
+   // An event waiting on [Look Around] no longer expires, so a new attempt has to replace it or the new conversation's clicks go to the old event
+   @GameTest
+   public void gaialtusNewAttemptReplacesAWaitingEvent(GameTestHelper helper){
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(1, 2, 1));
+      GaialtusEvent waiting = gaialtusEvent(player, 3);
+      ArcanaPlayerData data = ArcanaNovum.data(player);
+      data.startGaialtus(player);
+      data.specialEventResponse(player, "g_hungry");
+      List<GaialtusEvent> events = Event.getEventsOfType(GaialtusEvent.class).stream().filter(event -> event.getPlayer().equals(player)).toList();
+      helper.assertTrue(events.size() == 1 && events.getFirst() != waiting, "The waiting event was not replaced");
+      helper.assertTrue(events.getFirst().getStage() == 1, "The new conversation ignored its first answer");
+      finish(helper, player);
+   }
+   
+   private static GaialtusEvent gaialtusEvent(ServerPlayer player, int stage){
+      GaialtusEvent event = new GaialtusEvent(player);
+      event.setStage(stage);
+      Event.addEvent(event);
+      return event;
+   }
+   
+   // The system messages sent to a test player since the last call
+   private static List<String> sentMessages(ServerPlayer player){
+      EmbeddedChannel channel = (EmbeddedChannel) TestKit.field(TestKit.field(player.connection, "connection"), "channel");
+      List<String> messages = new ArrayList<>();
+      for(Object packet = channel.readOutbound(); packet != null; packet = channel.readOutbound()){
+         if(packet instanceof ClientboundSystemChatPacket chat) messages.add(chat.content().getString());
+      }
+      return messages;
+   }
+   
+   // A frame break on a powered gateway redialled in the middle of the teardown, then lost its frame. It broke again next tick and kept going, restarting the warmup sound every tick
+   @GameTest(maxTicks = 800)
+   public void astralGatewayFrameBreakRedialsOnlyOnce(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      helper.startSequence()
+            .thenWaitUntil(() -> assertGatewayState(helper, gateway, GatewayState.OPEN))
+            .thenExecute(() -> helper.setBlock(GATEWAY_PORTAL, Blocks.AIR))
+            .thenWaitUntil(() -> assertGatewayState(helper, gateway, GatewayState.WARMUP))
+            .thenExecuteAfter(30, () -> {
+               assertGatewayState(helper, gateway, GatewayState.WARMUP);
+               helper.assertTrue((int) TestKit.field(gateway, "stateTime") >= 25, "The warmup keeps restarting");
+               helper.assertTrue(gateway.getFrame() != null, "The gateway redialled with no frame");
+            })
+            .thenWaitUntil(() -> {
+               assertGatewayState(helper, gateway, GatewayState.OPEN);
+               helper.assertBlockPresent(ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK, GATEWAY_PORTAL);
+            })
+            .thenSucceed();
+   }
+   
+   // A powered gateway with no frame ran a new frame search on every neighbor or inventory update, each up to 100000 iterations on the server thread
+   @GameTest(maxTicks = 60)
+   public void astralGatewayLimitsFrameSearchesWhileDialling(GameTestHelper helper){
+      BlockPos frameBlock = new BlockPos(1, 4, 2);
+      AstralGatewayBlockEntity gateway = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 3, 1)), 1, gatewayAugments());
+      AstralGatewayBlockEntity other = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 3, 6)), -1, gatewayAugments());
+      helper.setBlock(frameBlock, Blocks.AIR);
+      gateway.getInventory().setItem(0, gatewayStone(other));
+      helper.setBlock(GATEWAY_POWER, Blocks.REDSTONE_BLOCK);
+      helper.assertTrue(gateway.getFrame() == null, "The gateway found a frame with a block missing");
+      helper.setBlock(frameBlock, Blocks.GOLD_BLOCK);
+      gateway.evaluateForOpenOrClose();
+      helper.assertTrue(gateway.getFrame() == null, "The gateway searched again in the same tick");
+      assertGatewayState(helper, gateway, GatewayState.CLOSED);
+      helper.startSequence()
+            .thenExecuteAfter(2, () -> helper.assertTrue(gateway.getFrame() == null, "The closed tick searched inside the limit"))
+            .thenWaitUntil(() -> assertGatewayState(helper, gateway, GatewayState.WARMUP)) // The search the closed tick still owes finds the finished frame
+            .thenSucceed();
+   }
+   
+   // Without a redstone signal a frame break stays closed
+   @GameTest(maxTicks = 400)
+   public void astralGatewayFrameBreakStaysClosedWithoutSignal(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      AstralGatewayBlockEntity other = gateway.getSyncedGateway();
+      helper.startSequence()
+            .thenWaitUntil(() -> assertGatewayState(helper, gateway, GatewayState.OPEN))
+            .thenExecute(() -> {
+               helper.setBlock(GATEWAY_POWER, Blocks.AIR);
+               gateway.frameBreak();
+            })
+            .thenExecuteAfter(20, () -> {
+               assertGatewayState(helper, gateway, GatewayState.CLOSED);
+               assertGatewayState(helper, other, GatewayState.CLOSED);
+               helper.assertTrue(gateway.getFrame() != null, "The gateway did not find its intact frame again");
+            })
+            .thenSucceed();
+   }
+   
+   // A frame break during warmup left closeAsap set, which shut the next opening straight away, and the scheduled portal blocks still appeared in the closed frame
+   @GameTest(maxTicks = 300)
+   public void astralGatewayFrameBreakDuringWarmupLeavesNothingBehind(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      AstralGatewayBlockEntity other = gateway.getSyncedGateway();
+      helper.startSequence()
+            .thenExecuteAfter(5, () -> {
+               helper.setBlock(GATEWAY_POWER, Blocks.AIR);
+               helper.assertTrue((boolean) TestKit.field(gateway, "closeAsap"), "Losing the signal during warmup should close the gateway once it opens");
+               gateway.frameBreak();
+               helper.assertFalse((boolean) TestKit.field(gateway, "closeAsap"), "closeAsap survived the frame break");
+            })
+            .thenExecuteAfter(150, () -> {
+               assertGatewayState(helper, gateway, GatewayState.CLOSED);
+               assertGatewayState(helper, other, GatewayState.CLOSED);
+               helper.assertBlockNotPresent(ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK, GATEWAY_PORTAL);
+               helper.assertBlockNotPresent(ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK, GATEWAY_PORTAL.offset(0, 0, 3));
+            })
+            .thenSucceed();
+   }
+   
+   // Redialling as the cooldown ended skipped the warmup's first tick, so that side opened with no portal blocks and broke
+   @GameTest(maxTicks = 800)
+   public void astralGatewayRedialAfterCooldownBuildsPortal(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      AstralGatewayBlockEntity other = gateway.getSyncedGateway();
+      helper.startSequence()
+            .thenWaitUntil(() -> assertGatewayState(helper, gateway, GatewayState.OPEN))
+            .thenExecute(() -> {
+               gateway.setState(GatewayState.COOLDOWN);
+               other.setState(GatewayState.CLOSED);
+            })
+            .thenWaitUntil(() -> assertGatewayState(helper, gateway, GatewayState.WARMUP))
+            .thenExecute(() -> helper.assertTrue((boolean) TestKit.field(gateway, "dialler"), "Closing wiped the dialler flag of the redial, so losing redstone could not close it"))
+            .thenWaitUntil(() -> {
+               assertGatewayState(helper, gateway, GatewayState.OPEN);
+               helper.assertBlockPresent(ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK, GATEWAY_PORTAL);
+            })
+            .thenExecuteAfter(5, () -> assertGatewayState(helper, gateway, GatewayState.OPEN))
+            .thenSucceed();
+   }
+   
+   // Portal blocks expired if their chunk started ticking before the gateway's chunk, and the gateway then read the missing block as a broken frame
+   @GameTest(maxTicks = 400)
+   public void astralGatewayPortalWaitsForOpenGateway(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      helper.startSequence()
+            .thenWaitUntil(() -> assertGatewayState(helper, gateway, GatewayState.OPEN))
+            .thenExecute(() -> {
+               AstralGatewayPortalBlockEntity portal = (AstralGatewayPortalBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(GATEWAY_PORTAL));
+               portal.refreshKeepAlive(0);
+               for(int i = 0; i < 5; i++) TestKit.call(portal, "tick");
+               helper.assertBlockPresent(ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK, GATEWAY_PORTAL);
+               helper.setBlock(GATEWAY_POWER, Blocks.AIR);
+            })
+            .thenWaitUntil(() -> {
+               assertGatewayState(helper, gateway, GatewayState.CLOSED);
+               helper.assertBlockNotPresent(ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK, GATEWAY_PORTAL);
+            })
+            .thenSucceed();
+   }
+   
+   // Closing the other side of a frame break also cleared its link afterwards, even if closing had just let it dial a third gateway of its own
+   @GameTest
+   public void astralGatewayFrameBreakKeepsTheOtherSidesNewLink(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      AstralGatewayBlockEntity other = gateway.getSyncedGateway();
+      AstralGatewayBlockEntity third = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 13, 1)), 1, gatewayAugments());
+      other.getInventory().setItem(0, gatewayStone(third));
+      helper.setBlock(new BlockPos(1, 3, 6), Blocks.REDSTONE_BLOCK);
+      
+      gateway.frameBreak();
+      
+      assertGatewayState(helper, gateway, GatewayState.CLOSED);
+      assertGatewayState(helper, other, GatewayState.WARMUP);
+      helper.assertTrue(other.getSyncedGateway() == third, "The other side lost the link it dialled while closing");
+      helper.getLevel().setBlockAndUpdate(third.getBlockPos(), Blocks.AIR.defaultBlockState());
+      helper.succeed();
+   }
+   
+   // After a chunk reload both the synced gateway and the portal blocks kept using the old block entity, which no longer follows the block's state
+   @GameTest
+   public void astralGatewayFollowsReloadedBlockEntities(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      AstralGatewayBlockEntity other = gateway.getSyncedGateway();
+      AstralGatewayBlockEntity staleOther = new AstralGatewayBlockEntity(other.getBlockPos(), other.getBlockState());
+      staleOther.setLevel(helper.getLevel());
+      staleOther.setRemoved();
+      TestKit.setField(gateway, "syncedGateway", staleOther);
+      helper.assertTrue(gateway.getSyncedGateway() == other, "The gateway kept the unloaded block entity of the other side");
+      
+      AstralGatewayBlockEntity staleGateway = new AstralGatewayBlockEntity(gateway.getBlockPos(), gateway.getBlockState());
+      staleGateway.setLevel(helper.getLevel());
+      staleGateway.setRemoved();
+      helper.setBlock(GATEWAY_PORTAL, ArcanaRegistry.ASTRAL_GATEWAY_PORTAL_BLOCK);
+      AstralGatewayPortalBlockEntity portal = (AstralGatewayPortalBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(GATEWAY_PORTAL));
+      portal.initialize(gateway.getBlockPos(), 1000);
+      TestKit.setField(portal, "gateway", staleGateway);
+      helper.assertTrue(portal.getGateway() == gateway, "The portal kept the unloaded block entity of its gateway");
+      helper.succeed();
+   }
+   
+   // The portal timers of a warmup don't survive an unload, so a warmup that carried on from where it was opened with no portal blocks and broke
+   @GameTest
+   public void astralGatewayWarmupRestartsAfterReload(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      TestKit.setField(gateway, "stateTime", 30);
+      
+      TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+      TestKit.call(gateway, "saveAdditional", output);
+      gateway.loadAdditional(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), output.buildResult()));
+      
+      helper.assertTrue((int) TestKit.field(gateway, "stateTime") == 0, "The warmup did not start over");
+      helper.assertTrue(gateway.getFrame() != null && gateway.getFrame().finishedAndValid(), "The frame did not survive the reload");
+      helper.succeed();
+   }
+   
+   // Swapping the waystone for one with another target left the gateway open to the old target
+   @GameTest(maxTicks = 400)
+   public void astralGatewayClosesWhenWaystoneTargetChanges(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      AstralGatewayBlockEntity third = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 13, 1)), 1, gatewayAugments());
+      helper.startSequence()
+            .thenWaitUntil(() -> assertGatewayState(helper, gateway, GatewayState.OPEN))
+            .thenExecute(() -> {
+               gateway.getInventory().setItem(0, gatewayStone(third));
+               assertGatewayState(helper, gateway, GatewayState.COOLDOWN);
+               helper.getLevel().setBlockAndUpdate(third.getBlockPos(), Blocks.AIR.defaultBlockState());
+            })
+            .thenSucceed();
+   }
+   
+   // Gateways at the same coordinates in two dimensions counted as one gateway and as overlapping portals, so they could not dial each other
+   @GameTest
+   @Covers({"astral_stargate", "dialing_hell", "fancier_stargate"})
+   public void astralGatewayDialsSameCoordinatesInAnotherDimension(GameTestHelper helper){
+      ServerPlayer player = TestKit.player(helper);
+      ServerLevel nether = helper.getLevel().getServer().getLevel(Level.NETHER);
+      BlockPos pos = helper.absolutePos(new BlockPos(2, 3, 1));
+      for(BlockPos air : BlockPos.betweenClosed(pos.offset(-3, -2, -2), pos.offset(3, 4, 3))){
+         nether.setBlock(air, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+      }
+      AstralGatewayBlockEntity gateway = placeGateway(helper.getLevel(), pos, 1, new TreeMap<>(Map.of(ArcanaAugments.STARLIGHT_RECYCLERS, 6, ArcanaAugments.ASTRAL_STARGATE, 1)));
+      AstralGatewayBlockEntity other = placeGateway(nether, pos, 1, gatewayAugments());
+      ItemStack stone = gatewayStone(other);
+      
+      helper.assertTrue(new WaystoneSlot(gateway.getInventory(), 0, 0, 0).withForGateway(pos, helper.getLevel().dimension()).mayPlace(stone), "The slot read the other dimension's gateway as this one");
+      helper.assertFalse(new WaystoneSlot(gateway.getInventory(), 0, 0, 0).withForGateway(pos, helper.getLevel().dimension()).mayPlace(gatewayStone(gateway)), "The slot accepted a waystone for this gateway");
+      
+      gateway.getInventory().setItem(0, stone);
+      helper.setBlock(GATEWAY_POWER, Blocks.REDSTONE_BLOCK);
+      
+      assertGatewayState(helper, gateway, GatewayState.WARMUP);
+      assertGatewayState(helper, other, GatewayState.WARMUP);
+      TestKit.assertAchieved(helper, player, ArcanaAchievements.DIALING_HELL);
+      TestKit.assertAchieved(helper, player, ArcanaAchievements.FANCIER_STARGATE);
+      nether.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+      helper.getLevel().getServer().getPlayerList().remove(player);
+      helper.succeed();
+   }
+   
+   // On Your Left looked for the player at the source gateway's coordinates in the destination's level, so it missed the player next to the arrival
+   @GameTest
+   @Covers("on_your_left")
+   public void astralGatewayOnYourLeftChecksTheArrivalPoint(GameTestHelper helper){
+      ServerPlayer player = survivalPlayer(helper, new BlockPos(2, 104, 3));
+      AstralGatewayBlockEntity gateway = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 3, 1)), 1, gatewayAugments());
+      AstralGatewayBlockEntity other = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 103, 1)), 1, gatewayAugments());
+      gateway.getInventory().setItem(0, gatewayStone(other));
+      helper.setBlock(GATEWAY_POWER, Blocks.REDSTONE_BLOCK);
+      assertGatewayState(helper, other, GatewayState.WARMUP);
+      
+      BlockState active = ((ArcanaBlock) ArcanaRegistry.ASTRAL_GATEWAY).getBlock().defaultBlockState().setValue(AstralGateway.AstralGatewayBlock.STATE, GatewayState.OPEN);
+      List<BlockPos> extras = List.of(new BlockPos(1, 103, 3), new BlockPos(3, 103, 3));
+      for(BlockPos extra : extras) helper.setBlock(extra, active);
+      
+      helper.assertTrue(gateway.getPortalDestination(helper.getLevel(), player, helper.absolutePos(GATEWAY_PORTAL)) != null, "The portal has no destination");
+      TestKit.assertAchieved(helper, player, ArcanaAchievements.ON_YOUR_LEFT);
+      
+      for(BlockPos extra : extras) helper.setBlock(extra, Blocks.AIR);
+      helper.setBlock(new BlockPos(2, 103, 1), Blocks.AIR);
+      helper.getLevel().getServer().getPlayerList().remove(player);
+      helper.succeed();
+   }
+   
+   // U follows a world axis, so some facing pairs swapped the entity's left and right across the portal. Entering on the first cell of a 3 wide portal
+   @GameTest
+   public void astralGatewayKeepsLeftAndRightOnAParallelPortal(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = wideGateway(helper.getLevel(), helper.absolutePos(new BlockPos(3, 3, 1)), Direction.SOUTH, 3, 1);
+      AstralGatewayBlockEntity other = wideGateway(helper.getLevel(), helper.absolutePos(new BlockPos(3, 103, 1)), Direction.SOUTH, 3, 1);
+      dialWideGateway(helper, gateway, other);
+      Entity pig = EntityTypes.PIG.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+      BlockPos entry = new BlockPos(2, 4, 2);
+      BlockPos first = new BlockPos(2, 104, 2);
+      BlockPos last = new BlockPos(4, 104, 2);
+      assertArrival(helper, gateway, other, Direction.SOUTH, Direction.SOUTH, pig, entry, first);
+      assertArrival(helper, gateway, other, Direction.SOUTH, Direction.NORTH, pig, entry, last);
+      assertArrival(helper, gateway, other, Direction.NORTH, Direction.NORTH, pig, entry, first);
+      assertArrival(helper, gateway, other, Direction.NORTH, Direction.SOUTH, pig, entry, last);
+      assertArrival(helper, gateway, other, Direction.SOUTH, Direction.EAST, pig, entry, first); // A facing along the frame has no left or right
+      assertArrival(helper, gateway, other, Direction.EAST, Direction.NORTH, pig, entry, first);
+      helper.setBlock(new BlockPos(3, 103, 1), Blocks.AIR);
+      helper.succeed();
+   }
+   
+   // Same as above for frames 90 degrees apart. Which of these swap follows the rotation getPortalDestination applies, so they change if that rotation does
+   @GameTest
+   public void astralGatewayKeepsLeftAndRightOnAPerpendicularPortal(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = wideGateway(helper.getLevel(), helper.absolutePos(new BlockPos(3, 3, 1)), Direction.SOUTH, 3, 1);
+      AstralGatewayBlockEntity other = wideGateway(helper.getLevel(), helper.absolutePos(new BlockPos(3, 103, 3)), Direction.EAST, 3, 1);
+      dialWideGateway(helper, gateway, other);
+      Entity pig = EntityTypes.PIG.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+      BlockPos entry = new BlockPos(2, 4, 2);
+      BlockPos first = new BlockPos(4, 104, 2);
+      BlockPos last = new BlockPos(4, 104, 4);
+      assertArrival(helper, gateway, other, Direction.SOUTH, Direction.EAST, pig, entry, first);
+      assertArrival(helper, gateway, other, Direction.SOUTH, Direction.WEST, pig, entry, last);
+      assertArrival(helper, gateway, other, Direction.NORTH, Direction.WEST, pig, entry, first);
+      assertArrival(helper, gateway, other, Direction.NORTH, Direction.EAST, pig, entry, last);
+      helper.setBlock(new BlockPos(3, 103, 3), Blocks.AIR);
+      helper.succeed();
+   }
+   
+   // Arrival ignored the entity's size, so anything wider than a block could land inside the frame
+   @GameTest
+   public void astralGatewayMovesLargeEntitiesToACellTheyFitIn(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = wideGateway(helper.getLevel(), helper.absolutePos(new BlockPos(3, 3, 1)), Direction.SOUTH, 3, 1);
+      AstralGatewayBlockEntity other = wideGateway(helper.getLevel(), helper.absolutePos(new BlockPos(3, 103, 3)), Direction.SOUTH, 3, 3);
+      dialWideGateway(helper, gateway, other);
+      Entity golem = EntityTypes.IRON_GOLEM.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+      Entity pig = EntityTypes.PIG.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+      BlockPos entry = new BlockPos(2, 4, 2);
+      assertArrival(helper, gateway, other, Direction.SOUTH, Direction.SOUTH, golem, entry, new BlockPos(3, 104, 4));
+      assertArrival(helper, gateway, other, Direction.SOUTH, Direction.SOUTH, pig, entry, new BlockPos(2, 104, 4)); // Anything that fits stays on its mapped cell
+      helper.setBlock(new BlockPos(3, 103, 3), Blocks.AIR);
+      helper.succeed();
+   }
+   
+   // An entity too large for every cell still arrives, on its mapped cell
+   @GameTest
+   public void astralGatewayLandsOnTheMappedCellWhenNothingFits(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = wideGateway(helper.getLevel(), helper.absolutePos(new BlockPos(3, 3, 1)), Direction.SOUTH, 3, 1);
+      AstralGatewayBlockEntity other = wideGateway(helper.getLevel(), helper.absolutePos(new BlockPos(3, 103, 1)), Direction.SOUTH, 3, 1);
+      dialWideGateway(helper, gateway, other);
+      Entity golem = EntityTypes.IRON_GOLEM.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+      assertArrival(helper, gateway, other, Direction.SOUTH, Direction.SOUTH, golem, new BlockPos(2, 4, 2), new BlockPos(2, 104, 2));
+      helper.setBlock(new BlockPos(3, 103, 1), Blocks.AIR);
+      helper.succeed();
+   }
+   
+   // Breaking a gateway mid-warmup kept the effect running on the removed block entity, which threw on its cleared frame every tick
+   @GameTest
+   public void astralGatewayWarmupEffectStopsWhenBroken(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = gatewayPair(helper);
+      helper.setBlock(new BlockPos(2, 3, 1), Blocks.AIR);
+      ArcanaEffectUtils.astralGatewayWarmup(gateway, helper.getLevel(), List.of(), 40, 100, 25);
+      helper.succeed();
+   }
+   
+   // A shape the frame search rejected left its fill behind, and a later shape with no interior of its own could pass with those blocks as its portal
+   @GameTest
+   public void gatewayFrameDoesNotKeepEnclosedBlocksOfARejectedShape(GameTestHelper helper){
+      BlockPos core = helper.absolutePos(new BlockPos(2, 3, 2));
+      helper.setBlock(new BlockPos(2, 3, 2), Blocks.GOLD_BLOCK);
+      GatewayFrame frame = new GatewayFrame(core, Blocks.GOLD_BLOCK, Direction.Axis.Z, 8, false, false);
+      frame.getEnclosed().add(core.above());
+      
+      frame.validateEnding(helper.getLevel());
+      
+      helper.assertTrue(frame.getEnclosed().isEmpty(), "The old enclosed blocks were kept");
+      helper.assertFalse((boolean) TestKit.field(frame, "valid"), "A shape with no interior passed");
+      helper.succeed();
+   }
+   
+   // Stardust is stored as a long, but placing the item read it back as an int and lost anything past the int range
+   @GameTest
+   public void astralGatewayKeepsLargeStardustWhenPlaced(GameTestHelper helper){
+      ServerPlayer player = TestKit.player(helper);
+      BlockPos pos = new BlockPos(2, 3, 1);
+      BlockState state = ((ArcanaBlock) ArcanaRegistry.ASTRAL_GATEWAY).getBlock().defaultBlockState().setValue(AstralGateway.AstralGatewayBlock.STATE, GatewayState.CLOSED);
+      helper.setBlock(pos, state);
+      ItemStack stack = ArcanaRegistry.ASTRAL_GATEWAY.getNewItem();
+      ArcanaItem.putProperty(stack, AstralGateway.STARDUST_TAG, 3_000_000_000L);
+      
+      state.getBlock().setPlacedBy(helper.getLevel(), helper.absolutePos(pos), state, player, stack);
+      
+      AstralGatewayBlockEntity gateway = (AstralGatewayBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(pos));
+      helper.assertTrue(gateway.getStardust() == 3_000_000_000L, "Placed with " + gateway.getStardust() + " stardust");
+      helper.getLevel().getServer().getPlayerList().remove(player);
+      helper.succeed();
+   }
+   
+   // The GUI asked a Receive Only gateway for a waystone and redstone that it can never use
+   @GameTest
+   @SuppressWarnings("unchecked")
+   public void astralGatewayGuiShowsReceiveOnlyAsReady(GameTestHelper helper){
+      ServerPlayer player = TestKit.player(helper);
+      AstralGatewayBlockEntity gateway = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 3, 1)), 1, gatewayAugments());
+      TestKit.call(gateway, "validateOrFindGateway", helper.getLevel());
+      helper.getLevel().setBlockAndUpdate(gateway.getBlockPos(), gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.MODE, GatewayMode.RECEIVE_ONLY));
+      
+      AstralGatewayGui gui = new AstralGatewayGui(player, gateway);
+      Pair<Component, Integer> info = (Pair<Component, Integer>) TestKit.call(gui, "getStateInfo");
+      gui.close();
+      
+      helper.assertTrue(info.getFirst().getString().equals("Ready to Receive"), "The GUI shows " + info.getFirst().getString());
+      helper.getLevel().getServer().getPlayerList().remove(player);
+      helper.succeed();
+   }
+   
+   private static final BlockPos GATEWAY_PORTAL = new BlockPos(2, 4, 2);
+   private static final BlockPos GATEWAY_POWER = new BlockPos(1, 3, 1);
+   private static Map<ArcanaAugment, Integer> gatewayAugments(){
+      return Map.of(ArcanaAugments.STARLIGHT_RECYCLERS, 6);
+   }
+   
+   /** Two gateways with Starlight Recyclers 6 in separate frames. The returned one has been dialled with a redstone block next to it */
+   private static AstralGatewayBlockEntity gatewayPair(GameTestHelper helper){
+      AstralGatewayBlockEntity gateway = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 3, 1)), 1, gatewayAugments());
+      AstralGatewayBlockEntity other = placeGateway(helper.getLevel(), helper.absolutePos(new BlockPos(2, 3, 6)), -1, gatewayAugments());
+      gateway.getInventory().setItem(0, gatewayStone(other));
+      helper.setBlock(GATEWAY_POWER, Blocks.REDSTONE_BLOCK);
+      assertGatewayState(helper, gateway, GatewayState.WARMUP);
+      helper.assertTrue(gateway.getSyncedGateway() == other, "The gateway did not dial the other one");
+      return gateway;
+   }
+   
+   /** A gateway with a 3x3 gold frame next to it along Z (frameZ is +1 or -1), which leaves one block of portal one above and beside the gateway */
+   private static AstralGatewayBlockEntity placeGateway(ServerLevel level, BlockPos pos, int frameZ, Map<ArcanaAugment, Integer> augments){
+      for(int x = -1; x <= 1; x++){
+         for(int y = 0; y <= 2; y++){
+            if(x != 0 || y != 1) level.setBlockAndUpdate(pos.offset(x, y, frameZ), Blocks.GOLD_BLOCK.defaultBlockState());
+         }
+      }
+      level.setBlockAndUpdate(pos, ((ArcanaBlock) ArcanaRegistry.ASTRAL_GATEWAY).getBlock().defaultBlockState()
+            .setValue(AstralGateway.AstralGatewayBlock.STATE, GatewayState.CLOSED)
+            .setValue(AstralGateway.AstralGatewayBlock.MODE, GatewayMode.BOTH));
+      AstralGatewayBlockEntity gateway = (AstralGatewayBlockEntity) level.getBlockEntity(pos);
+      gateway.initialize(new TreeMap<>(augments), "", UUID.randomUUID().toString(), 0, "", null);
+      return gateway;
+   }
+   
+   /** A gateway with a gold frame on the given side and an interior of width x height, starting one above the gateway. The width must be odd */
+   private static AstralGatewayBlockEntity wideGateway(ServerLevel level, BlockPos pos, Direction side, int width, int height){
+      Direction right = side.getClockWise();
+      int reach = width / 2 + 1;
+      for(int across = -reach; across <= reach; across++){
+         for(int up = 0; up <= height + 1; up++){
+            if(Math.abs(across) == reach || up == 0 || up == height + 1){
+               level.setBlockAndUpdate(pos.relative(side).relative(right, across).above(up), Blocks.GOLD_BLOCK.defaultBlockState());
+            }
+         }
+      }
+      level.setBlockAndUpdate(pos, ((ArcanaBlock) ArcanaRegistry.ASTRAL_GATEWAY).getBlock().defaultBlockState()
+            .setValue(AstralGateway.AstralGatewayBlock.STATE, GatewayState.CLOSED)
+            .setValue(AstralGateway.AstralGatewayBlock.MODE, GatewayMode.BOTH));
+      AstralGatewayBlockEntity gateway = (AstralGatewayBlockEntity) level.getBlockEntity(pos);
+      gateway.initialize(new TreeMap<>(gatewayAugments()), "", UUID.randomUUID().toString(), 0, "", null);
+      return gateway;
+   }
+   
+   /** Links a gateway placed at (3, 3, 1) with a redstone block next to it */
+   private static void dialWideGateway(GameTestHelper helper, AstralGatewayBlockEntity gateway, AstralGatewayBlockEntity other){
+      gateway.getInventory().setItem(0, gatewayStone(other));
+      helper.setBlock(new BlockPos(2, 3, 1), Blocks.REDSTONE_BLOCK);
+      assertGatewayState(helper, other, GatewayState.WARMUP);
+   }
+   
+   private static void assertArrival(GameTestHelper helper, AstralGatewayBlockEntity gateway, AstralGatewayBlockEntity other, Direction facing, Direction otherFacing, Entity entity, BlockPos entry, BlockPos cell){
+      helper.getLevel().setBlockAndUpdate(gateway.getBlockPos(), gateway.getBlockState().setValue(AstralGateway.AstralGatewayBlock.HORIZONTAL_FACING, facing));
+      helper.getLevel().setBlockAndUpdate(other.getBlockPos(), other.getBlockState().setValue(AstralGateway.AstralGatewayBlock.HORIZONTAL_FACING, otherFacing));
+      Vec3 expected = Vec3.atBottomCenterOf(helper.absolutePos(cell));
+      Vec3 actual = gateway.getPortalDestination(helper.getLevel(), entity, helper.absolutePos(entry)).position();
+      helper.assertTrue(actual.equals(expected), facing + " to " + otherFacing + ": a " + entity.getType().toShortString() + " arrived at " + actual + ", expected " + expected);
+   }
+   
+   private static ItemStack gatewayStone(AstralGatewayBlockEntity target){
+      ItemStack waystone = ArcanaRegistry.WAYSTONE.getNewItem();
+      Waystone.saveTarget(waystone, new Waystone.WaystoneTarget(target.getLevel().dimension(), Vec3.atCenterOf(target.getBlockPos()), 0, 0));
+      Waystone.setForGateway(waystone);
+      return waystone;
+   }
+   
+   private static void assertGatewayState(GameTestHelper helper, AstralGatewayBlockEntity gateway, GatewayState state){
+      GatewayState actual = gateway.getBlockState().getValue(AstralGateway.AstralGatewayBlock.STATE);
+      helper.assertTrue(actual == state, "Gateway at " + gateway.getBlockPos() + " is " + actual + ", expected " + state);
    }
    
    private static boolean linked(ArcanaItem item, ArcanaItem other){

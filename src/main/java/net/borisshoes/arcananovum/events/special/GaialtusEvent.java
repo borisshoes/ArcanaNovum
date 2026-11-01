@@ -27,20 +27,31 @@ public class GaialtusEvent extends Event {
    
    @Override
    public void onExpiry(){
-   
+
    }
-   
+
+   @Override
+   public void tick(){
+      // Once the credits start there is no time limit, the event just waits for [Look Around]
+      if(stage < 3) super.tick();
+   }
+
    public int getStage(){
-      if(!player.level().equals(player.level().getServer().overworld())){
+      return stage;
+   }
+
+   // Called once per click. Leaving the overworld ends the conversation, up until the credits start
+   public int checkStage(ServerPlayer clicker){
+      if(stage < 3 && !clicker.level().equals(clicker.level().getServer().overworld())){
          markForRemoval();
-         player.sendSystemMessage(Component.literal("\n")
+         clicker.sendSystemMessage(Component.literal("\n")
                .append(Component.literal("The breeze fades...").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), false);
-         SoundUtils.playSongToPlayer(player, SoundEvents.SOUL_ESCAPE.value(), 1f, 1);
+         SoundUtils.playSongToPlayer(clicker, SoundEvents.SOUL_ESCAPE.value(), 1f, 1);
          return -1;
       }
       return stage;
    }
-   
+
    public void setStage(int stage){
       this.stage = stage;
    }
